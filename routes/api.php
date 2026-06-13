@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\appointment\AppointmentController;
 use App\Http\Controllers\Api\patient\PatientController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,3 +22,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::post('/patient/show', [PatientController::class, 'show'])->name('api.patient.show');
+Route::post('/patient/show/search', [PatientController::class, 'search'])->name('api.patient.search');
+
+
+
+Route::post('/appointment/specialty', [AppointmentController::class, 'specialty'])->name('api.appointment.specialty');
+Route::post('/appointment/calculated', [AppointmentController::class , 'calculatedPrice'])->name('api.appointment.calculated');

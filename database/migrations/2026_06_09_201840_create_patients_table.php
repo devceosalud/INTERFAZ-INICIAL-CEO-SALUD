@@ -18,19 +18,22 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('historia_clinica')->nullable();
             $table->string('historia_clinica_nueva')->nullable();
-            $table->string('nombre');
+            $table->string('nombre')->nullable();
             $table->string('apellido_paterno')->nullable();
             $table->string('apellido_materno')->nullable();
             $table->enum('genero', ['HOMBRE', 'MUJER']);
             $table->string('tipo_identificacion');
             $table->string('numero_identidad')->unique();
-            $table->string('telefono');
+            $table->string('telefono')->nullable();
+            $table->date('fecha_registro')->nullable();
             $table->date('fecha_nacimiento')->nullable();
             $table->string('ocupacion')->nullable();
             $table->string('grado_instruccion')->nullable();
             $table->string('direccion')->nullable();
             $table->string('email')->nullable();
+            $table->string('familiar_contacto')->nullable();
             $table->string('estado_civil')->nullable();
+            $table->enum('estado', ['ACTIVO', 'INACTIVO']);
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

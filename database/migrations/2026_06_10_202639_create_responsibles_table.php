@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('pesponsibles', function (Blueprint $table) {
+        Schema::create('responsibles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('patient_id');
             $table->string('tipo_identificacion');
@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('nombres')->nullable();
             $table->string('telefono')->nullable();
             $table->string('parentezco')->nullable();
+            $table->enum('estado', ['ACTIVO', 'INACTIVO']);
+
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             $table->timestamps();
         });
@@ -33,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pesponsibles');
+        Schema::dropIfExists('responsibles');
     }
 };

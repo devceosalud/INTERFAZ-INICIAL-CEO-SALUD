@@ -38,6 +38,16 @@
 
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
 
+    <!-- DATATABLES CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.min.css') }}">
+
+    <!-- CDN JQUERY -->
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -45,74 +55,16 @@
     @yield('body')
 
 
-    <!--**********************************
-                                    Scripts
-                                ***********************************-->
-    <!-- Required vendors -->
-    <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/chart.js/Chart.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/owl-carousel/owl.carousel.js') }}"></script>
-
-    <!-- Apex Chart -->
-    <script src="{{ asset('assets/vendor/apexchart/apexchart.js') }}"></script>
-
-    <!-- Dashboard 1 -->
-    <script src="{{ asset('assets/js/dashboard/dashboard-1.js') }}"></script>
-    <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-    <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+    @yield('script_data')
 
 
 
-    <script>
-        function assignedDoctor() {
+    <!-- DATATABLES JS LIB-->
+    <script src="{{ asset('assets/lib/datatable/dataTables.js') }}"></script>
+    <script src="{{ asset('assets/lib/datatable/dataTables.min.js') }}"></script>
 
-            /*  testimonial one function by = owl.carousel.js */
-            jQuery('.assigned-doctor').owlCarousel({
-                loop: false,
-                margin: 30,
-                nav: true,
-                autoplaySpeed: 3000,
-                navSpeed: 3000,
-                paginationSpeed: 3000,
-                slideSpeed: 3000,
-                smartSpeed: 3000,
-                autoplay: false,
-                dots: false,
-                navText: ['<i class="fa fa-caret-left"></i>', '<i class="fa fa-caret-right"></i>'],
-                responsive: {
-                    0: {
-                        items: 1
-                    },
-                    576: {
-                        items: 2
-                    },
-                    767: {
-                        items: 3
-                    },
-                    991: {
-                        items: 2
-                    },
-                    1200: {
-                        items: 3
-                    },
-                    1600: {
-                        items: 4
-                    },
-                    1920: {
-                        items: 5
-                    }
-                }
-            })
-        }
+    <script src="{{ asset('js/datatables/dataTable.js') }}"></script>
 
-        jQuery(window).on('load', function() {
-            setTimeout(function() {
-                assignedDoctor();
-                console.log('TEST');
-            }, 1000);
-        });
-    </script>
 
 </body>
 

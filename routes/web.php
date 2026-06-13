@@ -28,8 +28,13 @@ Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard.in
 
 //ADMISIONISTA: para citas y personal
 Route::get('/admissionist/patient', [PatientController::class , 'index'])->name('admissionit.patient.index');
-Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
+Route::post('/admissionist/patient/store', [PatientController::class , 'store'])->name('admissionit.patient.store');
+Route::put('/admissionist/patient/udpate', [PatientController::class , 'update'])->name('admissionit.patient.update');
 
+
+
+Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
+Route::post('/admissionist/appointment/store', [AppointmentController::class , 'store'])->name('admissionit.appointment.store');
 
 
 //PARA ROLES Y PERMISOS

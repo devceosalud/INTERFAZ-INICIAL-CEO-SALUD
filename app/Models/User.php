@@ -41,4 +41,13 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    /**
+     * Obtiene todas las citas registradas por el usuario.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }
