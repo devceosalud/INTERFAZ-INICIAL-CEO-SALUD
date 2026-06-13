@@ -3,54 +3,54 @@
 
 @section('body')
     <!--*******************
-                                                                                        Preloader start
-                                                                                    ********************-->
+                                                                                            Preloader start
+                                                                                        ********************-->
     @include('templates.preloader')
     <!--*******************
-                                                                                        Preloader end
-                                                                                    ********************-->
+                                                                                            Preloader end
+                                                                                        ********************-->
 
     <!--**********************************
-                                                                                        Main wrapper start
-                                                                                    ***********************************-->
+                                                                                            Main wrapper start
+                                                                                        ***********************************-->
     <div id="main-wrapper">
 
         <!--**********************************
-                                                                                            Nav header start
-                                                                                        ***********************************-->
+                                                                                                Nav header start
+                                                                                            ***********************************-->
         @include('templates.nav-header')
         <!--**********************************
-                                                                                            Nav header end
-                                                                                        ***********************************-->
+                                                                                                Nav header end
+                                                                                            ***********************************-->
 
         <!--**********************************
-                                                                                            Chat box start
-                                                                                        ***********************************-->
+                                                                                                Chat box start
+                                                                                            ***********************************-->
         @include('templates.chat-box')
         <!--**********************************
-                                                                                            Chat box End
-                                                                                        ***********************************-->
+                                                                                                Chat box End
+                                                                                            ***********************************-->
 
         <!--**********************************
-                                                                                            Header start
-                                                                                        ***********************************-->
+                                                                                                Header start
+                                                                                            ***********************************-->
         @include('templates.header')
         <!--**********************************
-                                                                                            Header end ti-comment-alt
-                                                                                        ***********************************-->
+                                                                                                Header end ti-comment-alt
+                                                                                            ***********************************-->
 
         <!--**********************************
-                                                                                            Sidebar start
-                                                                                        ***********************************-->
+                                                                                                Sidebar start
+                                                                                            ***********************************-->
         @include('templates.sidebar')
         <!--**********************************
-                                                                                            Sidebar end
-                                                                                        ***********************************-->
+                                                                                                Sidebar end
+                                                                                            ***********************************-->
 
 
         <!--**********************************
-                                                                Content body start
-                                                            ***********************************-->
+                                                                    Content body start
+                                                                ***********************************-->
         <div class="content-body">
             <!-- row -->
             <div class="container-fluid">
@@ -71,7 +71,7 @@
                         <div class="card">
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table id="example5"
+                                    <table id="datatable"
                                         class="table table-striped patient-list mb-4 dataTablesCard fs-14">
                                         <thead>
                                             <tr>
@@ -79,11 +79,12 @@
                                                 <th>Medico</th>
                                                 <th>Especilidad</th>
                                                 <th>Canal</th>
-                                                <th>Hora</th>
+                                                <th>Fecha de la Cita</th>
                                                 <th>Celular</th>
                                                 <th>Pago</th>
                                                 <th>Debe</th>
                                                 <th>Servicios</th>
+                                                <th>Estado</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -118,6 +119,7 @@
                                                     </td>
                                                     <td> {{ $appointment->saldo_pendiente }} </td>
                                                     <td> {{ $appointment->service->nombre }}</td>
+                                                    <td> {{ $appointment->estado_cita }} </td>
                                                     <td>
                                                         {{--
                                                         <span class="me-3">
@@ -145,21 +147,15 @@
             @include('admissionist.appointment.crud.create')
         </div>
         <!--**********************************
-                                                                Content body end
-                                                            ***********************************-->
+                                                                    Content body end
+                                                                ***********************************-->
 
 
         <!--**********************************
-                                                                                                    Scripts
-                                                                                                ***********************************-->
+                                                                                                        Scripts
+                                                                                                    ***********************************-->
         <!-- Required vendors -->
         @section('script_data')
-            <script>
-                //EL ACTUAL
-                window.addEventListener('DOMContentLoaded', () => {
-                    let table = new DataTable('#datatable');
-                });
-            </script>
             <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
 
 
@@ -171,26 +167,26 @@
 
 
         <!--**********************************
-                                                                    Footer start
-                                                                ***********************************-->
+                                                                        Footer start
+                                                                    ***********************************-->
         @include('templates.footer')
         <!--**********************************
-                                                                    Footer end
-                                                                ***********************************-->
+                                                                        Footer end
+                                                                    ***********************************-->
 
         <!--**********************************
-                                                                   Support ticket button start
-                                                                ***********************************-->
+                                                                       Support ticket button start
+                                                                    ***********************************-->
 
         <!--**********************************
-                                                                   Support ticket button end
-                                                                ***********************************-->
+                                                                       Support ticket button end
+                                                                    ***********************************-->
 
 
     </div>
     <!--**********************************
-                                                                Main wrapper end
-                                                            ***********************************-->
+                                                                    Main wrapper end
+                                                                ***********************************-->
 
     <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
 @endsection

@@ -35,12 +35,12 @@
                     <span class="nav-text">Usuarios</span>
                 </a>
                 <ul aria-expanded="false">
-                    <li><a href='/user'>Lista de Usuarios</a></li>
+                    <li><a href='#'>Lista de Usuarios</a></li>
                 </ul>
             </li>
         </ul>
 
-        <a href='/app-calender'>
+        <a href='#'>
             <div class="plus-box">
                 <p class="fs-16 font-w500 mb-1">Celendario y Horarios</p>
                 <p class="text-white fs-26"> <i class="las la-long-arrow-alt-right"></i></p>

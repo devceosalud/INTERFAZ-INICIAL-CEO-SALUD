@@ -14,7 +14,7 @@
 
                         <!-- ================= PACIENTE ================= -->
                         <div class="col-12">
-                            <h5 class="mb-3">Datos del Paciente</h5>
+                            <h5 class="mb-1">Datos del Paciente</h5>
                         </div>
 
                         <input type="hidden" name="patient_id" id="patient_id">
@@ -35,7 +35,7 @@
 
                         <!-- ================= PROGRAMACION ================= -->
 
-                        <div class="col-12 mt-4">
+                        <div class="col-12 mt-2">
                             <h5>Programación de la Cita</h5>
                         </div>
 
@@ -89,7 +89,7 @@
                         </div>
 
                         <!-- ================= ORIGEN ================= -->
-                        <div class="col-12 mt-4">
+                        <div class="col-12 mt-2">
                             <h5>Origen de la Cita</h5>
                         </div>
 
@@ -135,7 +135,7 @@
                         </div>
 
                         <!-- ================= EXONERADO ================= -->
-                        <div class="col-md-6 mt-3">
+                        <div class="col-md-6 mt-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="es_exonerado" id="es_exonerado"
                                     value="1">
@@ -147,22 +147,29 @@
 
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Autorizado por</label>
                                 <input type="text" class="form-control" name="autorizado_por" id="autorizado_por"
-                                    placeholder="Ej. DR QUIROZ">
+                                    placeholder="Autorizado por: Ej. DR QUIROZ">
                             </div>
                         </div>
 
                         <!-- ================= MOTIVO ================= -->
-                        <div class="col-12 mt-4">
+                        <div class="col-12 mt-2">
                             <div class="form-group">
                                 <label>Motivo Consulta</label>
                                 <textarea class="form-control" name="motivo_consulta" rows="3"></textarea>
                             </div>
                         </div>
 
+                        <!-- ================= OBSERVACIONES ================= -->
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Observaciones</label>
+                                <textarea class="form-control" name="observaciones" rows="3"></textarea>
+                            </div>
+                        </div>
+
                         <!-- ================= PAGO ================= -->
-                        <div class="col-12 mt-4">
+                        <div class="col-12 mt-2">
                             <h5>Información de Pago</h5>
                         </div>
 
@@ -188,17 +195,30 @@
                             <div class="form-group">
                                 <label>Saldo Pendiente</label>
                                 <input type="text" class="form-control" id="saldo_pendiente" readonly>
-
                             </div>
                         </div>
 
-                        <!-- ================= OBSERVACIONES ================= -->
-                        <div class="col-12 mt-4">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Observaciones</label>
-                                <textarea class="form-control" name="observaciones" rows="3"></textarea>
+                                <label>Metodo de Pago</label>
+                                <select class="form-control" name="metodo_pago" id="metodo_pago">
+                                    <option value="YAPE">YAPE</option>
+                                    <option value="PLIN">PLIN</option>
+                                    <option value="EFECTIVO">EFECTIVO</option>
+                                    <option value="TARJETA">TARJETA</option>
+                                </select>
                             </div>
                         </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>N° Operación:</label>
+                                <input type="number" class="form-control" name="numero_operacion"
+                                    id="numero_operacion" value="0">
+                            </div>
+                        </div>
+
+
 
                         <!-- ================= BOTON ================= -->
                         <div class="col-12 text-end mt-4">

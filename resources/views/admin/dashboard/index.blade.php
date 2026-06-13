@@ -325,79 +325,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-9 col-xxl-8 col-lg-7">
-                        <div class="card">
-                            <div class="card-header border-0 pb-0">
-                                <h3 class="fs-20 mb-0 text-black">Doctores</h3>
-                                <!--<a href="page-review.html" class="text-primary font-w500">View more >></a> -->
-                            </div>
-                            <div class="card-body">
-                                <div class="assigned-doctor owl-carousel">
-                                    <div class="items">
-                                        <div class="text-center">
-                                            <img src="images/doctors/5.jpg" alt="">
-                                            <div class="dr-star"><i class="las la-star"></i> 4.2</div>
-                                            <h5 class="fs-16 mb-1 font-w600"><a class='text-black'
-                                                    href='/page-review'>Dr. quiroz.</a></h5>
-                                            <span class="text-primary mb-2 d-block">traumatología </span>
-                                            <p class="fs-12">No disponible</p>
-                                            <div class="social-media">
-                                                <a href="javascript:void(0);"><i class="lab la-instagram"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-facebook-f"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-twitter"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="items">
-                                        <div class="text-center">
-                                            <img src="images/doctors/1.jpg" alt="">
-                                            <div class="dr-star"><i class="las la-star"></i> 4.1</div>
-                                            <h5 class="fs-16 mb-1 font-w600"><a class='text-black'
-                                                    href='/page-review'>Dr. Calle</a></h5>
-                                            <span class="text-primary mb-2 d-block">cardiología</span>
-                                            <p class="fs-12">Disponible</p>
-                                            <div class="social-media">
-                                                <a href="javascript:void(0);"><i class="lab la-instagram"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-facebook-f"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-twitter"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="items">
-                                        <div class="text-center">
-                                            <img src="images/doctors/2.jpg" alt="">
-                                            <div class="dr-star"><i class="las la-star"></i> 4.3</div>
-                                            <h5 class="fs-16 mb-1 font-w600"><a class='text-black'
-                                                    href='/page-review'>Dr. Sumaeta</a></h5>
-                                            <span class="text-primary mb-2 d-block">otorrinolaringología </span>
-                                            <p class="fs-12">No disponible</p>
-                                            <div class="social-media">
-                                                <a href="javascript:void(0);"><i class="lab la-instagram"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-facebook-f"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-twitter"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
+                   
 
-                                    <div class="items">
-                                        <div class="text-center">
-                                            <img src="images/doctors/2.jpg" alt="">
-                                            <div class="dr-star"><i class="las la-star"></i> 2.2</div>
-                                            <h5 class="fs-16 mb-1 font-w600"><a class='text-black'
-                                                    href='/page-review'>Dra. Moreno</a></h5>
-                                            <span class="text-primary mb-2 d-block">reumatología </span>
-                                            <p class="fs-12">Disponible</p>
-                                            <div class="social-media">
-                                                <a href="javascript:void(0);"><i class="lab la-instagram"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-facebook-f"></i></a>
-                                                <a href="javascript:void(0);"><i class="lab la-twitter"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     <div class="col-xl-3 col-xxl-4 col-lg-5">
                         <div class="card border-0 pb-0">
                             <div class="card-header flex-wrap border-0 pb-0">
@@ -409,10 +339,6 @@
                                     <ul class="timeline">
                                         <li>
                                             <div class="timeline-panel flex-wrap">
-                                                <div class="media me-3">
-                                                    <img class="rounded-circle" alt="image" width="50"
-                                                        src="images/widget/1.jpg">
-                                                </div>
                                                 <div class="media-body">
                                                     <h5 class="mb-1"><a class='text-black' href='/patient-details'>JUan
                                                             Arevalo</a></h5>
@@ -423,10 +349,6 @@
                                         </li>
                                         <li>
                                             <div class="timeline-panel flex-wrap">
-                                                <div class="media me-3">
-                                                    <img class="rounded-circle" alt="image" width="50"
-                                                        src="images/widget/2.jpg">
-                                                </div>
                                                 <div class="media-body">
                                                     <h5 class="mb-1"><a class='text-black'
                                                             href='/patient-details'>Hillary Rivera</a></h5>
@@ -437,10 +359,6 @@
                                         </li>
                                         <li>
                                             <div class="timeline-panel flex-wrap">
-                                                <div class="media me-3">
-                                                    <img class="rounded-circle" alt="image" width="50"
-                                                        src="images/widget/3.jpg">
-                                                </div>
                                                 <div class="media-body">
                                                     <h5 class="mb-1"><a class='text-black' href='/patient-details'>Omar
                                                             Meneses</a></h5>
@@ -451,10 +369,6 @@
                                         </li>
                                         <li>
                                             <div class="timeline-panel flex-wrap">
-                                                <div class="media me-3">
-                                                    <img class="rounded-circle" alt="image" width="50"
-                                                        src="images/widget/5.jpg">
-                                                </div>
                                                 <div class="media-body">
                                                     <h5 class="mb-1"><a class='text-black'
                                                             href='/patient-details'>Julia Porras</a></h5>

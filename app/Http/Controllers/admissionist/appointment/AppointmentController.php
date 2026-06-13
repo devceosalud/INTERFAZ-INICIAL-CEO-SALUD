@@ -107,6 +107,9 @@ class AppointmentController extends Controller
         ]);
 
         if ($appointment) {
+
+            //AQUI IRA EL ENVIO DEL CORREO PARA EL PACIENTE
+            
             return response()->json([
                 'code' => 1,
                 'msg' => 'Cita creada correctamente'

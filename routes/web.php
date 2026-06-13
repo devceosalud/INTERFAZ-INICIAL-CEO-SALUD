@@ -3,6 +3,7 @@
 use App\Http\Controllers\admin\dashboard\DashboardController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
+use App\Http\Controllers\authenticator\auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,7 +23,11 @@ Route::get('/', function () {
 });
 */
 
-Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard.index');
+Route::get('/', [AuthController::class , 'index'])->name('login');
+Route::post('/admin/SingIn', [AuthController::class , 'store'])->name('admin.login.store');
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
 
 
 
