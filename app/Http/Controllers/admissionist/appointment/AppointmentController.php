@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\admissionist\appointment;
 
 use App\Http\Controllers\Controller;
+use App\Mail\MailAppointment;
 use App\Models\AdditionalRate;
 use App\Models\Appointment;
 use App\Models\Channel;
@@ -11,6 +12,7 @@ use App\Models\Specialty;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
 {
@@ -108,8 +110,11 @@ class AppointmentController extends Controller
 
         if ($appointment) {
 
-            //AQUI IRA EL ENVIO DEL CORREO PARA EL PACIENTE
-            
+            //SI TIENE CORREO, SE ENVIA SU CITA CREADA A SU CORREO
+            if ($appointment->patient->email) {
+                Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
+            }
+
             return response()->json([
                 'code' => 1,
                 'msg' => 'Cita creada correctamente'

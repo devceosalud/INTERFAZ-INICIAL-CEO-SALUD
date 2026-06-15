@@ -59,12 +59,6 @@
                         <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                             data-bs-toggle="modal" data-bs-target="#patientModalCreate">+ Agregar Cita</a>
                     </div>
-                    <div class="input-group search-area d-inline-flex">
-                        <input type="text" class="form-control" placeholder="Search here">
-                        <div class="input-group-append">
-                            <button type="button" class="input-group-text"><i class="flaticon-381-search-2"></i></button>
-                        </div>
-                    </div>
                 </div>
                 <div class="row">
                     <div class="col-xl-12">

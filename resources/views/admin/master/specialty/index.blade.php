@@ -1,16 +1,17 @@
 @extends('layouts.app')
 
-@php
-    use Carbon\Carbon;
-@endphp
 
 @section('body')
+
     <!--*******************Preloader start********************-->
     @include('templates.preloader')
     <!--*******************Preloader end********************-->
 
+
+
     <!--**********************************Main wrapper start***********************************-->
     <div id="main-wrapper">
+
 
         <!--**********************************Nav header start***********************************-->
         @include('templates.nav-header')
@@ -30,21 +31,14 @@
 
 
         <!--**********************************Content body start***********************************-->
-        <style>
-            .oculto_card_responsable {
-                display: none;
-            }
-        </style>
         <div class="content-body">
             <!-- row -->
             <div class="container-fluid">
                 <div class="form-head d-flex mb-3 mb-md-4 justify-content-between w-100">
-                    <div class="">
+                    <div>
                         <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">+ Agregar Paciente</a>
+                            data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">+ Agregar Especialidad</a>
                     </div>
-
-
                 </div>
                 <div class="row">
                     <div class="col-xl-12">
@@ -55,38 +49,24 @@
                                         class="table table-striped patient-list mb-4 dataTablesCard fs-14">
                                         <thead>
                                             <tr>
-                                                <th>Nombre y Apellidos</th>
-                                                <th>Nro.HC</th>
-                                                <th>Tipo iden.</th>
-                                                <th>Nro documento</th>
-                                                <th>Sexo</th>
-                                                <th>Edad</th>
+                                                <th>Código</th>
+                                                <th>Especialidad</th>
                                                 <th class="text-end">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-
-                                            @foreach ($patients as $patient)
+                                            @foreach ($specialties as $specialty)
                                                 <tr>
                                                     <td class="patient-info ps-0">
-                                                        <span class="text-nowrap ms-2"> {{ $patient->nombre }} </span>
+                                                        <span class="text-nowrap ms-2"> {{ $specialty->id }}
+                                                        </span>
                                                     </td>
-                                                    <td class="text-primary"> {{ $patient->historia_clinica }} </td>
-                                                    <td class="text-primary"> {{ $patient->tipo_identificacion }} </td>
-                                                    <td> {{ $patient->numero_identidad }} </td>
-                                                    <td>
-                                                        @if ($patient->genero == 'HOMBRE')
-                                                            <button class="btn btn-primary">HOMBRE</button>
-                                                        @else
-                                                            <button class="btn btn-danger">MUJER</button>
-                                                        @endif
+                                                    <td class="text-primary"> {{ $specialty->nombre }} </td>
 
-                                                    </td>
-                                                    <td> {{ Carbon::parse($patient->fecha_nacimiento)->age }} </td>
                                                     <td class="text-end">
                                                         <span class="me-3">
                                                             <a href="#" class="edit-patient"
-                                                                data-id="{{ $patient->id }}">
+                                                                data-id="{{ $specialty->id }}">
                                                                 <i class="fa fa-pencil fs-18 text-success"></i>
                                                             </a>
                                                         </span>
@@ -96,7 +76,6 @@
                                                     </td>
                                                 </tr>
                                             @endforeach
-
                                         </tbody>
                                     </table>
                                 </div>
@@ -106,9 +85,7 @@
                 </div>
             </div>
 
-            @include('admissionist.patient.crud.create')
-
-            @include('admissionist.patient.crud.edit')
+            @include('admin.master.specialty.crud.create')
         </div>
         <!--**********************************Content body end***********************************-->
 
@@ -124,11 +101,9 @@
     @endsection
 
 
-
-
     <!--**********************************Footer start***********************************-->
     @include('templates.footer')
-    <!--**********************************Footer end***********************************-->
+    <!--********************************** Footer end***********************************-->
 
     <!--**********************************Support ticket button start***********************************-->
 
@@ -138,5 +113,4 @@
 </div>
 <!--**********************************Main wrapper end***********************************-->
 
-<script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
 @endsection

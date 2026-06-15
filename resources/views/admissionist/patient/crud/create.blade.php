@@ -161,9 +161,10 @@
 
 
 
+                         <hr>
                          <!--DATOS DEL ACOMPAÑANTE SE ACTIVARA CUANDO LE DEMOS CLICK-->
-                         <div class="card oculto_card_responsable" id="modal_responsable">
-                             <div class="card-body row">
+                         <div class="oculto_card_responsable" id="modal_responsable">
+                             <div class="row">
                                  <div class="col-xl-8">
                                      <div class="form-group">
                                          <label for="col-form-label">Nombres del acompañante:</label>
@@ -219,8 +220,6 @@
                                      </div>
                                  </div>
                              </div>
-                         </div>
-
                      </div>
 
                      <input type="submit" class="btn btn-primary" value="Guardar Datos">

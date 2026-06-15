@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
+use App\Http\Controllers\admin\master\specialty\SpecialtyController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\authenticator\auth\AuthController;
@@ -36,10 +37,14 @@ Route::get('/admissionist/patient', [PatientController::class , 'index'])->name(
 Route::post('/admissionist/patient/store', [PatientController::class , 'store'])->name('admissionit.patient.store');
 Route::put('/admissionist/patient/udpate', [PatientController::class , 'update'])->name('admissionit.patient.update');
 
-
-
 Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
 Route::post('/admissionist/appointment/store', [AppointmentController::class , 'store'])->name('admissionit.appointment.store');
+
+
+//MAESTRO : para las tablas independientes
+Route::get('/master/specialty', [SpecialtyController::class , 'index'])->name('master.specialty.index');
+Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'store'])->name('master.specialty.store');
+
 
 
 //PARA ROLES Y PERMISOS

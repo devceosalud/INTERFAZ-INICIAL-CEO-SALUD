@@ -232,6 +232,6 @@ async function buscarPaciente(event) {
         console.log('Respuesta:', data);
     } catch (error) {
         console.error('Error:', error);
-        console.error('⚠️ Error al consultar paciente: ' + error.message);
+        console.error('Error al consultar paciente: ' + error.message);
     }
 }

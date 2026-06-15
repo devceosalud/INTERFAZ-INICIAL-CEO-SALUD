@@ -79,7 +79,7 @@ async function buscarPaciente(event) {
         console.log('Respuesta:', data);
     } catch (error) {
         console.error('Error:', error);
-        console.error('⚠️ Error al consultar paciente: ' + error.message);
+        console.error('Error al consultar paciente: ' + error.message);
     }
 }
 
@@ -139,7 +139,7 @@ async function buscarEspecialidad(event) {
 
     } catch (error) {
         console.error('Error:', error);
-        console.error('⚠️ Error al consultar especialidad: ' + error.message);
+        console.error('Error al consultar especialidad: ' + error.message);
     }
 }
 
@@ -191,7 +191,7 @@ async function calcularPrecio() {
 
     } catch (error) {
         console.error('Error:', error);
-        console.error('⚠️ Error al consultar paciente: ' + error.message);
+        console.error('Error al consultar paciente: ' + error.message);
     }
 }
 
