@@ -50,7 +50,7 @@
                         </ol>
 
                         <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">+ Agregar Cita</a>
+                            data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
                     </div>
                 </div>
                 <!-- row -->
@@ -147,27 +147,15 @@
         @endsection
 
 
-        <!--**********************************
-                                                                                                Footer start
-                                                                                            ***********************************-->
+        <!--**********************************Footer start***********************************-->
         @include('templates.footer')
-        <!--**********************************
-                                                                                                Footer end
-                                                                                            ***********************************-->
+        <!--**********************************Footer end***********************************-->
 
-        <!--**********************************
-                                                                                               Support ticket button start
-                                                                                            ***********************************-->
+        <!--**********************************Support ticket button start***********************************-->
 
-        <!--**********************************
-                                                                                               Support ticket button end
-                                                                                            ***********************************-->
+        <!--**********************************Support ticket button end***********************************-->
 
 
     </div>
-    <!--**********************************
-                                                                                            Main wrapper end
-                                                                                        ***********************************-->
-
-    <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
+    <!--**********************************Main wrapper end***********************************-->
 @endsection

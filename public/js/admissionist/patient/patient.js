@@ -50,8 +50,12 @@ $("#formCreatePatient").on("submit", function (e) {
                     timer: 2000,
                     showConfirmButton: false,
                 }).then(() => {
-                    location.reload();
-                    //MOSTRAMOS EL MODAL PARA AGENDAR CITA O CERRA
+                    //location.reload();
+                    //MOSTRAMOS EL MODAL PARA AGENDAR CITA O CERRAR Y PINTAMOS DATOS
+                    $('#appointmentCreate').modal("show");
+                    console.log('Datos del paciente:', response.patient);
+                    $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
+                    $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
                 });
                 form.reset();
                 $("#patientModalCreate").modal("hide");
@@ -98,23 +102,22 @@ $(document).on("click", ".edit-patient", async function (e) {
         if (data.message === "encontrado") {
             let p = data.patient;
             //PINTAR DATOS EN EL MODAL
-            $("#patient_id_edit").val(p.id);
-            $("#nombre_paciente_edit").val(p.nombre);
-            $("#apellido_paterno_edit").val(p.apellido_paterno);
-            $("#apellido_materno_edit").val(p.apellido_materno);
-            $("#genero_paciente_edit").val(p.genero);
-            $("#tipo_identificacion_edit").val(p.tipo_identificacion);
-            $("#numero_identidad_edit").val(p.numero_identidad);
-            $("#fecha_nacimiento_edit").val(p.fecha_nacimiento);
-            $("#ocupacion_edit").val(p.ocupacion);
-            $("#grado_instruccion_edit").val(p.grado_instruccion);
-            $("#email_edit").val(p.email);
-            $("#estado_civil_edit").val(p.estado_civil);
-            $("#telefono_edit").val(p.telefono);
-            $("#channel_edit").val(p.channel_id);
-            $("#interaction_medium_edit").val(p.interaction_medium_id);
-            $("#direccion_edit").val(p.direccion);
-            $("#familiar_contacto_edit").val(p.familiar_contacto);
+            $("#patientModalEdit #nombre_paciente_edit").val(p.nombre);
+            $("#patientModalEdit #apellido_paterno_edit").val(p.apellido_paterno);
+            $("#patientModalEdit #apellido_materno_edit").val(p.apellido_materno);
+            $("#patientModalEdit #genero_paciente_edit").val(p.genero);
+            $("#patientModalEdit #tipo_identificacion_edit").val(p.tipo_identificacion);
+            $("#patientModalEdit #numero_identidad_edit").val(p.numero_identidad);
+            $("#patientModalEdit #fecha_nacimiento_edit").val(p.fecha_nacimiento);
+            $("#patientModalEdit #ocupacion_edit").val(p.ocupacion);
+            $("#patientModalEdit #grado_instruccion_edit").val(p.grado_instruccion);
+            $("#patientModalEdit #email_edit").val(p.email);
+            $("#patientModalEdit #estado_civil_edit").val(p.estado_civil);
+            $("#patientModalEdit #telefono_edit").val(p.telefono);
+            $("#patientModalEdit #channel_edit").val(p.channel_id);
+            $("#patientModalEdit #interaction_medium_edit").val(p.interaction_medium_id);
+            $("#patientModalEdit #direccion_edit").val(p.direccion);
+            $("#patientModalEdit #familiar_contacto_edit").val(p.familiar_contacto);
             //ABRIR MODAL
             $("#patientModalEdit").modal("show");
 
@@ -217,20 +220,20 @@ async function buscarPaciente(event) {
         console.log("Respuesta:", data);
 
         if (data.message === "encontrado") {
-            document.querySelector("#nombre_paciente").value = data.patient.nombre;
-            document.querySelector("#apellido_materno").value = data.patient.apellido_materno;
-            document.querySelector("#apellido_paterno").value = data.patient.apellido_paterno;
-            document.querySelector("#fecha_nacimiento").value = data.patient.fecha_nacimiento;
-            document.querySelector("#ocupacion").value = data.patient.ocupacion;
-            document.querySelector("#grado_instruccion").value = data.patient.grado_instruccion;
-            document.querySelector("#telefono").value = data.patient.telefono;
-            document.querySelector("#channel_id").value = data.patient.channel_id;
-            document.querySelector("#interaction_medium_id").value = data.patient.interaction_medium_id;
-            document.querySelector("#email").value = data.patient.email;
-            document.querySelector("#direccion").value = data.patient.direccion;
-            document.querySelector("#genero_paciente").value = data.patient.genero;
-            document.querySelector("#estado_civil").value = data.patient.estado_civil;
-            document.querySelector("#tipo_identificacion").value = data.patient.tipo_identificacion;
+            document.querySelector("#patientModalCreate #nombre_paciente").value = data.patient.nombre;
+            document.querySelector("#patientModalCreate #apellido_materno").value = data.patient.apellido_materno;
+            document.querySelector("#patientModalCreate #apellido_paterno").value = data.patient.apellido_paterno;
+            document.querySelector("#patientModalCreate #fecha_nacimiento").value = data.patient.fecha_nacimiento;
+            document.querySelector("#patientModalCreate #ocupacion").value = data.patient.ocupacion;
+            document.querySelector("#patientModalCreate #grado_instruccion").value = data.patient.grado_instruccion;
+            document.querySelector("#patientModalCreate #telefono").value = data.patient.telefono;
+            document.querySelector("#patientModalCreate #channel_id").value = data.patient.channel_id;
+            document.querySelector("#patientModalCreate #interaction_medium_id").value = data.patient.interaction_medium_id;
+            document.querySelector("#patientModalCreate #email").value = data.patient.email;
+            document.querySelector("#patientModalCreate #direccion").value = data.patient.direccion;
+            document.querySelector("#patientModalCreate #genero_paciente").value = data.patient.genero;
+            document.querySelector("#patientModalCreate #estado_civil").value = data.patient.estado_civil;
+            document.querySelector("#patientModalCreate #tipo_identificacion").value = data.patient.tipo_identificacion;
 
             initSelectCreate();
         }

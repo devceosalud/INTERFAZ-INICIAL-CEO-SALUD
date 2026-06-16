@@ -131,6 +131,10 @@
             @include('admissionist.patient.crud.create')
 
             @include('admissionist.patient.crud.edit')
+
+            @include('admissionist.patient.modal.modal-agendar')
+
+            @include('admissionist.appointment.crud.create')
         </div>
         <!--**********************************Content body end***********************************-->
 

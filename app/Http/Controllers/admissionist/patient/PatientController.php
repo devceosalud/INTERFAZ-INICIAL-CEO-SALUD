@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\admissionist\patient;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdditionalRate;
 use App\Models\Channel;
 use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Responsible;
+use App\Models\Specialty;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,13 +24,17 @@ class PatientController extends Controller
         $patients = Patient::whereBetween('fecha_registro', [$start, $end])
             ->orderBy('id', 'ASC')
             ->get();
-        $channels  = Channel::all();
-        $interaction_media  = InteractionMedium::all();
+        $channels  = Channel::where('estado','ACTIVO')->get();
+        $interaction_media  = InteractionMedium::where('estado','ACTIVO')->get();
+        $specialties = Specialty::where('estado','ACTIVO')->get();
+        $additional_rates = AdditionalRate::where('estado','ACTIVO')->get();
 
         return view('admissionist.patient.index', [
             'patients' => $patients,
             'channels' => $channels,
-            'interaction_media' => $interaction_media
+            'interaction_media' => $interaction_media,
+            'specialties' => $specialties,
+            'additional_rates' => $additional_rates
         ]);
     }
 
@@ -124,7 +130,8 @@ class PatientController extends Controller
                 'code' => 1,
                 'msg' => $patient->wasRecentlyCreated
                     ? 'Paciente registrado correctamente'
-                    : 'Paciente actualizado correctamente'
+                    : 'Paciente actualizado correctamente',
+                'patient' => $patient    
             ]);
         }
 

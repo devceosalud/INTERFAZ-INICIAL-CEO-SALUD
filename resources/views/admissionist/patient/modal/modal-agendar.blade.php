@@ -5,9 +5,8 @@
 
             <!-- Header -->
             <div class="modal-header">
-                <h5 class="modal-title" id="appointmentCreateLabel">
-                    Registro de Paciente
-                </h5>
+                <h5 class="modal-title" id="appointmentCreateLabel">Agendar una Cita</h5>
+                <p id="paciente_nombre"></p>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
@@ -17,10 +16,11 @@
             <!-- FOOTER -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
-                    Cerrar 
+                    Cerrar
                 </button>
 
-                <button type="submit" class="btn btn-primary btn-save">
+                <button type="submit" class="btn btn-primary btn-rounded add-appointment" data-bs-toggle="modal"
+                    data-bs-target="#appointmentModalCreate">
                     Agendar Cita
                 </button>
             </div>

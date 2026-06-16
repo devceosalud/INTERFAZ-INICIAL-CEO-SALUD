@@ -1,13 +1,12 @@
-<div class="modal fade" id="patientModalCreate" tabindex="-1" aria-labelledby="patientModalCreateLabel" aria-hidden="true">
+<div class="modal fade" id="appointmentModalCreate" tabindex="-1" aria-labelledby="appointmentModalCreateLabel"
+    aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
 
             <!-- HEADER -->
             <div class="modal-header">
-                <h5 class="modal-title" id="patientModalCreateLabel">
-                    Agregar nueva Cita
-                </h5>
+                <h5 class="modal-title" id="appointmentModalCreateLabel">Agregar nueva Cita</h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
@@ -34,7 +33,6 @@
                             <label class="form-label">Paciente</label>
                             <input type="text" class="form-control" id="nombre_paciente" readonly>
                         </div>
-
                     </div>
 
                     <hr>
@@ -93,8 +91,6 @@
                     <h6 class="fw-bold mb-3">Origen y Condiciones</h6>
 
                     <div class="row g-3">
-                       
-
                         <div class="col-md-4">
                             <label class="form-label">Tarifa Adicional</label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
@@ -121,7 +117,6 @@
                             <input type="text" class="form-control" name="autorizado_por" id="autorizado_por"
                                 placeholder="Ej. DR QUIROZ">
                         </div>
-
                     </div>
 
                     <hr>
@@ -170,7 +165,6 @@
 
                     <!-- ================= OBSERVACIONES ================= -->
                     <div class="row g-3">
-
                         <div class="col-md-6">
                             <label class="form-label">Motivo Consulta</label>
                             <textarea class="form-control" name="motivo_consulta" rows="4"></textarea>
@@ -181,12 +175,10 @@
                             <textarea class="form-control" name="observaciones" rows="4"></textarea>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- FOOTER -->
                 <div class="modal-footer">
-
                     <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
                         Cancelar
                     </button>
@@ -194,11 +186,12 @@
                     <button type="submit" class="btn btn-primary btn-save">
                         Registrar Cita
                     </button>
-
                 </div>
 
             </form>
 
         </div>
     </div>
+
+    <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
 </div>

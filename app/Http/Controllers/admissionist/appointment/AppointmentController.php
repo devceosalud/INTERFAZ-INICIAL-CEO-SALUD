@@ -19,10 +19,10 @@ class AppointmentController extends Controller
     //
     public function index()
     {
-        $specialties = Specialty::all();
-        $channels  = Channel::all();
-        $interaction_media  = InteractionMedium::all();
-        $additional_rates = AdditionalRate::all();
+        $specialties = Specialty::where('estado','ACTIVO')->get();
+        $channels  = Channel::where('estado','ACTIVO')->get();
+        $interaction_media  = InteractionMedium::where('estado','ACTIVO')->get();
+        $additional_rates = AdditionalRate::where('estado','ACTIVO')->get();
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->endOfMonth()

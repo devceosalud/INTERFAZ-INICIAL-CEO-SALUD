@@ -2,12 +2,12 @@
 window.addEventListener('DOMContentLoaded', () => {
 
     //VARIABLES GLOBALES
-    const paciente_id = document.querySelector('#documento_paciente');
-    const specialty_id = document.querySelector('#specialty_id');
+    const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
+    const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
 
-    const service_id = document.querySelector('#service_id');
-    const additional_rate_id = document.querySelector('#additional_rate_id');
-    const es_exonerado = document.querySelector('#es_exonerado');
+    const service_id = document.querySelector('#appointmentModalCreate #service_id');
+    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
+    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
 
 
     //PARA LLENAR DINAMICAMENTE EL PRECIO
@@ -72,11 +72,10 @@ async function buscarPaciente(event) {
         console.log('Respuesta:', data);
 
         if (data.message === "encontrado") {
-            document.querySelector('#nombre_paciente').value = data.patient.nombre + ' ' + data.patient.apellido_paterno + ' ' + data.patient.apellido_materno;
-            document.querySelector('#patient_id').value = data.patient.id;
+            document.querySelector('#appointmentModalCreate #nombre_paciente').value = data.patient.nombre + ' ' + data.patient.apellido_paterno + ' ' + data.patient.apellido_materno;
+            document.querySelector('#appointmentModalCreate #patient_id').value = data.patient.id;
         }
 
-        console.log('Respuesta:', data);
     } catch (error) {
         console.error('Error:', error);
         console.error('Error al consultar paciente: ' + error.message);
