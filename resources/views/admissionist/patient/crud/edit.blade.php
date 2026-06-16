@@ -71,8 +71,8 @@
                          <div class="col-xl-4">
                              <div class="form-group">
                                  <label class="col-form-label">Número de identidad:</label>
-                                 <input type="text" name="numero_identidad_edit"
-                                     id="numero_identidad_edit" class="form-control" placeholder="987654321">
+                                 <input type="text" name="numero_identidad_edit" id="numero_identidad_edit"
+                                     class="form-control" placeholder="987654321">
                              </div>
                          </div>
 
@@ -111,8 +111,8 @@
                              <div class="form-group">
                                  <label class="col-form-label">Estado civil:</label>
                                  <select class="form-control" name="estado_civil_edit" id="estado_civil_edit">
-                                     <option value="SOLTERO">SOLTERO</option>
                                      <option value="CASADO">CASADO</option>
+                                     <option value="SOLTERO">SOLTERO</option>
                                      <option value="VIUDO">VIUDO</option>
                                      <option value="DIVORCIADO">DIVORCIADO</option>
                                  </select>
@@ -125,6 +125,30 @@
                                  <input type="text" class="form-control" name="telefono_edit" id="telefono_edit"
                                      placeholder="999888777">
                              </div>
+                         </div>
+
+                         <div class="col-md-4">
+                             <label class="form-label">Canal</label>
+                             <select class="form-control" name="channel_edit" id="channel_edit">
+                                 <option value="">Seleccione</option>
+                                 @foreach ($channels as $channel)
+                                     <option value="{{ $channel->id }}">
+                                         {{ $channel->nombre }}
+                                     </option>
+                                 @endforeach
+                             </select>
+                         </div>
+
+                         <div class="col-md-4">
+                             <label class="form-label">Medio Interacción</label>
+                             <select class="form-control" name="interaction_medium_edit" id="interaction_medium_edit">
+                                 <option value="">Seleccione</option>
+                                 @foreach ($interaction_media as $medium)
+                                     <option value="{{ $medium->id }}">
+                                         {{ $medium->nombre }}
+                                     </option>
+                                 @endforeach
+                             </select>
                          </div>
 
                          <div class="col-xl-4">

@@ -45,8 +45,8 @@ class AppointmentController extends Controller
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
             'service_id' => 'required|integer',
-            'channel_id' => 'required|integer',
-            'interaction_medium_id' => 'required|integer',
+            //'channel_id' => 'required|integer',
+            //'interaction_medium_id' => 'required|integer',
             'additional_rate_id' => 'required|integer',
 
             'fecha_cita' => 'required|date',
@@ -85,8 +85,8 @@ class AppointmentController extends Controller
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,
             'service_id' => $request->service_id,
-            'channel_id' => $request->channel_id,
-            'interaction_medium_id' => $request->interaction_medium_id,
+            //'channel_id' => 1,  //tabla paciente
+            //'interaction_medium_id' => 1, // tabla paciente
             'additional_rate_id' => $request->additional_rate_id,
 
             'fecha_cita' => $request->fecha_cita,

@@ -15,8 +15,8 @@ class Appointment extends Model
         'patient_id',
         'doctor_id',
         'service_id',
-        'channel_id',
-        'interaction_medium_id',
+       // 'channel_id',
+       // 'interaction_medium_id',
         'additional_rate_id',
         'fecha_cita',
         'hora_cita',
@@ -64,21 +64,6 @@ class Appointment extends Model
         return $this->belongsTo(Service::class);
     }
 
-    /**
-     * Obtiene el canal de captación o comunicación por el cual se agendó la cita.
-     */
-    public function channel()
-    {
-        return $this->belongsTo(Channel::class);
-    }
-
-    /**
-     * Obtiene el medio de interacción utilizado para la cita.
-     */
-    public function interactionMedium()
-    {
-        return $this->belongsTo(InteractionMedium::class, 'interaction_medium_id');
-    }
 
     /**
      * Obtiene la tarifa adicional aplicada a la cita.

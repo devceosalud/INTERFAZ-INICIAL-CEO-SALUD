@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\admissionist\patient;
 
 use App\Http\Controllers\Controller;
+use App\Models\Channel;
+use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Responsible;
 use Illuminate\Support\Facades\Validator;
@@ -15,12 +17,18 @@ class PatientController extends Controller
     public function index()
     {
         //traer todos los pacientes del mes actual
-        $patients = Patient::whereBetween('fecha_registro', [
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth()
-        ])->orderBy('fecha_registro','desc')->get();
+        $start = Carbon::now()->startOfMonth();
+        $end   = Carbon::now()->endOfMonth();
+        $patients = Patient::whereBetween('fecha_registro', [$start, $end])
+            ->orderBy('id', 'ASC')
+            ->get();
+        $channels  = Channel::all();
+        $interaction_media  = InteractionMedium::all();
+
         return view('admissionist.patient.index', [
-            'patients' => $patients
+            'patients' => $patients,
+            'channels' => $channels,
+            'interaction_media' => $interaction_media
         ]);
     }
 
@@ -36,6 +44,8 @@ class PatientController extends Controller
             'numero_identidad'    => 'required|string',
 
             'telefono'            => 'nullable|string',
+            'channel_id'          => 'required|integer',
+            'interaction_medium_id' => 'required|integer',
             'fecha_nacimiento'    => 'required|date',
             'ocupacion'           => 'nullable|string',
             'grado_instruccion'   => 'nullable|string',
@@ -81,6 +91,8 @@ class PatientController extends Controller
         $patient->tipo_identificacion = $request->tipo_identificacion;
         $patient->numero_identidad = $request->numero_identidad;
         $patient->telefono = $request->telefono;
+        $patient->channel_id = $request->channel_id;
+        $patient->interaction_medium_id = $request->interaction_medium_id;
         $patient->fecha_nacimiento = $request->fecha_nacimiento;
         $patient->ocupacion = $request->ocupacion;
         $patient->grado_instruccion = $request->grado_instruccion;
@@ -134,6 +146,8 @@ class PatientController extends Controller
             'numero_identidad_edit'    => 'required|string',
 
             'telefono_edit'            => 'nullable|string',
+            'channel_edit'          => 'required|integer',
+            'interaction_medium_edit' => 'required|integer',
             'fecha_nacimiento_edit'    => 'nullable|date',
             'ocupacion_edit'           => 'nullable|string',
             'grado_instruccion_edit'   => 'nullable|string',
@@ -164,6 +178,8 @@ class PatientController extends Controller
             'email' => $request->email_edit,
             'estado_civil' => $request->estado_civil_edit,
             'telefono' => $request->telefono_edit,
+            'channel_id' => $request->channel_edit,
+            'interaction_medium_id' => $request->interaction_medium_edit,
             'direccion' => $request->direccion_edit,
             'familiar_contacto' => $request->familiar_contacto_edit,
         ]);

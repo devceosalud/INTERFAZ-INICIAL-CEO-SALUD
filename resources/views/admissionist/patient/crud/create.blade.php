@@ -1,234 +1,262 @@
- <div class="modal fade" id="patientModalCreate" tabindex="-1" aria-labelledby="patientModalCreateLabel" aria-hidden="true">
-     <div class="modal-dialog modal-lg" role="document">
-         <div class="modal-content">
-             <div class="modal-header">
-                 <h5 class="modal-title" id="patientModalCreateLabel">Paciente</h5>
-                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                 </button>
-             </div>
-             <div class="modal-body">
-                 <form id="formCreatePatient" method="POST" action="{{ route('admissionit.patient.store') }}">
+<div class="modal fade" id="patientModalCreate" tabindex="-1" aria-labelledby="patientModalCreateLabel" aria-hidden="true">
 
-                     @csrf
-                     <div class="row">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
 
-                         <div class="col-xl-12">
-                             <div class="form-group">
-                                 <div class="d-flex justify-content-between">
-                                     <label class="col-form-label">Nombre:</label>
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientModalCreateLabel">
+                    Registro de Paciente
+                </h5>
 
-                                     <div>
-                                         <input type="checkbox" id="responsable_id" name="responsable_id"
-                                             value="responsable">
-                                         <label for="responsable_id"> Viene acompañado?</label><br>
-                                     </div>
-                                 </div>
-                                 <input type="text" class="form-control" name="nombre_paciente" id="nombre_paciente"
-                                     placeholder="Name">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
 
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text nombre_paciente_error"></span>
-                             </div>
-                         </div>
+            <form id="formCreatePatient" method="POST" action="{{ route('admissionit.patient.store') }}">
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Apellido Paterno:</label>
-                                 <input type="text" class="form-control" name="apellido_paterno"
-                                     id="apellido_paterno" placeholder="Apellido Paterno">
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text apellido_paterno_error"></span>
-                             </div>
-                         </div>
+                @csrf
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Apellido Materno:</label>
-                                 <input type="text" class="form-control" name="apellido_materno"
-                                     id="apellido_materno" placeholder="Apellido Materno">
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text apellido_materno_error"></span>
-                             </div>
-                         </div>
+                <div class="modal-body">
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Genero:</label>
-                                 <select class="form-control" name="genero_paciente" id="genero_paciente">
-                                     <option value="HOMBRE">HOMBRE</option>
-                                     <option value="MUJER">MUJER</option>
-                                 </select>
-                             </div>
-                         </div>
+                    <!-- DATOS PERSONALES -->
+                    <h6 class="fw-bold mb-3">
+                        Datos Personales
+                    </h6>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Tipo Identificación:</label>
-                                 <select class="form-control" name="tipo_identificacion" id="tipo_identificacion">
-                                     <option value="DNI">DNI</option>
-                                     <option value="CARNET EXTRANJERIA">CARNET EXTRANJERIA</option>
-                                     <option value="PTP">PTP</option>
-                                     <option value="TAM">TAM</option>
-                                     <option value="RUC">RUC</option>
-                                     <option value="PASAPORTE">PASAPORTE</option>
-                                     <option value="SALVOCONDUCTO">SALVOCONDUCTO</option>
-                                     <option value="SIN DOCUMENTOS">SIN DOCUMENTOS</option>
-                                 </select>
-                             </div>
-                         </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" name="nombre_paciente" id="nombre_paciente"
+                                placeholder="Nombre completo">
 
+                            <span class="text-danger error-text nombre_paciente_error"></span>
+                        </div>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Número de identidad:</label>
-                                 <input type="text" name="numero_identidad" id="numero_identidad"
-                                     class="form-control" placeholder="987654321">
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text numero_identidad_error"></span>
-                             </div>
-                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido paterno</label>
+                            <input type="text" class="form-control" name="apellido_paterno" id="apellido_paterno"
+                                placeholder="Apellido paterno">
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Fecha de Nacimiento:</label>
-                                 <input type="date" class="form-control" name="fecha_nacimiento"
-                                     id="fecha_nacimiento">
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text fecha_nacimiento_error"></span>
-                             </div>
-                         </div>
+                            <span class="text-danger error-text apellido_paterno_error"></span>
+                        </div>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Ocupación:</label>
-                                 <input type="text" class="form-control" name="ocupacion" id="ocupacion"
-                                     placeholder="">
-                             </div>
-                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido materno</label>
+                            <input type="text" class="form-control" name="apellido_materno" id="apellido_materno"
+                                placeholder="Apellido materno">
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Grado de Instrucción</label>
-                                 <input type="text" class="form-control" name="grado_instruccion"
-                                     id="grado_instruccion" placeholder="basico">
-                             </div>
-                         </div>
+                            <span class="text-danger error-text apellido_materno_error"></span>
+                        </div>
+                    </div>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Email:</label>
-                                 <input type="email" class="form-control" name="email" id="email"
-                                     placeholder="ejemplo@gmail.com">
-                                 {{-- alerta de error --}}
-                                 <span class="text-danger error-text email_error"></span>
-                             </div>
-                         </div>
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Estado civil:</label>
-                                 <select class="form-control" name="estado_civil" id="estado_civil">
-                                     <option value="SOLTERO">SOLTERO</option>
-                                     <option value="CASADO">CASADO</option>
-                                     <option value="VIUDO">VIUDO</option>
-                                     <option value="DIVORCIADO">DIVORCIADO</option>
-                                 </select>
-                             </div>
-                         </div>
+                    <!-- IDENTIFICACION -->
+                    <hr>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Telefono:</label>
-                                 <input type="text" class="form-control" name="telefono" id="telefono"
-                                     placeholder="999888777">
-                             </div>
-                         </div>
+                    <h6 class="fw-bold mb-3">
+                        Identificación
+                    </h6>
 
-                         <div class="col-xl-4">
-                             <div class="form-group">
-                                 <label class="col-form-label">Dirección:</label>
-                                 <input type="text" class="form-control" name="direccion" id="direccion"
-                                     placeholder="Av prolongación">
-                             </div>
-                         </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo documento</label>
+                            <select class="form-control" name="tipo_identificacion" id="tipo_identificacion">
+                                <option value="DNI">DNI</option>
+                                <option value="CARNET EXTRANJERIA">CARNET EXTRANJERIA</option>
+                                <option value="PTP">PTP</option>
+                                <option value="TAM">TAM</option>
+                                <option value="RUC">RUC</option>
+                                <option value="PASAPORTE">PASAPORTE</option>
+                                <option value="SALVOCONDUCTO">SALVOCONDUCTO</option>
+                                <option value="SIN DOCUMENTOS">SIN DOCUMENTOS</option>
+                            </select>
+                        </div>
 
-                         <div class="col-xl-12">
-                             <div class="form-group">
-                                 <label class="col-form-label">Familiar de Contacto:</label>
-                                 <input type="text" class="form-control" name="familiar_contacto"
-                                     id="familiar_contacto" placeholder="datos del familiar">
-                             </div>
-                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Número documento</label>
+                            <input type="text" class="form-control" name="numero_identidad" id="numero_identidad"
+                                placeholder="Ej. 12345678">
+                            <span class="text-danger error-text numero_identidad_error"></span>
+                        </div>
 
+                        <div class="col-md-4">
+                            <label class="form-label">Género</label>
+                            <select class="form-control" name="genero_paciente" id="genero_paciente">
+                                <option value="HOMBRE">Hombre</option>
+                                <option value="MUJER">Mujer</option>
+                            </select>
+                        </div>
+                    </div>
 
+                    <!-- INFORMACION GENERAL -->
+                    <hr>
 
-                         <hr>
-                         <!--DATOS DEL ACOMPAÑANTE SE ACTIVARA CUANDO LE DEMOS CLICK-->
-                         <div class="oculto_card_responsable" id="modal_responsable">
-                             <div class="row">
-                                 <div class="col-xl-8">
-                                     <div class="form-group">
-                                         <label for="col-form-label">Nombres del acompañante:</label>
-                                         <input type="text" class="form-control" name="nombre_responsable"
-                                             id="nombre_responsable" placeholder="Maria Cardenas">
-                                     </div>
-                                 </div>
+                    <h6 class="fw-bold mb-3">
+                        Información General
+                    </h6>
 
-                                 <div class="col-xl-4">
-                                     <div class="form-group">
-                                         <label for="col-form-label">Telefono del acompañante:</label>
-                                         <input type="text" class="form-control" name="telefono_responsable">
-                                     </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de nacimiento</label>
+                            <input type="date" class="form-control" name="fecha_nacimiento" id="fecha_nacimiento">
+                            <span class="text-danger error-text fecha_nacimiento_error"></span>
+                        </div>
 
-                                 </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado civil</label>
+                            <select class="form-control" name="estado_civil" id="estado_civil">
+                                <option value="CASADO">CASADO</option>
+                                <option value="SOLTERO">SOLTERO</option>
+                                <option value="VIUDO">VIUDO</option>
+                                <option value="DIVORCIADO">DIVORCIADO</option>
+                            </select>
+                        </div>
 
-                                 <div class="col-xl-4">
-                                     <div class="form-group">
-                                         <label class="col-form-label">Tipo Identificación:</label>
-                                         <select class="form-control" name="tipo_identificacion_responsable"
-                                             id="tipo_identificacion_responsable">
-                                             <option value="DNI">DNI</option>
-                                             <option value="CARNET EXTRANJERI">CARNET EXTRANJERIA</option>
-                                             <option value="PTP">PTP</option>
-                                             <option value="TAM">TAM</option>
-                                             <option value="RUC">RUC</option>
-                                             <option value="PASAPORTE">PASAPORTE</option>
-                                             <option value="SIN DOCUMENTOS">SIN DOCUMENTOS</option>
-                                         </select>
-                                     </div>
-                                 </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ocupación</label>
+                            <input type="text" class="form-control" name="ocupacion" id="ocupacion">
+                        </div>
 
-                                 <div class="col-xl-4">
-                                     <div class="form-group">
-                                         <label class="col-form-label">Número de identidad:</label>
-                                         <input size="16" type="number" name="numero_identidad_responsable"
-                                             id="numero_identidad_responsable" class="form-control"
-                                             placeholder="67543432">
-                                     </div>
-                                 </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Grado de instrucción</label>
+                            <input type="text" class="form-control" name="grado_instruccion"
+                                id="grado_instruccion" placeholder="Primaria, Secundaria, Superior">
+                        </div>
 
-                                 <div class="col-xl-4">
-                                     <div class="form-group">
-                                         <label class="col-form-label" for="">Responsable:</label>
-                                         <select class="form-control" name="responsable_tipo" id="responsable_tipo">
-                                             <option value="PAPA">PAPÁ</option>
-                                             <option value="MAMA">MAMÁ</option>
-                                             <option value="HERMANO">HERMANO</option>
-                                             <option value="PRIMO">PRIMO</option>
-                                             <option value="AMIGO">AMIGO</option>
-                                             <option value="CONOCIDO CERCANO">CONOCIDO CERCANO</option>
-                                         </select>
-                                     </div>
-                                 </div>
-                             </div>
-                     </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" name="email" id="email"
+                                placeholder="correo@ejemplo.com">
+                            <span class="text-danger error-text email_error"></span>
+                        </div>
 
-                     <input type="submit" class="btn btn-primary" value="Guardar Datos">
-                 </form>
-             </div>
-             <div class="modal-footer">
-                 <button type="button" class="btn btn-danger light" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
 
-             </div>
-         </div>
-     </div>
- </div>
+                    <!-- CONTACTO -->
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">Información de Contacto</h6>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" name="telefono" id="telefono"
+                                placeholder="999888777">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Canal</label>
+                            <select class="form-control" name="channel_id" id="channel_id">
+                                <option value="">Seleccione</option>
+                                @foreach ($channels as $channel)
+                                    <option value="{{ $channel->id }}">
+                                        {{ $channel->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Medio Interacción</label>
+                            <select class="form-control" name="interaction_medium_id" id="interaction_medium_id">
+                                <option value="">Seleccione</option>
+                                @foreach ($interaction_media as $medium)
+                                    <option value="{{ $medium->id }}">
+                                        {{ $medium->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" class="form-control" name="direccion" id="direccion"
+                                placeholder="Av. Principal 123">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"> Familiar de contacto</label>
+                            <input type="text" class="form-control" name="familiar_contacto"
+                                id="familiar_contacto" placeholder="Nombre y relación">
+                        </div>
+
+                    </div>
+
+                    <!-- RESPONSABLE -->
+                    <hr>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="responsable_id" name="responsable_id"
+                            value="responsable">
+                        <label class="form-check-label" for="responsable_id">
+                            Registrar acompañante o responsable
+                        </label>
+                    </div>
+
+                    <div class="oculto_card_responsable" id="modal_responsable">
+                        <h6 class="fw-bold mb-3">Datos del Responsable</h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Parentesco</label>
+                                <select class="form-control" name="responsable_tipo" id="responsable_tipo">
+                                    <option value="PAPA">PAPÁ</option>
+                                    <option value="MAMA">MAMÁ</option>
+                                    <option value="HERMANO">HERMANO</option>
+                                    <option value="PRIMO">PRIMO</option>
+                                    <option value="AMIGO">AMIGO</option>
+                                    <option value="CONOCIDO CERCANO">CONOCIDO CERCANO</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Nombre completo</label>
+                                <input type="text" class="form-control" name="nombre_responsable"
+                                    id="nombre_responsable" placeholder="Nombre del responsable">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" name="telefono_responsable"
+                                    id="telefono_responsable" placeholder="999777666">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo documento</label>
+                                <select class="form-control" name="tipo_identificacion_responsable"
+                                    id="tipo_identificacion_responsable">
+                                    <option value="DNI">DNI</option>
+                                    <option value="CARNET EXTRANJERIA">CARNET EXTRANJERIA</option>
+                                    <option value="PTP">PTP</option>
+                                    <option value="TAM">TAM</option>
+                                    <option value="RUC">RUC</option>
+                                    <option value="PASAPORTE">PASAPORTE</option>
+                                    <option value="SIN DOCUMENTOS">SIN DOCUMENTOS</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Número documento</label>
+                                <input type="text" class="form-control" name="numero_identidad_responsable"
+                                    id="numero_identidad_responsable" placeholder="12345678">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-primary btn-save">
+                        Guardar Paciente
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>

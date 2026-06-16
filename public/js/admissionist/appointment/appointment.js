@@ -137,6 +137,12 @@ async function buscarEspecialidad(event) {
             selectServicio.appendChild(opcion);
         })
 
+        $('#doctor_id').selectpicker('destroy');
+        $('#service_id').selectpicker('destroy');
+
+        $('#doctor_id').selectpicker();
+        $('#service_id').selectpicker();
+
     } catch (error) {
         console.error('Error:', error);
         console.error('Error al consultar especialidad: ' + error.message);

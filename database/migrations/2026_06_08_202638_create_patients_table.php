@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('tipo_identificacion');
             $table->string('numero_identidad')->unique();
             $table->string('telefono')->nullable();
+            $table->unsignedBigInteger('channel_id')->nullable();
+            $table->unsignedBigInteger('interaction_medium_id')->nullable();
             $table->date('fecha_registro')->nullable();
             $table->date('fecha_nacimiento')->nullable();
             $table->string('ocupacion')->nullable();
@@ -33,9 +35,13 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('familiar_contacto')->nullable();
             $table->string('estado_civil')->nullable();
-            $table->enum('estado', ['ACTIVO', 'INACTIVO']);
+            $table->enum('estado', ['ACTIVO', 'INACTIVO'])->default('ACTIVO');
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            //CANAL
+            $table->foreign('channel_id')->references('id')->on('channels')->onDelete('cascade');
+            //MEDIO DE INTERACCION
+            $table->foreign('interaction_medium_id')->references('id')->on('interaction_media')->onDelete('cascade');
             $table->timestamps();
         });
     }

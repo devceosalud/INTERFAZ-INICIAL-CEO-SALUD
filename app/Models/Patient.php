@@ -20,6 +20,8 @@ class Patient extends Model
         'tipo_identificacion',
         'numero_identidad',
         'telefono',
+        'channel_id',
+        'interaction_medium_id',
         'fecha_registro',
         'fecha_nacimiento',
         'ocupacion',
@@ -55,5 +57,21 @@ class Patient extends Model
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Obtiene el canal de captación o comunicación asociados al paciente.
+     */
+    public function channel()
+    {
+        return $this->belongsTo(Channel::class);
+    }
+
+    /**
+     * Obtiene el medio de interacción asociado al paciente.
+     */
+    public function interactionMedium()
+    {
+        return $this->belongsTo(InteractionMedium::class, 'interaction_medium_id');
     }
 }

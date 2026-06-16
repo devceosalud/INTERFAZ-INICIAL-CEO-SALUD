@@ -30,17 +30,19 @@
 
     <!-- Favicon icon -->
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
-    <link href="{{ asset('assets/vendor/owl-carousel/owl.carousel.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
     <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
 
-    <!-- Style Css -->
 
+    @yield('css_data')
+
+
+    <!-- Style Css -->
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
 
-    <!-- DATATABLES CSS -->
+    <!-- DATATABLES CSS
     <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.min.css') }}">
+    -->
 
     <!-- CDN JQUERY -->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"

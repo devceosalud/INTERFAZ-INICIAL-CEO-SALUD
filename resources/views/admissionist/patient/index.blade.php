@@ -4,6 +4,15 @@
     use Carbon\Carbon;
 @endphp
 
+@section('css_data')
+    <!-- Datatable -->
+    <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+@endsection
+
+
+
 @section('body')
     <!--*******************Preloader start********************-->
     @include('templates.preloader')
@@ -35,74 +44,87 @@
                 display: none;
             }
         </style>
+
         <div class="content-body">
-            <!-- row -->
             <div class="container-fluid">
-                <div class="form-head d-flex mb-3 mb-md-4 justify-content-between w-100">
-                    <div class="">
+                <div class="page-titles">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="javascript:void(0)">Table</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                <a href="javascript:void(0)">Pacientes</a>
+                            </li>
+                        </ol>
+
                         <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">+ Agregar Paciente</a>
+                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">
+                            + Agregar Paciente
+                        </a>
                     </div>
-
-
                 </div>
+                <!-- row -->
                 <div class="row">
-                    <div class="col-xl-12">
+
+                    <div class="col-12">
                         <div class="card">
-                            <div class="card-body p-0">
+                            <div class="card-header">
+                                <h4 class="card-title">Lista de Pacientes</h4>
+                            </div>
+                            <div class="card-body">
                                 <div class="table-responsive">
-                                    <table id="datatable"
-                                        class="table table-striped patient-list mb-4 dataTablesCard fs-14">
+                                    <table id="example4" class="display" style="min-width: 845px">
                                         <thead>
                                             <tr>
-                                                <th>Nombre y Apellidos</th>
-                                                <th>Nro.HC</th>
-                                                <th>Tipo iden.</th>
-                                                <th>Nro documento</th>
-                                                <th>Sexo</th>
+                                                <th>HC</th>
+                                                <th>Nombres</th>
+                                                <th>Documento</th>
                                                 <th>Edad</th>
-                                                <th class="text-end">Acciones</th>
+                                                <th>Celular </th>
+                                                <th>Genero </th>
+                                                <th>Fecha Nacimiento</th>
+                                                <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-
                                             @foreach ($patients as $patient)
                                                 <tr>
-                                                    <td class="patient-info ps-0">
-                                                        <span class="text-nowrap ms-2"> {{ $patient->nombre }} </span>
-                                                    </td>
-                                                    <td class="text-primary"> {{ $patient->historia_clinica }} </td>
-                                                    <td class="text-primary"> {{ $patient->tipo_identificacion }} </td>
-                                                    <td> {{ $patient->numero_identidad }} </td>
+                                                    <td><strong>{{ $patient->id }}</strong></td>
+                                                    <td>{{ $patient->nombre }} {{ $patient->apellido_paterno }}</td>
+                                                    <td>{{ $patient->numero_identidad }}</td>
+                                                    <td>{{ Carbon::parse($patient->fecha_nacimiento)->age }}</td>
+                                                    <td>{{ $patient->telefono }}</td>
                                                     <td>
                                                         @if ($patient->genero == 'HOMBRE')
-                                                            <button class="btn btn-primary">HOMBRE</button>
+                                                            <span class="badge light badge-success">HOMBRE</span>
                                                         @else
-                                                            <button class="btn btn-danger">MUJER</button>
+                                                            <span class="badge light badge-warning">MUJER</span>
                                                         @endif
-
                                                     </td>
-                                                    <td> {{ Carbon::parse($patient->fecha_nacimiento)->age }} </td>
-                                                    <td class="text-end">
-                                                        <span class="me-3">
-                                                            <a href="#" class="edit-patient"
-                                                                data-id="{{ $patient->id }}">
-                                                                <i class="fa fa-pencil fs-18 text-success"></i>
-                                                            </a>
-                                                        </span>
-                                                        <span>
-                                                            <i class="fa fa-trash fs-18 text-danger"></i>
-                                                        </span>
+                                                    <td>{{ $patient->fecha_nacimiento }}</td>
+                                                    <td>
+                                                        <strong>
+                                                            <span class="me-3">
+                                                                <a href="#" class="edit-patient"
+                                                                    data-id="{{ $patient->id }}">
+                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                </a>
+                                                            </span>
+                                                            <span>
+                                                                <i class="fa fa-trash fs-18 text-danger"></i>
+                                                            </span>
+                                                        </strong>
                                                     </td>
                                                 </tr>
                                             @endforeach
-
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -114,11 +136,17 @@
 
 
         <!--**********************************Scripts***********************************-->
-        <!-- Required vendors -->
-    @section('script_data')
-        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
 
-        <!-- Dashboard 1 -->
+    @section('script_data')
+        <!-- Required vendors -->
+        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+        <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+
+
+
+        <!-- Datatable -->
+        <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
     @endsection

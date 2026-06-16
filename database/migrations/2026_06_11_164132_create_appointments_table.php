@@ -21,8 +21,8 @@ return new class extends Migration
             $table->unsignedBigInteger('patient_id');
             $table->unsignedBigInteger('doctor_id');
             $table->unsignedBigInteger('service_id');
-            $table->unsignedBigInteger('channel_id');
-            $table->unsignedBigInteger('interaction_medium_id');
+            //$table->unsignedBigInteger('channel_id');
+            //$table->unsignedBigInteger('interaction_medium_id');
             $table->unsignedBigInteger('additional_rate_id');
 
             $table->date('fecha_cita');
@@ -63,10 +63,6 @@ return new class extends Migration
             $table->foreign('doctor_id')->references('id')->on('doctors')->onDelete('cascade');
             //SERVICIO
             $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');
-            //CANAL
-            $table->foreign('channel_id')->references('id')->on('channels')->onDelete('cascade');
-            //MEDIO DE INTERACCION
-            $table->foreign('interaction_medium_id')->references('id')->on('interaction_media')->onDelete('cascade');
             //TARIFA ADICIONAL
             $table->foreign('additional_rate_id')->references('id')->on('additional_rates')->onDelete('cascade');
 
