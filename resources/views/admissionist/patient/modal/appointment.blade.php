@@ -18,7 +18,7 @@
 
                 <div class="modal-body">
 
-                    <input type="hidden" name="patient_id" id="patient_id">
+                    <input type="text" name="patient_id" id="patient_id">
 
                     <!-- ================= DATOS PACIENTE ================= -->
                     <h6 class="fw-bold mb-3">Datos del Paciente</h6>
@@ -106,13 +106,13 @@
                             <div class="form-check mt-4">
                                 <input class="form-check-input" type="checkbox" name="es_exonerado" id="es_exonerado"
                                     value="1">
-                                <label class="form-check-label" for="es_exonerado">
+                                <label class="form-check-label">
                                     Exonerado (Paga Médico)
                                 </label>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-8">
                             <label class="form-label">Autorizado por</label>
                             <input type="text" class="form-control" name="autorizado_por" id="autorizado_por"
                                 placeholder="Ej. DR QUIROZ">
@@ -184,6 +184,7 @@
                     </button>
 
                     <input type="submit" class="btn btn-primary btn-save" value="Registrar Cita">
+
                 </div>
 
             </form>
@@ -191,5 +192,5 @@
         </div>
     </div>
 
-   
+
 </div>

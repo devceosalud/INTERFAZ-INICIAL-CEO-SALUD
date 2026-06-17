@@ -41,10 +41,10 @@
 
             <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
                     <i class="flaticon-381-id-card-4"></i>
-                    <span class="nav-text">Usuarios</span>
+                    <span class="nav-text">Roles y Permisos</span>
                 </a>
                 <ul aria-expanded="false">
-                    <li><a href='#'>Lista de Usuarios</a></li>
+                    <li><a href='{{ route('admin.roles.index') }}'>Lista de Roles</a></li>
                 </ul>
             </li>
         </ul>

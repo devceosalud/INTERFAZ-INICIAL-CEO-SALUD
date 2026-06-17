@@ -24,10 +24,10 @@ class PatientController extends Controller
         $patients = Patient::whereBetween('fecha_registro', [$start, $end])
             ->orderBy('id', 'ASC')
             ->get();
-        $channels  = Channel::where('estado','ACTIVO')->get();
-        $interaction_media  = InteractionMedium::where('estado','ACTIVO')->get();
-        $specialties = Specialty::where('estado','ACTIVO')->get();
-        $additional_rates = AdditionalRate::where('estado','ACTIVO')->get();
+        $channels  = Channel::where('estado', 'ACTIVO')->get();
+        $interaction_media  = InteractionMedium::where('estado', 'ACTIVO')->get();
+        $specialties = Specialty::where('estado', 'ACTIVO')->get();
+        $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
         return view('admissionist.patient.index', [
             'patients' => $patients,
@@ -56,7 +56,7 @@ class PatientController extends Controller
             'ocupacion'           => 'nullable|string',
             'grado_instruccion'   => 'nullable|string',
             'direccion'           => 'nullable|string',
-            'email'               => 'required|email',
+            'email'               => 'required|email:htmlv',
             'estado_civil'        => 'nullable|string',
         ]);
 
@@ -131,7 +131,7 @@ class PatientController extends Controller
                 'msg' => $patient->wasRecentlyCreated
                     ? 'Paciente registrado correctamente'
                     : 'Paciente actualizado correctamente',
-                'patient' => $patient    
+                'patient' => $patient
             ]);
         }
 
@@ -144,6 +144,7 @@ class PatientController extends Controller
 
     public function update(Request $request)
     {
+        //dd($request->all());
         $validator = Validator::make($request->all(), [
             'nombre_paciente_edit'     => 'required|string',
             'apellido_paterno_edit'    => 'required|string',

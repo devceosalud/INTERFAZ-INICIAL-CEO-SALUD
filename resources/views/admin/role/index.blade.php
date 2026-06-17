@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@php
+    use Carbon\Carbon;
+@endphp
 
 @section('css_data')
     <!-- Datatable -->
@@ -36,9 +39,10 @@
 
 
         <!--**********************************Content body start***********************************-->
+
         <div class="content-body">
             <div class="container-fluid">
-                 {{--
+                {{--
                 <div class="page-titles">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                         <ol class="breadcrumb mb-0">
@@ -46,15 +50,16 @@
                                 <a href="javascript:void(0)">Table</a>
                             </li>
                             <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Citas</a>
+                                <a href="javascript:void(0)">Permisos</a>
                             </li>
                         </ol>
 
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                        <a href="{{ route('admin.permissions.create') }}" class="btn btn-primary btn-rounded">
+                            + Agregar Permiso
+                        </a>
                     </div>
                 </div>
-                 --}}
+                --}}
                 <!-- row -->
                 <div class="row">
 
@@ -62,67 +67,52 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Citas</h4>
+                                <h4 class="card-title">Lista de Roles</h4>
 
-                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                                <a href="{{ route('admin.permissions.create') }}" class="btn btn-primary btn-rounded">
+                                    + Agregar Permiso
+                                </a>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table id="example4" class="display" style="min-width: 845px">
+                                    <table id="example4" class="table table-bordered text-center mb-0" id="datatable">
                                         <thead>
                                             <tr>
-                                                <th>Cita</th>
-                                                <th>Paciente</th>
-                                                <th>Medico</th>
-                                                <th>Servicio</th>
-                                                <th>Cita </th>
-                                                <th>Pago </th>
-                                                <th>Debe</th>
-                                                <th>Acciones</th>
+                                                <th>ID</th>
+                                                <th>NOMBRE</th>
+                                                <th>PERMISOS</th>
+
+                                                {{-- <th>ELIMINAR</th> --}}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($appointments as $appointment)
+                                            @forelse ($roles as $role)
                                                 <tr>
-                                                    <td><strong>{{ $appointment->numero_cita }}</strong></td>
-                                                    <td>{{ $appointment->patient->nombre }}</td>
-                                                    <td>{{ $appointment->doctor->nombre }}</td>
-                                                    <td>{{ $appointment->service->nombre }}</td>
-                                                    <td>{{ $appointment->fecha_cita }} {{ $appointment->hora_cita }}</td>
-                                                    <td>
-                                                        @switch($appointment->estado_pagado)
-                                                            @case('PARCIAL')
-                                                                <span
-                                                                    class="badge light badge-warning">{{ $appointment->estado_pagado }}</span>
-                                                            @break
+                                                    <td>{{ $role->id }}</td>
+                                                    <td>{{ $role->name }}</td>
 
-                                                            @case('PENDIENTE')
-                                                                <span
-                                                                    class="badge light badge-danger">{{ $appointment->estado_pagado }}</span>
-                                                            @break
-
-                                                            @default
-                                                                <span
-                                                                    class="badge light badge-success">{{ $appointment->estado_pagado }}</span>
-                                                        @endswitch
-                                                    </td>
-                                                    <td>{{ $appointment->saldo_pendiente }} </td>
                                                     <td>
-                                                        <strong>
-                                                            <span class="me-3">
-                                                                <a href="#" class="edit-patient"
-                                                                    data-id="{{ $appointment->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
-                                                                </a>
-                                                            </span>
-                                                            <span>
-                                                                <i class="fa fa-trash fs-18 text-danger"></i>
-                                                            </span>
-                                                        </strong>
+                                                        <a class="btn btn-primary text-white"
+                                                            href="{{ route('admin.roles.edit', ['role' => $role]) }}">Editar
+                                                        </a>
                                                     </td>
+
+                                                    {{--
+                                                    <td>
+                                                        <form action="{{ route('admin.roles.destroy', ['role' => $role]) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('delete')
+                                                            <button class="btn btn-dark">Eliminar</button>
+                                                        </form>
+                                                    </td>
+                                                    --}}
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td>Sin Roles por ahora</td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
@@ -132,25 +122,25 @@
 
                 </div>
             </div>
-
-            @include('admissionist.appointment.crud.create')
         </div>
         <!--**********************************Content body end***********************************-->
 
+
         <!--**********************************Scripts***********************************-->
+
         @section('script_data')
             <!-- Required vendors -->
             <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
             <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+
 
             <!-- Datatable -->
             <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
             <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
             <script src="{{ asset('assets/js/custom.min.js') }}"></script>
             <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
-
-            <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
         @endsection
+
 
 
         <!--**********************************Footer start***********************************-->
@@ -164,5 +154,6 @@
 
     </div>
     <!--**********************************Main wrapper end***********************************-->
+
 
 @endsection

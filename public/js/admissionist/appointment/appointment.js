@@ -1,6 +1,7 @@
 //SCRIPT PARA LEER LOS DATOS DEL SELECT
 window.addEventListener('DOMContentLoaded', () => {
-
+    console.log('CARGANDDO CITAS');
+     
     //VARIABLES GLOBALES
     const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
@@ -16,6 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO PARA BUSCAR AL PACIENTE
     paciente_id.addEventListener('input', function (event) {
+        console.log('ESCRIBIENDO EN DOCUMENTO PACIENTE');
         buscarPaciente(event);
     });
 
@@ -48,7 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
 async function buscarPaciente(event) {
 
     const valor = event?.target?.value?.trim() || ''; //para desaparacer los datos sin espacio
-    console.log('id especialidad: ', valor);
+    console.log('NUMERO DE DOC: ', valor);
 
     if (!valor) return;
 
@@ -69,7 +71,7 @@ async function buscarPaciente(event) {
         }
 
         const data = await res.json();
-        console.log('Respuesta:', data);
+        console.log('BUSCAR PACIENTE CITA:', data);
 
         if (data.message === "encontrado") {
             document.querySelector('#appointmentModalCreate #nombre_paciente').value = data.patient.nombre + ' ' + data.patient.apellido_paterno + ' ' + data.patient.apellido_materno;
@@ -107,7 +109,7 @@ async function buscarEspecialidad(event) {
         }
 
         const data = await res.json();
-        console.log('Respuesta', data);
+        console.log('RESPUESTA ESPECIALIDAD', data);
 
         // SELECT PARA EL LLENADO 
         const selectDoctor = document.getElementById('doctor_id');
@@ -153,10 +155,10 @@ async function buscarEspecialidad(event) {
 async function calcularPrecio() {
 
     //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
-    const patient_id = document.querySelector('#patient_id').value;
-    const service_id = document.querySelector('#service_id').value;
-    const additional_rate_id = document.querySelector('#additional_rate_id').value;
-    const es_exonerado = document.querySelector('#es_exonerado').checked;
+    const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
+    const service_id = document.querySelector('#appointmentModalCreate #service_id').value;
+    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
+    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
 
     if (!service_id || !patient_id) {
         return;

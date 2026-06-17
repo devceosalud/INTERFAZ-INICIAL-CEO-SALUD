@@ -147,7 +147,6 @@
                         <div class="col-md-4">
                             <label class="form-label">Canal</label>
                             <select class="form-control" name="channel_id" id="channel_id">
-                                <option value="">Seleccione</option>
                                 @foreach ($channels as $channel)
                                     <option value="{{ $channel->id }}">
                                         {{ $channel->nombre }}
@@ -159,7 +158,6 @@
                         <div class="col-md-4">
                             <label class="form-label">Medio Interacción</label>
                             <select class="form-control" name="interaction_medium_id" id="interaction_medium_id">
-                                <option value="">Seleccione</option>
                                 @foreach ($interaction_media as $medium)
                                     <option value="{{ $medium->id }}">
                                         {{ $medium->nombre }}

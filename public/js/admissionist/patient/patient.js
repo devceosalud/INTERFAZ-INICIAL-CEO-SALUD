@@ -1,7 +1,37 @@
 window.addEventListener("DOMContentLoaded", function () {
-    const input = document.querySelector("#numero_identidad");
-    const responsable_id = document.querySelector("#responsable_id");
-    const modal_responsable = document.querySelector("#modal_responsable");
+    console.log('CARGANDO PACIENTES');
+    
+    const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
+    const input = document.querySelector("#patientModalCreate #formCreatePatient #numero_identidad");
+    const responsable_id = document.querySelector("#patientModalCreate #responsable_id");
+    const modal_responsable = document.querySelector("#patientModalCreate #modal_responsable");
+
+    const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
+    const service_id = document.querySelector('#appointmentModalCreate #service_id');
+    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
+    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
+ 
+    //EVENTO QUE ESPECIALIDAD SELECCIONA 
+    specialty_id.addEventListener('change', function (event) {
+        buscarEspecialidad(event);
+    });
+
+    //EVENTO QUE SERVICIOS SELECCIONA
+    service_id.addEventListener('change', function () {
+        calcularPrecio();
+    });
+
+    additional_rate_id.addEventListener('change', function () {
+        calcularPrecio();
+    });
+
+    es_exonerado.addEventListener('change', function () {
+        calcularPrecio();
+    });
+
+    document.querySelector('#total_pagado').addEventListener('input', function () {
+        calcularSaldo();
+    });
 
     input.addEventListener("input", function (event) {
         buscarPaciente(event);
@@ -51,10 +81,12 @@ $("#formCreatePatient").on("submit", function (e) {
                     showConfirmButton: false,
                 }).then(() => {
                     //location.reload();
-                    //MOSTRAMOS EL MODAL PARA AGENDAR CITA O CERRAR Y PINTAMOS DATOS
-                    $('#appointmentCreate').modal("show");
+                    //MOSTRAMOS SI QUIERE CREAR CITA O CERRAR
+                    $('#appointmentModalOpen').modal("show");
                     console.log('Datos del paciente:', response.patient);
+                    //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
                     $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
+                    $('#appointmentModalCreate #patient_id').val(response.patient.id);
                     $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
                 });
                 form.reset();
@@ -102,6 +134,7 @@ $(document).on("click", ".edit-patient", async function (e) {
         if (data.message === "encontrado") {
             let p = data.patient;
             //PINTAR DATOS EN EL MODAL
+            $("#patientModalEdit #patient_id_edit").val(p.id);
             $("#patientModalEdit #nombre_paciente_edit").val(p.nombre);
             $("#patientModalEdit #apellido_paterno_edit").val(p.apellido_paterno);
             $("#patientModalEdit #apellido_materno_edit").val(p.apellido_materno);
@@ -217,7 +250,7 @@ async function buscarPaciente(event) {
         });
 
         const data = await res.json();
-        console.log("Respuesta:", data);
+        console.log("RESPUESTA DATOS PACIENTE:", data);
 
         if (data.message === "encontrado") {
             document.querySelector("#patientModalCreate #nombre_paciente").value = data.patient.nombre;
@@ -237,13 +270,203 @@ async function buscarPaciente(event) {
 
             initSelectCreate();
         }
-
-        console.log("Respuesta:", data);
     } catch (error) {
         console.error("Error:", error);
         console.error("Error al consultar paciente: " + error.message);
     }
 }
+
+//BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
+async function buscarEspecialidad(event) {
+
+    const valor = event?.target?.value?.trim() || '';
+    if (!valor) return;
+    console.log('Id de la especialidad:', event.target.value);
+
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/appointment/specialty', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                specialty_id: valor
+            })
+        });
+
+        if (!res.ok) {
+            const textoError = await res.text();
+            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
+        }
+
+        const data = await res.json();
+        console.log('RESPUESTA ESPECIALIDAD', data);
+
+        // SELECT PARA EL LLENADO 
+        const selectDoctor = document.getElementById('doctor_id');
+        const selectServicio = document.getElementById('service_id');
+
+        //limpiar los campos
+        selectDoctor.innerHTML = '<option value="">Seleccione</option>';
+        selectServicio.innerHTML = '<option value="">Seleccione</option>';
+
+        //LLENANDO DATOS DE DOCTORES
+        data.data.doctors.forEach(doctor => {
+            console.log('id', doctor.id);
+            console.log('nombre:', doctor.nombre);
+            const opcion = document.createElement('option');
+            opcion.value = doctor.id;
+            opcion.textContent = doctor.nombre;
+            selectDoctor.appendChild(opcion);
+        })
+        //LLENANDO DATOS DE SERVICIOS
+        data.data.services.forEach(service => {
+            const opcion = document.createElement('option');
+            opcion.value = service.id;
+            opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
+            opcion.dataset.precio = service.precio_primera_consulta;
+            opcion.dataset.reconsulta = service.precio_reconsulta;
+            selectServicio.appendChild(opcion);
+        })
+
+        $('#doctor_id').selectpicker('destroy');
+        $('#service_id').selectpicker('destroy');
+
+        $('#doctor_id').selectpicker();
+        $('#service_id').selectpicker();
+
+    } catch (error) {
+        console.error('Error:', error);
+        console.error('Error al consultar especialidad: ' + error.message);
+    }
+}
+
+//PARA CALCULAR EL PRECIO
+async function calcularPrecio() {
+     console.log('CALCULO DEL PRECIO');
+     
+    //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
+    const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
+    const service_id = document.querySelector('#appointmentModalCreate #service_id').value;
+    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
+    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
+
+    if (!service_id || !patient_id) {
+        return;
+    }
+
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/appointment/calculated', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                patient_id,
+                service_id,
+                additional_rate_id,
+                es_exonerado
+            })
+        });
+
+        if (!res.ok) {
+            const textoError = await res.text();
+            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
+        }
+
+        const data = await res.json();
+        console.log('Data Precio:', data);
+
+        //ASIGNAMOS LOS DATOS YA CALCULADOS  
+        document.querySelector('#precio_programado').value = data.precio_programado;
+        document.querySelector('#precio_programado_hidden').value = data.precio_programado;
+        if(data.tipo === 'EXONERADO'){
+            document.querySelector('#total_pagado').value = data.total_pagado;
+        }
+
+        //FUNCION CALCULAR SALDO FINAL
+        calcularSaldo();
+
+    } catch (error) {
+        console.error('Error:', error);
+        console.error('Error al consultar paciente: ' + error.message);
+    }
+}
+
+//PARA CALCULAR EL SALDO
+function calcularSaldo() {
+
+    let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
+    let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
+
+    let saldo = precio - pagado;
+
+    if (saldo < 0) {
+        saldo = 0;
+    }
+
+    document.querySelector('#saldo_pendiente').value = saldo.toFixed(2);
+    document.querySelector('#saldo_pendiente_hidden').value = saldo.toFixed(2);
+}
+
+// GUARDAR DATOS DE LA CITA
+$('#formCreateAppointment').on('submit', function (e) {
+    e.preventDefault();
+
+    let form = this;
+
+    $.ajax({
+        url: $(form).attr('action'),
+        method: $(form).attr('method'),
+        data: new FormData(form),
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+
+        beforeSend: function () {
+            // Limpiar errores anteriores
+            $(form).find('span.error-text').text('');
+            // deshabilitar boton de envio
+            $(form).find('input[type="submit"]').prop('disabled', true);
+        },
+
+        success: function (response) {
+            if (response.code == 0) {
+                $.each(response.error, function (prefix, val) {
+                    $(form).find('span.' + prefix + '_error').text(val[0]);
+                    console.log('span.' + prefix + '_error');
+                    console.log(val[0]);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Correcto',
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+                form.reset();
+                $('#patientModalCreate').modal('hide');
+            }
+        },
+
+        error: function (xhr) {
+            console.log(xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al guardar el paciente'
+            });
+        },
+
+        complete: function () {
+            $(form).find('input[type="submit"]').prop('disabled', false);
+        }
+    });
+});
+
 
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {
@@ -260,7 +483,6 @@ function initSelectEdit() {
     $("#interaction_medium_edit").selectpicker();
     $("#estado_civil_edit").selectpicker();
 }
-
 
 function initSelectCreate() {
     $("#tipo_identificacion").selectpicker("destroy");

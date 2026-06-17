@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
 use App\Http\Controllers\admin\master\specialty\SpecialtyController;
+use App\Http\Controllers\admin\role\RoleController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\authenticator\auth\AuthController;
@@ -48,7 +49,13 @@ Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'stor
 
 
 //PARA ROLES Y PERMISOS
-//FACADES PARA POLICIES
+/**RUTA PARA LOS ROLES Y PERMISOS */
+Route::get('/admin/role', [RoleController::class, 'index'])->name('admin.roles.index');
+Route::get('/admin/permisos/create', [RoleController::class, 'create'])->name('admin.permissions.create');
+Route::post('/admin/permisos/store', [RoleController::class, 'store'])->name('admin.permissions.store');
+Route::put('/admin/role/update/{role}', [RoleController::class, 'update'])->name('admin.permissions.update');
+Route::get('/admin/role/edit/{role}', [RoleController::class, 'edit'])->name('admin.roles.edit');
+Route::delete('/admin/role/destroy/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
 
 
 

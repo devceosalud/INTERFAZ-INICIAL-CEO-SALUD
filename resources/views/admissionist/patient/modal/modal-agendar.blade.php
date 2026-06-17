@@ -1,11 +1,11 @@
-<div class="modal fade" id="appointmentCreate" tabindex="-1" aria-labelledby="appointmentCreateLabel" aria-hidden="true">
+<div class="modal fade" id="appointmentModalOpen" tabindex="-1" aria-labelledby="appointmentModalOpenLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
             <div class="modal-header">
-                <h5 class="modal-title" id="appointmentCreateLabel">Agendar una Cita</h5>
+                <h5 class="modal-title" id="appointmentModalOpenLabel">Agendar una Cita</h5>
                 <p id="paciente_nombre"></p>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

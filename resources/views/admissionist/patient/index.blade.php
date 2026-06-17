@@ -47,6 +47,7 @@
 
         <div class="content-body">
             <div class="container-fluid">
+                {{--
                 <div class="page-titles">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                         <ol class="breadcrumb mb-0">
@@ -64,13 +65,20 @@
                         </a>
                     </div>
                 </div>
+                 --}}
                 <!-- row -->
                 <div class="row">
 
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header">
+                            <div
+                                class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                                 <h4 class="card-title">Lista de Pacientes</h4>
+
+                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#patientModalCreate">
+                                    + Agregar Paciente
+                                </a>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -134,7 +142,7 @@
 
             @include('admissionist.patient.modal.modal-agendar')
 
-            @include('admissionist.appointment.crud.create')
+            @include('admissionist.patient.modal.appointment')
         </div>
         <!--**********************************Content body end***********************************-->
 
@@ -147,14 +155,15 @@
         <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 
 
-
         <!-- Datatable -->
         <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
-    @endsection
 
+
+        <script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
+    @endsection
 
 
 
@@ -170,5 +179,5 @@
 </div>
 <!--**********************************Main wrapper end***********************************-->
 
-<script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
+
 @endsection

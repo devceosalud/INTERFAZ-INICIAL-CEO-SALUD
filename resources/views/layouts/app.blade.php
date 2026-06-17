@@ -59,15 +59,6 @@
 
     @yield('script_data')
 
-
-
-    <!-- DATATABLES JS LIB-->
-    <script src="{{ asset('assets/lib/datatable/dataTables.js') }}"></script>
-    <script src="{{ asset('assets/lib/datatable/dataTables.min.js') }}"></script>
-
-    <script src="{{ asset('js/datatables/dataTable.js') }}"></script>
-
-
 </body>
 
 </html>

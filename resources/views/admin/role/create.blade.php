@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@php
+    use Carbon\Carbon;
+@endphp
 
 @section('css_data')
     <!-- Datatable -->
@@ -36,6 +39,7 @@
 
 
         <!--**********************************Content body start***********************************-->
+
         <div class="content-body">
             <div class="container-fluid">
                 {{--
@@ -46,17 +50,16 @@
                                 <a href="javascript:void(0)">Table</a>
                             </li>
                             <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Pacientes</a>
+                                <a href="javascript:void(0)">Permisos</a>
                             </li>
                         </ol>
 
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">
-                            + Agregar Paciente
+                        <a href="{{ route('admin.roles.index') }}" class="btn btn-primary btn-rounded add-appointment">
+                            Ver Roles
                         </a>
                     </div>
                 </div>
-                 --}}
+                --}}
                 <!-- row -->
                 <div class="row">
 
@@ -64,45 +67,22 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Especialidades</h4>
+                                <h4 class="card-title">Lista de Roles</h4>
 
-                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">
-                                    + Agregar Especialidad
+                                <a href="{{ route('admin.roles.index') }}"
+                                    class="btn btn-primary btn-rounded add-appointment">
+                                    Ver Roles
                                 </a>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="example4" class="display" style="min-width: 845px">
-                                        <thead>
-                                            <tr>
-                                                <th>Codigo</th>
-                                                <th>Nombre</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($specialties as $specialty)
-                                                <tr>
-                                                    <td><strong>{{ $specialty->id }}</strong></td>
-                                                    <td>{{ $specialty->nombre }} </td>
-                                                    <td>
-                                                        <strong>
-                                                            <span class="me-3">
-                                                                <a href="#" class="edit-patient"
-                                                                    data-id="{{ $specialty->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
-                                                                </a>
-                                                            </span>
-                                                            <span>
-                                                                <i class="fa fa-trash fs-18 text-danger"></i>
-                                                            </span>
-                                                        </strong>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                <div class="col-lg-12 table-responsive mb-5">
+                                    {!! Form::open(['route' => 'admin.permissions.store']) !!}
+
+                                    @include('admin.role.partials.form')
+
+                                    {!! Form::submit('Crear Permisos', ['class' => 'btn btn-primary mt-2 text-white']) !!}
+
+                                    {!! Form::close() !!}
                                 </div>
                             </div>
                         </div>
@@ -110,9 +90,6 @@
 
                 </div>
             </div>
-
-            @include('admin.master.specialty.crud.create')
-
         </div>
         <!--**********************************Content body end***********************************-->
 

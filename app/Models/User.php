@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasRoles;
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -49,5 +51,17 @@ class User extends Authenticatable
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    //METODO PARA REDIRECCION DE RUTAS POR ROLES
+    public function redirectToDashboard()
+    {
+        $roles = $this->getRoleNames();
+
+        if ($roles->contains('ADMINISTRADOR')) {
+            return redirect()->route('admin.dashboard.index');
+        } else if ($roles->contains('ADMISION')) {
+            return redirect()->route('admissionit.patient.index');
+        }
     }
 }
