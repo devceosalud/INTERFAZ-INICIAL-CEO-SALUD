@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
+use App\Http\Controllers\admin\master\role\RoleController;
 use App\Http\Controllers\admin\master\specialty\SpecialtyController;
-use App\Http\Controllers\admin\role\RoleController;
+use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\authenticator\auth\AuthController;
@@ -48,7 +49,7 @@ Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'stor
 
 
 
-//PARA ROLES Y PERMISOS
+//RUTAS PARA EL ADMINISTRADOR
 /**RUTA PARA LOS ROLES Y PERMISOS */
 Route::get('/admin/role', [RoleController::class, 'index'])->name('admin.roles.index');
 Route::get('/admin/permisos/create', [RoleController::class, 'create'])->name('admin.permissions.create');
@@ -58,6 +59,12 @@ Route::get('/admin/role/edit/{role}', [RoleController::class, 'edit'])->name('ad
 Route::delete('/admin/role/destroy/{role}', [RoleController::class, 'destroy'])->name('admin.roles.destroy');
 
 
+
+Route::get('/admin/user/index', [UserController::class, 'index'])->name('admin.user.index');
+Route::post('/admin/user/store', [UserController::class , 'store'])->name('admin.user.store');
+Route::put('/admin/user/update/user/list', [UserController::class , 'updateUser'])->name('admin.user.update.list');
+Route::get('/admin/user/edit/{user}', [UserController::class, 'edit'])->name('admin.user.edit');
+Route::put('/admin/user/update/{user}', [UserController::class, 'update'])->name('admin.user.update');
 
 
 

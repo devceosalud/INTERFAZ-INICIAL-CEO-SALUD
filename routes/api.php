@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\appointment\AppointmentController;
 use App\Http\Controllers\Api\patient\PatientController;
+use App\Http\Controllers\Api\user\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +29,6 @@ Route::post('/patient/show/search', [PatientController::class, 'search'])->name(
 
 Route::post('/appointment/specialty', [AppointmentController::class, 'specialty'])->name('api.appointment.specialty');
 Route::post('/appointment/calculated', [AppointmentController::class , 'calculatedPrice'])->name('api.appointment.calculated');
+
+
+Route::post('/admin/user/search', [UserController::class , 'search'])->name('api.admin.user.search');

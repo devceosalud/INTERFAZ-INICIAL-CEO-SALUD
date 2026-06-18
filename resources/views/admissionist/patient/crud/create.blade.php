@@ -248,9 +248,7 @@
                         Cancelar
                     </button>
 
-                    <button type="submit" class="btn btn-primary btn-save">
-                        Guardar Paciente
-                    </button>
+                    <input type="submit" class="btn btn-primary btn-save" value="Guardar Paciente">
                 </div>
             </form>
 

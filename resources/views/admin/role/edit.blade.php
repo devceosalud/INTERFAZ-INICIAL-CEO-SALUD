@@ -1,8 +1,5 @@
 @extends('layouts.app')
 
-@php
-    use Carbon\Carbon;
-@endphp
 
 @section('css_data')
     <!-- Datatable -->
@@ -64,8 +61,8 @@
                 <div class="row">
 
                     <div class="col-12">
-                        <div class="card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                            <div class="card-header">
+                        <div class="card">
+                            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                                 <h4 class="card-title">Lista de Roles</h4>
 
                                 <a href="{{ route('admin.roles.index') }}"
@@ -79,7 +76,7 @@
 
                                     @include('admin.role.partials.form')
 
-                                    {!! Form::submit('Actualizar Permisos', ['class' => 'btn btn-primary text-white mt-2']) !!}
+                                    {!! Form::submit('Actualizar Permisos', ['class' => 'btn btn-primary btn-rounded mt-2']) !!}
 
                                     {!! Form::close() !!}
                                 </div>

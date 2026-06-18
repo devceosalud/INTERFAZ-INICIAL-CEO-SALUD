@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin\role;
+namespace App\Http\Controllers\admin\master\role;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -16,6 +16,7 @@ class RoleController extends Controller
         //$this->middleware('can:lista roles');
     }
 
+    //LISTA DE ROLES
     public function index()
     {
         $roles = Role::all();
@@ -24,6 +25,7 @@ class RoleController extends Controller
         ]);
     }
 
+    //PARA CREAR PERMISOS
     public function create()
     {
         $permissions = Permission::all();
@@ -33,6 +35,7 @@ class RoleController extends Controller
     }
 
 
+    //PARA GUARDAR LOS PERMISOS
     public function store(Request $request)
     {
         //validaciones
@@ -52,6 +55,7 @@ class RoleController extends Controller
         }
     }
 
+    //FORMULARIO PARA ACTUALIZAR LOS PERMISOS DE CADA ROLE
     public function edit(Role $role, Request $request)
     {
         $permissions = Permission::all();
@@ -61,6 +65,7 @@ class RoleController extends Controller
         ]);
     }
 
+    //ACTUALIZAR LOS PERMISOS DE CADA ROLE 
     public function update(Role $role, Request $request)
     {
         //validaciones
@@ -76,6 +81,7 @@ class RoleController extends Controller
         return redirect()->route('admin.roles.edit', $role)->with('exito', 'permisos asignados correctamente');;
     }
 
+    //ELIMINAR UN ROLE
     public function destroy(Role $role)
     {
         $role->delete();

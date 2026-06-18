@@ -64,10 +64,11 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Roles</h4>
+                                <h4 class="card-title">Lista de Usuarios</h4>
 
-                                <a href="{{ route('admin.permissions.create') }}" class="btn btn-primary btn-rounded">
-                                    + Agregar Permiso
+                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#userModalCreate">
+                                    + Agregar Usuario
                                 </a>
                             </div>
                             <div class="card-body">
@@ -77,37 +78,45 @@
                                             <tr>
                                                 <th>ID</th>
                                                 <th>NOMBRE</th>
-                                                <th>PERMISOS</th>
-
-                                                {{-- <th>ELIMINAR</th> --}}
+                                                <th>EMAIL</th>
+                                                <th>ROL</th>
+                                                <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse ($roles as $role)
+                                            @forelse ($users as $user)
                                                 <tr>
-                                                    <td>{{ $role->id }}</td>
-                                                    <td>{{ $role->name }}</td>
-
+                                                    <td>{{ $user->id }}</td>
+                                                    <td>{{ $user->name }}</td>
+                                                    <td>{{ $user->email }}</td>
                                                     <td>
-                                                        <a class="btn btn-primary btn-rounded"
-                                                            href="{{ route('admin.roles.edit', ['role' => $role]) }}">Asignar Permisos
-                                                        </a>
+                                                        @forelse ($user->getRoleNames() as $role)
+                                                            <span
+                                                                class="badge light badge-success">{{ $role }}</span>
+                                                        @empty
+                                                            <span class="badge light badge-success">sin rol</span>
+                                                        @endforelse
                                                     </td>
-
-                                                    {{--
                                                     <td>
-                                                        <form action="{{ route('admin.roles.destroy', ['role' => $role]) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button class="btn btn-dark">Eliminar</button>
-                                                        </form>
+                                                        <strong>
+                                                            <span class="me-3">
+                                                                <a href="#" class="edit-user"
+                                                                    data-id="{{ $user->id }}">
+                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                </a>
+                                                            </span>
+                                                            <span>
+                                                                <a class="btn btn-primary btn-rounded"
+                                                                    href="{{ route('admin.user.edit', ['user' => $user]) }}">Asignar
+                                                                    Rol</a>
+                                                            </span>
+                                                        </strong>
+
                                                     </td>
-                                                    --}}
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td>Sin Roles por ahora</td>
+                                                    <td>Sin Usuarios por ahora</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -117,6 +126,9 @@
                         </div>
                     </div>
 
+                    @include('admin.user.crud.create')
+
+                    @include('admin.user.crud.edit')
                 </div>
             </div>
         </div>
@@ -136,6 +148,8 @@
             <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
             <script src="{{ asset('assets/js/custom.min.js') }}"></script>
             <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+            <script src="{{ asset('js/admin/master/user/user.js') }}"></script>
         @endsection
 
 

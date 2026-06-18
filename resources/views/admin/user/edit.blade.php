@@ -64,7 +64,7 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Permisos</h4>
+                                <h4 class="card-title">Lista de Roles</h4>
 
                                 <a href="{{ route('admin.roles.index') }}"
                                     class="btn btn-primary btn-rounded add-appointment">
@@ -73,11 +73,21 @@
                             </div>
                             <div class="card-body">
                                 <div class="col-lg-12 table-responsive mb-5">
-                                    {!! Form::open(['route' => 'admin.permissions.store']) !!}
+                                    {!! Form::model($user, ['route' => ['admin.user.update', $user], 'method' => 'put']) !!}
 
-                                    @include('admin.role.partials.form')
+                                    {!! Form::label('text', 'Usuario escogido', ['class' => 'control-label mb-2']) !!}
+                                    {!! Form::text('nombre', $user->name, ['class' => 'form-control mb-4', 'placeholder' => 'Nombre del usuario']) !!}
 
-                                    {!! Form::submit('Crear Permisos', ['class' => 'btn btn-primary mt-2 btn-rounded']) !!}
+                                    @foreach ($roles as $role)
+                                        <div>
+                                            <label class="d-flex">
+                                                {!! Form::radio('role', $role->id, $user->hasRole($role->id), ['class' => 'mr-1']) !!}
+                                                {{ $role->name }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+
+                                    {!! Form::submit('Asignar Rol al usuario', ['class' => 'btn btn-primary mt-4 btn-rounded']) !!}
 
                                     {!! Form::close() !!}
                                 </div>
