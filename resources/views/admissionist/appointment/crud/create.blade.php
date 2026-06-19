@@ -25,12 +25,15 @@
 
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label">Nro Documento</label>
+                            <label class="form-label text-primary">Nro Documento <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="documento_paciente">
+
+                            <span class="text-danger error-text patient_id_error"></span>
                         </div>
 
                         <div class="col-md-9">
-                            <label class="form-label">Paciente</label>
+                            <label class="form-label text-primary">Paciente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nombre_paciente" readonly>
                         </div>
                     </div>
@@ -42,7 +45,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Especialidad</label>
+                            <label class="form-label text-primary">Especialidad</label>
                             <select class="form-control" id="specialty_id">
                                 <option value="">
                                     Seleccione
@@ -54,34 +57,41 @@
                                     </option>
                                 @endforeach
                             </select>
+
+                            <span class="text-danger error-text specialty_id_error"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Médico</label>
+                            <label class="form-label text-primary">Médico</label>
                             <select class="form-control" name="doctor_id" id="doctor_id">
                                 <option value="">
                                     Seleccione
                                 </option>
                             </select>
+
+                            <span class="text-danger error-text doctor_id_error"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Servicio</label>
+                            <label class="form-label text-primary">Servicio</label>
                             <select class="form-control" name="service_id" id="service_id">
                                 <option value="">
                                     Seleccione
                                 </option>
                             </select>
+                            <span class="text-danger error-text service_id_error"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Fecha Cita</label>
+                            <label class="form-label text-primary">Fecha Cita</label>
                             <input type="date" class="form-control" name="fecha_cita">
+                            <span class="text-danger error-text fecha_cita_error"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Hora Cita</label>
+                            <label class="form-label text-primary">Hora Cita</label>
                             <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm">
+                            <span class="text-danger error-text hora_cita_error"></span>
                         </div>
                     </div>
 
@@ -92,7 +102,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Tarifa Adicional</label>
+                            <label class="form-label text-primary">Tarifa Adicional</label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">
@@ -113,7 +123,7 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Autorizado por</label>
+                            <label class="form-label text-primary">Autorizado por</label>
                             <input type="text" class="form-control" name="autorizado_por" id="autorizado_por"
                                 placeholder="Ej. DR QUIROZ">
                         </div>
@@ -129,23 +139,25 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Precio Programado</label>
+                            <label class="form-label text-primary">Precio Programado</label>
                             <input type="text" class="form-control" id="precio_programado" readonly>
+                            <span class="text-danger error-text precio_programado_error"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Total Pagado</label>
+                            <label class="form-label text-primary">Total Pagado</label>
                             <input type="number" step="0.01" class="form-control" name="total_pagado"
                                 id="total_pagado" value="0">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Saldo Pendiente</label>
+                            <label class="form-label text-primary">Saldo Pendiente</label>
                             <input type="text" class="form-control" id="saldo_pendiente" readonly>
+                             <span class="text-danger error-text saldo_pendiente_error"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Método de Pago</label>
+                            <label class="form-label text-primary">Método de Pago</label>
                             <select class="form-control" name="metodo_pago" id="metodo_pago">
                                 <option value="YAPE">YAPE</option>
                                 <option value="PLIN">PLIN</option>
@@ -155,7 +167,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">N° Operación</label>
+                            <label class="form-label text-primary">N° Operación</label>
                             <input type="number" class="form-control" name="numero_operacion" id="numero_operacion"
                                 value="0">
                         </div>
@@ -166,12 +178,12 @@
                     <!-- ================= OBSERVACIONES ================= -->
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Motivo Consulta</label>
+                            <label class="form-label text-primary">Motivo Consulta</label>
                             <textarea class="form-control" name="motivo_consulta" rows="4"></textarea>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Observaciones</label>
+                            <label class="form-label text-primary">Observaciones</label>
                             <textarea class="form-control" name="observaciones" rows="4"></textarea>
                         </div>
                     </div>
@@ -179,11 +191,11 @@
 
                 <!-- FOOTER -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>
 
-                    <input type="submit" class="btn btn-primary btn-save" value="Registrar Cita">
+                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Registrar Cita">
                 </div>
 
             </form>
@@ -191,5 +203,5 @@
         </div>
     </div>
 
-   
+
 </div>

@@ -15,7 +15,7 @@ class UserController extends Controller
     //
     public function __construct()
     {
-        //$this->middleware('auth');
+        $this->middleware('auth');
         //$this->middleware('can:lista usuario');
     }
 
@@ -115,6 +115,6 @@ class UserController extends Controller
     public function update(User $user, Request $request)
     {
         $user->roles()->sync([$request->role]); // Usamos sync() con un array de un solo elemento
-        return redirect()->route('admin.user.edit', $user)->with('exito', 'Rol asignado correctamente al usuario');
+        return redirect()->route('admin.user.index', $user)->with('exito', 'Rol asignado correctamente al usuario');
     }
 }

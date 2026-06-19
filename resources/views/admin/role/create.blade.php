@@ -72,6 +72,19 @@
                                 </a>
                             </div>
                             <div class="card-body">
+
+                                @if (session('exito'))
+                                    <div class="alert alert-success solid alert-end-icon alert-dismissible fade show">
+                                        <span><i class="mdi mdi-check"></i></span>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="btn-close">
+                                            <span><i class="fa-solid fa-xmark"></i></span>
+                                        </button>
+
+                                        {{ session('exito') }}
+                                    </div>
+                                @endif
+
                                 <div class="col-lg-12 table-responsive mb-5">
                                     {!! Form::open(['route' => 'admin.permissions.store']) !!}
 

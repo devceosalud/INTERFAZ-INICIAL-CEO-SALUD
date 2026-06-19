@@ -8,4 +8,8 @@ use Illuminate\Http\Request;
 class ChannelController extends Controller
 {
     //
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 }

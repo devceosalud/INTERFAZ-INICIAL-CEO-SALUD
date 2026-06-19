@@ -73,6 +73,19 @@
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
+
+                                    @if (session('exito'))
+                                        <div class="alert alert-success solid alert-end-icon alert-dismissible fade show">
+                                            <span><i class="mdi mdi-check"></i></span>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                                aria-label="btn-close">
+                                                <span><i class="fa-solid fa-xmark"></i></span>
+                                            </button>
+
+                                            {{ session('exito') }}
+                                        </div>
+                                    @endif
+
                                     <table id="example4" class="table table-bordered text-center mb-0" id="datatable">
                                         <thead>
                                             <tr>

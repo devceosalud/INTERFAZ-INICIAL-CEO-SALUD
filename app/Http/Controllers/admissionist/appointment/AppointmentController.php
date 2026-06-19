@@ -45,6 +45,7 @@ class AppointmentController extends Controller
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
             'service_id' => 'required|integer',
+            'specialty_id' => 'required|integer',
             //'channel_id' => 'required|integer',
             //'interaction_medium_id' => 'required|integer',
             'additional_rate_id' => 'required|integer',

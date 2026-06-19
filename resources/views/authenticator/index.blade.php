@@ -1,87 +1,103 @@
 @extends('layouts.app')
 
-
 @section('body')
 
-<body class="vh-100">
-    <div class="authincation h-100">
-        <div class="container h-100">
-            <div class="row justify-content-center h-100 align-items-center">
-                <div class="col-md-6">
-                    <div class="authincation-content">
-                        <div class="row no-gutters">
-                            <div class="col-xl-12">
-                                <div class="auth-form">
-                                    <div class="text-center mb-3">
-                                        <a href="index.html"><img src="{{ asset('assets/images/logo-full.png') }}" class="img-fluid" alt=""></a>
-                                    </div>
-                                    <h4 class="text-center mb-4">Ingreso al Sistema</h4>
+    <body class="vh-100 bg-white">
 
-                                     {{-- MENSAJE SI ESTAN MAL LAS CREDENCIALES --}}
-                                    @if (session('mensaje'))
-                                        <div class="alert alert-danger" role="alert">
-                                            {{ session('mensaje') }}
-                                        </div>
-                                    @endif
+        <div class="container-fluid h-100">
+            <div class="row h-100">
 
-                                    <form action="{{ route('admin.login.store') }}" method="POST">
+                <!-- LEFT: FORM -->
+                <div class="col-lg-5 d-flex align-items-center justify-content-center">
 
-                                        @csrf
-                                        <div class="form-group">
-                                            <label class="mb-1"><strong>Correo</strong></label>
-                                            <input type="email" name="email" id="email" class="form-control" placeholder="ejemplo@ceosalud.com">
-                                        </div>
+                    <div class="w-75">
 
-                                        <div class="mb-3 position-relative">
-                                            <label class="mb-1"><strong>Contraseña</strong></label>
-                                            <input type="password" name="password" id="password" class="form-control" placeholder="*****">
-                                            <span class="show-pass eye">
-                                                <i class="fa fa-eye-slash"></i>
-                                                <i class="fa fa-eye"></i>
-                                            </span>
-                                        </div>
-
-                                        <div class="form-row d-flex justify-content-between flex-wrap mt-4 mb-2">
-                                            <div class="form-group">
-                                                <div class="form-check custom-checkbox ms-1">
-                                                    <input type="checkbox" class="form-check-input"
-                                                        id="basic_checkbox_1">
-                                                    <label class="form-check-label" for="basic_checkbox_1">Recodar</label>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <a href="#">No recuerda contraseña?</a>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-center">
-                                            <input type="submit" class="btn btn-primary btn-block" value="Ingresar al Sistema">
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                        <!-- LOGO -->
+                        <div class="mb-4 text-start">
+                            <img src="{{ asset('assets/images/logo-full.png') }}" width="160" alt="">
                         </div>
+
+                        <h3 class="fw-bold mb-2">
+                            Inicia sesión en tu cuenta
+                        </h3>
+
+                        <p class="text-muted mb-4">
+                            Accede a la plataforma educativa
+                        </p>
+
+                        {{-- ERROR --}}
+                        @if (session('mensaje'))
+                            <div class="alert alert-danger">
+                                {{ session('mensaje') }}
+                            </div>
+                        @endif
+
+                        <form action="{{ route('admin.login.store') }}" method="POST">
+                            @csrf
+
+                            <div class="mb-3">
+                                <label class="form-label">Correo electrónico</label>
+                                <input type="email" name="email" class="form-control" placeholder="ejemplo@correo.com">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" name="password" class="form-control" placeholder="********">
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="remember">
+                                    <label class="form-check-label" for="remember">
+                                        Recuérdame
+                                    </label>
+                                </div>
+
+                                <a href="#" class="text-primary">
+                                    ¿Olvidaste tu contraseña?
+                                </a>
+                            </div>
+
+                            <button class="btn btn-primary w-100 py-2">
+                                Iniciar sesión
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <small class="text-muted">o continuar con</small>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-outline-dark w-50">
+                                Google
+                            </button>
+                            <button class="btn btn-outline-dark w-50">
+                                GitHub
+                            </button>
+                        </div>
+
                     </div>
+
                 </div>
+
+                <!-- RIGHT: IMAGE -->
+                <div class="col-lg-7 d-none d-lg-block p-0">
+
+                    <div class="h-100 w-100"
+                        style="
+                    background-image: url('{{ asset('assets/images/sidebar-img/6.jpg') }}');
+                    background-size: cover;
+                    background-position: center;
+                ">
+                    </div>
+
+                </div>
+
             </div>
         </div>
-    </div>
 
+        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+        <script src="{{ asset('assets/js/custom.min.js') }}"></script>
 
-    <!--**********************************
-        Scripts
-    ***********************************-->
-    <!-- Required vendors -->
-
-    <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
-    <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-    <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
-
-
-
-
-
-</body>
-
+    </body>
 @endsection

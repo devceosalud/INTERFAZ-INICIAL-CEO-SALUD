@@ -19,7 +19,7 @@
                         <a class="nav-link" href="javascript:;" role="button" data-bs-toggle="dropdown">
                             <img src="{{ asset('assets/images/profile/12.png') }}" width="20" alt="">
                             <div class="header-info">
-                                <span>Hola,<strong> Vicky</strong></span>
+                                <span>Hola,<strong> {{ auth()->user()->name }}  </strong></span>
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">

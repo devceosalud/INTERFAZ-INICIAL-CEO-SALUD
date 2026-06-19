@@ -5,6 +5,7 @@ namespace App\Http\Controllers\authenticator\auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use PhpParser\Node\Stmt\TryCatch;
 
@@ -24,19 +25,21 @@ class AuthController extends Controller
         //validaciones
         $this->validate($request, [
             'email' => 'required|email',
+            'password' => 'required'
         ]);
 
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return back()->with('mensaje', 'El correo electrónico no está registrado.');
+        if (!auth()->attempt($request->only('email', 'password'), $request->remember)) {
+            return back()->with('mensaje', 'Tus credenciales estan incorrectas');
+        } else {
+            // Usuario autenticado
+            return redirect()->route('admin.dashboard.index');
         }
-
-        return redirect()->route('admin.dashboard.index');
     }
-    
+
 
     public function logout()
     {
-         return redirect()->route('login');
+        Auth::logout();
+        return redirect()->route('login');
     }
 }

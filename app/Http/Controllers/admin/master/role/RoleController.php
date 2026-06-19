@@ -12,7 +12,7 @@ class RoleController extends Controller
     //
     public function __construct()
     {
-        //$this->middleware('auth');
+        $this->middleware('auth');
         //$this->middleware('can:lista roles');
     }
 
@@ -49,9 +49,9 @@ class RoleController extends Controller
         ]);
 
         if ($permisos) {
-            return redirect()->route('admin.permissions.create')->with('exito', 'datos guardados correctamente');
+            return redirect()->route('admin.permissions.create')->with('exito', 'Nuevo permiso guardado correctamente');
         } else {
-            return redirect()->route('admin.permissions.create')->with('exito', 'datos no correctamente');
+            return redirect()->route('admin.permissions.create')->with('exito', 'Permiso no creado');
         }
     }
 
@@ -78,13 +78,13 @@ class RoleController extends Controller
         //metodo sync sincroniza los roles que se mandan
         $role->permissions()->sync($request->permissions);
 
-        return redirect()->route('admin.roles.edit', $role)->with('exito', 'permisos asignados correctamente');;
+        return redirect()->route('admin.roles.edit', $role)->with('exito', 'Permisos asignados correctamente');;
     }
 
     //ELIMINAR UN ROLE
     public function destroy(Role $role)
     {
         $role->delete();
-        return redirect()->route('admin.roles.index')->with('exito', 'datos eliminado correctamente');
+        return redirect()->route('admin.roles.index')->with('exito', 'Dato eliminado correctamente');
     }
 }
