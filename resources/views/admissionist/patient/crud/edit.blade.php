@@ -30,7 +30,7 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Nombre</label>
+                            <label class="form-label text-primary">Nombre <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="nombre_paciente_edit"
                                 id="nombre_paciente_edit" placeholder="Nombre completo">
 
@@ -38,13 +38,13 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Apellido paterno</label>
+                            <label class="form-label text-primary">Apellido paterno <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="apellido_paterno_edit"
                                 id="apellido_paterno_edit" placeholder="Apellido paterno">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Apellido materno</label>
+                            <label class="form-label text-primary">Apellido materno <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="apellido_materno_edit"
                                 id="apellido_materno_edit" placeholder="Apellido materno">
                         </div>
@@ -61,7 +61,7 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Tipo documento</label>
+                            <label class="form-label text-primary">Tipo documento <span class="text-danger">*</span></label>
                             <select class="form-control" name="tipo_identificacion_edit" id="tipo_identificacion_edit">
                                 <option value="DNI">DNI</option>
                                 <option value="CARNET EXTRANJERIA">CARNET EXTRANJERIA</option>
@@ -74,13 +74,13 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Número documento</label>
+                            <label class="form-label text-primary">Número documento <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="numero_identidad_edit"
                                 id="numero_identidad_edit" placeholder="12345678">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Género</label>
+                            <label class="form-label text-primary">Género <span class="text-danger">*</span></label>
                             <select class="form-control" name="genero_paciente_edit" id="genero_paciente_edit">
                                 <option value="HOMBRE">Hombre</option>
                                 <option value="MUJER">Mujer</option>
@@ -99,13 +99,13 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Fecha de nacimiento</label>
+                            <label class="form-label text-primary">Fecha de nacimiento <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_nacimiento_edit"
                                 id="fecha_nacimiento_edit">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Estado civil</label>
+                            <label class="form-label text-primary">Estado civil</label>
                             <select class="form-control" name="estado_civil_edit" id="estado_civil_edit">
                                 <option value="CASADO">CASADO</option>
                                 <option value="SOLTERO">SOLTERO</option>
@@ -115,18 +115,18 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Ocupación</label>
+                            <label class="form-label text-primary">Ocupación</label>
                             <input type="text" class="form-control" name="ocupacion_edit" id="ocupacion_edit">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Grado de instrucción</label>
+                            <label class="form-label text-primary">Grado de instrucción</label>
                             <input type="text" class="form-control" name="grado_instruccion_edit"
                                 id="grado_instruccion_edit" placeholder="Primaria, Secundaria, Superior">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Correo electrónico</label>
+                            <label class="form-label text-primary">Correo electrónico <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" name="email_edit" id="email_edit"
                                 placeholder="correo@ejemplo.com">
                         </div>
@@ -143,13 +143,13 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Teléfono</label>
+                            <label class="form-label text-primary">Teléfono</label>
                             <input type="text" class="form-control" name="telefono_edit" id="telefono_edit"
                                 placeholder="999888777">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Canal</label>
+                            <label class="form-label text-primary">Canal</label>
                             <select class="form-control" name="channel_edit" id="channel_edit">
                                 <option value="">Seleccione</option>
 
@@ -162,7 +162,7 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Medio Interacción</label>
+                            <label class="form-label text-primary">Medio Interacción</label>
                             <select class="form-control" name="interaction_medium_edit" id="interaction_medium_edit">
                                 <option value="">Seleccione</option>
 
@@ -175,13 +175,13 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Dirección</label>
+                            <label class="form-label text-primary">Dirección</label>
                             <input type="text" class="form-control" name="direccion_edit" id="direccion_edit"
                                 placeholder="Av. Principal 123">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Familiar de contacto</label>
+                            <label class="form-label text-primary">Familiar de contacto</label>
                             <input type="text" class="form-control" name="familiar_contacto_edit"
                                 id="familiar_contacto_edit" placeholder="Nombre y relación">
                         </div>

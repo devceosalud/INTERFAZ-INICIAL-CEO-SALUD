@@ -62,8 +62,9 @@
 
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Roles</h4>
+                            <div
+                                class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                <h4 class="card-title">Lista de Permisos</h4>
 
                                 <a href="{{ route('admin.roles.index') }}"
                                     class="btn btn-primary btn-rounded add-appointment">
@@ -71,6 +72,19 @@
                                 </a>
                             </div>
                             <div class="card-body">
+
+                                @if (session('exito'))
+                                    <div class="alert alert-success solid alert-end-icon alert-dismissible fade show">
+                                        <span><i class="mdi mdi-check"></i></span>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="btn-close">
+                                            <span><i class="fa-solid fa-xmark"></i></span>
+                                        </button>
+
+                                        {{ session('exito') }}
+                                    </div>
+                                @endif
+
                                 <div class="col-lg-12 table-responsive mb-5">
                                     {!! Form::model($role, ['route' => ['admin.permissions.update', $role], 'method' => 'put']) !!}
 

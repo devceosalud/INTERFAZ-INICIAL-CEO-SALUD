@@ -1,7 +1,7 @@
 //SCRIPT PARA LEER LOS DATOS DEL SELECT
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDDO CITAS');
-     
+
     //VARIABLES GLOBALES
     const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
@@ -189,7 +189,7 @@ async function calcularPrecio() {
         //ASIGNAMOS LOS DATOS YA CALCULADOS  
         document.querySelector('#precio_programado').value = data.precio_programado;
         document.querySelector('#precio_programado_hidden').value = data.precio_programado;
-        if(data.tipo === 'EXONERADO'){
+        if (data.tipo === 'EXONERADO') {
             document.querySelector('#total_pagado').value = data.total_pagado;
         }
 
@@ -247,7 +247,7 @@ $('#formCreateAppointment').on('submit', function (e) {
                     console.log('span.' + prefix + '_error');
                     console.log(val[0]);
                 });
-            } else {
+            } else if (response.code == 1) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Correcto',
@@ -259,6 +259,13 @@ $('#formCreateAppointment').on('submit', function (e) {
                 });
                 form.reset();
                 $('#patientModalCreate').modal('hide');
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.msg
+                });
             }
         },
 

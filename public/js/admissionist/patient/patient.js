@@ -437,7 +437,7 @@ $('#formCreateAppointment').on('submit', function (e) {
                     console.log('span.' + prefix + '_error');
                     console.log(val[0]);
                 });
-            } else {
+            } else if (response.code == 1) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Correcto',
@@ -449,6 +449,13 @@ $('#formCreateAppointment').on('submit', function (e) {
                 });
                 form.reset();
                 $('#patientModalCreate').modal('hide');
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.msg
+                });
             }
         },
 

@@ -45,7 +45,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Especialidad</label>
+                            <label class="form-label text-primary">Especialidad <span class="text-danger">*</span></label>
                             <select class="form-control" id="specialty_id">
                                 <option value="">
                                     Seleccione
@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Médico</label>
+                            <label class="form-label text-primary">Médico <span class="text-danger">*</span></label>
                             <select class="form-control" name="doctor_id" id="doctor_id">
                                 <option value="">
                                     Seleccione
@@ -73,7 +73,7 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Servicio</label>
+                            <label class="form-label text-primary">Servicio <span class="text-danger">*</span></label>
                             <select class="form-control" name="service_id" id="service_id">
                                 <option value="">
                                     Seleccione
@@ -83,13 +83,13 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label text-primary">Fecha Cita</label>
+                            <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_cita">
                             <span class="text-danger error-text fecha_cita_error"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label text-primary">Hora Cita</label>
+                            <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm">
                             <span class="text-danger error-text hora_cita_error"></span>
                         </div>
@@ -102,7 +102,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Tarifa Adicional</label>
+                            <label class="form-label text-primary">Tarifa Adicional <span class="text-danger">*</span></label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">
@@ -145,15 +145,15 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Total Pagado</label>
+                            <label class="form-label text-primary">Total Pagado <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" name="total_pagado"
                                 id="total_pagado" value="0">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Saldo Pendiente</label>
+                            <label class="form-label text-primary">Saldo Pendiente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="saldo_pendiente" readonly>
-                             <span class="text-danger error-text saldo_pendiente_error"></span>
+                            <span class="text-danger error-text saldo_pendiente_error"></span>
                         </div>
 
                         <div class="col-md-6">

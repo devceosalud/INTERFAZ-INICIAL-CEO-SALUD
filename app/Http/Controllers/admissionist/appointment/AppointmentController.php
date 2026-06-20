@@ -8,6 +8,7 @@ use App\Models\AdditionalRate;
 use App\Models\Appointment;
 use App\Models\Channel;
 use App\Models\InteractionMedium;
+use App\Models\Patient;
 use App\Models\Specialty;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -19,10 +20,10 @@ class AppointmentController extends Controller
     //
     public function index()
     {
-        $specialties = Specialty::where('estado','ACTIVO')->get();
-        $channels  = Channel::where('estado','ACTIVO')->get();
-        $interaction_media  = InteractionMedium::where('estado','ACTIVO')->get();
-        $additional_rates = AdditionalRate::where('estado','ACTIVO')->get();
+        $specialties = Specialty::where('estado', 'ACTIVO')->get();
+        $channels  = Channel::where('estado', 'ACTIVO')->get();
+        $interaction_media  = InteractionMedium::where('estado', 'ACTIVO')->get();
+        $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->endOfMonth()
@@ -45,7 +46,7 @@ class AppointmentController extends Controller
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
             'service_id' => 'required|integer',
-            'specialty_id' => 'required|integer',
+            //'specialty_id' => 'required|integer',
             //'channel_id' => 'required|integer',
             //'interaction_medium_id' => 'required|integer',
             'additional_rate_id' => 'required|integer',
@@ -68,6 +69,17 @@ class AppointmentController extends Controller
                 'code'  => 0,
                 'error' => $validator->errors()->toArray()
             ]);
+        }
+
+        $paciente = Patient::find($request->patient_id);
+        if ($paciente) {
+            $existe = Appointment::where('estado_cita', 'PROGRAMADO')->where('patient_id', $request->patient_id)->first();
+            if ($existe) {
+                return response()->json([
+                    'code' => 2,
+                    'msg'  => 'El paciente ya cuenta con una cita'
+                ]);
+            }
         }
 
         $numero_cita = 'CIT-' . date('YmdHis');

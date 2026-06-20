@@ -98,7 +98,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label text-primary">Fecha de nacimiento <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="fecha_nacimiento" id="fecha_nacimiento" placeholder="1997-06-06">
+                            <input type="date" class="form-control" name="fecha_nacimiento" id="fecha_nacimiento" placeholder="1997-06-06">
                             <span class="text-danger error-text fecha_nacimiento_error"></span>
                         </div>
 
