@@ -6,6 +6,7 @@ use App\Http\Controllers\admin\master\specialty\SpecialtyController;
 use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
+use App\Http\Controllers\admissionist\responsible\ResponsibleController;
 use App\Http\Controllers\authenticator\auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,8 @@ Route::put('/admissionist/patient/udpate', [PatientController::class , 'update']
 
 Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
 Route::post('/admissionist/appointment/store', [AppointmentController::class , 'store'])->name('admissionit.appointment.store');
+
+Route::get('/admissionist/responsible', [ResponsibleController::class , 'index'])->name('admissionit.responsible.index');
 
 
 //MAESTRO : para las tablas independientes

@@ -193,11 +193,11 @@
                 <!-- FOOTER -->
                 <div class="modal-footer">
 
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>
 
-                    <input type="submit" class="btn btn-primary" value="Actualizar Paciente">
+                    <input type="submit" class="btn btn-primary btn-rounded" value="Actualizar Paciente">
 
                 </div>
 

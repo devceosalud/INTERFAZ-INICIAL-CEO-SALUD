@@ -102,7 +102,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Tarifa Adicional <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Tarifa Especial <span class="text-danger">*</span></label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">

@@ -126,7 +126,7 @@ class PatientController extends Controller
                         'numero_identidad'    => $request->numero_identidad_responsable,
                         'nombres'             => $request->nombre_responsable,
                         'telefono'            => $request->telefono_responsable,
-                        'parentezco'          => $request->responsable,
+                        'parentezco'          => $request->responsable_tipo,
                     ]
                 );
             }

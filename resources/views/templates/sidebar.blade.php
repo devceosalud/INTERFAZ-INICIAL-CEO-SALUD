@@ -19,6 +19,18 @@
                         <li><a href="{{ route('admissionit.patient.index') }}">Lista de Pacientes</a></li>
                     </ul>
                 </li>
+
+
+                <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-menu"></i>
+                        <span class="nav-text">Responsables</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('admissionit.responsible.index') }}">Lista de Responsables</a></li>
+                    </ul>
+                </li>
+
+
                 <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                         <i class="flaticon-381-menu"></i>
                         <span class="nav-text">Citas</span>
