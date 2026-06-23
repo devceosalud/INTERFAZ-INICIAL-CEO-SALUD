@@ -1,5 +1,5 @@
 <div class="modal fade" id="specialtytModalCreate" tabindex="-1" aria-labelledby="specialtytModalCreateLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="specialtytModalCreateLabel">Agregar nueva Nueva Especialidad:</h5>
@@ -23,7 +23,7 @@
 
                         <!-- ================= BOTON ================= -->
                         <div class="col-12 text-end mt-4">
-                            <input type="submit" class="btn btn-primary" value="Registrar la especialidad">
+                            <input type="submit" class="btn btn-primary btn-rounded" value="Registrar la especialidad">
                         </div>
 
                     </div>
@@ -31,7 +31,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger light" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-danger light btn-rounded" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>

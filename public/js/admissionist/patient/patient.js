@@ -21,22 +21,27 @@ window.addEventListener("DOMContentLoaded", function () {
         calcularPrecio();
     });
 
+    //EVENTO QUE TARIFA SELECCIONA
     additional_rate_id.addEventListener('change', function () {
         calcularPrecio();
     });
 
+    //CHECK ES EXONERADO
     es_exonerado.addEventListener('change', function () {
         calcularPrecio();
     });
 
+    //CUANTO PAGA EL CLIENTE
     document.querySelector('#total_pagado').addEventListener('input', function () {
         calcularSaldo();
     });
 
+    //PARA BUSCAR AL PACIENTE QUE SE DIGITA
     input.addEventListener("input", function (event) {
         buscarPaciente(event);
     });
 
+    //PARA QUE ME MUESTRE EL FORMULARIO
     responsable_id.addEventListener("change", function (event) {
         responsable(event);
     });

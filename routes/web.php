@@ -1,7 +1,12 @@
 <?php
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
+use App\Http\Controllers\admin\master\additionalRate\AdditionalRateController;
+use App\Http\Controllers\admin\master\channel\ChannelController;
+use App\Http\Controllers\admin\master\doctor\DoctorController;
+use App\Http\Controllers\admin\master\interactionMedia\InteractionMediaController;
 use App\Http\Controllers\admin\master\role\RoleController;
+use App\Http\Controllers\admin\master\service\ServiceController;
 use App\Http\Controllers\admin\master\specialty\SpecialtyController;
 use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
@@ -49,6 +54,14 @@ Route::get('/admissionist/responsible', [ResponsibleController::class , 'index']
 //MAESTRO : para las tablas independientes
 Route::get('/master/specialty', [SpecialtyController::class , 'index'])->name('master.specialty.index');
 Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'store'])->name('master.specialty.store');
+
+Route::get('/master/channel', [ChannelController::class, 'index'])->name('master.channel.index');
+Route::post('/master/channel/store', [ChannelController::class, 'store'])->name('master.channel.store');
+
+Route::get('/master/doctor', [DoctorController::class , 'index'])->name('master.doctor.index');
+Route::get('/master/additional-rate', [AdditionalRateController::class , 'index'])->name('master.additionalRate.index');
+Route::get('/master/interaction-media', [InteractionMediaController::class , 'index'])->name('master.interactionMedia.index');
+Route::get('/master/service', [ServiceController::class , 'index'])->name('master.service.index');
 
 
 

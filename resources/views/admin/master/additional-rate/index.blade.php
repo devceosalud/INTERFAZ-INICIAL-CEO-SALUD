@@ -38,25 +38,6 @@
         <!--**********************************Content body start***********************************-->
         <div class="content-body">
             <div class="container-fluid">
-                {{--
-                <div class="page-titles">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="javascript:void(0)">Table</a>
-                            </li>
-                            <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Pacientes</a>
-                            </li>
-                        </ol>
-
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">
-                            + Agregar Paciente
-                        </a>
-                    </div>
-                </div>
-                 --}}
                 <!-- row -->
                 <div class="row">
 
@@ -64,11 +45,11 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Especialidades</h4>
+                                <h4 class="card-title">Lista de Tarifas</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                                     data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">
-                                    + Agregar Especialidad
+                                    + Agregar Tarifas
                                 </a>
                             </div>
                             <div class="card-body">
@@ -78,19 +59,23 @@
                                             <tr>
                                                 <th>Codigo</th>
                                                 <th>Nombre</th>
+                                                <th>Tipo Tarifa</th>
+                                                <th>Tarifa</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($specialties as $specialty)
+                                            @foreach ($additionalRates as $additionalRate)
                                                 <tr>
-                                                    <td><strong>{{ $specialty->id }}</strong></td>
-                                                    <td>{{ $specialty->nombre }} </td>
+                                                    <td><strong>{{ $additionalRate->id }}</strong></td>
+                                                    <td>{{ $additionalRate->nombre }} </td>
+                                                    <td>{{ $additionalRate->tipo_tarifa }} </td>
+                                                    <td>{{ $additionalRate->tarifa }} </td>
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-specialty"
-                                                                    data-id="{{ $specialty->id }}">
+                                                                <a href="#" class="edit-additional-rate"
+                                                                    data-id="{{ $additionalRate->id }}">
                                                                     <i class="fa fa-pencil fs-18 text-success"></i>
                                                                 </a>
                                                             </span>

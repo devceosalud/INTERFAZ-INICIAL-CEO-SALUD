@@ -50,6 +50,11 @@
                     </a>
                     <ul aria-expanded="false">
                         <li><a href='{{ route('master.specialty.index') }}'>Especialidades</a></li>
+                        <li><a href="{{ route('master.service.index') }}">Servicios</a></li>
+                        <li><a href='{{ route('master.doctor.index') }}'>Doctores</a></li>
+                        <li><a href="{{ route('master.additionalRate.index') }}">Tarifas</a></li>
+                        <li><a href="{{ route('master.interactionMedia.index') }}">Medios</a></li>
+                        <li><a href='{{ route('master.channel.index') }}'>Canales</a></li>
                     </ul>
                 </li>
                 <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">

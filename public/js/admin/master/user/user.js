@@ -3,7 +3,7 @@ window.addEventListener("DOMContentLoaded", function () {
     console.log('CARGANDO USUARIOS');
 
 
-    // GUARDAR DATOS DEL PACIENTE
+    // GUARDAR DATOS DEL USUARIO
     $("#formCreateUser").on("submit", function (e) {
         e.preventDefault();
 
