@@ -1,8 +1,7 @@
-window.addEventListener("DOMContentLoaded", function () {
-});
+window.addEventListener("DOMContentLoaded", function () {});
 
-// GUARDAR DATOS DE LA ESPECIALIDAD
-$("#formCreateChannel").on("submit", function (e) {
+// GUARDAR DATOS DEL DOCTOR
+$("#formCreateService").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -60,35 +59,40 @@ $("#formCreateChannel").on("submit", function (e) {
     });
 });
 
-//PARA EDITAR LA ESPECIALIDAD
-$(document).on("click", ".edit-channel", async function (e) {
+//PARA EDITAR EL SERVICIO
+$(document).on("click", ".edit-service", async function (e) {
     e.preventDefault();
-    let channelId = $(this).data("id");
+    let serviceId = $(this).data("id");
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/channel/search",
-            {
+            "http://127.0.0.1:8000/api/admin/service/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: serviceId,
                 }),
             },
         );
 
         const data = await res.json();
-        console.log("DATOS CANAL PARA EDITAR:", data);
+        console.log("DATOS SERVICIO PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
-            let p = data.channel;
+            let p = data.service;
             //PINTAR DATOS EN EL MODAL
-            $("#channelModalEdit #channel_id_edit").val(p.id);
-            $("#channelModalEdit #nombre_edit_canal").val(p.nombre);
+            $("#serviceModalEdit #service_id_edit").val(p.id);
+            $("#serviceModalEdit #nombre_edit").val(p.nombre);
+            $("#serviceModalEdit #specialty_id_edit").val(p.specialty_id);
+            $("#serviceModalEdit #precio_estandar_edit").val(p.precio_primera_consulta);
+            $("#serviceModalEdit #reconsulta_edit").val(p.precio_reconsulta);
+            $("#serviceModalEdit #dias_edit").val(p.dias_reconsulta);
             //ABRIR MODAL
-            $("#channelModalEdit").modal("show");
+            $("#serviceModalEdit").modal("show");
+
+            initSelectEdit();
         }
     } catch (error) {
         console.error(error);
@@ -96,7 +100,7 @@ $(document).on("click", ".edit-channel", async function (e) {
 });
 
 //PARA ACTUALIZAR LOS DATOS DE LA ESPECIALIDAD
-$("#formUpdateChannel").on("submit", function (e) {
+$("#formUpdateService").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -123,6 +127,14 @@ $("#formUpdateChannel").on("submit", function (e) {
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Observado",
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false,
+                })
             } else {
                 Swal.fire({
                     icon: "success",
@@ -133,8 +145,6 @@ $("#formUpdateChannel").on("submit", function (e) {
                 }).then(() => {
                     location.reload();
                 });
-
-                $("#specialtytModalEdit").modal("hide");
             }
         },
 
@@ -152,3 +162,14 @@ $("#formUpdateChannel").on("submit", function (e) {
         },
     });
 });
+
+
+//FUNCION PARA PODER INICIAR LOS SELECT
+function initSelectEdit() {
+    //para campos edit
+    $("#serviceModalEdit #specialty_id_edit").selectpicker("destroy");
+    $("#serviceModalEdit #dias_edit").selectpicker("destroy");
+
+    $("#serviceModalEdit #specialty_id_edit").selectpicker();
+    $("#serviceModalEdit #dias_edit").selectpicker();
+}

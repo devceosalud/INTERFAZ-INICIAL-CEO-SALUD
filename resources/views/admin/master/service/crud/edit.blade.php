@@ -1,20 +1,21 @@
-<div class="modal fade" id="serviceModalCreate" tabindex="-1" aria-labelledby="serviceModalCreateLabel" aria-hidden="true">
+<div class="modal fade" id="serviceModalEdit" tabindex="-1" aria-labelledby="serviceModalEditLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
             <div class="modal-header">
-                <h5 class="modal-title" id="serviceModalCreateLabel">
-                    Registro de Servicio
+                <h5 class="modal-title" id="serviceModalEditLabel">
+                    Actualizar Servicio
                 </h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>
 
-            <form id="formCreateService" method="POST" action="{{ route('master.service.store') }}">
+            <form id="formUpdateService" method="POST" action="{{ route('master.service.update') }}">
 
+                @method('put')
                 @csrf
 
                 <div class="modal-body">
@@ -26,17 +27,18 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
+                            <input type="hidden" name="service_id_edit" id="service_id_edit">
                             <label class="form-label text-primary">Nombre<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nombre" id="nombre"
+                            <input type="text" class="form-control" name="nombre_edit" id="nombre_edit"
                                 placeholder="Nombre completo">
 
-                            <span class="text-danger error-text nombre_error"></span>
+                            <span class="text-danger error-text nombre_edit_error"></span>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-primary">Especialidades<span
                                     class="text-danger">*</span></label>
-                            <select class="form-control" name="specialty_id" id="specialty_id">
+                            <select class="form-control" name="specialty_id_edit" id="specialty_id_edit">
                                 @foreach ($specialties as $specialty)
                                     <option value="{{ $specialty->id }}">{{ $specialty->nombre }}</option>
                                 @endforeach
@@ -46,25 +48,25 @@
                         <div class="col-md-4">
                             <label class="form-label text-primary">Precio Estándar<span
                                     class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="precio_estandar" id="precio_estandar"
-                                placeholder="100">
+                            <input type="number" class="form-control" name="precio_estandar_edit"
+                                id="precio_estandar_edit" placeholder="100">
 
-                            <span class="text-danger error-text precio_estandar_error"></span>
+                            <span class="text-danger error-text precio_estandar_edit_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Reconsulta<span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="reconsulta" id="reconsulta"
+                            <input type="number" class="form-control" name="reconsulta_edit" id="reconsulta_edit"
                                 placeholder="80">
 
-                            <span class="text-danger error-text reconsulta_error"></span>
+                            <span class="text-danger error-text reconsulta_edit_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Días<span class="text-danger">*</span></label>
-                            <select class="form-control" name="dias" id="dias">
+                            <select class="form-control" name="dias_edit" id="dias_edit">
                                 @for ($i = 0; $i < $count; $i++)
-                                    <option value=" {{ $i }} ">{{ $i }}</option>
+                                    <option value="{{ $i }}">{{ $i }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -77,7 +79,7 @@
                         Cancelar
                     </button>
 
-                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Guardar Servicio">
+                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Actualizar Servicio">
                 </div>
             </form>
 

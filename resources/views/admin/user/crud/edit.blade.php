@@ -28,7 +28,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Nombre</label>
-                            <input type="text" name="usuario_id_edit" id="usuario_id_edit">
+                            <input type="hidden" name="usuario_id_edit" id="usuario_id_edit">
                             <input type="text" class="form-control" name="nombre_usuario_edit" id="nombre_usuario_edit"
                                 placeholder="Nombre completo">
 

@@ -48,7 +48,7 @@
                                 <h4 class="card-title">Lista de Medios</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">
+                                    data-bs-toggle="modal" data-bs-target="#interactionMediaModalCreate">
                                     + Agregar Medio
                                 </a>
                             </div>
@@ -92,7 +92,9 @@
                 </div>
             </div>
 
-            @include('admin.master.specialty.crud.create')
+            @include('admin.master.interaction-media.crud.create')
+
+            @include('admin.master.interaction-media.crud.edit')
 
         </div>
         <!--**********************************Content body end***********************************-->
@@ -111,6 +113,8 @@
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+        <script src="{{ asset('js/admin/master/interaction-media/interaction-media.js') }}"></script>
     @endsection
 
 

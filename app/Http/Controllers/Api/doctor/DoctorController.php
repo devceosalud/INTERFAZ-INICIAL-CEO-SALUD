@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\channel;
+namespace App\Http\Controllers\Api\doctor;
 
 use App\Http\Controllers\Controller;
-use App\Models\Channel;
+use App\Models\Doctor;
 use Illuminate\Http\Request;
 
-class ChannelController extends Controller
+class DoctorController extends Controller
 {
     //
-
     public function search(Request $request)
     {
-        $channel = Channel::find($request->id);
+        $doctor = Doctor::with('specialty')->find($request->id);
 
-        if (!$channel) {
+        if (!$doctor) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'channel' => $channel
+                'doctor' => $doctor
             ], 200);
         }
     }

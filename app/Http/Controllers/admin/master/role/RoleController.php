@@ -78,7 +78,7 @@ class RoleController extends Controller
         //metodo sync sincroniza los roles que se mandan
         $role->permissions()->sync($request->permissions);
 
-        return redirect()->route('admin.roles.edit', $role)->with('exito', 'Permisos asignados correctamente');;
+        return redirect()->route('admin.roles.index')->with('exito', 'Permisos asignados correctamente');;
     }
 
     //ELIMINAR UN ROLE

@@ -1,7 +1,13 @@
 <?php
 
+use App\Http\Controllers\api\AdditionalRate\AdditionalRateController;
 use App\Http\Controllers\Api\appointment\AppointmentController;
+use App\Http\Controllers\Api\channel\ChannelController;
+use App\Http\Controllers\Api\doctor\DoctorController;
+use App\Http\Controllers\Api\interactionMedia\InteractionMediaController;
 use App\Http\Controllers\Api\patient\PatientController;
+use App\Http\Controllers\Api\service\ServiceController;
+use App\Http\Controllers\Api\specialty\SpecialtyController;
 use App\Http\Controllers\Api\user\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,3 +38,15 @@ Route::post('/appointment/calculated', [AppointmentController::class , 'calculat
 
 
 Route::post('/admin/user/search', [UserController::class , 'search'])->name('api.admin.user.search');
+
+Route::post('/admin/channel/search', [ChannelController::class , 'search'])->name('api.admin.channel.search');
+
+Route::post('/admin/specialty/search', [SpecialtyController::class , 'search'])->name('api.admin.specialty.search');
+
+Route::post('/admin/interaction-media/search', [InteractionMediaController::class ,'search'])->name('api.admin.interactionMedia.search');
+
+Route::post('/admin/additonal-rate/search', [AdditionalRateController::class , 'search'])->name('api.admin.additionalRate.search');
+
+Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name('api.admin.doctor.search');
+
+Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.doctor.search');

@@ -1,8 +1,7 @@
-window.addEventListener("DOMContentLoaded", function () {
-});
+window.addEventListener("DOMContentLoaded", function () {});
 
-// GUARDAR DATOS DE LA ESPECIALIDAD
-$("#formCreateChannel").on("submit", function (e) {
+// GUARDAR DATOS DE LA TARIFA
+$("#formCreateAdditionalRate").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -61,34 +60,37 @@ $("#formCreateChannel").on("submit", function (e) {
 });
 
 //PARA EDITAR LA ESPECIALIDAD
-$(document).on("click", ".edit-channel", async function (e) {
+$(document).on("click", ".edit-additional-rate", async function (e) {
     e.preventDefault();
-    let channelId = $(this).data("id");
+    let additionalRateId = $(this).data("id");
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/channel/search",
-            {
+            "http://127.0.0.1:8000/api/admin/additonal-rate/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: additionalRateId,
                 }),
             },
         );
 
         const data = await res.json();
-        console.log("DATOS CANAL PARA EDITAR:", data);
+        console.log("DATOS TARIFA PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
-            let p = data.channel;
+            let p = data.additionalRate;
             //PINTAR DATOS EN EL MODAL
-            $("#channelModalEdit #channel_id_edit").val(p.id);
-            $("#channelModalEdit #nombre_edit_canal").val(p.nombre);
+            $("#additonalRateModalEdit #additional_rate_id_edit").val(p.id);
+            $("#additonalRateModalEdit #nombre_edit_tarifa").val(p.nombre);
+            $("#additonalRateModalEdit #tipo_edit_tarifa").val(p.tipo_tarifa);
+            $("#additonalRateModalEdit #saldo_edit_tarifa").val(p.tarifa);
             //ABRIR MODAL
-            $("#channelModalEdit").modal("show");
+            $("#additonalRateModalEdit").modal("show");
+
+            initSelectEdit();
         }
     } catch (error) {
         console.error(error);
@@ -96,7 +98,7 @@ $(document).on("click", ".edit-channel", async function (e) {
 });
 
 //PARA ACTUALIZAR LOS DATOS DE LA ESPECIALIDAD
-$("#formUpdateChannel").on("submit", function (e) {
+$("#formUpdateAdditionalRate").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -123,6 +125,14 @@ $("#formUpdateChannel").on("submit", function (e) {
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Observado",
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false,
+                })
             } else {
                 Swal.fire({
                     icon: "success",
@@ -133,8 +143,6 @@ $("#formUpdateChannel").on("submit", function (e) {
                 }).then(() => {
                     location.reload();
                 });
-
-                $("#specialtytModalEdit").modal("hide");
             }
         },
 
@@ -152,3 +160,12 @@ $("#formUpdateChannel").on("submit", function (e) {
         },
     });
 });
+
+
+//FUNCION PARA PODER INICIAR LOS SELECT
+function initSelectEdit() {
+    //para campos edit
+    $("#additonalRateModalEdit #tipo_edit_tarifa").selectpicker("destroy");
+
+    $("#additonalRateModalEdit #tipo_edit_tarifa").selectpicker();
+}

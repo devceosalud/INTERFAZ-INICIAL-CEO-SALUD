@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\channel;
+namespace App\Http\Controllers\Api\specialty;
 
 use App\Http\Controllers\Controller;
-use App\Models\Channel;
+use App\Models\Specialty;
 use Illuminate\Http\Request;
 
-class ChannelController extends Controller
+class SpecialtyController extends Controller
 {
     //
-
-    public function search(Request $request)
+     public function search(Request $request)
     {
-        $channel = Channel::find($request->id);
+        $specialty = Specialty::find($request->id);
 
-        if (!$channel) {
+        if (!$specialty) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'channel' => $channel
+                'specialty' => $specialty
             ], 200);
         }
     }

@@ -1,8 +1,7 @@
-window.addEventListener("DOMContentLoaded", function () {
-});
+window.addEventListener("DOMContentLoaded", function () {});
 
-// GUARDAR DATOS DE LA ESPECIALIDAD
-$("#formCreateChannel").on("submit", function (e) {
+// GUARDAR DATOS DEL DOCTOR
+$("#formCreateDoctor").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -61,34 +60,38 @@ $("#formCreateChannel").on("submit", function (e) {
 });
 
 //PARA EDITAR LA ESPECIALIDAD
-$(document).on("click", ".edit-channel", async function (e) {
+$(document).on("click", ".edit-doctor", async function (e) {
     e.preventDefault();
-    let channelId = $(this).data("id");
+    let doctorId = $(this).data("id");
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/channel/search",
-            {
+            "http://127.0.0.1:8000/api/admin/doctor/search", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: doctorId,
                 }),
             },
         );
 
         const data = await res.json();
-        console.log("DATOS CANAL PARA EDITAR:", data);
+        console.log("DATOS DOCTOR PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
-            let p = data.channel;
+            let p = data.doctor;
             //PINTAR DATOS EN EL MODAL
-            $("#channelModalEdit #channel_id_edit").val(p.id);
-            $("#channelModalEdit #nombre_edit_canal").val(p.nombre);
+            $("#doctorModalEdit #doctor_id_edit").val(p.id);
+            $("#doctorModalEdit #nombres_edit").val(p.nombre);
+            $("#doctorModalEdit #specialty_id_edit").val(p.specialty_id);
+            $("#doctorModalEdit #cmp_edit").val(p.cmp);
+            $("#doctorModalEdit #rne_edit").val(p.rne);
             //ABRIR MODAL
-            $("#channelModalEdit").modal("show");
+            $("#doctorModalEdit").modal("show");
+
+            initSelectEdit();
         }
     } catch (error) {
         console.error(error);
@@ -96,7 +99,7 @@ $(document).on("click", ".edit-channel", async function (e) {
 });
 
 //PARA ACTUALIZAR LOS DATOS DE LA ESPECIALIDAD
-$("#formUpdateChannel").on("submit", function (e) {
+$("#formUpdateDoctor").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -123,6 +126,14 @@ $("#formUpdateChannel").on("submit", function (e) {
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Observado",
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false,
+                })
             } else {
                 Swal.fire({
                     icon: "success",
@@ -133,8 +144,6 @@ $("#formUpdateChannel").on("submit", function (e) {
                 }).then(() => {
                     location.reload();
                 });
-
-                $("#specialtytModalEdit").modal("hide");
             }
         },
 
@@ -152,3 +161,12 @@ $("#formUpdateChannel").on("submit", function (e) {
         },
     });
 });
+
+
+//FUNCION PARA PODER INICIAR LOS SELECT
+function initSelectEdit() {
+    //para campos edit
+    $("#doctorModalEdit #specialty_id_edit").selectpicker("destroy");
+
+    $("#doctorModalEdit #specialty_id_edit").selectpicker();
+}

@@ -1,20 +1,21 @@
-<div class="modal fade" id="specialtytModalCreate" tabindex="-1" aria-labelledby="specialtytModalCreateLabel" aria-hidden="true">
+<div class="modal fade" id="specialtytModalEdit" tabindex="-1" aria-labelledby="specialtytModalEditLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
             <div class="modal-header">
-                <h5 class="modal-title" id="specialtytModalCreateLabel">
-                    Registro de Especialidad
+                <h5 class="modal-title" id="specialtytModalEditLabel">
+                    Actualizar de Especialidad
                 </h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>
 
-            <form id="formCreateSpecialty" method="POST" action="{{ route('master.specialty.store') }}">
+            <form id="formUpdateSpecialty" method="POST" action="{{ route('master.specialty.update') }}">
 
+                @method('put')
                 @csrf
 
                 <div class="modal-body">
@@ -26,11 +27,12 @@
 
                     <div class="row g-3">
                         <div class="col-md-12">
+                            <input type="hidden" name="specialty_id_edit" id="specialty_id_edit">
                             <label class="form-label text-primary">Nombre <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nombre_especialidad" id="nombre_especialidad"
+                            <input type="text" class="form-control" name="nombre_edit_especialidad" id="nombre_edit_especialidad"
                                 placeholder="Nombre completo">
 
-                            <span class="text-danger error-text nombre_especialidad_error"></span>
+                            <span class="text-danger error-text nombre_edit_especialidad_error"></span>
                         </div>
                     </div>
                 </div>
@@ -41,7 +43,7 @@
                         Cancelar
                     </button>
 
-                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Guardar Especialidad">
+                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Actualizar Especialidad">
                 </div>
             </form>
 

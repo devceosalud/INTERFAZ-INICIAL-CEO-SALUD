@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\channel;
+namespace App\Http\Controllers\Api\interactionMedia;
 
 use App\Http\Controllers\Controller;
-use App\Models\Channel;
+use App\Models\InteractionMedium;
 use Illuminate\Http\Request;
 
-class ChannelController extends Controller
+class InteractionMediaController extends Controller
 {
     //
-
     public function search(Request $request)
     {
-        $channel = Channel::find($request->id);
+        $interactionMedium = InteractionMedium::find($request->id);
 
-        if (!$channel) {
+        if (!$interactionMedium) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'channel' => $channel
+                'interactionMedium' => $interactionMedium
             ], 200);
         }
     }

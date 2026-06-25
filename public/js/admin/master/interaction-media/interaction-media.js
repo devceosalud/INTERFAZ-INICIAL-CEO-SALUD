@@ -1,8 +1,8 @@
 window.addEventListener("DOMContentLoaded", function () {
 });
 
-// GUARDAR DATOS DE LA ESPECIALIDAD
-$("#formCreateChannel").on("submit", function (e) {
+// GUARDAR DATOS DEL MEDIO
+$("#formCreateInteractionMedia").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -60,21 +60,21 @@ $("#formCreateChannel").on("submit", function (e) {
     });
 });
 
-//PARA EDITAR LA ESPECIALIDAD
-$(document).on("click", ".edit-channel", async function (e) {
+//PARA EDITAR EL MEDIO
+$(document).on("click", ".edit-interaction-medium", async function (e) {
     e.preventDefault();
-    let channelId = $(this).data("id");
+    let interactionMediId = $(this).data("id");
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/channel/search",
+            "http://127.0.0.1:8000/api/admin/interaction-media/search",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: interactionMediId,
                 }),
             },
         );
@@ -83,20 +83,20 @@ $(document).on("click", ".edit-channel", async function (e) {
         console.log("DATOS CANAL PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
-            let p = data.channel;
+            let p = data.interactionMedium;
             //PINTAR DATOS EN EL MODAL
-            $("#channelModalEdit #channel_id_edit").val(p.id);
-            $("#channelModalEdit #nombre_edit_canal").val(p.nombre);
+            $("#interactionMediaModalEdit #interaction_media_id_edit").val(p.id);
+            $("#interactionMediaModalEdit #nombre_edit_interaccion_medio").val(p.nombre);
             //ABRIR MODAL
-            $("#channelModalEdit").modal("show");
+            $("#interactionMediaModalEdit").modal("show");
         }
     } catch (error) {
         console.error(error);
     }
 });
 
-//PARA ACTUALIZAR LOS DATOS DE LA ESPECIALIDAD
-$("#formUpdateChannel").on("submit", function (e) {
+//PARA ACTUALIZAR LOS DATOS DEL MEDIO
+$("#formUpdateInteractionMedia").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -134,7 +134,7 @@ $("#formUpdateChannel").on("submit", function (e) {
                     location.reload();
                 });
 
-                $("#specialtytModalEdit").modal("hide");
+                $("#nombre_edit_interaccion_medio").modal("hide");
             }
         },
 

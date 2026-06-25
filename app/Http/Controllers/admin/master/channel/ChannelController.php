@@ -68,7 +68,7 @@ class ChannelController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string'
+            'nombre_edit_canal' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -78,7 +78,7 @@ class ChannelController extends Controller
             ]);
         }
 
-        $channel = Channel::find($request->channel_id);
+        $channel = Channel::find($request->channel_id_edit);
         if (!$channel) {
             return response()->json([
                 'code' => 2,
@@ -87,7 +87,7 @@ class ChannelController extends Controller
         }
 
         $exito = $channel->update([
-            'nombre' => $request->nombre_canal
+            'nombre' => $request->nombre_edit_canal
         ]);
 
         if ($exito) {

@@ -94,6 +94,8 @@
 
             @include('admin.master.channel.crud.create')
 
+            @include('admin.master.channel.crud.edit')
+
         </div>
         <!--**********************************Content body end***********************************-->
 
@@ -111,6 +113,8 @@
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+        <script src="{{ asset('js/admin/master/channel/channel.js') }}"></script>
     @endsection
 
 

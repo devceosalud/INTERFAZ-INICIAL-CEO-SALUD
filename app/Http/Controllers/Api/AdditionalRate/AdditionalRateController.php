@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\channel;
+namespace App\Http\Controllers\api\AdditionalRate;
 
 use App\Http\Controllers\Controller;
-use App\Models\Channel;
+use App\Models\AdditionalRate;
 use Illuminate\Http\Request;
 
-class ChannelController extends Controller
+class AdditionalRateController extends Controller
 {
     //
-
     public function search(Request $request)
     {
-        $channel = Channel::find($request->id);
+        $additionalRate = AdditionalRate::find($request->id);
 
-        if (!$channel) {
+        if (!$additionalRate) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'channel' => $channel
+                'additionalRate' => $additionalRate
             ], 200);
         }
     }

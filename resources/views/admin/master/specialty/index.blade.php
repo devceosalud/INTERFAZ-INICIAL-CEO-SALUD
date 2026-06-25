@@ -113,6 +113,8 @@
 
             @include('admin.master.specialty.crud.create')
 
+            @include('admin.master.specialty.crud.edit')
+
         </div>
         <!--**********************************Content body end***********************************-->
 
@@ -130,6 +132,8 @@
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+        <script src="{{ asset('js/admin/master/specialty/specialty.js') }}"></script>
     @endsection
 
 

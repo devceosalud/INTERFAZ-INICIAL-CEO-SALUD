@@ -52,16 +52,35 @@ Route::get('/admissionist/responsible', [ResponsibleController::class , 'index']
 
 
 //MAESTRO : para las tablas independientes
-Route::get('/master/specialty', [SpecialtyController::class , 'index'])->name('master.specialty.index');
+Route::get('/master/admin/specialty', [SpecialtyController::class , 'index'])->name('master.specialty.index');
 Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'store'])->name('master.specialty.store');
+Route::put('/master/admin/specialty/update', [SpecialtyController::class , 'update'])->name('master.specialty.update');
 
-Route::get('/master/channel', [ChannelController::class, 'index'])->name('master.channel.index');
-Route::post('/master/channel/store', [ChannelController::class, 'store'])->name('master.channel.store');
 
-Route::get('/master/doctor', [DoctorController::class , 'index'])->name('master.doctor.index');
-Route::get('/master/additional-rate', [AdditionalRateController::class , 'index'])->name('master.additionalRate.index');
-Route::get('/master/interaction-media', [InteractionMediaController::class , 'index'])->name('master.interactionMedia.index');
-Route::get('/master/service', [ServiceController::class , 'index'])->name('master.service.index');
+Route::get('/master/admin/channel', [ChannelController::class, 'index'])->name('master.channel.index');
+Route::post('/master/admin/channel/store', [ChannelController::class, 'store'])->name('master.channel.store');
+Route::put('/master/admin/channel/update', [ChannelController::class ,'update'])->name('master.cahnnel.update');
+
+
+Route::get('/master/admin/interaction-media', [InteractionMediaController::class , 'index'])->name('master.interactionMedia.index');
+Route::post('/master/admin/interaction-media/store', [InteractionMediaController::class , 'store'])->name('master.interactionMedia.store');
+Route::put('/master/admin/interaction-media/udpate', [InteractionMediaController::class , 'update'])->name('master.interactionMedia.update');
+
+
+Route::get('/master/admin/additional-rate', [AdditionalRateController::class , 'index'])->name('master.additionalRate.index');
+Route::post('/master/admin/additional-rate/store', [AdditionalRateController::class , 'store'])->name('master.additionalRate.store');
+Route::put('/master/admin/additional-rate/update', [AdditionalRateController::class , 'update'])->name('master.additionalRate.update');
+
+
+Route::get('/master/admin/doctor', [DoctorController::class , 'index'])->name('master.doctor.index');
+Route::post('/master/admin/doctor/store', [DoctorController::class , 'store'])->name('master.doctor.store');
+Route::put('/master/admin/doctor/update', [DoctorController::class , 'update'])->name('master.doctor.update');
+
+
+
+Route::get('/master/admin/service', [ServiceController::class , 'index'])->name('master.service.index');
+Route::post('/master/admin/service/store', [ServiceController::class , 'store'])->name('master.service.store');
+Route::put('/master/admin/service/update', [ServiceController::class , 'update'])->name('master.service.update');
 
 
 

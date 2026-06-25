@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\channel;
+namespace App\Http\Controllers\Api\service;
 
 use App\Http\Controllers\Controller;
-use App\Models\Channel;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
-class ChannelController extends Controller
+class ServiceController extends Controller
 {
     //
-
     public function search(Request $request)
     {
-        $channel = Channel::find($request->id);
+        $service = Service::with('specialty')->find($request->id);
 
-        if (!$channel) {
+        if (!$service) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'channel' => $channel
+                'service' => $service
             ], 200);
         }
     }

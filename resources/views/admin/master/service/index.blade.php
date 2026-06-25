@@ -48,7 +48,7 @@
                                 <h4 class="card-title">Lista de Servicios</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">
+                                    data-bs-toggle="modal" data-bs-target="#serviceModalCreate">
                                     + Agregar Servicio
                                 </a>
                             </div>
@@ -100,7 +100,9 @@
                 </div>
             </div>
 
-            @include('admin.master.specialty.crud.create')
+            @include('admin.master.service.crud.create')
+
+            @include('admin.master.service.crud.edit')
 
         </div>
         <!--**********************************Content body end***********************************-->
@@ -119,6 +121,8 @@
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+        <script src="{{ asset('js/admin/master/service/service.js') }}"></script>
     @endsection
 
 

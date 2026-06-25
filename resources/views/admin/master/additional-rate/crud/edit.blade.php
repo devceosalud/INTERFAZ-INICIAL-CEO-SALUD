@@ -1,20 +1,21 @@
-<div class="modal fade" id="additonalRateModalCreate" tabindex="-1" aria-labelledby="additonalRateModalCreateLabel" aria-hidden="true">
+<div class="modal fade" id="additonalRateModalEdit" tabindex="-1" aria-labelledby="additonalRateModalEditLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
             <div class="modal-header">
-                <h5 class="modal-title" id="additonalRateModalCreateLabel">
-                    Registro de Tarifa
+                <h5 class="modal-title" id="additonalRateModalEditLabel">
+                    Actualizar Tarifa
                 </h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>
 
-            <form id="formCreateAdditionalRate" method="POST" action="{{ route('master.additionalRate.store') }}">
+            <form id="formUpdateAdditionalRate" method="POST" action="{{ route('master.additionalRate.update') }}">
 
+                @method('put')
                 @csrf
 
                 <div class="modal-body">
@@ -26,18 +27,19 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
+                             <input type="hidden" name="additional_rate_id_edit" id="additional_rate_id_edit">
                             <label class="form-label text-primary">Nombre de la Tarifa<span
                                     class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nombre_tarifa" id="nombre_tarifa"
-                                placeholder="Nombre completo">
+                            <input type="text" class="form-control" name="nombre_edit_tarifa" id="nombre_edit_tarifa"
+                                placeholder="Nombre de la tarifa">
 
-                            <span class="text-danger error-text nombre_tarifa_error"></span>
+                            <span class="text-danger error-text nombre_edit_tarifa_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Tipo Tarifa <span
                                     class="text-danger">*</span></label>
-                            <select class="form-control" name="tipo_tarifa" id="tipo_tarifa">
+                            <select class="form-control" name="tipo_edit_tarifa" id="tipo_edit_tarifa">
                                 <option value="MONTO_FIJO">MONTO FIJO</option>
                                 <option value="PORCENTAJE">PORCENTAJE</option>
                             </select>
@@ -46,9 +48,9 @@
                         <div class="col-md-4">
                             <label class="form-label text-primary">Saldo<span
                                     class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="saldo_tarifa" id="saldo_tarifa">
+                            <input type="number" class="form-control" name="saldo_edit_tarifa" id="saldo_edit_tarifa">
 
-                            <span class="text-danger error-text saldo_tarifa_error"></span>
+                            <span class="text-danger error-text saldo_edit_tarifa_error"></span>
                         </div>
                     </div>
                 </div>
@@ -59,7 +61,7 @@
                         Cancelar
                     </button>
 
-                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Guardar Tarifa">
+                    <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Actualizar Tarifa">
                 </div>
             </form>
 

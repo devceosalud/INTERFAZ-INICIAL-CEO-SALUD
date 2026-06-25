@@ -48,7 +48,7 @@
                                 <h4 class="card-title">Lista de Tarifas</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#specialtytModalCreate">
+                                    data-bs-toggle="modal" data-bs-target="#additonalRateModalCreate">
                                     + Agregar Tarifas
                                 </a>
                             </div>
@@ -96,7 +96,9 @@
                 </div>
             </div>
 
-            @include('admin.master.specialty.crud.create')
+            @include('admin.master.additional-rate.crud.create')
+
+            @include('admin.master.additional-rate.crud.edit');
 
         </div>
         <!--**********************************Content body end***********************************-->
@@ -115,6 +117,8 @@
         <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+        <script src="{{ asset('js/admin/master/additional-rate/additional-rate.js') }}"></script>
     @endsection
 
 
