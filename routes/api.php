@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\channel\ChannelController;
 use App\Http\Controllers\Api\doctor\DoctorController;
 use App\Http\Controllers\Api\interactionMedia\InteractionMediaController;
 use App\Http\Controllers\Api\patient\PatientController;
+use App\Http\Controllers\Api\responsible\responsibleController;
 use App\Http\Controllers\Api\service\ServiceController;
 use App\Http\Controllers\Api\specialty\SpecialtyController;
 use App\Http\Controllers\Api\user\UserController;
@@ -50,3 +51,5 @@ Route::post('/admin/additonal-rate/search', [AdditionalRateController::class , '
 Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name('api.admin.doctor.search');
 
 Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.doctor.search');
+
+Route::post('/admin/responsible/search', [responsibleController::class , 'search'])->name('api.admin.responsible.search');

@@ -39,25 +39,6 @@
 
         <div class="content-body">
             <div class="container-fluid">
-                {{--
-                <div class="page-titles">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="javascript:void(0)">Table</a>
-                            </li>
-                            <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Pacientes</a>
-                            </li>
-                        </ol>
-
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">
-                            + Agregar Paciente
-                        </a>
-                    </div>
-                </div>
-                 --}}
                 <!-- row -->
                 <div class="row">
 
@@ -66,13 +47,6 @@
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                                 <h4 class="card-title">Lista de Responsables</h4>
-
-                                {{--
-                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#patientModalCreate">
-                                    + Agregar Paciente
-                                </a>
-                                --}}
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -91,7 +65,8 @@
                                                 <tr>
                                                     <td><strong>{{ $responsible->id }}</strong></td>
                                                     <td>{{ $responsible->parentezco }}</td>
-                                                    <th>{{ $responsible->patient->nombre}} {{ $responsible->patient->apellido_paterno}}</th>
+                                                    <th>{{ $responsible->patient->nombre }}
+                                                        {{ $responsible->patient->apellido_paterno }}</th>
                                                     <td>{{ $responsible->telefono }}</td>
                                                     <td>
                                                         <strong>
@@ -102,7 +77,10 @@
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                <a href="#" class="delete-responsible"
+                                                                    data-id="{{ $responsible->id }}">
+                                                                    <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                </a>
                                                             </span>
                                                         </strong>
                                                     </td>
@@ -114,6 +92,9 @@
                             </div>
                         </div>
                     </div>
+
+
+                    @include('admissionist.rersponsible.crud.edit')
 
                 </div>
             </div>
@@ -136,7 +117,7 @@
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
 
-        <script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
+        <script src="{{ asset('js/admissionist/responsible/responsible.js') }}"></script>
     @endsection
 
 

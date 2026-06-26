@@ -27,6 +27,7 @@ class PatientController extends Controller
         $start = Carbon::now()->startOfMonth();
         $end   = Carbon::now()->endOfMonth();
         $patients = Patient::whereBetween('fecha_registro', [$start, $end])
+            ->where('estado','ACTIVO')
             ->orderBy('id', 'ASC')
             ->get();
         $channels  = Channel::where('estado', 'ACTIVO')->get();
@@ -201,5 +202,26 @@ class PatientController extends Controller
             'code' => 1,
             'msg' => 'Paciente actualizado correctamente'
         ]);
+    }
+
+    //PARA DESACTIVAR 
+    public function delete(Request $request)
+    {
+        $patient = Patient::find($request->id);
+        $exito = $patient->update([
+            'estado' => 'INACTIVO'
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Paciente inactivado"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "Paciente no se inactivo"
+            ]);
+        }
     }
 }

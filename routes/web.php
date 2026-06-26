@@ -44,11 +44,15 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.das
 Route::get('/admissionist/patient', [PatientController::class , 'index'])->name('admissionit.patient.index');
 Route::post('/admissionist/patient/store', [PatientController::class , 'store'])->name('admissionit.patient.store');
 Route::put('/admissionist/patient/udpate', [PatientController::class , 'update'])->name('admissionit.patient.update');
+Route::post('/admissionist/patient/delete', [PatientController::class , 'delete'])->name('admissionit.patient.delete');
+
 
 Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
 Route::post('/admissionist/appointment/store', [AppointmentController::class , 'store'])->name('admissionit.appointment.store');
 
 Route::get('/admissionist/responsible', [ResponsibleController::class , 'index'])->name('admissionit.responsible.index');
+Route::put('/admissionist/responsible/update', [ResponsibleController::class, 'update'])->name('admissionit.responsible.update');
+Route::post('/admissionist/responsible/delete', [ResponsibleController::class , 'delete'])->name('admissionit.responsible.delete');
 
 
 //MAESTRO : para las tablas independientes
