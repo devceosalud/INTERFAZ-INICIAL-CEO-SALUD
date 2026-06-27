@@ -152,3 +152,6 @@ $("#formUpdateSpecialty").on("submit", function (e) {
         },
     });
 });
+
+//PARA DESACTIVAR LA ESPECIALIDAD
+

@@ -450,7 +450,8 @@ $('#formCreateAppointment').on('submit', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    location.reload();
+                    //location.reload();
+                    window.location.href = "/admissionist/appointment";
                 });
                 form.reset();
                 $('#patientModalCreate').modal('hide');
