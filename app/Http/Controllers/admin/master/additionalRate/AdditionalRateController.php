@@ -108,6 +108,24 @@ class AdditionalRateController extends Controller
         }
     }
 
-    //PARA DESACTIVAR CASSSSS
-    public function destroy(Request $request) {}
+    //PARA DESACTIVAR TARIFA
+    public function delete(Request $request)
+    {
+        $additionalRate = AdditionalRate::find($request->id);
+        $exito = $additionalRate->update([
+            'estado' => 'INACTIVO'
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Tarifa inactivado"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => 'Tarifa no se inactivo'
+            ]);
+        }
+    }
 }

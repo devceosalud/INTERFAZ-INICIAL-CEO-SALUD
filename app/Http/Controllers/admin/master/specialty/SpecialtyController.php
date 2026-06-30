@@ -96,4 +96,24 @@ class SpecialtyController extends Controller
             ]);
         }
     }
+
+    public function delete(Request $request)
+    {
+        $specialty = Specialty::find($request->id);
+        $exito = $specialty->update([
+            'estado' => "INACTIVO"
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Especialidad inactivada"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "Especialidad no se inactivo"
+            ]);
+        }
+    }
 }

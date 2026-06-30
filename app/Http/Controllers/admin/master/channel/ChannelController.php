@@ -103,9 +103,24 @@ class ChannelController extends Controller
         }
     }
 
-    //PARA DESACTIVAR CASSSSS
-    public function destroy(Request $request)
+    //PARA DESACTIVAR CANAL
+    public function delete(Request $request)
     {
-         
+        $channel = Channel::find($request->id);
+        $exito = $channel->update([
+            'estado' => 'INACTIVO'
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => 'Canal inactivado'
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => 'Canal no se inactivo'
+            ]);
+        }
     }
 }

@@ -53,3 +53,6 @@ Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name(
 Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.doctor.search');
 
 Route::post('/admin/responsible/search', [responsibleController::class , 'search'])->name('api.admin.responsible.search');
+
+
+//API PARA FILTAR  LOS DEPARTAMENTOS , ´PROVINCIA Y DISTRITO

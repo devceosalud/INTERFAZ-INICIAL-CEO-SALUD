@@ -115,5 +115,23 @@ class DoctorController extends Controller
     }
 
     //PARA DESACTIVAR DOCTOR
-    public function destroy(Request $request) {}
+    public function delete(Request $request)
+    {
+        $doctor = Doctor::find($request->id);
+        $exito = $doctor->update([
+            'estado' => 'INACTIVO'
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Doctor inactivado"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Doctor no se inactivo"
+            ]);
+        }
+    }
 }

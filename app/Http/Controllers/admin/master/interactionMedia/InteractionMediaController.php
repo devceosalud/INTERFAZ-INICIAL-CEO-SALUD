@@ -101,6 +101,24 @@ class InteractionMediaController extends Controller
         }
     }
 
-    //PARA DESACTIVAR CASSSSS
-    public function destroy(Request $request) {}
+    //PARA DESACTIVAR MEDIO
+    public function delete(Request $request)
+    {
+        $InteractionMedium = InteractionMedium::find($request->id);
+        $exito = $InteractionMedium->update([
+            'estado' => 'INACTIVO'
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Medio desactivado"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "Medio no se desactivo"
+            ]);
+        }
+    }
 }

@@ -120,6 +120,24 @@ class ServiceController extends Controller
         }
     }
 
-    //PARA DESACTIVAR DOCTOR
-    public function destroy(Request $request) {}
+    //PARA DESACTIVAR SERVICE
+    public function delete(Request $request)
+    {
+        $service = Service::find($request->id);
+        $exito = $service->update([
+            'estado' => "INACTIVO"
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Servicio inactivado"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "Servicio no se inactivo"
+            ]);
+        }
+    }
 }

@@ -95,7 +95,7 @@ class PatientController extends Controller
         }
 
         // DATOS GENERALES
-        $patient->user_id = 1;
+        $patient->user_id = auth()->user()->id;
         $patient->nombre = $request->nombre_paciente;
         $patient->apellido_paterno = $request->apellido_paterno;
         $patient->apellido_materno = $request->apellido_materno;
