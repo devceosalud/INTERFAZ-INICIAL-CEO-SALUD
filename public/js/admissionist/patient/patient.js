@@ -85,14 +85,14 @@ $("#formCreatePatient").on("submit", function (e) {
                     timer: 2000,
                     showConfirmButton: false,
                 }).then(() => {
-                    //location.reload();
+                    location.reload();
                     //MOSTRAMOS SI QUIERE CREAR CITA O CERRAR
-                    $('#appointmentModalOpen').modal("show");
+                    //$('#appointmentModalOpen').modal("show");
                     console.log('Datos del paciente:', response.patient);
                     //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
-                    $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
-                    $('#appointmentModalCreate #patient_id').val(response.patient.id);
-                    $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
+                    //$('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
+                    //$('#appointmentModalCreate #patient_id').val(response.patient.id);
+                    //$('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
                 });
                 form.reset();
                 $("#patientModalCreate").modal("hide");

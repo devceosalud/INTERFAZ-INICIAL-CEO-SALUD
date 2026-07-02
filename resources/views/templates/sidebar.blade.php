@@ -31,6 +31,7 @@
                 </li>
 
 
+                {{--
                 <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                         <i class="flaticon-381-menu"></i>
                         <span class="nav-text">Citas</span>
@@ -39,6 +40,7 @@
                         <li><a href="{{ route('admissionit.appointment.index') }}">Registrar Cita</a></li>
                     </ul>
                 </li>
+                --}}
             @endif
 
 
