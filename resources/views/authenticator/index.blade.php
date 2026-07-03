@@ -22,7 +22,7 @@
                         </h3>
 
                         <p class="text-muted mb-4">
-                            Accede a la plataforma educativa
+                            Accede a la plataforma
                         </p>
 
                         {{-- ERROR --}}

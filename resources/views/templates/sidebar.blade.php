@@ -10,6 +10,43 @@
                 </ul>
             </li>
 
+            {{--ENLACES ADM--}}
+            @if (auth()->user()->getRoleNames()->contains('ADMINISTRADOR'))
+                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-id-card-4"></i>
+                        <span class="nav-text">Maestros</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href='{{ route('master.specialty.index') }}'>Especialidades</a></li>
+                        <li><a href="{{ route('master.service.index') }}">Servicios</a></li>
+                        <li><a href='{{ route('master.doctor.index') }}'>Doctores</a></li>
+                        <li><a href="{{ route('master.additionalRate.index') }}">Tarifas</a></li>
+                        <li><a href="{{ route('master.interactionMedia.index') }}">Medios</a></li>
+                        <li><a href='{{ route('master.channel.index') }}'>Canales</a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-id-card-4"></i>
+                        <span class="nav-text">Usuarios</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href='{{ route('admin.user.index') }}'>Lista de Usuarios</a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-id-card-4"></i>
+                        <span class="nav-text">Roles</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href='{{ route('admin.roles.index') }}'>Lista de Roles</a></li>
+                    </ul>
+                </li>
+            @endif
+
+
+
+
+            {{--ENLACES ADMISION--}}
             @if (auth()->user()->getRoleNames()->contains('ADMISION'))
                 <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
                         <i class="flaticon-381-id-card-4"></i>
@@ -43,41 +80,16 @@
                 --}}
             @endif
 
+            {{--ENLACERS CAJA--}}
+
+            {{--ENLACES FACTURACION--}}
+
+            {{--ENLACES RECEPCION--}}
+
+            {{--ENLACES GERENCIA--}}
 
 
-            @if (auth()->user()->getRoleNames()->contains('ADMINISTRADOR'))
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
-                        <span class="nav-text">Maestros</span>
-                    </a>
-                    <ul aria-expanded="false">
-                        <li><a href='{{ route('master.specialty.index') }}'>Especialidades</a></li>
-                        <li><a href="{{ route('master.service.index') }}">Servicios</a></li>
-                        <li><a href='{{ route('master.doctor.index') }}'>Doctores</a></li>
-                        {{--
-                        <li><a href="{{ route('master.additionalRate.index') }}">Tarifas</a></li>
-                        <li><a href="{{ route('master.interactionMedia.index') }}">Medios</a></li>
-                        <li><a href='{{ route('master.channel.index') }}'>Canales</a></li>
-                        --}}
-                    </ul>
-                </li>
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
-                        <span class="nav-text">Usuarios</span>
-                    </a>
-                    <ul aria-expanded="false">
-                        <li><a href='{{ route('admin.user.index') }}'>Lista de Usuarios</a></li>
-                    </ul>
-                </li>
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
-                        <span class="nav-text">Roles</span>
-                    </a>
-                    <ul aria-expanded="false">
-                        <li><a href='{{ route('admin.roles.index') }}'>Lista de Roles</a></li>
-                    </ul>
-                </li>
-            @endif
+
         </ul>
 
         <a href='#'>
