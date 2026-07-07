@@ -13,7 +13,7 @@
                 </button>
             </div>
 
-            <form id="formUpdateChannel" method="POST" action="{{ route('master.cahnnel.update') }}">
+            <form id="formUpdateChannel" method="POST" action="{{ route('master.channel.update') }}">
 
                 @method('put')
                 @csrf

@@ -48,15 +48,6 @@
 
                             <span class="text-danger error-text nombre_responsable_error"></span>
                         </div>
-
-
-                        <div class="col-md-4">
-                            <label class="form-label text-primary">Teléfono</label>
-                            <input type="text" class="form-control" name="telefono_responsable"
-                                id="telefono_responsable" placeholder="999777666">
-
-                            <span class="text-danger error-text telefono_responsable_error"></span>
-                        </div>
                     </div>
 
                     <!-- IDENTIFICACION -->
@@ -87,6 +78,14 @@
                                 id="numero_identidad_responsable" placeholder="12345678">
 
                             <span class="text-danger error-text numero_identidad_responsable_error"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-primary">Teléfono</label>
+                            <input type="text" class="form-control" name="telefono_responsable"
+                                id="telefono_responsable" placeholder="999777666">
+
+                            <span class="text-danger error-text telefono_responsable_error"></span>
                         </div>
                     </div>
                 </div>

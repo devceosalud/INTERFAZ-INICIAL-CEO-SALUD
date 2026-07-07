@@ -98,7 +98,7 @@ Route::post('/master/admin/doctor/delete', [DoctorController::class , 'delete'])
 Route::get('/master/admin/service', [ServiceController::class , 'index'])->name('master.service.index');
 Route::post('/master/admin/service/store', [ServiceController::class , 'store'])->name('master.service.store');
 Route::put('/master/admin/service/update', [ServiceController::class , 'update'])->name('master.service.update');
-Route::post('/master/admin/service/dalete', [ServiceController::class , 'delete'])->name('master.service.delete');
+Route::post('/master/admin/service/delete', [ServiceController::class , 'delete'])->name('master.service.delete');
 
 
 

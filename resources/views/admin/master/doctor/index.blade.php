@@ -78,7 +78,10 @@
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                <a href="#" class="delete-doctor"
+                                                                    data-id="{{ $doctor->id }}">
+                                                                    <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                </a>
                                                             </span>
                                                         </strong>
                                                     </td>
