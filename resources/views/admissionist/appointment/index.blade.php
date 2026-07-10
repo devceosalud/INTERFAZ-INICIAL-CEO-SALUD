@@ -6,6 +6,8 @@
     <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
     <!-- Custom Stylesheet -->
     <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
 @endsection
 
 
@@ -38,23 +40,94 @@
         <!--**********************************Content body start***********************************-->
         <div class="content-body">
             <div class="container-fluid">
-                 {{--
-                <div class="page-titles">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="javascript:void(0)">Table</a>
-                            </li>
-                            <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Citas</a>
-                            </li>
-                        </ol>
 
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                <!-- row -->
+                <div class="row">
+                    <div class="col-xl-12 col-xxl-12">
+                        <div class="mx-auto d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                            <h4 class="card-title">App\Calendario</h4>
+
+                            <div id="external-events" class="">
+                                <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar
+                                    Cita</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-12 col-xxl-12 mt-2">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="calendar" class="app-fullcalendar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BEGIN MODAL -->
+                    <div class="modal fade none-border" id="event-modal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title"><strong>Add New Event</strong></h4>
+                                </div>
+                                <div class="modal-body"></div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default waves-effect"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button"
+                                        class="btn btn-success save-event waves-effect waves-light">Create
+                                        event</button>
+
+                                    <button type="button" class="btn btn-danger delete-event waves-effect waves-light"
+                                        data-bs-toggle="modal">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Add Category -->
+                    <div class="modal fade none-border" id="add-category">
+                        <div class=" modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title"><strong>Add a category</strong></h4>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="control-label form-label">Category Name</label>
+                                                <input class="form-control form-white" placeholder="Category Name"
+                                                    type="text" name="category-name">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="control-label form-label">Choose Category Color</label>
+                                                <select class="form-control form-white" data-placeholder="Choose a color..."
+                                                    name="category-color">
+                                                    <option value="success">Success</option>
+                                                    <option value="danger">Danger</option>
+                                                    <option value="info">Info</option>
+                                                    <option value="pink">Pink</option>
+                                                    <option value="primary">Primary</option>
+                                                    <option value="warning">Warning</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default btn-danger light waves-effect"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary waves-effect waves-light save-category"
+                                        data-bs-toggle="modal">Save</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                 --}}
+
                 <!-- row -->
                 <div class="row">
 
@@ -142,6 +215,10 @@
             <!-- Required vendors -->
             <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
             <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+
+            <script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
+            <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
+            <script src="{{ asset('assets/js/plugins-init/fullcalendar-init.js') }}"></script>
 
             <!-- Datatable -->
             <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>

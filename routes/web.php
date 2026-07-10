@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\admissionist\responsible\ResponsibleController;
+use App\Http\Controllers\admissionist\schedule\ScheduleController;
 use App\Http\Controllers\authenticator\auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,7 +41,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.das
 
 
 
-//ADMISIONISTA: para citas y personal
+//ADMISIONISTA: para citas, personal calendario web
 Route::get('/admissionist/patient', [PatientController::class , 'index'])->name('admissionit.patient.index');
 Route::post('/admissionist/patient/store', [PatientController::class , 'store'])->name('admissionit.patient.store');
 Route::put('/admissionist/patient/udpate', [PatientController::class , 'update'])->name('admissionit.patient.update');
@@ -53,6 +54,10 @@ Route::post('/admissionist/appointment/store', [AppointmentController::class , '
 Route::get('/admissionist/responsible', [ResponsibleController::class , 'index'])->name('admissionit.responsible.index');
 Route::put('/admissionist/responsible/update', [ResponsibleController::class, 'update'])->name('admissionit.responsible.update');
 Route::post('/admissionist/responsible/delete', [ResponsibleController::class , 'delete'])->name('admissionit.responsible.delete');
+
+
+Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class , 'list'])->name('admissionit.schedule.list');
+
 
 
 //MAESTRO : para las tablas independientes

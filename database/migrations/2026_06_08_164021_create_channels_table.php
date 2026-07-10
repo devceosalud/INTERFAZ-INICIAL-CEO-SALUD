@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('channels', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->nullable();
+            $table->string('nombre')->nullable(); //DR QUIRZO , CEO SALUD
             $table->enum('estado', ['ACTIVO', 'INACTIVO']);
             $table->timestamps();
         });

@@ -31076,4 +31076,39 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
     [data-theme-version="dark"] .footer .copyright p {
       color: #fff; }
 
+/*#VENTANA DEL CALENDARIO POR HOVER*/
+.popover{
+    border-radius:15px;
+    border:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.20);
+    max-width:360px;
+}
+
+.popover-header{
+    background:#0d6efd;
+    color:white;
+    font-weight:600;
+    border:none;
+    padding:12px;
+}
+
+.popover-body{
+    background:white;
+    padding:15px;
+}
+
+.calendar-popover table td{
+    padding:3px 0;
+    font-size:13px;
+}
+
+.calendar-popover h6{
+    font-weight:700;
+}
+
+.calendar-popover .badge{
+    font-size:11px;
+    margin-right:4px;
+}
+
 /*# sourceMappingURL=style.css.map */

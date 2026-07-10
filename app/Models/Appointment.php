@@ -15,8 +15,6 @@ class Appointment extends Model
         'patient_id',
         'doctor_id',
         'service_id',
-       // 'channel_id',
-       // 'interaction_medium_id',
         'additional_rate_id',
         'fecha_cita',
         'hora_cita',

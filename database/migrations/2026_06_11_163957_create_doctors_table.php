@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('specialty_id');
-            $table->string('nombre')->nullable();
+            $table->string('nombre')->nullable(); // DR QUIROZM, DR ALANIA
             $table->string('cmp')->nullable();
             $table->string('rne')->nullable();
             $table->enum('estado', ['ACTIVO', 'INACTIVO']);

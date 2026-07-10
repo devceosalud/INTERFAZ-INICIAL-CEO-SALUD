@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('interaction_media', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->nullable();
+            $table->string('nombre')->nullable(); // TIKTOK, IG, FACEBOOK
             $table->enum('estado', ['ACTIVO', 'INACTIVO']);
             $table->timestamps();
         });

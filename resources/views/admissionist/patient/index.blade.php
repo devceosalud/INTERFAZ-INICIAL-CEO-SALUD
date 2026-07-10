@@ -47,25 +47,7 @@
 
         <div class="content-body">
             <div class="container-fluid">
-                {{--
-                <div class="page-titles">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="javascript:void(0)">Table</a>
-                            </li>
-                            <li class="breadcrumb-item active">
-                                <a href="javascript:void(0)">Pacientes</a>
-                            </li>
-                        </ol>
-
-                        <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                            data-bs-toggle="modal" data-bs-target="#patientModalCreate">
-                            + Agregar Paciente
-                        </a>
-                    </div>
-                </div>
-                 --}}
+            
                 <!-- row -->
                 <div class="row">
 

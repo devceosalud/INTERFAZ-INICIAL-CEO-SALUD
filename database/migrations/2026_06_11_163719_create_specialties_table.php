@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('specialties', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->nullable();
+            $table->string('nombre')->nullable(); // TRAUMATOLOGIA, MFR, CARDIOLOGIA
             $table->enum('estado', ['ACTIVO', 'INACTIVO']);
             $table->timestamps();
         });

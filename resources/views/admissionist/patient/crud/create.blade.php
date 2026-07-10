@@ -4,8 +4,8 @@
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="patientModalCreateLabel">
+            <div class="modal-header bg-dark">
+                <h5 class="modal-title text-white" id="patientModalCreateLabel">
                     Registro de Paciente
                 </h5>
 
