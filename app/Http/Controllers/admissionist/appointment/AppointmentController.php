@@ -105,7 +105,7 @@ class AppointmentController extends Controller
             'fecha_cita' => $request->fecha_cita,
             'hora_cita' => $request->hora_cita,
 
-            'motivo_consulta' => $request->motivo_consulta,
+            'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
 
             'precio_programado' => $request->precio_programado,
             'total_pagado' => $request->total_pagado,
@@ -117,16 +117,16 @@ class AppointmentController extends Controller
             'estado_pagado' => $estado_pagado,
             'estado_cita' => 'PROGRAMADO',
 
-            'observaciones' => $request->observaciones,
+            'observaciones' => $request->observaciones ?? 'SIN OBSERVACIONES',
             'fecha_registro' => now()->toDateString(),
         ]);
 
         if ($appointment) {
 
-            //SI TIENE CORREO, SE ENVIA SU CITA CREADA A SU CORREO
-            if ($appointment->patient->email) {
-                Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
-            }
+            //PONERLO EN UN CRON JOB FLUJO ESCALA NOTIFICADOR
+            //if ($appointment->patient->email) {
+            //    Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
+            //}
 
             return response()->json([
                 'code' => 1,

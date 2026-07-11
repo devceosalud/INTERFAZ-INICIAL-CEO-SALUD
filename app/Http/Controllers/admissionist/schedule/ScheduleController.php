@@ -16,17 +16,17 @@ class ScheduleController extends Controller
 
         $events = $appointment->map(function ($schedule) {
 
-            switch ($schedule->service->nombre) {
+            switch ($schedule->service_id) {
 
-                case 'CONSULTA TRAUMATOLOGIA':
+                case 1:
                     $color = '#dc3545';
                     break;
 
-                case 'CONSULTA CARDIOLOGICA':
+                case 2:
                     $color = '#0d6efd';
                     break;
 
-                case 'ECOGRAFIA':
+                case 3:
                     $color = '#ffc107';
                     break;
 

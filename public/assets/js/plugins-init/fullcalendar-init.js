@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         editable: true,
         selectable: true,
         businessHours: true,
-        dayMaxEvents: true, // allow "more" link when too many events
+        dayMaxEvents: false, // para mostrar o no la lista completa de las agendas
 
 
         //TOOLTIP PARA VENTANAS RAPIDAS

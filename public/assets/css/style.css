@@ -31076,6 +31076,22 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
     [data-theme-version="dark"] .footer .copyright p {
       color: #fff; }
 
+
+/*ESTILOS PARA EL CALENDARIO*/
+.fc-button.fc-button-primary.fc-today-button {
+    background: var(--primary) !important;
+    color: #fff;
+    border: 0;
+    opacity: 1;
+}      
+
+.fc .fc-button-group > .fc-button:focus, .fc .fc-button-group > .fc-button:active, .fc .fc-button-group > .fc-button:hover, .fc .fc-button-group > .fc-button.fc-button-active {
+    background: var(--primary) !important;
+    color: #fff;
+    border-color: var(--primary) !important;
+}
+
+
 /*#VENTANA DEL CALENDARIO POR HOVER*/
 .popover{
     border-radius:15px;
@@ -31085,7 +31101,7 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
 }
 
 .popover-header{
-    background:#0d6efd;
+    background: var(--primary);
     color:white;
     font-weight:600;
     border:none;
