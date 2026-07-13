@@ -128,6 +128,7 @@ async function buscarEspecialidad(event) {
             opcion.textContent = doctor.nombre;
             selectDoctor.appendChild(opcion);
         })
+        
         //LLENANDO DATOS DE SERVICIOS
         data.data.services.forEach(service => {
             const opcion = document.createElement('option');
@@ -261,7 +262,17 @@ $('#formCreateAppointment').on('submit', function (e) {
                 form.reset();
                 $('#patientModalCreate').modal('hide');
 
-            } else {
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Precaución',
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                });
+            }
+            else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -284,6 +295,9 @@ $('#formCreateAppointment').on('submit', function (e) {
         }
     });
 });
+
+
+//PARA EDITAR LA CITA
 
 
 

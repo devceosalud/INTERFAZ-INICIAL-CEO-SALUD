@@ -5,7 +5,7 @@
         <div class="modal-content">
 
             <!-- HEADER -->
-            <div class="modal-header">
+            <div class="modal-header bg-dark">
                 <h5 class="modal-title" id="appointmentModalCreateLabel">Agregar nueva Cita</h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -185,7 +185,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer">
+                <div class="modal-footer bg-dark">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

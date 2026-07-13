@@ -37,7 +37,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Correo electrónico</label>
-                                <input type="email" name="email" class="form-control" placeholder="ejemplo@correo.com">
+                                <input type="email" name="email" class="form-control" placeholder="ejemplo@correo.com">                               
                             </div>
 
                             <div class="mb-3">
@@ -62,19 +62,6 @@
                                 Iniciar sesión
                             </button>
                         </form>
-
-                        <div class="text-center mt-4">
-                            <small class="text-muted">o continuar con</small>
-                        </div>
-
-                        <div class="d-flex gap-2 mt-3">
-                            <button class="btn btn-outline-dark w-50">
-                                Google
-                            </button>
-                            <button class="btn btn-outline-dark w-50">
-                                GitHub
-                            </button>
-                        </div>
 
                     </div>
 

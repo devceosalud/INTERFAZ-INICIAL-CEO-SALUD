@@ -207,6 +207,8 @@
             </div>
 
             @include('admissionist.appointment.crud.create')
+
+            @include('admissionist.appointment.crud.edit')
         </div>
         <!--**********************************Content body end***********************************-->
 

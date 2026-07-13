@@ -49,7 +49,7 @@
                     @if ($role->contains('ADMISION'))
                         <div class="col-xl-6 col-xxl-6 col-sm-6">
                             <a href="{{ route('admissionit.patient.index') }}" class="text-decoration-none">
-                                <div class="card gradient-bx text-white bg-danger">
+                                <div class="card gradient-bx text-white bg-dark">
                                     <div class="card-body">
                                         <div class="media align-items-center">
 
@@ -101,7 +101,7 @@
 
                         <div class="col-xl-6 col-xxl-6 col-sm-6">
                             <a href="{{ route('admissionit.appointment.index') }}" class="text-decoration-none">
-                                <div class="card gradient-bx text-white bg-success">
+                                <div class="card gradient-bx text-white bg-info">
                                     <div class="card-body">
                                         <div class="media align-items-center">
 

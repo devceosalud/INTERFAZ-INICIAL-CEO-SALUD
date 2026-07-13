@@ -57,9 +57,11 @@ Route::post('/admissionist/responsible/delete', [ResponsibleController::class , 
 
 
 Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class , 'list'])->name('admissionit.schedule.list');
+Route::post('/admissionist/schedule/update', [ScheduleController::class , 'update'])->name('addmissionit.schedule.update');
 
 
 
+/********************************************RUTAS PARA EL ADMINISTRADOR ********************************************/
 //MAESTRO : para las tablas independientes
 Route::get('/master/admin/specialty', [SpecialtyController::class , 'index'])->name('master.specialty.index');
 Route::post('/master/admin/specialty/store', [SpecialtyController::class , 'store'])->name('master.specialty.store');
@@ -107,7 +109,7 @@ Route::post('/master/admin/service/delete', [ServiceController::class , 'delete'
 
 
 
-//RUTAS PARA EL ADMINISTRADOR
+
 /**RUTA PARA LOS ROLES Y PERMISOS */
 Route::get('/admin/role', [RoleController::class, 'index'])->name('admin.roles.index');
 Route::get('/admin/permisos/create', [RoleController::class, 'create'])->name('admin.permissions.create');

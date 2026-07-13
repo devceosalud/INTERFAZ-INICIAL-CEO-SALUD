@@ -4,8 +4,8 @@
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="interactionMediaModalCreateLabel">
+            <div class="modal-header bg-dark">
+                <h5 class="modal-title text-white" id="interactionMediaModalCreateLabel">
                     Registro Medio de Comunicación
                 </h5>
 
@@ -36,7 +36,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer">
+                <div class="modal-footer bg-dark">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

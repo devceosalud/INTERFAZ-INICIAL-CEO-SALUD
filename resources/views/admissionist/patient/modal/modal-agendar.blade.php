@@ -4,7 +4,7 @@
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header">
+            <div class="modal-header bg-dark">
                 <h5 class="modal-title" id="appointmentModalOpenLabel">Agendar una Cita</h5>
                 <p id="paciente_nombre"></p>
 
@@ -14,7 +14,7 @@
 
 
             <!-- FOOTER -->
-            <div class="modal-footer">
+            <div class="modal-footer bg-dark">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
                     Cerrar
                 </button>
