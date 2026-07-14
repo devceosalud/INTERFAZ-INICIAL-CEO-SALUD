@@ -229,6 +229,7 @@
             <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
             <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
+            <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
         @endsection
 
 

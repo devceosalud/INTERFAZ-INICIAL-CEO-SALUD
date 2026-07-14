@@ -21,8 +21,6 @@ return new class extends Migration
             $table->unsignedBigInteger('patient_id');
             $table->unsignedBigInteger('doctor_id');
             $table->unsignedBigInteger('service_id');
-            //$table->unsignedBigInteger('channel_id');
-            //$table->unsignedBigInteger('interaction_medium_id');
             $table->unsignedBigInteger('additional_rate_id');
 
             $table->date('fecha_cita');

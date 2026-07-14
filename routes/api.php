@@ -31,7 +31,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('/patient/show', [PatientController::class, 'show'])->name('api.patient.show');
 Route::post('/patient/show/search', [PatientController::class, 'search'])->name('api.patient.search');
-
+Route::get('/patient/reniec-api/search', [PatientController::class , 'reniec'])->name('api');
 
 
 Route::post('/appointment/specialty', [AppointmentController::class, 'specialty'])->name('api.appointment.specialty');

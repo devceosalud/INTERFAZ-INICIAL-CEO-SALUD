@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admissionist\schedule;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
 {
@@ -66,7 +67,7 @@ class ScheduleController extends Controller
 
                 'patient_id' => $schedule->patient_id,
                 'documento_paciente' => $schedule->patient->numero_identidad,
-                'nombre_paciente' => $schedule->patient->nombre .' '. $schedule->patient->apellido_paterno .' '. $schedule->patient->apellido_materno,
+                'nombre_paciente' => $schedule->patient->nombre . ' ' . $schedule->patient->apellido_paterno . ' ' . $schedule->patient->apellido_materno,
                 'specialty_id' => $schedule->service->specialty->id,
                 'nombre_especialidad' => $schedule->service->specialty->nombre,
                 'doctor_id' => $schedule->doctor_id,
@@ -91,6 +92,53 @@ class ScheduleController extends Controller
     //PARA ACTUALIZAR LA AGENDA
     public function update(Request $request)
     {
-        dd($request->all());
+        //dd($request->all());
+        $validator = Validator::make($request->all(), [
+            'doctor_id_edit' => 'required',
+            'service_id_edit' => 'required',
+            'fecha_cita_edit' => 'required|date',
+            'hora_cita_edit' => 'required',
+            'estado_cita' => 'required',
+            'motivo_consulta_edit' => 'nullable|string',
+            'observaciones_edit' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'code' => 0,
+                'error' => $validator->errors()->toArray()
+            ]);
+        }
+
+        $schedule = Appointment::find($request->appointment_id);
+
+        if (!$schedule) {
+            return response()->json([
+                'code' => 2,
+                'msg' => "Cita no encontrada"
+            ]);
+        }
+
+        $exito = $schedule->update([
+            'doctor_id' => $request->doctor_id_edit,
+            'service_id' => $request->service_id_edit,
+            'fecha_cita' => $request->fecha_cita_edit,
+            'hora_cita' => $request->hora_cita_edit,
+            'estado_cita' => $request->estado_cita,
+            'motivo_consulta' => $request->motivo_consulta_edit,
+            'observaciones' => $request->observaciones_edit
+        ]);
+
+        if ($exito) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Cita actualizada correctamente"
+            ]);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "Cita no actualizada"
+            ]);
+        }
     }
 }

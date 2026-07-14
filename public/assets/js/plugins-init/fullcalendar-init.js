@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let nombre_servicio = eventComun.nombre_servicio;
             let fecha_cita = eventComun.fecha_cita;
             let hora_cita = eventComun.hora_cita;
+            let estado_cita = eventComun.estado_cita
 
 
             // DATOS COMUNES SETEADOS
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
             //DATOS DE LA CITA MEDICA
             $('#appointmentModalEdit #fecha_cita_edit').val(fecha_cita);
             $('#appointmentModalEdit #hora_cita_edit').val(hora_cita);
+            $('#appointmentModalEdit #estado_cita').val(estado_cita);
 
 
             initSelectEdit();
@@ -236,9 +238,12 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #service_id_edit').selectpicker('destroy');
+        $('#appointmentModalEdit #estado_cita').selectpicker('destroy');
+
 
         $('#appointmentModalEdit #specialty_id_edit').selectpicker();
         $('#appointmentModalEdit #doctor_id_edit').selectpicker();
         $('#appointmentModalEdit #service_id_edit').selectpicker();
+        $('#appointmentModalEdit #estado_cita').selectpicker();
     }
 });

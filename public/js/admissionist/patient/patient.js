@@ -1,6 +1,6 @@
 window.addEventListener("DOMContentLoaded", function () {
     console.log('CARGANDO PACIENTES');
-    
+
     const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const input = document.querySelector("#patientModalCreate #formCreatePatient #numero_identidad");
     const responsable_id = document.querySelector("#patientModalCreate #responsable_id");
@@ -10,7 +10,7 @@ window.addEventListener("DOMContentLoaded", function () {
     const service_id = document.querySelector('#appointmentModalCreate #service_id');
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
- 
+
     //EVENTO QUE ESPECIALIDAD SELECCIONA 
     specialty_id.addEventListener('change', function (event) {
         buscarEspecialidad(event);
@@ -85,14 +85,14 @@ $("#formCreatePatient").on("submit", function (e) {
                     timer: 2000,
                     showConfirmButton: false,
                 }).then(() => {
-                    location.reload();
+                    //location.reload();
                     //MOSTRAMOS SI QUIERE CREAR CITA O CERRAR
-                    //$('#appointmentModalOpen').modal("show");
+                    $('#appointmentModalOpen').modal("show");
                     console.log('Datos del paciente:', response.patient);
                     //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
-                    //$('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
-                    //$('#appointmentModalCreate #patient_id').val(response.patient.id);
-                    //$('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
+                    $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
+                    $('#appointmentModalCreate #patient_id').val(response.patient.id);
+                    $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
                 });
                 form.reset();
                 $("#patientModalCreate").modal("hide");
@@ -348,8 +348,8 @@ async function buscarEspecialidad(event) {
 
 //PARA CALCULAR EL PRECIO
 async function calcularPrecio() {
-     console.log('CALCULO DEL PRECIO');
-     
+    console.log('CALCULO DEL PRECIO');
+
     //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
     const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
     const service_id = document.querySelector('#appointmentModalCreate #service_id').value;
@@ -385,7 +385,7 @@ async function calcularPrecio() {
         //ASIGNAMOS LOS DATOS YA CALCULADOS  
         document.querySelector('#precio_programado').value = data.precio_programado;
         document.querySelector('#precio_programado_hidden').value = data.precio_programado;
-        if(data.tipo === 'EXONERADO'){
+        if (data.tipo === 'EXONERADO') {
             document.querySelector('#total_pagado').value = data.total_pagado;
         }
 
@@ -456,7 +456,17 @@ $('#formCreateAppointment').on('submit', function (e) {
                 form.reset();
                 $('#patientModalCreate').modal('hide');
 
-            } else {
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Precaución',
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                });
+            }
+            else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -505,16 +515,16 @@ $(document).on("click", ".delete-patient", async function (e) {
     try {
         const res = await fetch(
             "http://127.0.0.1:8000/admissionist/patient/delete", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: patientId,
-                }),
-            }
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: patientId,
+            }),
+        }
         );
 
         const data = await res.json();

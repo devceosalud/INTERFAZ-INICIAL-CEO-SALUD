@@ -43,7 +43,8 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Especialidad <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Especialidad <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control" id="specialty_id_edit">
                                 <option value="">
                                     Seleccione
@@ -75,18 +76,36 @@
                             <span class="text-danger error-text service_id_edit_error"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_cita_edit" id="fecha_cita_edit">
 
                             <span class="text-danger error-text fecha_cita_edit_error"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="hora_cita_edit" id="hora_cita_edit" placeholder="HH:mm">
+                            <input type="text" class="form-control" name="hora_cita_edit" id="hora_cita_edit"
+                                placeholder="HH:mm">
 
                             <span class="text-danger error-text hora_cita_edit_error"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-primary">Estado de la Cita <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-control" name="estado_cita" id="estado_cita">
+                                <option value="PROGRAMADO">PROGRAMADO</option>
+                                <option value="CONFIRMADO">CONFIRMADO</option>
+                                <option value="EN_ESPERA">EN ESPERA</option>
+                                <option value="LLAMANDO">LLAMANDO</option>
+                                <option value="EN_ATENCION">EN ATENCION</option>
+                                <option value="ATENDIDO">ATENDIDO</option>
+                                <option value="CANCELADO">CANCELADO</option>
+                                <option value="NO_ASISTIO">NO ASISTIO</option>
+                            </select>
+
+                            <span class="text-danger error-text estado_cita_edit_error"></span>
                         </div>
                     </div>
 
