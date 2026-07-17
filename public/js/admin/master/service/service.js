@@ -66,7 +66,7 @@ $(document).on("click", ".edit-service", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/service/search", {
+            `${window.location.origin}/api/admin/service/search`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -187,7 +187,7 @@ $(document).on("click", ".delete-service", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/master/admin/service/delete", {
+            `${window.location.origin}/master/admin/service/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

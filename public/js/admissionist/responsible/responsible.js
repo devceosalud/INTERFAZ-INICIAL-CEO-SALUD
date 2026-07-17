@@ -9,7 +9,7 @@ $(document).on("click", ".edit-responsible", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/responsible/search", {
+            `${window.location.origin}/api/admin/responsible/search`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -130,7 +130,7 @@ $(document).on("click", ".delete-responsible", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/admissionist/responsible/delete", {
+            `${window.location.origin}/admissionist/responsible/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

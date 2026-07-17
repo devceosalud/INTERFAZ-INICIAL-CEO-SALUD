@@ -67,7 +67,7 @@ $(document).on("click", ".edit-interaction-medium", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/interaction-media/search",
+            `${window.location.origin}/api/admin/interaction-media/search`,
             {
                 method: "POST",
                 headers: {
@@ -176,7 +176,7 @@ $(document).on("click", ".delete-interaction-media", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/master/admin/interaction-media/delete", {
+            `${window.location.origin}/master/admin/interaction-media/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

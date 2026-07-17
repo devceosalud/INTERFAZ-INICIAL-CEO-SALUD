@@ -60,7 +60,7 @@ async function buscarPaciente(event) {
     if (!valor) return;
 
     try {
-        const res = await fetch('http://127.0.0.1:8000/api/patient/show', {
+        const res = await fetch(`${window.location.origin}/api/patient/show`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ async function buscarEspecialidad(event) {
     console.log('Id de la especialidad:', event.target.value);
 
     try {
-        const res = await fetch('http://127.0.0.1:8000/api/appointment/specialty', {
+        const res = await fetch(`${window.location.origin}/api/appointment/specialty`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -169,7 +169,7 @@ async function calcularPrecio() {
     if (!service_id || !patient_id) {return;}
 
     try {
-        const res = await fetch('http://127.0.0.1:8000/api/appointment/calculated', {
+        const res = await fetch(`${window.location.origin}/api/appointment/calculated`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -304,7 +304,7 @@ async function cargarHorarios() {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/appointment/schedule/available-hours", {
+            `${window.location.origin}/api/appointment/schedule/available-hours`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

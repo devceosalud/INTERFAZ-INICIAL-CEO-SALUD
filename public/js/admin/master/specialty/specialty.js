@@ -67,7 +67,7 @@ $(document).on("click", ".edit-specialty", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/specialty/search",
+            `${window.location.origin}/api/admin/specialty/search`,
             {
                 method: "POST",
                 headers: {
@@ -176,7 +176,7 @@ $(document).on("click", ".delete-specialty", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/master/admin/specialty/delete", {
+            `${window.location.origin}/master/admin/specialty/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

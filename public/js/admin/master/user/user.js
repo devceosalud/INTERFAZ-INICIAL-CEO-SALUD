@@ -69,7 +69,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
         try {
             const res = await fetch(
-                "http://127.0.0.1:8000/api/admin/user/search", {
+                `${window.location.origin}/api/admin/user/search`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

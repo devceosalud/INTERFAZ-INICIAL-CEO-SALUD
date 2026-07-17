@@ -67,7 +67,7 @@ $(document).on("click", ".edit-channel", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/channel/search",
+            `${window.location.origin}/api/admin/channel/search`,
             {
                 method: "POST",
                 headers: {
@@ -176,7 +176,7 @@ $(document).on("click", ".delete-channel", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/master/admin/channel/delete", {
+            `${window.location.origin}/master/admin/channel/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

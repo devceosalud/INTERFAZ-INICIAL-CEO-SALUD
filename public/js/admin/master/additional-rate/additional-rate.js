@@ -66,7 +66,7 @@ $(document).on("click", ".edit-additional-rate", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/api/admin/additonal-rate/search", {
+            `${window.location.origin}/api/admin/additonal-rate/search`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -184,7 +184,7 @@ $(document).on("click", ".delete-additional-rate", async function (e) {
 
     try {
         const res = await fetch(
-            "http://127.0.0.1:8000/master/admin/additional-rate/delete", {
+            `${window.location.origin}/master/admin/additional-rate/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
