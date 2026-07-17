@@ -45,6 +45,15 @@ window.addEventListener("DOMContentLoaded", function () {
     responsable_id.addEventListener("change", function (event) {
         responsable(event);
     });
+
+    //CARGANDO HORARIOS MEDICOS
+    $('#appointmentModalCreate #doctor_id').on('change', function () {
+        cargarHorarios();
+    });
+
+    $('#appointmentModalCreate #fecha_cita').on('change', function () {
+        cargarHorarios();
+    });
 });
 
 // GUARDAR DATOS DEL PACIENTE
@@ -71,9 +80,7 @@ $("#formCreatePatient").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
@@ -138,6 +145,7 @@ $(document).on("click", ".edit-patient", async function (e) {
 
         if (data.message === "encontrado") {
             let p = data.patient;
+            
             //PINTAR DATOS EN EL MODAL
             $("#patientModalEdit #patient_id_edit").val(p.id);
             $("#patientModalEdit #nombre_paciente_edit").val(p.nombre);
@@ -257,7 +265,7 @@ async function buscarPaciente(event) {
         const data = await res.json();
         console.log("RESPUESTA DATOS PACIENTE:", data);
 
-        if (data.message === "encontrado") {
+        if (data.message === "encontrado" || data.message === 'encontrado_reniec') {
             document.querySelector("#patientModalCreate #nombre_paciente").value = data.patient.nombre;
             document.querySelector("#patientModalCreate #apellido_materno").value = data.patient.apellido_materno;
             document.querySelector("#patientModalCreate #apellido_paterno").value = data.patient.apellido_paterno;
@@ -356,9 +364,7 @@ async function calcularPrecio() {
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
 
-    if (!service_id || !patient_id) {
-        return;
-    }
+    if (!service_id || !patient_id) {return;}
 
     try {
         const res = await fetch('http://127.0.0.1:8000/api/appointment/calculated', {
@@ -400,16 +406,12 @@ async function calcularPrecio() {
 
 //PARA CALCULAR EL SALDO
 function calcularSaldo() {
-
     let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
     let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
-
     let saldo = precio - pagado;
-
     if (saldo < 0) {
         saldo = 0;
     }
-
     document.querySelector('#saldo_pendiente').value = saldo.toFixed(2);
     document.querySelector('#saldo_pendiente_hidden').value = saldo.toFixed(2);
 }
@@ -559,6 +561,80 @@ $(document).on("click", ".delete-patient", async function (e) {
 });
 
 
+//PARA CARGAR HORARIOS
+async function cargarHorarios() {
+
+    let doctor_id = $('#appointmentModalCreate #doctor_id').val();
+    let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
+    console.log('fecha', fecha_cita);
+    console.log('doctor id:', doctor_id);
+
+    try {
+        const res = await fetch(
+            "http://127.0.0.1:8000/api/appointment/schedule/available-hours", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    doctor_id: doctor_id,
+                    fecha_cita: fecha_cita
+                }),
+            },
+        );
+
+        const data = await res.json();
+        console.log("DATOS HORARIOS DOCTOR:", data);
+        generarHorarios(data.horarios, data.ocupadas);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function generarHorarios(horarios, ocupadas) {
+    let select = document.querySelector("#appointmentModalCreate #hora_cita");
+    select.innerHTML = '<option value="">Seleccione una hora</option>';
+
+    horarios.forEach(horario => {
+        console.log('horarios: ', horario);
+
+        let inicio = horario.hora_inicio.substring(0, 5);
+        let fin = horario.hora_fin.substring(0, 5);
+        let duracion = parseInt(horario.duracion_cita);
+        let actual = convertirMinutos(inicio);
+        let final = convertirMinutos(fin);
+
+        while (actual < final) {
+            let hora = convertirHora(actual);
+            console.log('hora:', hora);
+            if (!ocupadas.includes(hora + ":00")) {
+                const opcion = document.createElement('option');
+                opcion.value = hora;
+                opcion.textContent = hora;
+                select.appendChild(opcion);
+            }
+            actual += duracion;
+        }
+        initSelectCreate();
+    });
+}
+
+function convertirMinutos(hora) {
+    let partes = hora.split(":");
+    console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
+    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
+}
+
+function convertirHora(minutos) {
+    let h = Math.floor(minutos / 60);
+    let m = minutos % 60;
+    h = String(h).padStart(2, '0');
+    m = String(m).padStart(2, '0');
+    console.log('funcion hora: ', `${h}:${m}`);
+    return `${h}:${m}`;
+}
+
+
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {
     //para campos edit
@@ -581,10 +657,12 @@ function initSelectCreate() {
     $("#channel_id").selectpicker("destroy");
     $("#interaction_medium_id").selectpicker("destroy");
     $("#estado_civil").selectpicker("destroy");
+    $('#appointmentModalCreate #hora_cita').selectpicker('destroy');
 
     $("#tipo_identificacion").selectpicker();
     $("#genero_paciente").selectpicker();
     $("#channel_id").selectpicker();
     $("#interaction_medium_id").selectpicker();
     $("#estado_civil").selectpicker();
+    $('#appointmentModalCreate #hora_cita').selectpicker();
 }

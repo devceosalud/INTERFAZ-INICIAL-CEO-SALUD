@@ -1,8 +1,9 @@
 <div class="deznav">
     <div class="deznav-scroll">
         <ul class="metismenu" id="menu">
-            <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-                    <i class="flaticon-381-networking"></i>
+            <li>
+                <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                    <i class="flaticon-381-home"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
                 <ul aria-expanded="false">
@@ -13,7 +14,7 @@
             {{-- ENLACES ADM --}}
             @if (auth()->user()->getRoleNames()->contains('ADMINISTRADOR'))
                 <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
+                        <i class="flaticon-381-controls"></i>
                         <span class="nav-text">Maestros</span>
                     </a>
                     <ul aria-expanded="false">
@@ -25,20 +26,24 @@
                         <li><a href='{{ route('master.channel.index') }}'>Canales</a></li>
                     </ul>
                 </li>
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
+
+                <li>
+                    <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-user-2"></i>
                         <span class="nav-text">Usuarios</span>
                     </a>
                     <ul aria-expanded="false">
-                        <li><a href='{{ route('admin.user.index') }}'>Lista de Usuarios</a></li>
+                        <li><a href="{{ route('admin.user.index') }}">Lista de Usuarios</a></li>
                     </ul>
                 </li>
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
+
+                <li>
+                    <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-settings"></i>
                         <span class="nav-text">Roles</span>
                     </a>
                     <ul aria-expanded="false">
-                        <li><a href='{{ route('admin.roles.index') }}'>Lista de Roles</a></li>
+                        <li><a href="{{ route('admin.roles.index') }}">Lista de Roles</a></li>
                     </ul>
                 </li>
             @endif
@@ -48,8 +53,9 @@
 
             {{-- ENLACES ADMISION --}}
             @if (auth()->user()->getRoleNames()->contains('ADMISION'))
-                <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-id-card-4"></i>
+                <li>
+                    <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-user-7"></i>
                         <span class="nav-text">Pacientes</span>
                     </a>
                     <ul aria-expanded="false">
@@ -57,9 +63,9 @@
                     </ul>
                 </li>
 
-
-                <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-                        <i class="flaticon-381-menu"></i>
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-user"></i>
                         <span class="nav-text">Responsables</span>
                     </a>
                     <ul aria-expanded="false">
@@ -67,14 +73,23 @@
                     </ul>
                 </li>
 
-
-
-                <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-                        <i class="flaticon-381-menu"></i>
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-calendar"></i>
                         <span class="nav-text">Citas</span>
                     </a>
                     <ul aria-expanded="false">
                         <li><a href="{{ route('admissionit.appointment.index') }}">Registrar Cita</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-clock"></i>
+                        <span class="nav-text">Horarios</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('admissionit.schedule.index') }}">Horarios</a></li>
                     </ul>
                 </li>
             @endif

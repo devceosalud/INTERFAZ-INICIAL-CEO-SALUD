@@ -45,7 +45,8 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Especialidad <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Especialidad <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control" id="specialty_id">
                                 <option value="">
                                     Seleccione
@@ -90,7 +91,10 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm">
+                            {{--  <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm"> --}}
+                            <select class="form-control" name="hora_cita" id="hora_cita">
+                                <option value="">Seleccione una hora</option>
+                            </select>
                             <span class="text-danger error-text hora_cita_error"></span>
                         </div>
                     </div>
@@ -102,7 +106,8 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Tarifa Especial <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Tarifa Especial <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">
@@ -145,13 +150,15 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Total Pagado <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Total Pagado <span
+                                    class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" name="total_pagado"
                                 id="total_pagado" value="0">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Saldo Pendiente <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Saldo Pendiente <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="saldo_pendiente" readonly>
                             <span class="text-danger error-text saldo_pendiente_error"></span>
                         </div>

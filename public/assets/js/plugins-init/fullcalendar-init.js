@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', function () {
         //PARA EDITAR LA CITA
         eventClick: function (info) {
 
-            let eventCalendar = info.event;  // Objeto de evento de FullCalendar
+            let eventCalendar = info.event; // Objeto de evento de FullCalendar
             let eventComun = info.event.extendedProps; // Propiedades adicionales del evento
 
             // Acceder a los datos del evento
-            let id = eventCalendar.id;       // ID del evento
+            let id = eventCalendar.id; // ID del evento
             let title = eventCalendar.title;
             let start = eventCalendar.start; // Formato correcto para datetime-local
-            let end = eventCalendar.start;   // Usar start si end es null
+            let end = eventCalendar.start; // Usar start si end es null
 
             // Acceder a los datos extendidos del evento (campos personalizados)
             let documento_paciente = eventComun.documento_paciente;
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const option_servicio = document.createElement('option');
             option_servicio.value = servicio_id,
-            option_servicio.textContent = nombre_servicio;
+                option_servicio.textContent = nombre_servicio;
             selectServicio.appendChild(option_servicio);
 
 
@@ -232,14 +232,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
     function initSelectEdit() {
-
         $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #service_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #estado_cita').selectpicker('destroy');
-
 
         $('#appointmentModalEdit #specialty_id_edit').selectpicker();
         $('#appointmentModalEdit #doctor_id_edit').selectpicker();

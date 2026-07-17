@@ -6,7 +6,7 @@
 
             <!-- HEADER -->
             <div class="modal-header bg-dark">
-                <h5 class="modal-title" id="appointmentModalCreateLabel">Agregar nueva Cita</h5>
+                <h5 class="modal-title text-white" id="appointmentModalCreateLabel">Agregar nueva Cita</h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 </button>
@@ -25,8 +25,11 @@
 
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label text-primary">Nro Documento <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="documento_paciente" readonly>
+                            <label class="form-label text-primary">Nro Documento <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="documento_paciente">
+
+                            <span class="text-danger error-text patient_id_error"></span>
                         </div>
 
                         <div class="col-md-9">
@@ -42,7 +45,8 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Especialidad <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Especialidad <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control" id="specialty_id">
                                 <option value="">
                                     Seleccione
@@ -54,6 +58,8 @@
                                     </option>
                                 @endforeach
                             </select>
+
+                            <span class="text-danger error-text specialty_id_error"></span>
                         </div>
 
                         <div class="col-md-4">
@@ -63,6 +69,7 @@
                                     Seleccione
                                 </option>
                             </select>
+
                             <span class="text-danger error-text doctor_id_error"></span>
                         </div>
 
@@ -78,13 +85,16 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" name="fecha_cita">
+                            <input type="date" class="form-control" name="fecha_cita" id="fecha_cita">
                             <span class="text-danger error-text fecha_cita_error"></span>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm">
+                            {{--  <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm"> --}}
+                            <select class="form-control" name="hora_cita" id="hora_cita">
+                                <option value="">Seleccione una hora</option>
+                            </select>
                             <span class="text-danger error-text hora_cita_error"></span>
                         </div>
                     </div>
@@ -96,7 +106,8 @@
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Tarifa Adicional <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Tarifa Especial <span
+                                    class="text-danger">*</span></label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">
@@ -107,10 +118,10 @@
                         </div>
 
                         <div class="col-md-4">
-                            <div class="form-check mt-4 text-primary">
+                            <div class="form-check mt-4">
                                 <input class="form-check-input" type="checkbox" name="es_exonerado" id="es_exonerado"
                                     value="1">
-                                <label class="form-check-label">
+                                <label class="form-check-label" for="es_exonerado">
                                     Exonerado (Paga Médico)
                                 </label>
                             </div>
@@ -139,14 +150,15 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Total Pagado <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Total Pagado <span
+                                    class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" name="total_pagado"
                                 id="total_pagado" value="0">
-                                <span class="text-danger error-text saldo_pendiente_error"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Saldo Pendiente <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Saldo Pendiente <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="saldo_pendiente" readonly>
                             <span class="text-danger error-text saldo_pendiente_error"></span>
                         </div>
@@ -191,7 +203,6 @@
                     </button>
 
                     <input type="submit" class="btn btn-primary btn-save btn-rounded" value="Registrar Cita">
-
                 </div>
 
             </form>

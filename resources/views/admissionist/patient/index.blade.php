@@ -47,7 +47,7 @@
 
         <div class="content-body">
             <div class="container-fluid">
-            
+
                 <!-- row -->
                 <div class="row">
 
@@ -104,9 +104,9 @@
                                                             <span>
                                                                 <a href="#" class="delete-patient"
                                                                     data-id="{{ $patient->id }}">
-                                                                     <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                    <i class="fa fa-trash fs-18 text-danger"></i>
                                                                 </a>
-                                                              
+
                                                             </span>
                                                         </strong>
                                                     </td>

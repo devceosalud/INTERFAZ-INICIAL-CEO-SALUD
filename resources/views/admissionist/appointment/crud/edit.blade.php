@@ -12,7 +12,7 @@
                 </button>
             </div>
 
-            <form id="formUpdateSchedule" action="{{ route('addmissionit.schedule.update') }}" method="POST">
+            <form id="formUpdateSchedule" action="{{ route('admissionit.schedule.update') }}" method="POST">
 
                 @csrf
 

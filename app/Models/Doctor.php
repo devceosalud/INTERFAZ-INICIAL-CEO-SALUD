@@ -28,10 +28,18 @@ class Doctor extends Model
 
 
     /**
-     * Obtiene la agenda de citas programadas para el médico.
+     * Obtiene la agenda de citas programadas para el doctor.
      */
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Obtenermos el horario del doctro
+     */
+    public function schedules()
+    {
+        return $this->hasMany(DoctorSchedule::class);
     }
 }

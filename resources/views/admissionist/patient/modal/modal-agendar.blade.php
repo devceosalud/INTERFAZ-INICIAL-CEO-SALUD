@@ -5,7 +5,7 @@
 
             <!-- Header -->
             <div class="modal-header bg-dark">
-                <h5 class="modal-title" id="appointmentModalOpenLabel">Agendar una Cita</h5>
+                <h5 class="modal-title text-white" id="appointmentModalOpenLabel">Agendar una Cita</h5>
                 <p id="paciente_nombre"></p>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

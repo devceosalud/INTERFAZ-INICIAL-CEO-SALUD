@@ -43,6 +43,11 @@ window.addEventListener('DOMContentLoaded', () => {
         calcularSaldo();
     });
 
+    //CARGANDO HORARIOS MEDICOS
+    $('#appointmentModalCreate #doctor_id').on('change', function () {
+        cargarHorarios();
+    });
+
 });
 
 
@@ -128,7 +133,7 @@ async function buscarEspecialidad(event) {
             opcion.textContent = doctor.nombre;
             selectDoctor.appendChild(opcion);
         })
-        
+
         //LLENANDO DATOS DE SERVICIOS
         data.data.services.forEach(service => {
             const opcion = document.createElement('option');
@@ -161,9 +166,7 @@ async function calcularPrecio() {
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
 
-    if (!service_id || !patient_id) {
-        return;
-    }
+    if (!service_id || !patient_id) {return;}
 
     try {
         const res = await fetch('http://127.0.0.1:8000/api/appointment/calculated', {
@@ -205,16 +208,12 @@ async function calcularPrecio() {
 
 //PARA CALCULAR EL SALDO
 function calcularSaldo() {
-
     let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
     let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
-
     let saldo = precio - pagado;
-
     if (saldo < 0) {
         saldo = 0;
     }
-
     document.querySelector('#saldo_pendiente').value = saldo.toFixed(2);
     document.querySelector('#saldo_pendiente_hidden').value = saldo.toFixed(2);
 }
@@ -269,10 +268,8 @@ $('#formCreateAppointment').on('submit', function (e) {
                     text: response.msg,
                     timer: 2000,
                     showConfirmButton: false
-                }).then(() => {
-                });
-            }
-            else {
+                }).then(() => {});
+            } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -297,7 +294,81 @@ $('#formCreateAppointment').on('submit', function (e) {
 });
 
 
-//PARA EDITAR LA CITA
+//PARA CARGAR HORARIOS
+async function cargarHorarios() {
 
+    let doctor_id = $('#appointmentModalCreate #doctor_id').val();
+    let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
+    console.log('fecha', fecha_cita);
+    console.log('doctor id:', doctor_id);
 
+    try {
+        const res = await fetch(
+            "http://127.0.0.1:8000/api/appointment/schedule/available-hours", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    doctor_id: doctor_id,
+                    fecha_cita: fecha_cita
+                }),
+            },
+        );
 
+        const data = await res.json();
+        console.log("DATOS HORARIOS DOCTOR:", data);
+        generarHorarios(data.horarios, data.ocupadas);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function generarHorarios(horarios, ocupadas) {
+    let select = document.querySelector("#appointmentModalCreate #hora_cita");
+    select.innerHTML = '<option value="">Seleccione una hora</option>';
+
+    horarios.forEach(horario => {
+        console.log('horarios: ', horario);
+
+        let inicio = horario.hora_inicio.substring(0, 5);
+        let fin = horario.hora_fin.substring(0, 5);
+        let duracion = parseInt(horario.duracion_cita);
+        let actual = convertirMinutos(inicio);
+        let final = convertirMinutos(fin);
+
+        while (actual < final) {
+            let hora = convertirHora(actual);
+            console.log('hora:', hora);
+            if (!ocupadas.includes(hora + ":00")) {
+                const opcion = document.createElement('option');
+                opcion.value = hora;
+                opcion.textContent = hora;
+                select.appendChild(opcion);
+            }
+            actual += duracion;
+        }
+        initSelectCreate();
+    });
+}
+
+function convertirMinutos(hora) {
+    let partes = hora.split(":");
+    console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
+    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
+}
+
+function convertirHora(minutos) {
+    let h = Math.floor(minutos / 60);
+    let m = minutos % 60;
+    h = String(h).padStart(2, '0');
+    m = String(m).padStart(2, '0');
+    console.log('funcion hora: ', `${h}:${m}`);
+    return `${h}:${m}`;
+}
+
+function initSelectCreate() {
+    $('#appointmentModalCreate #hora_cita').selectpicker('destroy');
+
+    $('#appointmentModalCreate #hora_cita').selectpicker();
+}

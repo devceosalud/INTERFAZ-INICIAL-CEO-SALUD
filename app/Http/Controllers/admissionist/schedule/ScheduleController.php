@@ -4,6 +4,9 @@ namespace App\Http\Controllers\admissionist\schedule;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\DoctorSchedule;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,7 +16,11 @@ class ScheduleController extends Controller
 
     public function list()
     {
-        $appointment = Appointment::all();
+        $appointment = Appointment::whereBetween('fecha_cita', [
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth()
+        ])->where('estado_cita', '!=', 'NO_ASISTIO')
+            ->get();
 
         $events = $appointment->map(function ($schedule) {
 
@@ -80,8 +87,8 @@ class ScheduleController extends Controller
                 'saldo_pendiente' => $schedule->saldo_pendiente,
                 'estado_pagado' => $schedule->estado_pagado,
                 'estado_cita' => $schedule->estado_cita,
-                'observaciones' => $schedule->observaciones,
-                'motivo_consulta' => $schedule->motivo_consulta,
+                'observaciones' => $schedule->observaciones ?? 'SIN OBSERVACIONES',
+                'motivo_consulta' => $schedule->motivo_consulta ?? 'SIN MOTIVO',
             ];
         });
 
@@ -138,6 +145,62 @@ class ScheduleController extends Controller
             return response()->json([
                 'code' => 0,
                 'msg' => "Cita no actualizada"
+            ]);
+        }
+    }
+
+
+    /**
+     * CRUD DE HORARIOS MEDICOS
+     */
+
+    public function index()
+    {
+        $doctor_schedules = DoctorSchedule::all();
+        $doctors = Doctor::where('estado', 'ACTIVO')->get();
+        return view('admissionist.schedule.index', [
+            'doctor_schedules' => $doctor_schedules,
+            'doctors' => $doctors
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'doctor_id'      => 'required|exists:doctors,id',
+            'dia_semana'     => 'required|integer|between:1,7',
+            'hora_inicio'    => 'required|date_format:H:i',
+            'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
+            'duracion_cita'  => 'required|integer|in:10,15,20,30,45,60',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'code'  => 0,
+                'error' => $validator->errors()->toArray()
+            ]);
+        }
+
+        //GUARDAR DATOS
+        $doctor_schedule = DoctorSchedule::create([
+            'doctor_id' => $request->doctor_id,
+            'dia_semana' => $request->dia_semana,
+            'hora_inicio' => $request->hora_inicio,
+            'hora_fin' => $request->hora_fin,
+            'duracion_cita' => $request->duracion_cita,
+            'estado' => 'ACTIVO'
+        ]);
+
+        //RESPUESTA DE CONSUMO
+        if ($doctor_schedule) {
+            return response()->json([
+                'code' => 1,
+                'msg' => "Horario del doctor guardado correctamente",
+            ], 200);
+        } else {
+            return response()->json([
+                'code' => 0,
+                'msg' => "No se registro el horario"
             ]);
         }
     }

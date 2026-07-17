@@ -57,9 +57,9 @@ Route::post('/admissionist/responsible/delete', [ResponsibleController::class , 
 
 
 Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class , 'list'])->name('admissionit.schedule.list');
-Route::post('/admissionist/schedule/update', [ScheduleController::class , 'update'])->name('addmissionit.schedule.update');
-
-
+Route::post('/admissionist/schedule/update', [ScheduleController::class , 'update'])->name('admissionit.schedule.update');
+Route::get('/admissionist/schedule', [ScheduleController::class, 'index'])->name('admissionit.schedule.index');
+Route::post('/admissionist/schedule/store', [ScheduleController::class , 'store'])->name('admissionit.schedule.store');
 
 /********************************************RUTAS PARA EL ADMINISTRADOR ********************************************/
 //MAESTRO : para las tablas independientes

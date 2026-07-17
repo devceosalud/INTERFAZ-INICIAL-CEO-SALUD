@@ -32,7 +32,8 @@ class AppointmentController extends Controller
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->endOfMonth()
-        ])->get();
+        ])->where('estado_cita', '!=', 'NO_ASISTIO')
+            ->get();
 
         return view('admissionist.appointment.index', [
             'specialties' => $specialties,
@@ -75,11 +76,14 @@ class AppointmentController extends Controller
 
         $paciente = Patient::find($request->patient_id);
         if ($paciente) {
-            $existe = Appointment::where('estado_cita', 'PROGRAMADO')->where('patient_id', $request->patient_id)->first();
+            $existe = Appointment::where('estado_cita', 'PROGRAMADO')
+                ->where('doctor_id', $request->doctor_id)
+                ->where('service_id', $request->service_id)
+                ->where('patient_id', $request->patient_id)->first();
             if ($existe) {
                 return response()->json([
                     'code' => 2,
-                    'msg'  => 'El paciente ya cuenta con una cita'
+                    'msg'  => 'El paciente ya cuenta con una cita activa con la misma especialidad'
                 ]);
             }
         }
@@ -124,9 +128,9 @@ class AppointmentController extends Controller
         if ($appointment) {
 
             //PONERLO EN UN CRON JOB FLUJO ESCALA NOTIFICADOR
-            //if ($appointment->patient->email) {
-            //    Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
-            //}
+            if ($appointment->patient->email) {
+                Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
+            }
 
             return response()->json([
                 'code' => 1,
