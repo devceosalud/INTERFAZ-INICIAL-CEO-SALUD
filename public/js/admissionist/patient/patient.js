@@ -127,8 +127,7 @@ $(document).on("click", ".edit-patient", async function (e) {
     let patientId = $(this).data("id");
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/api/patient/show/search`,
+        const res = await fetch(`${window.location.origin}/api/patient/show/search`,
             {
                 method: "POST",
                 headers: {
@@ -515,8 +514,7 @@ $(document).on("click", ".delete-patient", async function (e) {
     }
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/admissionist/patient/delete`, {
+        const res = await fetch(`${window.location.origin}/admissionist/patient/delete`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -570,8 +568,7 @@ async function cargarHorarios() {
     console.log('doctor id:', doctor_id);
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/api/appointment/schedule/available-hours`, {
+        const res = await fetch(`${window.location.origin}/api/appointment/schedule/available-hours`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

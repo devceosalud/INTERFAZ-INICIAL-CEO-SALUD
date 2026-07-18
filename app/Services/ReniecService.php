@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
 class ReniecService
@@ -28,6 +29,8 @@ class ReniecService
         }
 
         $json = $response->json();
+
+        Log::info('RESPUESTA RENIEC', $json);
 
         if (!isset($json['success']) || $json['success'] === false) {
             return null;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\api\AdditionalRate\AdditionalRateController;
+use App\Http\Controllers\Api\AdditionalRate\AdditionalRateController;
 use App\Http\Controllers\Api\appointment\AppointmentController;
 use App\Http\Controllers\Api\channel\ChannelController;
 use App\Http\Controllers\Api\doctor\DoctorController;

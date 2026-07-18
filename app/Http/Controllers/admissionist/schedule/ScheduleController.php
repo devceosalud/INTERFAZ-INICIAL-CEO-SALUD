@@ -96,7 +96,7 @@ class ScheduleController extends Controller
     }
 
 
-    //PARA ACTUALIZAR LA AGENDA
+    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA EN EL CALENDAR
     public function update(Request $request)
     {
         //dd($request->all());

@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Id de la especialidad:', event.target.value);
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/appointment/specialty', {
+            const res = await fetch(`${window.location.origin}/api/appointment/specialty`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
