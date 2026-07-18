@@ -51,7 +51,7 @@ $("#formCreateDoctorSchedule").on("submit", function (e) {
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Ocurrió un error al guardar el paciente",
+                text: "Ocurrió un error al guardar el horario",
             });
         },
 
@@ -62,33 +62,38 @@ $("#formCreateDoctorSchedule").on("submit", function (e) {
 });
 
 //PARA EDITAR EL HORARIO
-$(document).on("click", ".edit-channel", async function (e) {
+$(document).on("click", ".edit-doctor-schedule", async function (e) {
     e.preventDefault();
-    let channelId = $(this).data("id");
+    let doctorScheduleId = $(this).data("id");
 
     try {
-        const res = await fetch(
-            "/api/admin/channel/search", {
+        const res = await fetch(`${window.location.origin}/api/appointment/doctor-schedule/search`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: doctorScheduleId,
                 }),
             },
         );
 
         const data = await res.json();
-        console.log("DATOS CANAL PARA EDITAR:", data);
+        console.log("DATOS DOCTOR HORARIOS PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
-            let p = data.channel;
+            let p = data.doctor_schedule;
             //PINTAR DATOS EN EL MODAL
-            $("#channelModalEdit #channel_id_edit").val(p.id);
-            $("#channelModalEdit #nombre_edit_canal").val(p.nombre);
+            $("#doctorScheduleModalEdit #doctor_schedule_id_edit").val(p.id);
+            $("#doctorScheduleModalEdit #doctor_id_edit").val(p.doctor_id);
+            $("#doctorScheduleModalEdit #dia_semana_edit").val(p.dia_semana);
+            $("#doctorScheduleModalEdit #hora_inicio_edit").val(p.hora_inicio);
+            $("#doctorScheduleModalEdit #hora_fin_edit").val(p.hora_fin);
+            $("#doctorScheduleModalEdit #duracion_edit_cita").val(p.duracion_cita);
             //ABRIR MODAL
-            $("#channelModalEdit").modal("show");
+            $("#doctorScheduleModalEdit").modal("show");
+
+            initSelectEdit();
         }
     } catch (error) {
         console.error(error);
@@ -96,7 +101,7 @@ $(document).on("click", ".edit-channel", async function (e) {
 });
 
 //PARA ACTUALIZAR LOS DATOS DEL HORARIO
-$("#formUpdateChannel").on("submit", function (e) {
+$("#formUpdateDoctorSchedule").on("submit", function (e) {
     e.preventDefault();
 
     let form = this;
@@ -123,6 +128,14 @@ $("#formUpdateChannel").on("submit", function (e) {
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
+            } else if (response.code == 2) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Observado",
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false,
+                })
             } else {
                 Swal.fire({
                     icon: "success",
@@ -133,8 +146,6 @@ $("#formUpdateChannel").on("submit", function (e) {
                 }).then(() => {
                     location.reload();
                 });
-
-                $("#specialtytModalEdit").modal("hide");
             }
         },
 
@@ -143,7 +154,7 @@ $("#formUpdateChannel").on("submit", function (e) {
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Ocurrió un error al actualizar el paciente",
+                text: "Ocurrió un error al actualizar el horario del doctor",
             });
         },
 
@@ -154,10 +165,11 @@ $("#formUpdateChannel").on("submit", function (e) {
 });
 
 
-$(document).on("click", ".delete-channel", async function (e) {
+
+$(document).on("click", ".delete-doctor-schedule", async function (e) {
     e.preventDefault();
 
-    let channelId = $(this).data("id");
+    let doctorScheduleId = $(this).data("id");
 
     const result = await Swal.fire({
         title: "¿Está seguro de inactivar?",
@@ -176,7 +188,7 @@ $(document).on("click", ".delete-channel", async function (e) {
 
     try {
         const res = await fetch(
-            "/master/admin/channel/delete", {
+            `${window.location.origin}/admissionist/doctor-schedule/delete`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -184,7 +196,7 @@ $(document).on("click", ".delete-channel", async function (e) {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: channelId,
+                    id: doctorScheduleId,
                 }),
             }
         );
@@ -219,3 +231,17 @@ $(document).on("click", ".delete-channel", async function (e) {
         });
     }
 });
+
+
+//FUNCION PARA PODER INICIAR LOS SELECT
+function initSelectEdit() {
+    //para campos edit
+    $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker("destroy");
+    $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker("destroy");
+    $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker("destroy");
+
+    $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker();
+    $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker();
+    $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker();
+}
+

@@ -14,7 +14,7 @@
                 </button>
             </div>
 
-            <form id="formCreateDoctorSchedule" method="POST" action="{{ route('admissionit.schedule.store') }}">
+            <form id="formCreateDoctorSchedule" method="POST" action="{{ route('admissionit.doctor.schedule.store') }}">
 
                 @csrf
 
@@ -26,7 +26,6 @@
                     </h6>
 
                     <div class="row g-3">
-                        <input type="hidden" name="responsible_id_edit" id="responsible_id_edit">
 
                         <div class="col-md-3">
                             <label class="form-label text-primary">Doctor</label>

@@ -58,8 +58,12 @@ Route::post('/admissionist/responsible/delete', [ResponsibleController::class , 
 
 Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class , 'list'])->name('admissionit.schedule.list');
 Route::post('/admissionist/schedule/update', [ScheduleController::class , 'update'])->name('admissionit.schedule.update');
-Route::get('/admissionist/schedule', [ScheduleController::class, 'index'])->name('admissionit.schedule.index');
-Route::post('/admissionist/schedule/store', [ScheduleController::class , 'store'])->name('admissionit.schedule.store');
+Route::get('/admissionist/doctor-schedule', [ScheduleController::class, 'index'])->name('admissionit.doctor.schedule.index');
+Route::post('/admissionist/doctor-schedule/store', [ScheduleController::class , 'store'])->name('admissionit.doctor.schedule.store');
+Route::put('/admissionist/doctor-schedule/update', [ScheduleController::class , 'updateDoctorSchedule'])->name('admissionit.doctor.schedule.update');
+Route::post('/admissionist/doctor-schedule/delete', [ScheduleController::class, 'deleteDoctorSchedule'])->name('admissionit.doctor.schedule.delete');
+
+
 
 /********************************************RUTAS PARA EL ADMINISTRADOR ********************************************/
 //MAESTRO : para las tablas independientes

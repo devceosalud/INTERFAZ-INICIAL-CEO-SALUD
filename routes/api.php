@@ -40,6 +40,8 @@ Route::post('/appointment/calculated', [AppointmentController::class , 'calculat
 
 Route::post('/appointment/schedule/available-hours', [DoctorScheduleController::class , 'availableHours'])->name('api.appointment.schedule');
 
+Route::post('/appointment/doctor-schedule/search', [DoctorScheduleController::class ,'search'])->name('api.appointment.doctor.schedule');
+
 Route::post('/admin/user/search', [UserController::class , 'search'])->name('api.admin.user.search');
 
 Route::post('/admin/channel/search', [ChannelController::class , 'search'])->name('api.admin.channel.search');

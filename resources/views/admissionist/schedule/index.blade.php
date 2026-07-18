@@ -75,20 +75,51 @@
                                                 <tr>
                                                     <td><strong>{{ $doctor_schedule->id }}</strong></td>
                                                     <td>{{ $doctor_schedule->doctor->nombre }}</td>
-                                                    <td>{{ $doctor_schedule->dia_semana }}</td>
+                                                    <td>
+
+                                                        @switch($doctor_schedule->dia_semana)
+                                                            @case(1)
+                                                                <strong><span>Lunes</span></strong>
+                                                            @break
+
+                                                            @case(2)
+                                                                <strong><span>Martes</span></strong>
+                                                            @break
+
+                                                            @case(3)
+                                                                <strong><span>Miércoles</span></strong>
+                                                            @break
+
+                                                            @case(4)
+                                                                <strong><span>Jueves</span></strong>
+                                                            @break
+
+                                                            @case(5)
+                                                                <strong><span>Viernes</span></strong>
+                                                            @break
+
+                                                            @case(6)
+                                                                <strong><span>Sábado</span></strong>
+                                                            @break
+
+                                                            @default
+                                                                <strong><span>Domingo</span></strong>
+                                                        @endswitch
+
+                                                    </td>
                                                     <th>{{ $doctor_schedule->hora_inicio }}</th>
                                                     <th>{{ $doctor_schedule->hora_fin }}</th>
                                                     <td>{{ $doctor_schedule->duracion_cita }}</td>
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-responsible"
+                                                                <a href="#" class="edit-doctor-schedule"
                                                                     data-id="{{ $doctor_schedule->id }}">
                                                                     <i class="fa fa-pencil fs-18 text-success"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-responsible"
+                                                                <a href="#" class="delete-doctor-schedule"
                                                                     data-id="{{ $doctor_schedule->id }}">
                                                                     <i class="fa fa-trash fs-18 text-danger"></i>
                                                                 </a>
@@ -107,6 +138,8 @@
 
                     @include('admissionist.schedule.crud.create')
 
+                    @include('admissionist.schedule.crud.edit');
+
                 </div>
             </div>
         </div>
@@ -115,35 +148,35 @@
 
         <!--**********************************Scripts***********************************-->
 
-    @section('script_data')
-        <!-- Required vendors -->
-        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-        <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+        @section('script_data')
+            <!-- Required vendors -->
+            <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+            <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 
 
-        <!-- Datatable -->
-        <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
-        <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-        <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+            <!-- Datatable -->
+            <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+            <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+            <script src="{{ asset('assets/js/custom.min.js') }}"></script>
+            <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
 
-        <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
-    @endsection
+            <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
+        @endsection
 
 
 
-    <!--**********************************Footer start***********************************-->
-    @include('templates.footer')
-    <!--**********************************Footer end***********************************-->
+        <!--**********************************Footer start***********************************-->
+        @include('templates.footer')
+        <!--**********************************Footer end***********************************-->
 
-    <!--**********************************Support ticket button start***********************************-->
+        <!--**********************************Support ticket button start***********************************-->
 
-    <!--**********************************Support ticket button end***********************************-->
+        <!--**********************************Support ticket button end***********************************-->
 
 
-</div>
-<!--**********************************Main wrapper end***********************************-->
+    </div>
+    <!--**********************************Main wrapper end***********************************-->
 
 
 @endsection

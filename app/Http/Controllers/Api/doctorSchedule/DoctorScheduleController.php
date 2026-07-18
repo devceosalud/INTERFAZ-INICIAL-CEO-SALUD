@@ -32,4 +32,18 @@ class DoctorScheduleController extends Controller
             'ocupadas' => $ocupadas
         ]);
     }
+
+    public function search(Request $request)
+    {
+        $doctor_schedule = DoctorSchedule::find($request->id);
+
+        if (!$doctor_schedule) {
+            return response()->json(['message' => 'no encontrado'], 404);
+        } else {
+            return response()->json([
+                'message' => 'encontrado',
+                'doctor_schedule' => $doctor_schedule
+            ], 200);
+        }
+    }
 }
