@@ -32,7 +32,7 @@ class AppointmentController extends Controller
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->endOfMonth()
-        ])->where('estado_cita', '!=', 'NO_ASISTIO')
+        ])->where('estado_cita', '!=', 'NO_ASISTIO') //whereIn('estado_cita', ['NO_ASISTIO','CANCELADO'])
             ->get();
 
         return view('admissionist.appointment.index', [

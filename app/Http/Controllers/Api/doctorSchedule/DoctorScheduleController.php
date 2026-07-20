@@ -25,6 +25,7 @@ class DoctorScheduleController extends Controller
         // Horas ya ocupadas
         $ocupadas = Appointment::where('doctor_id', $request->doctor_id)
             ->whereDate('fecha_cita', $request->fecha_cita)
+            ->where('estado_cita', '!=', 'NO_ASISTIO')  // whereIn('estado_cita', ['NOP_ASISTIO','CANCELADO'])
             ->pluck('hora_cita');
 
         return response()->json([
