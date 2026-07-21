@@ -208,11 +208,12 @@ class ScheduleController extends Controller
     public function updateDoctorSchedule(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'doctor_id_edit'      => 'required|exists:doctors,id',
-            'dia_semana_edit'     => 'required|integer|between:1,7',
-            'hora_inicio_edit'    => 'required|date_format:H:i',
-            'hora_fin_edit'       => 'required|date_format:H:i|after:hora_inicio',
-            'duracion_edit_cita'  => 'required|integer|in:10,15,20,30,45,60',
+            'doctor_schedule_id_edit' => 'required|exists:doctor_schedules,id',
+            'doctor_id_edit' =>'required|exists:doctors,id',
+            'dia_semana_edit' =>'required|integer|between:1,7',
+            'hora_inicio_edit' =>'required|date_format:H:i',
+            'hora_fin_edit' =>'required|date_format:H:i|after:hora_inicio_edit',
+            'duracion_edit_cita' =>'required|integer|in:10,15,20,30,45,60',
         ]);
 
         if ($validator->fails()) {
@@ -231,11 +232,11 @@ class ScheduleController extends Controller
         }
 
         $exito = $doctor_schedule->update([
-            'doctor_id_edit' => $request->doctor_id_edit,
-            'dia_semana_edit' => $request->dia_semana_edit,
-            'hora_inicio_edit' => $request->hora_inicio_edit,
-            'hora_fin_edit' => $request->hora_fin_edit,
-            'duracion_edit_cita' => $request->duracion_edit_cita
+            'doctor_id'     => $request->doctor_id_edit,
+            'dia_semana'    => $request->dia_semana_edit,
+            'hora_inicio'   => $request->hora_inicio_edit,
+            'hora_fin'      => $request->hora_fin_edit,
+            'duracion_cita' => $request->duracion_edit_cita
         ]);
 
         if ($exito) {
@@ -255,7 +256,7 @@ class ScheduleController extends Controller
     public function deleteDoctorSchedule(Request $request)
     {
         $doctor_schedule = DoctorSchedule::find($request->id);
-         $exito = $doctor_schedule->update([
+        $exito = $doctor_schedule->update([
             'estado' => 'INACTIVO'
         ]);
 
