@@ -99,7 +99,7 @@ class AppointmentController extends Controller
 
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
-            'user_id' => 1,
+            'user_id' => auth()->user()->id,
 
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,
