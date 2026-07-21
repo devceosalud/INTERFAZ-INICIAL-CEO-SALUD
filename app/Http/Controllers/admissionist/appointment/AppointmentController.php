@@ -114,11 +114,13 @@ class AppointmentController extends Controller
             'precio_programado' => $request->precio_programado,
             'total_pagado' => $request->total_pagado,
             'saldo_pendiente' => $request->saldo_pendiente,
+            'metodo_pago' => $request->metodo_pago,
 
             'es_exonerado' => $request->es_exonerado ?? false,
             'autorizado_por' => $request->autorizado_por,
 
             'estado_pagado' => $estado_pagado,
+            'numero_operacion' => $request->numero_operacion,
             'estado_cita' => 'PROGRAMADO',
 
             'observaciones' => $request->observaciones ?? 'SIN OBSERVACIONES',

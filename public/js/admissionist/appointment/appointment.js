@@ -117,8 +117,8 @@ async function buscarEspecialidad(event) {
         console.log('RESPUESTA ESPECIALIDAD', data);
 
         // SELECT PARA EL LLENADO 
-        const selectDoctor = document.getElementById('doctor_id');
-        const selectServicio = document.getElementById('service_id');
+        const selectDoctor = document.querySelector('#appointmentModalCreate #doctor_id');
+        const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
 
         //limpiar los campos
         selectDoctor.innerHTML = '<option value="">Seleccione</option>';

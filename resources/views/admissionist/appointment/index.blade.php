@@ -8,6 +8,8 @@
     <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
 
     <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('css/tesseract.css') }}" rel="stylesheet">
 @endsection
 
 
@@ -48,12 +50,41 @@
                             class="mx-auto d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                             <h4 class="card-title">App\Calendario</h4>
 
+                            <div class="row g-3" id="filtro-calendar">
+                                <div class="col-md-6">
+                                    <label class="form-label text-primary">Especialidad <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-control" id="calendar_specialty_id">
+                                        <option value="">Seleccione</option>
+
+                                        @foreach ($specialties as $specialty)
+                                            <option value="{{ $specialty->id }}">
+                                                {{ $specialty->nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <span class="text-danger error-text specialty_id_error"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label text-primary">Médico <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="calendar_doctor_id" id="calendar_doctor_id">
+                                        <option value="">Seleccione</option>
+                                    </select>
+
+                                    <span class="text-danger error-text doctor_id_error"></span>
+                                </div>
+                            </div>
+
+                            {{--
                             <div id="external-events" class="">
-                                {{-- <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                                     data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar
                                     Cita</a>
-                                    --}}
+                                    
                             </div>
+                            --}}
                         </div>
                     </div>
 
@@ -169,8 +200,12 @@
             <script src="{{ asset('assets/js/custom.min.js') }}"></script>
             <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
+            <!-- TESSERACT -->
+            <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
             <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
             <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
+            <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
         @endsection
 
 
