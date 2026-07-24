@@ -13,13 +13,27 @@ use Illuminate\Support\Facades\Validator;
 class ScheduleController extends Controller
 {
     //LISTA DE LOS HORARIOS PARA EL CALENDARIO WEB
-    public function list()
+    public function list(Request $request)
     {
-        $appointment = Appointment::whereBetween('fecha_cita', [
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth()
-        ])->where('estado_cita', '!=', 'NO_ASISTIO')
-            ->get();
+        $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
+            ->whereBetween('fecha_cita', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO']);
+
+        //PARA FILTRAR POR ESPECIALIDAD
+        if ($request->specialty_id) {
+            $appointment->whereHas('service', function ($query) use ($request) {
+                $query->where('specialty_id', $request->specialty_id);
+            });
+        }
+
+        //FILTRO POR MEDICO
+        if ($request->doctor_id) {
+            $appointment->where('doctor_id', $request->doctor_id);
+        }
+
+        $appointment = $appointment->get();
 
         $events = $appointment->map(function ($schedule) {
 
@@ -67,6 +81,7 @@ class ScheduleController extends Controller
                 'title' => $schedule->patient->nombre,
                 'start' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
                 'end' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
+                'color' => $color,
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
@@ -163,6 +178,7 @@ class ScheduleController extends Controller
         ]);
     }
 
+    //PARA GUARDAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -204,16 +220,16 @@ class ScheduleController extends Controller
         }
     }
 
-    //PARA ACTUALIZAR LOS DATOS
+    //PARA ACTUALIZAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function updateDoctorSchedule(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'doctor_schedule_id_edit' => 'required|exists:doctor_schedules,id',
-            'doctor_id_edit' =>'required|exists:doctors,id',
-            'dia_semana_edit' =>'required|integer|between:1,7',
-            'hora_inicio_edit' =>'required|date_format:H:i',
-            'hora_fin_edit' =>'required|date_format:H:i|after:hora_inicio_edit',
-            'duracion_edit_cita' =>'required|integer|in:10,15,20,30,45,60',
+            'doctor_id_edit' => 'required|exists:doctors,id',
+            'dia_semana_edit' => 'required|integer|between:1,7',
+            'hora_inicio_edit' => 'required|date_format:H:i',
+            'hora_fin_edit' => 'required|date_format:H:i|after:hora_inicio_edit',
+            'duracion_edit_cita' => 'required|integer|in:10,15,20,30,45,60',
         ]);
 
         if ($validator->fails()) {
@@ -252,7 +268,7 @@ class ScheduleController extends Controller
         }
     }
 
-    //PARA DESACTIVAR 
+    //PARA DESACTIVAR EL HOARIO DEL DOCTOR
     public function deleteDoctorSchedule(Request $request)
     {
         $doctor_schedule = DoctorSchedule::find($request->id);

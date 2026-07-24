@@ -7,6 +7,7 @@ use App\Mail\MailAppointment;
 use App\Models\AdditionalRate;
 use App\Models\Appointment;
 use App\Models\Channel;
+use App\Models\DoctorSchedule;
 use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Specialty;
@@ -56,6 +57,7 @@ class AppointmentController extends Controller
 
             'fecha_cita' => 'required|date',
             'hora_cita' => 'required',
+            'cita_doble' => 'nullable|boolean',
 
             'precio_programado' => 'required|numeric|min:0',
             'total_pagado' => 'required|numeric|min:0',
@@ -97,6 +99,19 @@ class AppointmentController extends Controller
             $estado_pagado = 'PAGADO';
         }
 
+        $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
+        $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
+            ->where('dia_semana', $dia)
+            ->where('estado', 'ACTIVO')
+            ->where('hora_inicio', '<=', $request->hora_cita)
+            ->where('hora_fin', '>', $request->hora_cita)
+            ->first();
+
+        $duracion_base = $horario->duracion_cita;
+        $duracion_cita = $request->boolean('cita_doble')
+            ? $duracion_base * 2
+            : $duracion_base;
+
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,
@@ -108,6 +123,7 @@ class AppointmentController extends Controller
 
             'fecha_cita' => $request->fecha_cita,
             'hora_cita' => $request->hora_cita,
+            'duracion_cita' => $duracion_cita,
 
             'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
 

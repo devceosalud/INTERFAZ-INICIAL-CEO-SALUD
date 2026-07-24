@@ -29,7 +29,7 @@
 
                 <li>
                     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-                        <i class="flaticon-381-useradmissionit.schedule.index-2"></i>
+                        <i class="flaticon-381-user"></i>
                         <span class="nav-text">Usuarios</span>
                     </a>
                     <ul aria-expanded="false">

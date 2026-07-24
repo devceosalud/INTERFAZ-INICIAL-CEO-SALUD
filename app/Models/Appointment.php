@@ -18,6 +18,7 @@ class Appointment extends Model
         'additional_rate_id',
         'fecha_cita',
         'hora_cita',
+        'duracion_cita',
         'motivo_consulta',
         'precio_programado',
         'total_pagado',

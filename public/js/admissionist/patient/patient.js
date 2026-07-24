@@ -564,11 +564,15 @@ async function cargarHorarios() {
 
     let doctor_id = $('#appointmentModalCreate #doctor_id').val();
     let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
-    console.log('fecha', fecha_cita);
-    console.log('doctor id:', doctor_id);
+    let cita_doble = $('#appointmentModalCreate #cita_doble').is(':checked');
+
+    console.log('doctor:', doctor_id);
+    console.log('fecha:', fecha_cita);
+    console.log('cita doble:', cita_doble);
 
     try {
-        const res = await fetch(`${window.location.origin}/api/appointment/schedule/available-hours`, {
+        const res = await fetch(
+            `${window.location.origin}/api/appointment/schedule/available-hours`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -582,19 +586,19 @@ async function cargarHorarios() {
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorarios(data.horarios, data.ocupadas);
+        generarHorarios(data.horarios, data.ocupadas, cita_doble);
     } catch (error) {
         console.error(error);
     }
 }
 
-function generarHorarios(horarios, ocupadas) {
+function generarHorarios(horarios, ocupadas, cita_doble) {
+
+    console.log('¿cita doble?', cita_doble);
     let select = document.querySelector("#appointmentModalCreate #hora_cita");
     select.innerHTML = '<option value="">Seleccione una hora</option>';
 
     horarios.forEach(horario => {
-        console.log('horarios: ', horario);
-
         let inicio = horario.hora_inicio.substring(0, 5);
         let fin = horario.hora_fin.substring(0, 5);
         let duracion = parseInt(horario.duracion_cita);
@@ -603,16 +607,57 @@ function generarHorarios(horarios, ocupadas) {
 
         while (actual < final) {
             let hora = convertirHora(actual);
+            // BUSCAR SI ESTA HORA YA ESTÁ OCUPADA
+            let horaOcupada = ocupadas.some(cita =>
+                cita.hora_cita.substring(0, 5) === hora
+            );
             console.log('hora:', hora);
-            if (!ocupadas.includes(hora + ":00")) {
-                const opcion = document.createElement('option');
-                opcion.value = hora;
-                opcion.textContent = hora;
-                select.appendChild(opcion);
+            console.log('¿ocupada?', horaOcupada);
+
+            // CITA NORMAL
+            if (!cita_doble) {
+                let hayCruce = existeCruce(hora, duracion, ocupadas);
+                if (!hayCruce) {
+                    const opcion = document.createElement('option');
+                    opcion.value = hora;
+                    opcion.textContent = hora;
+                    select.appendChild(opcion);
+                }
+            }
+            // CITA DOBLE
+            else {
+                let duracionDoble = duracion * 2;
+                let siguienteMinuto = actual + duracionDoble;
+                // NO SALIR DEL HORARIO DEL MEDICO
+                if (siguienteMinuto <= final) {
+                    let siguienteHora = convertirHora(siguienteMinuto);
+                    let hayCruce = existeCruce(hora,duracionDoble,ocupadas);
+
+                    if (!hayCruce) {
+                        const opcion = document.createElement('option');
+                        opcion.value = hora;
+                        opcion.textContent = hora + ' - ' + siguienteHora;
+                        select.appendChild(opcion);
+                    }
+                }
             }
             actual += duracion;
         }
         initSelectCreate();
+    });
+}
+
+function existeCruce(horaInicioNueva, duracionNueva, ocupadas) {
+
+    let inicioNueva = convertirMinutos(horaInicioNueva);
+    let finNueva = inicioNueva + duracionNueva;
+    return ocupadas.some(cita => {
+        let inicioExistente = convertirMinutos(
+            cita.hora_cita.substring(0, 5)
+        );
+
+        let finExistente = inicioExistente + parseInt(cita.duracion_cita);
+        return (inicioNueva < finExistente && finNueva > inicioExistente);
     });
 }
 

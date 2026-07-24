@@ -9,6 +9,8 @@
     <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
     <!-- Custom Stylesheet -->
     <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('css/tesseract.css') }}" rel="stylesheet">
 @endsection
 
 
@@ -147,8 +149,12 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
+        <!-- TESSERACT -->
+        <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 
         <script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
+        <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
     @endsection
 
 

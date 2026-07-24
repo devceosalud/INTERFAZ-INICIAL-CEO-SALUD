@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar');
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
         initialView: 'timeGridWeek', // timeGridWeek : vista de semana
         locale: 'es',
 
@@ -165,10 +165,19 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#appointmentModalEdit').modal('show');
         },
 
-        events: '/admissionist/reservation/list-calendar',
+        // PARA PODER CARGAR DINAMICAMENTE Y PASARLE LOS PARAMETROS DE BUSQUEDA
+        events: {
+            url: '/admissionist/reservation/list-calendar',
+            extraParams: function () {
+                return {
+                    specialty_id: document.querySelector('#filtro-calendar_specialty_id').value,
+                    doctor_id: document.querySelector('#filtro-calendar_doctor_id').value
+                };
+            }
+        },
     });
 
-    calendar.render();
+    window.calendar.render(); //PARA HACERLO GLOBAL
 
     //BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
     async function buscarEspecialidad(event) {

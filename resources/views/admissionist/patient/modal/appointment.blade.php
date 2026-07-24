@@ -32,9 +32,19 @@
                             <span class="text-danger error-text patient_id_error"></span>
                         </div>
 
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <label class="form-label text-primary">Paciente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nombre_paciente" readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cita_doble">
+
+                                <label class="form-check-label" for="cita_doble">
+                                    Reservar turno doble (30 minutos)
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -192,6 +202,52 @@
                         <div class="col-md-6">
                             <label class="form-label text-primary">Observaciones</label>
                             <textarea class="form-control" name="observaciones" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- ================= PARA LA FOTO SACAR EL N° DE OPERACION ================= -->
+                    <div class="row g-3">
+                        <div class="card">
+                            <div class="drop" id="dropZone">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
+                                    stroke="#2a9d96" stroke-width="1.6">
+                                    <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                <p class="principal">Arrastra la captura de pago aquí</p>
+                                <p class="secundario">o haz clic para elegir un archivo</p>
+                                <input type="file" id="fileInput" accept="image/*">
+                            </div>
+
+                            <div class="preview" id="preview" style="display:none">
+                                <img id="previewImg" alt="Captura cargada">
+                            </div>
+
+                            <div class="estado" id="estado"></div>
+
+                            <div class="resultado" id="resultado">
+                                <label>Número de operación detectado</label>
+                                {{--
+                                <div class="caja-numero">
+                                    <span id="numeroDetectado">—</span>
+                                    <button class="btn-copiar" id="btnCopiar">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="12" height="12" rx="2" />
+                                            <path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round" />
+                                        </svg>
+                                        <span id="btnCopiarTexto">Copiar</span>
+                                    </button>
+                                </div>
+                                --}}
+                            </div>
+
+                            <details>
+                                <summary>Ver texto reconocido (para revisar si algo falla)</summary>
+                                <pre id="debugTexto">—</pre>
+                            </details>
                         </div>
                     </div>
                 </div>

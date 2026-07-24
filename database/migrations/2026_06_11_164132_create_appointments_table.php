@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('doctor_id');
             $table->unsignedBigInteger('service_id');
             $table->unsignedBigInteger('additional_rate_id');
-
+            $table->unsignedTinyInteger('duracion_cita')->nullable(); //DATO NUEVO
             $table->date('fecha_cita');
             $table->time('hora_cita');
             $table->text('motivo_consulta')->nullable();

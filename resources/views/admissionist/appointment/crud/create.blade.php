@@ -32,9 +32,19 @@
                             <span class="text-danger error-text patient_id_error"></span>
                         </div>
 
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <label class="form-label text-primary">Paciente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nombre_paciente" readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cita_doble">
+
+                                <label class="form-check-label" for="cita_doble">
+                                    Reservar turno doble (30 minutos)
+                                </label>
+                            </div>
                         </div>
                     </div>
 
