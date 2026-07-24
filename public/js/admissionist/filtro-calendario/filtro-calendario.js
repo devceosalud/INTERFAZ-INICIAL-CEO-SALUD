@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO QUE ESPECIALIDAD SELECCIONA 
     specialty_id.addEventListener('change', function (event) {
-        buscarEspecialidad(event);
+        buscarEspecialidadFiltroCalendario(event);
     });
 
     //ACTUALIZAR CUANDO SE CAMBIA DE MEDICO
@@ -24,7 +24,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 //BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
-async function buscarEspecialidad(event) {
+async function buscarEspecialidadFiltroCalendario(event) {
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;

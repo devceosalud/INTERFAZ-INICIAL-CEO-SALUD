@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO QUE ESPECIALIDAD SELECCIONA 
     specialty_id.addEventListener('change', function (event) {
-        buscarEspecialidad(event);
+        buscarEspecialidadCita(event);
     });
 
     //EVENTO QUE SERVICIOS SELECCIONA
@@ -98,7 +98,7 @@ async function buscarPaciente(event) {
 
 
 //BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
-async function buscarEspecialidad(event) {
+async function buscarEspecialidadCita(event) {
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;

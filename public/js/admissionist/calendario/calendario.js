@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //EVENTO QUE ESPECIALIDAD SELECCIONA 
     specialty_id.addEventListener('change', function (event) {
-        buscarEspecialidad(event);
+        buscarEspecialidadCalendario(event);
     });
 
 
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.calendar.render(); //PARA HACERLO GLOBAL
 
     //BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
-    async function buscarEspecialidad(event) {
+    async function buscarEspecialidadCalendario(event) {
 
         const valor = event?.target?.value?.trim() || '';
         if (!valor) return;
