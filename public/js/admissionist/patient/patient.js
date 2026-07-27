@@ -54,6 +54,11 @@ window.addEventListener("DOMContentLoaded", function () {
     $('#appointmentModalCreate #fecha_cita').on('change', function () {
         cargarHorarios();
     });
+
+    //REFREZCAR LOS HORARIOS DE CITA NORMAL Y DOBLE CITA
+    document.querySelector('#appointmentModalCreate #cita_doble').addEventListener('change', function(){
+        cargarHorarios();
+    })
 });
 
 // GUARDAR DATOS DEL PACIENTE
