@@ -18,7 +18,7 @@ class ScheduleController extends Controller
         $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
             ->whereBetween('fecha_cita', [
                 Carbon::now()->startOfMonth(),
-                Carbon::now()->endOfMonth()
+                Carbon::now()->addMonth()->endOfMonth()
             ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO']);
 
         //PARA FILTRAR POR ESPECIALIDAD
