@@ -32,9 +32,8 @@ class AppointmentController extends Controller
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth()
-        ])->where('estado_cita', '!=', 'NO_ASISTIO') //whereIn('estado_cita', ['NO_ASISTIO','CANCELADO'])
-            ->get();
+            Carbon::now()->addMonth()->endOfMonth()
+        ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO'])->get();
 
         return view('admissionist.appointment.index', [
             'specialties' => $specialties,
