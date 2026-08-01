@@ -30,9 +30,19 @@
                             <input type="text" class="form-control" id="documento_paciente_edit" readonly>
                         </div>
 
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <label class="form-label text-primary">Paciente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nombre_paciente_edit" readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cita_doble_edit">
+
+                                <label class="form-check-label" for="cita_doble_edit">
+                                    Reservar turno doble (30 minutos)
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -85,9 +95,10 @@
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="hora_cita_edit" id="hora_cita_edit"
-                                placeholder="HH:mm">
-
+                            {{--  <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm"> --}}
+                            <select class="form-control" name="hora_cita_edit" id="hora_cita_edit">
+                                <option value="">Seleccione una hora</option>
+                            </select>
                             <span class="text-danger error-text hora_cita_edit_error"></span>
                         </div>
 

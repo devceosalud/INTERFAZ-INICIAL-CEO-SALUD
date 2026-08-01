@@ -197,6 +197,7 @@
             <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
             <script src="{{ asset('js/admissionist/calendario/calendario.js') }}"></script>
             <script src="{{ asset('js/admissionist/filtro-calendario/filtro-calendario.js') }}"></script>
+            <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
         @endsection
 
 

@@ -5,7 +5,6 @@ window.addEventListener('DOMContentLoaded', () => {
     //VARIABLES GLOBALES
     const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
-
     const service_id = document.querySelector('#appointmentModalCreate #service_id');
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
@@ -18,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
     //EVENTO PARA BUSCAR AL PACIENTE
     paciente_id.addEventListener('input', function (event) {
         console.log('ESCRIBIENDO EN DOCUMENTO PACIENTE');
-        buscarPaciente(event);
+        buscarPacienteCita(event);
     });
 
     //EVENTO QUE ESPECIALIDAD SELECCIONA 
@@ -28,39 +27,39 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO QUE SERVICIOS SELECCIONA
     service_id.addEventListener('change', function () {
-        calcularPrecio();
+        calcularPrecioCita();
     });
 
     //EVENTO PARA CALCUALR EL PRECIO CUANDO SE CAMBIAR UNA TARIFA
     additional_rate_id.addEventListener('change', function () {
-        calcularPrecio();
+        calcularPrecioCita();
     });
 
     //CHECK DE EXONERADO , VOVELMOS A CALCULAR PRECIO
     es_exonerado.addEventListener('change', function () {
-        calcularPrecio();
+        calcularPrecioCita();
     });
 
     //SI SE DIGITA UN MONTO DE LA RESERVA , CALCULAMOS EL SALDO FINAL
     document.querySelector('#total_pagado').addEventListener('input', function () {
-        calcularSaldo();
+        calcularSaldoCita();
     });
 
     //CARGANDO HORARIOS MEDICOS
     $('#appointmentModalCreate #doctor_id').on('change', function () {
-        cargarHorarios();
+        cargarHorariosCita();
     });
 
     //REFREZCAR LOS HORARIOS DE CITA NORMAL Y DOBLE CITA
     document.querySelector('#appointmentModalCreate #cita_doble').addEventListener('change', function(){
-        cargarHorarios();
+        cargarHorariosCita();
     })
 
 });
 
 
 //PARA BUSCAR PACIENTE FORMULARIO PACIENTE
-async function buscarPaciente(event) {
+async function buscarPacienteCita(event) {
 
     const valor = event?.target?.value?.trim() || ''; //para desaparacer los datos sin espacio
     console.log('NUMERO DE DOC: ', valor);
@@ -165,7 +164,7 @@ async function buscarEspecialidadCita(event) {
 
 
 //PARA CALCULAR EL PRECIO
-async function calcularPrecio() {
+async function calcularPrecioCita() {
 
     //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
     const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
@@ -207,7 +206,7 @@ async function calcularPrecio() {
         }
 
         //FUNCION CALCULAR SALDO FINAL
-        calcularSaldo();
+        calcularSaldoCita();
 
     } catch (error) {
         console.error('Error:', error);
@@ -216,7 +215,7 @@ async function calcularPrecio() {
 }
 
 //PARA CALCULAR EL SALDO
-function calcularSaldo() {
+function calcularSaldoCita() {
     let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
     let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
     let saldo = precio - pagado;
@@ -360,7 +359,7 @@ $("#formUpdateSchedule").on("submit", function (e) {
 
 
 //PARA CARGAR HORARIOS
-async function cargarHorarios() {
+async function cargarHorariosCita() {
 
     let doctor_id = $('#appointmentModalCreate #doctor_id').val();
     let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
@@ -386,13 +385,13 @@ async function cargarHorarios() {
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorarios(data.horarios, data.ocupadas, cita_doble);
+        generarHorariosCita(data.horarios, data.ocupadas, cita_doble);
     } catch (error) {
         console.error(error);
     }
 }
 
-function generarHorarios(horarios, ocupadas, cita_doble) {
+function generarHorariosCita(horarios, ocupadas, cita_doble) {
 
     console.log('¿cita doble?', cita_doble);
     let select = document.querySelector("#appointmentModalCreate #hora_cita");
@@ -402,11 +401,11 @@ function generarHorarios(horarios, ocupadas, cita_doble) {
         let inicio = horario.hora_inicio.substring(0, 5);
         let fin = horario.hora_fin.substring(0, 5);
         let duracion = parseInt(horario.duracion_cita);
-        let actual = convertirMinutos(inicio);
-        let final = convertirMinutos(fin);
+        let actual = convertirMinutosCita(inicio);
+        let final = convertirMinutosCita(fin);
 
         while (actual < final) {
-            let hora = convertirHora(actual);
+            let hora = convertirHoraCita(actual);
             // BUSCAR SI ESTA HORA YA ESTÁ OCUPADA
             let horaOcupada = ocupadas.some(cita =>
                 cita.hora_cita.substring(0, 5) === hora
@@ -416,7 +415,7 @@ function generarHorarios(horarios, ocupadas, cita_doble) {
 
             // CITA NORMAL
             if (!cita_doble) {
-                let hayCruce = existeCruce(hora, duracion, ocupadas);
+                let hayCruce = existeCruceCita(hora, duracion, ocupadas);
                 if (!hayCruce) {
                     const opcion = document.createElement('option');
                     opcion.value = hora;
@@ -430,8 +429,8 @@ function generarHorarios(horarios, ocupadas, cita_doble) {
                 let siguienteMinuto = actual + duracionDoble;
                 // NO SALIR DEL HORARIO DEL MEDICO
                 if (siguienteMinuto <= final) {
-                    let siguienteHora = convertirHora(siguienteMinuto);
-                    let hayCruce = existeCruce(hora,duracionDoble,ocupadas);
+                    let siguienteHora = convertirHoraCita(siguienteMinuto);
+                    let hayCruce = existeCruceCita(hora,duracionDoble,ocupadas);
 
                     if (!hayCruce) {
                         const opcion = document.createElement('option');
@@ -447,12 +446,12 @@ function generarHorarios(horarios, ocupadas, cita_doble) {
     });
 }
 
-function existeCruce(horaInicioNueva, duracionNueva, ocupadas) {
+function existeCruceCita(horaInicioNueva, duracionNueva, ocupadas) {
 
-    let inicioNueva = convertirMinutos(horaInicioNueva);
+    let inicioNueva = convertirMinutosCita(horaInicioNueva);
     let finNueva = inicioNueva + duracionNueva;
     return ocupadas.some(cita => {
-        let inicioExistente = convertirMinutos(
+        let inicioExistente = convertirMinutosCita(
             cita.hora_cita.substring(0, 5)
         );
 
@@ -461,13 +460,13 @@ function existeCruce(horaInicioNueva, duracionNueva, ocupadas) {
     });
 }
 
-function convertirMinutos(hora) {
+function convertirMinutosCita(hora) {
     let partes = hora.split(":");
     console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
     return parseInt(partes[0]) * 60 + parseInt(partes[1]);
 }
 
-function convertirHora(minutos) {
+function convertirHoraCita(minutos) {
     let h = Math.floor(minutos / 60);
     let m = minutos % 60;
     h = String(h).padStart(2, '0');

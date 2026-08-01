@@ -1,11 +1,12 @@
 window.addEventListener("DOMContentLoaded", function () {
     console.log('CARGANDO PACIENTES');
 
-    const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
+    
     const input = document.querySelector("#patientModalCreate #formCreatePatient #numero_identidad");
     const responsable_id = document.querySelector("#patientModalCreate #responsable_id");
     const modal_responsable = document.querySelector("#patientModalCreate #modal_responsable");
 
+    const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
     const service_id = document.querySelector('#appointmentModalCreate #service_id');
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
