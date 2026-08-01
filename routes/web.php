@@ -50,6 +50,7 @@ Route::post('/admissionist/patient/delete', [PatientController::class , 'delete'
 
 Route::get('/admissionist/appointment', [AppointmentController::class , 'index'])->name('admissionit.appointment.index');
 Route::post('/admissionist/appointment/store', [AppointmentController::class , 'store'])->name('admissionit.appointment.store');
+Route::post('/admissionist/appointment/update', [AppointmentController::class , 'update'])->name('admissionit.appointment.update');
 
 Route::get('/admissionist/responsible', [ResponsibleController::class , 'index'])->name('admissionit.responsible.index');
 Route::put('/admissionist/responsible/update', [ResponsibleController::class, 'update'])->name('admissionit.responsible.update');

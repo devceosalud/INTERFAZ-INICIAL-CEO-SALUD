@@ -44,6 +44,8 @@ class AppointmentController extends Controller
         ]);
     }
 
+
+    //PARA GUARDAR LA CITA
     public function store(Request $request)
     {
         //dd($request->all());
@@ -158,6 +160,24 @@ class AppointmentController extends Controller
                 'code' => 0,
                 'msg' => 'Cita no creada'
             ]);
+        }
+    }
+
+
+    //PARA ACTUALIZAR LA CITA 
+    public function update(Request $request)
+    {
+        //dd($request->all());
+
+        $estadoCita = Appointment::find($request->appointment_id);
+        $exito = $estadoCita->update([
+            'estado_cita' => $request->estado_cita
+        ]);
+
+        if ($exito) {
+            return redirect()->back();
+        } else {
+            return redirect()->back();
         }
     }
 }

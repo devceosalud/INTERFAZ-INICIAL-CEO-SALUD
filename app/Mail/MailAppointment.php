@@ -32,6 +32,8 @@ class MailAppointment extends Mailable
 
     public function build()
     {
-        return $this->from('dev.ceosalud@gmail.com', 'CEO-SALUD - ADMISIÓN')->subject('Cita creada')->markdown('emails.appointment.record');
+        //return $this->from('dev.ceosalud@gmail.com', 'CEO-SALUD - ADMISIÓN')->subject('Cita creada')->markdown('emails.appointment.record');
+
+        return $this->from('dev.ceosalud@gmail.com', 'CEO-SALUD - ADMISIÓN')->subject('Cita creada')->view('emails.appointment.record');
     }
 }

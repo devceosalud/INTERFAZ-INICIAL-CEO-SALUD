@@ -113,7 +113,7 @@
                                         <tbody>
                                             @foreach ($appointments as $appointment)
                                                 <tr>
-                                                    <td><strong>{{ $appointment->numero_cita }}</strong></td>
+                                                    <td><strong>{{ $appointment->estado_cita }}</strong></td>
                                                     <td>{{ $appointment->patient->nombre }}</td>
                                                     <td>{{ $appointment->doctor->nombre }}</td>
                                                     <td>{{ $appointment->service->nombre }}</td>
@@ -138,17 +138,15 @@
                                                     </td>
                                                     <td>{{ $appointment->saldo_pendiente }} </td>
                                                     <td>
+
                                                         <strong>
-                                                            {{--
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-patient"
-                                                                    data-id="{{ $appointment->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
-                                                                </a>
-                                                            </span>
-                                                            --}}
-                                                            <span>
-                                                                <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                <a href="#" class="update-patient"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#appointmentModalState-{{$appointment->id}}"><i
+                                                                        class="fa fa-pencil fs-18 text-success"></i></a>
+
+                                                                @include('admissionist.appointment.crud.update')
                                                             </span>
                                                         </strong>
                                                     </td>

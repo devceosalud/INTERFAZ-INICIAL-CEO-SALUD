@@ -97,10 +97,12 @@
                             <select class="form-control" name="estado_cita" id="estado_cita">
                                 <option value="PROGRAMADO">PROGRAMADO</option>
                                 <option value="CONFIRMADO">CONFIRMADO</option>
+                                <option value="CONFIRMADO">PACIENTE_LLEGO</option>
                                 <option value="EN_ESPERA">EN ESPERA</option>
                                 <option value="LLAMANDO">LLAMANDO</option>
                                 <option value="EN_ATENCION">EN ATENCION</option>
                                 <option value="ATENDIDO">ATENDIDO</option>
+                                <option value="ATENDIDO">REEVALUACION</option>
                                 <option value="CANCELADO">CANCELADO</option>
                                 <option value="NO_ASISTIO">NO ASISTIO</option>
                             </select>
