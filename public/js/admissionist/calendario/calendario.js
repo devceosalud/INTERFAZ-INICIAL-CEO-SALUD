@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             url: '/admissionist/reservation/list-calendar',
             extraParams: function () {
                 return {
+                    //VARIABLES JALADAS DEL "filtro-calendario.js"
                     specialty_id: document.querySelector('#filtro-calendar_specialty_id').value,
                     doctor_id: document.querySelector('#filtro-calendar_doctor_id').value
                 };

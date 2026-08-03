@@ -2,7 +2,7 @@
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDO CITAS PARA EL CALENDARIO WEB - NUEVA VERSION');
 
-    //VARIABLES GLOBALES
+    //VARIABLES GLOBALES QUE SE COMPARTE AL "calendario.js"
     const specialty_id = document.querySelector('#filtro-calendar_specialty_id');
     const doctor_id = document.querySelector('#filtro-calendar_doctor_id');
 

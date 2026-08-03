@@ -127,6 +127,7 @@ class AppointmentController extends Controller
             'duracion_cita' => $duracion_cita,
 
             'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
+            'turno_cita' => 0,
 
             'precio_programado' => $request->precio_programado,
             'total_pagado' => $request->total_pagado,

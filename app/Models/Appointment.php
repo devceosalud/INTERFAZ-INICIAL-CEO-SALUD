@@ -20,6 +20,7 @@ class Appointment extends Model
         'hora_cita',
         'duracion_cita',
         'motivo_consulta',
+        'turno_cita',
         'precio_programado',
         'total_pagado',
         'saldo_pendiente',

@@ -43,13 +43,13 @@ async function cargarHorariosEditarCita() {
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorariosCita(data.horarios, data.ocupadas, cita_doble);
+        generarHorariosEditarCita(data.horarios, data.ocupadas, cita_doble);
     } catch (error) {
         console.error(error);
     }
 }
 
-function generarHorariosCita(horarios, ocupadas, cita_doble) {
+function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
 
     console.log('¿cita doble?', cita_doble);
     let select = document.querySelector("#appointmentModalEdit #hora_cita_edit");
@@ -59,11 +59,11 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
         let inicio = horario.hora_inicio.substring(0, 5);
         let fin = horario.hora_fin.substring(0, 5);
         let duracion = parseInt(horario.duracion_cita);
-        let actual = convertirMinutosCita(inicio);
-        let final = convertirMinutosCita(fin);
+        let actual = convertirMinutosEditarCita(inicio);
+        let final = convertirMinutosEditarCita(fin);
 
         while (actual < final) {
-            let hora = convertirHoraCita(actual);
+            let hora = convertirHoraEditarCita(actual);
             // BUSCAR SI ESTA HORA YA ESTÁ OCUPADA
             let horaOcupada = ocupadas.some(cita =>
                 cita.hora_cita.substring(0, 5) === hora
@@ -87,7 +87,7 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
                 let siguienteMinuto = actual + duracionDoble;
                 // NO SALIR DEL HORARIO DEL MEDICO
                 if (siguienteMinuto <= final) {
-                    let siguienteHora = convertirHoraCita(siguienteMinuto);
+                    let siguienteHora = convertirHoraEditarCita(siguienteMinuto);
                     let hayCruce = existeCruceCita(hora,duracionDoble,ocupadas);
 
                     if (!hayCruce) {
@@ -100,16 +100,16 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
             }
             actual += duracion;
         }
-        initSelectCreate();
+        initSelectEditarCita();
     });
 }
 
-function existeCruceCita(horaInicioNueva, duracionNueva, ocupadas) {
+function existeCruceEditarCita(horaInicioNueva, duracionNueva, ocupadas) {
 
-    let inicioNueva = convertirMinutosCita(horaInicioNueva);
+    let inicioNueva = convertirMinutosEditarCita(horaInicioNueva);
     let finNueva = inicioNueva + duracionNueva;
     return ocupadas.some(cita => {
-        let inicioExistente = convertirMinutosCita(
+        let inicioExistente = convertirMinutosEditarCita(
             cita.hora_cita.substring(0, 5)
         );
 
@@ -118,13 +118,13 @@ function existeCruceCita(horaInicioNueva, duracionNueva, ocupadas) {
     });
 }
 
-function convertirMinutosCita(hora) {
+function convertirMinutosEditarCita(hora) {
     let partes = hora.split(":");
     console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
     return parseInt(partes[0]) * 60 + parseInt(partes[1]);
 }
 
-function convertirHoraCita(minutos) {
+function convertirHoraEditarCita(minutos) {
     let h = Math.floor(minutos / 60);
     let m = minutos % 60;
     h = String(h).padStart(2, '0');
@@ -133,7 +133,7 @@ function convertirHoraCita(minutos) {
     return `${h}:${m}`;
 }
 
-function initSelectCreate() {
+function initSelectEditarCita() {
     $('#appointmentModalEdit #hora_cita_edit').selectpicker('destroy');
 
     $('#appointmentModalEdit #hora_cita_edit').selectpicker();
