@@ -16,10 +16,11 @@ class ScheduleController extends Controller
     public function list(Request $request)
     {
         $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
+            //MES ACTUAL Y ANTERIOR
             ->whereBetween('fecha_cita', [
                 Carbon::now()->startOfMonth(),
                 Carbon::now()->addMonth()->endOfMonth()
-            ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO']);
+            ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
 
         //PARA FILTRAR POR ESPECIALIDAD
         if ($request->specialty_id) {

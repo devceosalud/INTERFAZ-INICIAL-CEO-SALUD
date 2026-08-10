@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var calendarEl = document.getElementById('calendar');
 
     window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
-        initialView: 'timeGridWeek', // timeGridWeek : vista de semana
+        initialView: 'dayGridMonth', // timeGridWeek : vista de semana
         locale: 'es',
 
         eventDisplay: 'block',

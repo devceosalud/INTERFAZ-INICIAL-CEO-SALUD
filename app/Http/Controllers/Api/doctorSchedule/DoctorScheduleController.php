@@ -25,7 +25,7 @@ class DoctorScheduleController extends Controller
         // Horas ya ocupadas
         $ocupadas = Appointment::where('doctor_id', $request->doctor_id)
             ->whereDate('fecha_cita', $request->fecha_cita)
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO'])
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO' ,'ATENDIDO','REEVALUACION']) //['NO_ASISTIO', 'CANCELADO','ATENDIDO','REEVALUACION']
             ->get([
                 'hora_cita',
                 'duracion_cita'

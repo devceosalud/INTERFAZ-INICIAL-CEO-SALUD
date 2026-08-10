@@ -26,21 +26,39 @@ class AppointmentController extends Controller
 
     public function index()
     {
+        $day = Date('Y-m-d');
         $specialties = Specialty::where('estado', 'ACTIVO')->get();
         $channels  = Channel::where('estado', 'ACTIVO')->get();
         $interaction_media  = InteractionMedium::where('estado', 'ACTIVO')->get();
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
+
+        //CITAS DE HOY
         $appointments = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
-        ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO'])->get();
+        ])
+            ->where('fecha_cita', 'LIKE', '%' . $day . '%')
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'REEVALUACION'])
+            ->orderBy('hora_cita', 'ASC')->get();
+        //DESC : DE MAYOR A MENOR
+        //ASC : DE MENOR A MAYOR
+
+        //REEVALUACION DE HOY
+        $revaluaciones = Appointment::whereBetween('fecha_cita', [
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->addMonth()->endOfMonth()
+        ])
+            ->where('fecha_cita', 'LIKE', '%' . $day . '%')
+            ->whereIn('estado_cita', ['REEVALUACION'])
+            ->orderBy('hora_cita', 'ASC')->get();
 
         return view('admissionist.appointment.index', [
             'specialties' => $specialties,
             'channels' => $channels,
             'interaction_media' => $interaction_media,
             'additional_rates' => $additional_rates,
-            'appointments' => $appointments
+            'appointments' => $appointments,
+            'revaluaciones' => $revaluaciones
         ]);
     }
 
@@ -49,7 +67,20 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         //dd($request->all());
+        //BUSCAR EL HORARIO QUE SE MANDA EN EL FORM CON LA BD PARA QUE NO HAYA ERRORES
+        //ESTE SERIA SI ES QUE OTRA ADMISION YA REGISTRO ESE HORARIO HACE UNOS INSTANTES
 
+
+        //NO PERMITIR QUE SE REGISTRE UNA CITA CON UNA FECHA ANTERIOR
+        /*if ($request->fecha_cita < Date('Y-m-d')) {
+            return response()->json([
+                'code' => 0,
+                'msg'  => 'Fecha fuera de límite'
+            ]);
+        } */
+
+
+        //VALIDACIONES
         $validator = Validator::make($request->all(), [
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
@@ -77,6 +108,7 @@ class AppointmentController extends Controller
             ]);
         }
 
+        //BUSCAMOS AL MISMO PACIENTE SI YA TIENE UNA CITA CREADA CON LA MISMA ESPECIALIDAD/SERVICIO/DOCTOR
         $paciente = Patient::find($request->patient_id);
         if ($paciente) {
             $existe = Appointment::where('estado_cita', 'PROGRAMADO')
@@ -94,15 +126,17 @@ class AppointmentController extends Controller
         $numero_cita = 'CIT-' . date('YmdHis');
         $estado_pagado = 'PENDIENTE';
 
+        //VALIDAMOS EL ESTADO DEL PAGO
         if ($request->total_pagado > 0 && $request->total_pagado < $request->precio_programado) {
             $estado_pagado = 'PARCIAL';
         } elseif ($request->total_pagado >= $request->precio_programado) {
             $estado_pagado = 'PAGADO';
         }
 
+        //TRAEMOS LOS DATOS DEL HORARIO DEL DOCTOR 
         $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
         $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('dia_semana', $dia)
+            ->where('dia_semana', $dia) // DIA DE LA SEMANA [1,2,3,4,5,6,7]
             ->where('estado', 'ACTIVO')
             ->where('hora_inicio', '<=', $request->hora_cita)
             ->where('hora_fin', '>', $request->hora_cita)
@@ -148,9 +182,9 @@ class AppointmentController extends Controller
         if ($appointment) {
 
             //PONERLO EN UN CRON JOB FLUJO ESCALA NOTIFICADOR
-            if ($appointment->patient->email) {
-                Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
-            }
+            //if ($appointment->patient->email) {
+            //    Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
+            //}
 
             return response()->json([
                 'code' => 1,

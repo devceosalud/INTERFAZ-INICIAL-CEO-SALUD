@@ -30,7 +30,7 @@
                             <label class="form-label text-primary">Estado de la Cita <span
                                     class="text-danger">*</span></label>
                             <select class="form-control" name="estado_cita" id="estado_cita">
-                                <option value="PROGRAMADO">PROGRAMADO</option>
+                              {{-- <option value="PROGRAMADO">PROGRAMADO</option> --}} 
                                 <option value="CONFIRMADO">CONFIRMADO</option>
                                 <option value="PACIENTE_LLEGO">PACIENTE LLEGO</option>
                                 <option value="EN_ESPERA">EN ESPERA</option>

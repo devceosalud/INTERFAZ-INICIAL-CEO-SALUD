@@ -73,7 +73,7 @@ function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
 
             // CITA NORMAL
             if (!cita_doble) {
-                let hayCruce = existeCruceCita(hora, duracion, ocupadas);
+                let hayCruce = existeCruceEditarCita(hora, duracion, ocupadas);
                 if (!hayCruce) {
                     const opcion = document.createElement('option');
                     opcion.value = hora;
@@ -88,7 +88,7 @@ function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
                 // NO SALIR DEL HORARIO DEL MEDICO
                 if (siguienteMinuto <= final) {
                     let siguienteHora = convertirHoraEditarCita(siguienteMinuto);
-                    let hayCruce = existeCruceCita(hora,duracionDoble,ocupadas);
+                    let hayCruce = existeCruceEditarCita(hora,duracionDoble,ocupadas);
 
                     if (!hayCruce) {
                         const opcion = document.createElement('option');
