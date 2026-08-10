@@ -141,12 +141,9 @@
 
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="update-patient"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#appointmentModalState-{{ $appointment->id }}"><i
+                                                                <a href="#" class="update-appointment"
+                                                                    data-id="{{ $appointment->id }}"><i
                                                                         class="fa fa-pencil fs-18 text-success"></i></a>
-
-                                                                @include('admissionist.appointment.crud.update')
                                                             </span>
                                                         </strong>
                                                     </td>
@@ -165,6 +162,8 @@
             @include('admissionist.appointment.crud.create')
 
             @include('admissionist.appointment.crud.edit')
+
+            @include('admissionist.appointment.crud.update')
         </div>
         <!--**********************************Content body end***********************************-->
 
@@ -199,6 +198,7 @@
             <script src="{{ asset('js/admissionist/calendario/calendario.js') }}"></script>
 
             <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
+            <script src="{{ asset('js/admissionist/appointment/update.js') }}"></script>
 
             <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
         @endsection

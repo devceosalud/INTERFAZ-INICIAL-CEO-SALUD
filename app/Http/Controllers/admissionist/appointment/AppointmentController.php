@@ -170,15 +170,21 @@ class AppointmentController extends Controller
     {
         //dd($request->all());
 
-        $estadoCita = Appointment::find($request->appointment_id);
+        $estadoCita = Appointment::find($request->id);
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita
         ]);
 
         if ($exito) {
-            return redirect()->back();
+            return response()->json([
+                'code' => 1,
+                'msg' => 'Estado Actualizado'
+            ]);
         } else {
-            return redirect()->back();
+            return response()->json([
+                'code' => 0,
+                'msg' => 'Estado no actualizado'
+            ]);
         }
     }
 }

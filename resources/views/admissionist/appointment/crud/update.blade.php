@@ -1,4 +1,4 @@
-<div class="modal fade" id="appointmentModalState-{{$appointment->id}}" tabindex="-1" aria-labelledby="appointmentModalStateLabel"
+<div class="modal fade" id="appointmentModalState" tabindex="-1" aria-labelledby="appointmentModalStateLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
