@@ -3,7 +3,7 @@ $(document).on("click", ".update-appointment", async function (e) {
 
     $("#appointmentModalState").modal("show");
     let appointmentId = $(this).data("id");
-    let estado_cita = $('appointmentModalState #appointment_id').val(appointmentId);
+    let estado_cita = $('#appointmentModalState #appointment_id').val(appointmentId);
 
 });
 
