@@ -170,7 +170,7 @@ class AppointmentController extends Controller
     {
         //dd($request->all());
 
-        $estadoCita = Appointment::find($request->id);
+        $estadoCita = Appointment::find($request->appointment_id);
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita
         ]);

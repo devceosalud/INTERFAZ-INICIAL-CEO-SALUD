@@ -12,13 +12,13 @@
                 </button>
             </div>
 
-            <form id="" action="{{ route('admissionit.appointment.update') }}" method="POST">
+            <form id="formUpdateAppointmentState" action="{{ route('admissionit.appointment.update') }}" method="POST">
 
                 @csrf
 
                 <div class="modal-body">
 
-                    <input type="hidden" name="appointment_id" id="appointment_id" value="{{ $appointment->id }}">
+                    <input type="hidden" name="appointment_id" id="appointment_id" value="">
 
 
                     <!-- ================= PROGRAMACION ================= -->

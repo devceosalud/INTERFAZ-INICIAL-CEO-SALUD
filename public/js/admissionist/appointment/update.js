@@ -3,42 +3,63 @@ $(document).on("click", ".update-appointment", async function (e) {
 
     $("#appointmentModalState").modal("show");
     let appointmentId = $(this).data("id");
-    let estado_cita = $('appointmentModalState #estado_cita').val();
+    let estado_cita = $('appointmentModalState #appointment_id').val(appointmentId);
+
+});
 
 
-    try {
-        const res = await fetch(`${window.location.origin}/admissionist/appointment/update`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                id: appointmentId,
-                estado_cita: estado_cita
-            }),
-        }, );
+//PARA ACTUALIZAR LOS DATOS DEL PACIENTE
+$("#formUpdateAppointmentState").on("submit", function (e) {
+    e.preventDefault();
 
-        const data = await res.json();
-        console.log("DATOS PARA EDITAR:", data);
+    let form = this;
 
-        if (data.code === 1) {
+    $.ajax({
+        url: $(form).attr("action"),
+        method: "POST",
+        data: new FormData(form),
+        processData: false,
+        contentType: false,
+        dataType: "json",
+
+        beforeSend: function () {
+            $(form).find("span.error-text").text("");
+            $(form).find('input[type="submit"]').prop("disabled", true);
+        },
+
+        success: function (response) {
+            if (response.code == 0) {
+                $.each(response.error, function (prefix, val) {
+                    $(form)
+                        .find("span." + prefix + "_error")
+                        .text(val[0]);
+                    console.log("span." + prefix + "_error");
+                    console.log(val[0]);
+                });
+            } else {
+                Swal.fire({
+                    icon: "success",
+                    title: "Actualizado",
+                    text: response.msg,
+                    timer: 2000,
+                    showConfirmButton: false,
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        },
+
+        error: function (xhr) {
+            console.log(xhr.responseText);
             Swal.fire({
-                title: "¡Inactivado!",
-                text: data.msg,
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
-        } else {
-            Swal.fire({
+                icon: "error",
                 title: "Error",
-                text: data.msg,
-                icon: "error"
+                text: "Ocurrió un error al actualizar el paciente",
             });
-        }
-    } catch (error) {
-        console.error(error);
-    }
+        },
+
+        complete: function () {
+            $(form).find('input[type="submit"]').prop("disabled", false);
+        },
+    });
 });
