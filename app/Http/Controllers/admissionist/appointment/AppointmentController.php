@@ -142,11 +142,14 @@ class AppointmentController extends Controller
             ->where('hora_fin', '>', $request->hora_cita)
             ->first();
 
+        //DURACION DE LA CITA SI ES DOBLE O NORMAL
         $duracion_base = $horario->duracion_cita;
         $duracion_cita = $request->boolean('cita_doble')
             ? $duracion_base * 2
             : $duracion_base;
 
+
+        //GUARDAMOS LOS DATOS 
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,

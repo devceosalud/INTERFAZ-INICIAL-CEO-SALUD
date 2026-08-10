@@ -475,6 +475,8 @@ function convertirHoraCita(minutos) {
     return `${h}:${m}`;
 }
 
+
+//FUNCION QUE SE RESTAURA LOS SELECT
 function initSelectCreate() {
     $('#appointmentModalCreate #hora_cita').selectpicker('destroy');
 

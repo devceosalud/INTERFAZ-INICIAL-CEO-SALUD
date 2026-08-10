@@ -2,7 +2,7 @@
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDO CITAS PARA EL CALENDARIO WEB - NUEVA VERSION');
 
-    //VARIABLES GLOBALES QUE SE COMPARTE AL "calendario.js"
+    //VARIABLES GLOBALES QUE SE COMPARTE AL "calendario.js" DESDE EL FORMULARIO DE FILTRO
     const specialty_id = document.querySelector('#filtro-calendar_specialty_id');
     const doctor_id = document.querySelector('#filtro-calendar_doctor_id');
 
@@ -77,6 +77,7 @@ async function buscarEspecialidadFiltroCalendario(event) {
             selectServicio.appendChild(opcion);
         })
 
+        //FUNCION QUE SE RESTAURA LOS SELECT
         $('#filtro-calendar_doctor_id').selectpicker('destroy');
         $('#service_id').selectpicker('destroy');
 

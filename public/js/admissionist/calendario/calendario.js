@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         editable: true,
         selectable: true,
         businessHours: true,
-        dayMaxEvents: false, // para mostrar o no la lista completa de las agendas
+        dayMaxEvents: false, // PARA MOSTRAR O NO LA LSITA COMPLETA DE LAS AGENTAS 
 
 
         //TOOLTIP PARA VENTANAS RAPIDAS
@@ -148,8 +148,8 @@ document.addEventListener('DOMContentLoaded', function () {
             selectDoctor.appendChild(option_doctor);
 
             const option_servicio = document.createElement('option');
-            option_servicio.value = servicio_id,
-                option_servicio.textContent = nombre_servicio;
+            option_servicio.value = servicio_id;
+            option_servicio.textContent = nombre_servicio;
             selectServicio.appendChild(option_servicio);
 
 
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
             const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
 
-            //limpiar los campos
+            //LIMPIAR LOS CAMPOS
             selectDoctor.innerHTML = '<option value="">Seleccione</option>';
             selectServicio.innerHTML = '<option value="">Seleccione</option>';
 
@@ -233,7 +233,6 @@ document.addEventListener('DOMContentLoaded', function () {
             })
 
             //LLENAR LOS HORARIOS Y PINTARLO EN EL SELECT DE HORARIOS
-
             initSelectEdit();
 
         } catch (error) {
@@ -242,6 +241,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    //FUNCION QUE SE RESTAURA LOS SELECT
     function initSelectEdit() {
         $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
         $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');

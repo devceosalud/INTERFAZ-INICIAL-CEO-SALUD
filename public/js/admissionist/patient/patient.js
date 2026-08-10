@@ -699,6 +699,8 @@ function initSelectEdit() {
     $("#estado_civil_edit").selectpicker();
 }
 
+
+//FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectCreate() {
     $("#tipo_identificacion").selectpicker("destroy");
     $("#genero_paciente").selectpicker("destroy");
