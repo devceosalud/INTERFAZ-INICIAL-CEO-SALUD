@@ -44,32 +44,6 @@
                                 @endforeach
                             </select>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label text-primary">Precio Estándar<span
-                                    class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="precio_estandar_edit"
-                                id="precio_estandar_edit" placeholder="100">
-
-                            <span class="text-danger error-text precio_estandar_edit_error"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label text-primary">Reconsulta<span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="reconsulta_edit" id="reconsulta_edit"
-                                placeholder="80">
-
-                            <span class="text-danger error-text reconsulta_edit_error"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label text-primary">Días<span class="text-danger">*</span></label>
-                            <select class="form-control" name="dias_edit" id="dias_edit">
-                                @for ($i = 0; $i < $count; $i++)
-                                    <option value="{{ $i }}">{{ $i }}</option>
-                                @endfor
-                            </select>
-                        </div>
                     </div>
                 </div>
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\admin\dashboard\DashboardController;
 use App\Http\Controllers\admin\master\additionalRate\AdditionalRateController;
 use App\Http\Controllers\admin\master\channel\ChannelController;
 use App\Http\Controllers\admin\master\doctor\DoctorController;
+use App\Http\Controllers\admin\master\doctorService\DoctorServiceController;
 use App\Http\Controllers\admin\master\interactionMedia\InteractionMediaController;
 use App\Http\Controllers\admin\master\role\RoleController;
 use App\Http\Controllers\admin\master\service\ServiceController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\admissionist\responsible\ResponsibleController;
 use App\Http\Controllers\admissionist\schedule\ScheduleController;
 use App\Http\Controllers\authenticator\auth\AuthController;
+use App\Models\DoctorService;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -113,6 +115,9 @@ Route::put('/master/admin/service/update', [ServiceController::class , 'update']
 Route::post('/master/admin/service/delete', [ServiceController::class , 'delete'])->name('master.service.delete');
 
 
+Route::get('/master/admin/doctor/services', [DoctorServiceController::class, 'index'])->name('master.service.doctor.index');
+Route::post('/master/admin/doctor/services/store', [DoctorServiceController::class, 'store'])->name('master.service.doctor.store');
+Route::post('/master/admin/doctor/services/delete', [DoctorServiceController::class, 'delete'])->name('master.service.doctor.delete');
 
 
 /**RUTA PARA LOS ROLES Y PERMISOS */

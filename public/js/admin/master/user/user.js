@@ -70,14 +70,14 @@ window.addEventListener("DOMContentLoaded", function () {
         try {
             const res = await fetch(
                 `${window.location.origin}/api/admin/user/search`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        id: userId,
-                    }),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
+                body: JSON.stringify({
+                    id: userId,
+                }),
+            },
             );
 
             const data = await res.json();

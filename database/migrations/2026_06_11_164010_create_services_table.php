@@ -17,11 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('specialty_id');
             $table->string('nombre')->nullable(); // CONSULTA TRAUMATOLOGIA, CONSULTA PIE DIABETICO, CONSULTA TRAUMATOLOGIA
-            $table->decimal('precio_primera_consulta',10,2)->nullable();
-            $table->decimal('precio_reconsulta',10,2)->nullable();
-            $table->integer('dias_reconsulta')->nullable();
             $table->enum('estado', ['ACTIVO', 'INACTIVO']);
-
             $table->foreign('specialty_id')->references('id')->on('specialties')->onDelete('cascade');
             $table->timestamps();
         });

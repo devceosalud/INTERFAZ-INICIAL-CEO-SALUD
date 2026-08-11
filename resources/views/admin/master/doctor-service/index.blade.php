@@ -45,11 +45,11 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Servicios</h4>
+                                <h4 class="card-title">Lista de Doctores/Servicios</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#serviceModalCreate">
-                                    + Agregar Servicio
+                                    data-bs-toggle="modal" data-bs-target="#doctorServiceModalCreate">
+                                    + Agregar Doctor/Servicio
                                 </a>
                             </div>
                             <div class="card-body">
@@ -58,27 +58,33 @@
                                         <thead>
                                             <tr>
                                                 <th>Codigo</th>
-                                                <th>Especialidad</th>
-                                                <th>Nombre</th>
+                                                <th>Doctor</th>
+                                                <th>Servicio</th>
+                                                <th>Precio Estándar</th>
+                                                <th>Reconsulta</th>
+                                                <th>Días permitidos</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($services as $service)
+                                            @foreach ($doctorServices as $doctorService)
                                                 <tr>
-                                                    <td><strong>{{ $service->id }}</strong></td>
-                                                    <td><strong>{{ $service->specialty->nombre }}</strong> </td>
-                                                    <td>{{ $service->nombre}}</td>
+                                                    <td><strong>{{ $doctorService->id }}</strong></td>
+                                                    <td><strong>{{ $doctorService->doctor->nombre }}</strong> </td>
+                                                    <td>{{ $doctorService->service->nombre}}</td>
+                                                    <td>{{ $doctorService->precio_primera_consulta }}</td>
+                                                    <td>{{ $doctorService->precio_reconsulta}}</td>
+                                                    <td><span class="badge light badge-success">{{ $doctorService->dias_reconsulta}}</span></td>
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-service"
-                                                                    data-id="{{ $service->id }}">
+                                                                <a href="#" class="edit-doctor-service"
+                                                                    data-id="{{ $doctorService->id }}">
                                                                     <i class="fa fa-pencil fs-18 text-success"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-service" data-id="{{ $service->id }}">
+                                                                <a href="#" class="delete-doctor-service" data-id="{{ $doctorService->id }}">
                                                                     <i class="fa fa-trash fs-18 text-danger"></i>
                                                                 </a>
                                                             </span>
@@ -96,9 +102,8 @@
                 </div>
             </div>
 
-            @include('admin.master.service.crud.create')
+            @include('admin.master.doctor-service.crud.create')
 
-            @include('admin.master.service.crud.edit')
 
         </div>
         <!--**********************************Content body end***********************************-->
@@ -118,7 +123,7 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
-        <script src="{{ asset('js/admin/master/service/service.js') }}"></script>
+        <script src="{{ asset('js/admin/master/doctor-service/doctor-service.js') }}"></script>
     @endsection
 
 

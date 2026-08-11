@@ -21,6 +21,7 @@
                         <li><a href='{{ route('master.specialty.index') }}'>Especialidades</a></li>
                         <li><a href="{{ route('master.service.index') }}">Servicios</a></li>
                         <li><a href='{{ route('master.doctor.index') }}'>Doctores</a></li>
+                        <li><a href='{{ route('master.service.doctor.index') }}'>Doctor/Servicio</a></li>
                         <li><a href="{{ route('master.additionalRate.index') }}">Tarifas</a></li>
                         <li><a href="{{ route('master.interactionMedia.index') }}">Medios</a></li>
                         <li><a href='{{ route('master.channel.index') }}'>Canales</a></li>

@@ -12,9 +12,6 @@ class Service extends Model
     protected $fillable = [
         'specialty_id',
         'nombre',
-        'precio_primera_consulta',
-        'precio_reconsulta',
-        'dias_reconsulta',
         'estado',
     ];
 
@@ -34,6 +31,7 @@ class Service extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    //TABLA PIVOT DE DOCTORES/SERVICIOS 
     public function doctorServices()
     {
         return $this->hasMany(DoctorService::class);
@@ -45,6 +43,6 @@ class Service extends Model
         return $this->belongsToMany(
             Doctor::class,
             'doctor_services'
-        )->withPivot('precio', 'estado');
+        )->withPivot('precio_primera_consulta', 'precio_reconsulta' ,'dias_reconsulta','estado');
     }
 }

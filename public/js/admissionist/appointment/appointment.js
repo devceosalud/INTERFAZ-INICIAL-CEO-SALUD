@@ -5,6 +5,7 @@ window.addEventListener('DOMContentLoaded', () => {
     //VARIABLES GLOBALES
     const paciente_id = document.querySelector('#appointmentModalCreate #documento_paciente');
     const specialty_id = document.querySelector('#appointmentModalCreate #specialty_id');
+    const doctor_id = document.querySelector('#appointmentModalCreate #doctor_id');
     const service_id = document.querySelector('#appointmentModalCreate #service_id');
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
@@ -20,10 +21,15 @@ window.addEventListener('DOMContentLoaded', () => {
         buscarPacienteCita(event);
     });
 
-    //EVENTO QUE ESPECIALIDAD SELECCIONA 
+    //EVENTO QUE FILTRA MEDICOS POR LA ESPECIALIDAD
     specialty_id.addEventListener('change', function (event) {
-        buscarEspecialidadCita(event);
+        buscarMedicoPorEspecialidadCita(event);
     });
+
+    //EVENTO QUE FILTAR SERVICIOS POR EL MEDICO
+    doctor_id.addEventListener('change', function (event) {
+        buscarServicioPorMedicoCita(event);
+    })
 
     //EVENTO QUE SERVICIOS SELECCIONA
     service_id.addEventListener('change', function () {
@@ -51,7 +57,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     //REFREZCAR LOS HORARIOS DE CITA NORMAL Y DOBLE CITA
-    document.querySelector('#appointmentModalCreate #cita_doble').addEventListener('change', function(){
+    document.querySelector('#appointmentModalCreate #cita_doble').addEventListener('change', function () {
         cargarHorariosCita();
     })
 
@@ -96,15 +102,15 @@ async function buscarPacienteCita(event) {
 }
 
 
-//BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
-async function buscarEspecialidadCita(event) {
+//LLENAMOS LOS DOCTORES CON LA ESPECIALIDAD SELECCIONADA
+async function buscarMedicoPorEspecialidadCita(event) {
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
     console.log('Id de la especialidad:', event.target.value);
 
     try {
-        const res = await fetch(`${window.location.origin}/api/appointment/specialty`, {
+        const res = await fetch(`${window.location.origin}/api/appointment/doctor/specialty`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -120,28 +126,66 @@ async function buscarEspecialidadCita(event) {
         }
 
         const data = await res.json();
-        console.log('RESPUESTA ESPECIALIDAD', data);
+        console.log('RESPUESTA LISTA DE DOCTORES', data);
 
         // SELECT PARA EL LLENADO 
         const selectDoctor = document.querySelector('#appointmentModalCreate #doctor_id');
-        const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
 
         //limpiar los campos
         selectDoctor.innerHTML = '<option value="">Seleccione</option>';
-        selectServicio.innerHTML = '<option value="">Seleccione</option>';
 
         //LLENANDO DATOS DE DOCTORES
         data.data.doctors.forEach(doctor => {
-            console.log('id', doctor.id);
-            console.log('nombre:', doctor.nombre);
             const opcion = document.createElement('option');
             opcion.value = doctor.id;
             opcion.textContent = doctor.nombre;
             selectDoctor.appendChild(opcion);
         })
 
+        $('#doctor_id').selectpicker('destroy');
+        $('#doctor_id').selectpicker();
+
+
+    } catch (error) {
+        console.error('Error:', error);
+        console.error('Error al consultar especialidad: ' + error.message);
+    }
+}
+
+//LLENAMOS LOS SERVICIOS POR MEDICO SELECCIONADO
+async function buscarServicioPorMedicoCita(event) {
+
+    const valor = event?.target?.value?.trim() || '';
+    if (!valor) return;
+    console.log('Id del medico:', event.target.value);
+
+    try {
+        const res = await fetch(`${window.location.origin}/api/appointment/service/doctor`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                doctor_id: valor
+            })
+        });
+
+        if (!res.ok) {
+            const textoError = await res.text();
+            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
+        }
+
+        const data = await res.json();
+        console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+
+        // SELECT PARA EL LLENADO 
+        const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
+
+        //limpiar los campos
+        selectServicio.innerHTML = '<option value="">Seleccione</option>';
+
         //LLENANDO DATOS DE SERVICIOS
-        data.data.services.forEach(service => {
+        data.data.forEach(service => {
             const opcion = document.createElement('option');
             opcion.value = service.id;
             opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
@@ -150,10 +194,7 @@ async function buscarEspecialidadCita(event) {
             selectServicio.appendChild(opcion);
         })
 
-        $('#doctor_id').selectpicker('destroy');
         $('#service_id').selectpicker('destroy');
-
-        $('#doctor_id').selectpicker();
         $('#service_id').selectpicker();
 
     } catch (error) {
@@ -276,7 +317,7 @@ $('#formCreateAppointment').on('submit', function (e) {
                     text: response.msg,
                     timer: 2000,
                     showConfirmButton: false
-                }).then(() => {});
+                }).then(() => { });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -303,61 +344,6 @@ $('#formCreateAppointment').on('submit', function (e) {
 
 
 
-//PARA ACTUALIZAR LA CITA
-$("#formUpdateSchedule").on("submit", function (e) {
-    e.preventDefault();
-
-    let form = this;
-
-    $.ajax({
-        url: $(form).attr("action"),
-        method: "POST",
-        data: new FormData(form),
-        processData: false,
-        contentType: false,
-        dataType: "json",
-
-        beforeSend: function () {
-            $(form).find("span.error-text").text("");
-            $(form).find('input[type="submit"]').prop("disabled", true);
-        },
-
-        success: function (response) {
-            if (response.code == 0) {
-                $.each(response.error, function (prefix, val) {
-                    $(form).find("span." + prefix + "_error").text(val[0]);
-                    console.log("span." + prefix + "_error");
-                    console.log(val[0]);
-                });
-            } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
-            }
-        },
-
-        error: function (xhr) {
-            console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el calendario",
-            });
-        },
-
-        complete: function () {
-            $(form).find('input[type="submit"]').prop("disabled", false);
-        },
-    });
-});
-
-
 //PARA CARGAR HORARIOS
 async function cargarHorariosCita() {
 
@@ -372,15 +358,15 @@ async function cargarHorariosCita() {
     try {
         const res = await fetch(
             `${window.location.origin}/api/appointment/schedule/available-hours`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    doctor_id: doctor_id,
-                    fecha_cita: fecha_cita
-                }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+                doctor_id: doctor_id,
+                fecha_cita: fecha_cita
+            }),
+        },
         );
 
         const data = await res.json();
@@ -430,7 +416,7 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
                 // NO SALIR DEL HORARIO DEL MEDICO
                 if (siguienteMinuto <= final) {
                     let siguienteHora = convertirHoraCita(siguienteMinuto);
-                    let hayCruce = existeCruceCita(hora,duracionDoble,ocupadas);
+                    let hayCruce = existeCruceCita(hora, duracionDoble, ocupadas);
 
                     if (!hayCruce) {
                         const opcion = document.createElement('option');

@@ -155,6 +155,7 @@
 
         <script src="{{ asset('js/admissionist/patient/patient.js') }}"></script>
         <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
+        <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
     @endsection
 
 

@@ -25,9 +25,7 @@ $("#formCreateSpecialty").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });

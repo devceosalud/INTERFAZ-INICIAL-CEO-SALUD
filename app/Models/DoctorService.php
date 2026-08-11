@@ -13,7 +13,9 @@ class DoctorService extends Model
     protected $fillable = [
         'doctor_id',
         'service_id',
-        'precio',
+        'precio_primera_consulta',
+        'precio_reconsulta',
+        'dias_reconsulta',
         'estado',
     ];
 

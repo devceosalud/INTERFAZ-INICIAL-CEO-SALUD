@@ -20,11 +20,9 @@ class ServiceController extends Controller
     {
         $services = Service::where('estado', 'ACTIVO')->get();
         $specialties = Specialty::where('estado', 'ACTIVO')->get();
-        $count = 30;
         return view('admin.master.service.index', [
             'services' => $services,
             'specialties' => $specialties,
-            'count' => $count
         ]);
     }
 
@@ -35,9 +33,6 @@ class ServiceController extends Controller
         //VALIDATOR
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string',
-            'precio_estandar' => 'required|numeric|min:0',
-            'reconsulta' => 'required|numeric|min:0',
-            'dias' => 'required|numeric|min:0'
         ]);
 
         //ERRORES
@@ -52,9 +47,6 @@ class ServiceController extends Controller
         $service = Service::create([
             'specialty_id' => $request->specialty_id,
             'nombre' => $request->nombre,
-            'precio_primera_consulta' => $request->precio_estandar,
-            'precio_reconsulta' => $request->reconsulta,
-            'dias_reconsulta' => $request->dias,
             'estado' => 'ACTIVO'
         ]);
 
@@ -78,9 +70,6 @@ class ServiceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombre_edit' => 'required|string',
-            'precio_estandar_edit' => 'required|numeric|min:0',
-            'reconsulta_edit' => 'required|numeric|min:0',
-            'dias_edit' => 'required|numeric|min:0'
         ]);
 
         if ($validator->fails()) {
@@ -101,9 +90,6 @@ class ServiceController extends Controller
         $exito = $service->update([
             'specialty_id' => $request->specialty_id_edit,
             'nombre' => $request->nombre_edit,
-            'precio_primera_consulta' => $request->precio_estandar_edit,
-            'precio_reconsulta' => $request->reconsulta_edit,
-            'dias_reconsulta' => $request->dias_edit,
             'estado' => 'ACTIVO'
         ]);
 

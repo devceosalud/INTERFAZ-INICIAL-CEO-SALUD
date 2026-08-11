@@ -15,6 +15,12 @@ return new class extends Migration
     {
         Schema::create('doctor_services', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('doctor_id');
+            $table->unsignedBigInteger('service_id');
+            $table->decimal('precio_primera_consulta',10,2)->nullable();
+            $table->decimal('precio_reconsulta',10,2)->nullable();
+            $table->integer('dias_reconsulta')->nullable();
+            $table->enum('estado', ['ACTIVO', 'INACTIVO']);
             $table->timestamps();
         });
     }

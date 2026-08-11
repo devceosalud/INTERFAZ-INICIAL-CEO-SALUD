@@ -86,9 +86,6 @@ $(document).on("click", ".edit-service", async function (e) {
             $("#serviceModalEdit #service_id_edit").val(p.id);
             $("#serviceModalEdit #nombre_edit").val(p.nombre);
             $("#serviceModalEdit #specialty_id_edit").val(p.specialty_id);
-            $("#serviceModalEdit #precio_estandar_edit").val(p.precio_primera_consulta);
-            $("#serviceModalEdit #reconsulta_edit").val(p.precio_reconsulta);
-            $("#serviceModalEdit #dias_edit").val(p.dias_reconsulta);
             //ABRIR MODAL
             $("#serviceModalEdit").modal("show");
 
@@ -235,8 +232,6 @@ $(document).on("click", ".delete-service", async function (e) {
 function initSelectEdit() {
     //para campos edit
     $("#serviceModalEdit #specialty_id_edit").selectpicker("destroy");
-    $("#serviceModalEdit #dias_edit").selectpicker("destroy");
 
     $("#serviceModalEdit #specialty_id_edit").selectpicker();
-    $("#serviceModalEdit #dias_edit").selectpicker();
 }

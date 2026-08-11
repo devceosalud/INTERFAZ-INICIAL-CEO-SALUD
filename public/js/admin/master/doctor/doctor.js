@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", function () {});
+window.addEventListener("DOMContentLoaded", function () { });
 
 // GUARDAR DATOS DEL DOCTOR
 $("#formCreateDoctor").on("submit", function (e) {
@@ -24,9 +24,7 @@ $("#formCreateDoctor").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
@@ -67,14 +65,14 @@ $(document).on("click", ".edit-doctor", async function (e) {
     try {
         const res = await fetch(
             `${window.location.origin}/api/admin/doctor/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    id: doctorId,
-                }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+                id: doctorId,
+            }),
+        },
         );
 
         const data = await res.json();
@@ -186,16 +184,16 @@ $(document).on("click", ".delete-doctor", async function (e) {
     try {
         const res = await fetch(
             `${window.location.origin}/master/admin/doctor/delete`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: doctorId,
-                }),
-            }
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: doctorId,
+            }),
+        }
         );
 
         const data = await res.json();

@@ -1,13 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const specialty_id = document.querySelector('#appointmentModalEdit #specialty_id_edit');
-
-    //EVENTO QUE ESPECIALIDAD SELECCIONA 
-    specialty_id.addEventListener('change', function (event) {
-        buscarEspecialidadCalendario(event);
-    });
-
-
     var calendarEl = document.getElementById('calendar');
 
     window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
@@ -61,6 +53,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <table class="display">
                 <tr>
+                    <td><strong>👤 DR(a):</strong></td>
+                    <td>S/. ${info.event.extendedProps.nombre_doctor}</td>
+                </tr>
+                <tr>
+                    <td><strong>💼 Servicio:</strong></td>
+                    <td>S/. ${info.event.extendedProps.nombre_servicio}</td>
+                </tr>
+                <tr>
                     <td><strong>💰 Pago:</strong></td>
                     <td>S/. ${info.event.extendedProps.total_pagado}</td>
                 </tr>
@@ -96,8 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
         dateClick: function (info) {
             $('#appointmentModalCreate').modal('show');
 
-            // Obtener la fecha y la hora del clic
-            var clickedDate = info.date;
+            var clickedDate = info.date; // Obtener la fecha y la hora del clic
             var date = moment(clickedDate).format('YYYY-MM-DD');
             //var dateStr = moment(clickedDate).format('YYYY-MM-DDTHH:mm'); // Formato correcto para datetime-local
 
@@ -106,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
 
-        //PARA EDITAR LA CITA
+        //PARA EDITAR LA CITA CUANDO SE DA CLICK EN EL CINTILLO
         eventClick: function (info) {
 
             let eventCalendar = info.event; // Objeto de evento de FullCalendar
@@ -179,67 +178,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.calendar.render(); //PARA HACERLO GLOBAL
-
-    //BUSCAR ESPECIALIDAD Y LLENAR DOCTORES Y SERVICIOS
-    async function buscarEspecialidadCalendario(event) {
-
-        const valor = event?.target?.value?.trim() || '';
-        if (!valor) return;
-        console.log('Id de la especialidad:', event.target.value);
-
-        try {
-            const res = await fetch(`${window.location.origin}/api/appointment/specialty`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    specialty_id: valor
-                })
-            });
-
-            if (!res.ok) {
-                const textoError = await res.text();
-                throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-            }
-
-            const data = await res.json();
-            console.log('RESPUESTA ESPECIALIDAD', data);
-
-            // SELECT PARA EL LLENADO 
-            const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
-            const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
-
-            //LIMPIAR LOS CAMPOS
-            selectDoctor.innerHTML = '<option value="">Seleccione</option>';
-            selectServicio.innerHTML = '<option value="">Seleccione</option>';
-
-            //LLENANDO DATOS DE DOCTORES
-            data.data.doctors.forEach(doctor => {
-                const opcion = document.createElement('option');
-                opcion.value = doctor.id;
-                opcion.textContent = doctor.nombre;
-                selectDoctor.appendChild(opcion);
-            })
-
-            //LLENANDO DATOS DE SERVICIOS
-            data.data.services.forEach(service => {
-                const opcion = document.createElement('option');
-                opcion.value = service.id;
-                opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
-                opcion.dataset.precio = service.precio_primera_consulta;
-                opcion.dataset.reconsulta = service.precio_reconsulta;
-                selectServicio.appendChild(opcion);
-            })
-
-            //LLENAR LOS HORARIOS Y PINTARLO EN EL SELECT DE HORARIOS
-            initSelectEdit();
-
-        } catch (error) {
-            console.error('Error:', error);
-            console.error('Error al consultar especialidad: ' + error.message);
-        }
-    }
 
 
     //FUNCION QUE SE RESTAURA LOS SELECT
