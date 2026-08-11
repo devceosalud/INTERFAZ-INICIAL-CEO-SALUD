@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO QUE FILTRA MEDICOS POR LA ESPECIALIDAD
     specialty_id.addEventListener('change', function (event) {
-        buscarMedicoPorEspecialidadCalendario(event);
+        buscarMedicoPorEspecialidadEditarCita(event);
     });
 
     //EVENTO QUE FILTAR SERVICIOS POR EL MEDICO
@@ -88,7 +88,7 @@ $("#formUpdateSchedule").on("submit", function (e) {
 
 
 //LLENAMOS LOS DOCTORES CON LA ESPECIALIDAD SELECCIONADA
-async function buscarMedicoPorEspecialidadCalendario(event) {
+async function buscarMedicoPorEspecialidadEditarCita(event) {
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -128,7 +128,7 @@ async function buscarMedicoPorEspecialidadCalendario(event) {
         })
 
         //LLENAR LOS HORARIOS Y PINTARLO EN EL SELECT DE HORARIOS
-        initSelectEdit();
+        initSelectEditarCita();
 
     } catch (error) {
         console.error('Error:', error);
@@ -150,7 +150,7 @@ async function buscarServicioPorMedicoCalendario(event) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                specialty_id: valor
+                doctor_id: valor
             })
         });
 
@@ -160,7 +160,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         }
 
         const data = await res.json();
-        console.log('RESPUESTA ESPECIALIDAD', data);
+        console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
 
         // SELECT PARA EL LLENADO 
         const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
@@ -169,7 +169,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         selectServicio.innerHTML = '<option value="">Seleccione</option>';
 
         //LLENANDO DATOS DE SERVICIOS
-        data.data.services.forEach(service => {
+        data.data.forEach(service => {
             const opcion = document.createElement('option');
             opcion.value = service.id;
             opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
@@ -179,7 +179,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         })
 
         //LLENAR LOS HORARIOS Y PINTARLO EN EL SELECT DE HORARIOS
-        initSelectEdit();
+        initSelectEditarCita();
 
     } catch (error) {
         console.error('Error:', error);
@@ -307,6 +307,14 @@ function convertirHoraEditarCita(minutos) {
 
 function initSelectEditarCita() {
     $('#appointmentModalEdit #hora_cita_edit').selectpicker('destroy');
+    $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
+    $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');
+    $('#appointmentModalEdit #service_id_edit').selectpicker('destroy');
+    $('#appointmentModalEdit #estado_cita').selectpicker('destroy');
 
     $('#appointmentModalEdit #hora_cita_edit').selectpicker();
+    $('#appointmentModalEdit #specialty_id_edit').selectpicker();
+    $('#appointmentModalEdit #doctor_id_edit').selectpicker();
+    $('#appointmentModalEdit #service_id_edit').selectpicker();
+    $('#appointmentModalEdit #estado_cita').selectpicker();
 }

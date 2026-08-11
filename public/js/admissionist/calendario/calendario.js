@@ -129,17 +129,17 @@ document.addEventListener('DOMContentLoaded', function () {
             let hora_cita = eventComun.hora_cita;
             let estado_cita = eventComun.estado_cita
 
-
             // DATOS COMUNES SETEADOS
             $('#appointmentModalEdit #appointment_id').val(id);
             $('#appointmentModalEdit #documento_paciente_edit').val(documento_paciente);
             $('#appointmentModalEdit #nombre_paciente_edit').val(title);
             $('#appointmentModalEdit #specialty_id_edit').val(specialty_id);
 
-
             // SELECT PARA EL LLENADO  DE DOCTORES Y SERVICIOS
             const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
             const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
+
+           
 
             const option_doctor = document.createElement('option');
             option_doctor.value = doctor_id;
@@ -151,12 +151,10 @@ document.addEventListener('DOMContentLoaded', function () {
             option_servicio.textContent = nombre_servicio;
             selectServicio.appendChild(option_servicio);
 
-
             //DATOS DE LA CITA MEDICA
             $('#appointmentModalEdit #fecha_cita_edit').val(fecha_cita);
             $('#appointmentModalEdit #hora_cita_edit').val(hora_cita);
             $('#appointmentModalEdit #estado_cita').val(estado_cita);
-
 
             initSelectEdit();
 
