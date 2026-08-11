@@ -42,4 +42,19 @@ class Doctor extends Model
     {
         return $this->hasMany(DoctorSchedule::class);
     }
+
+    public function doctorServices()
+    {
+        return $this->hasMany(DoctorService::class);
+    }
+
+
+    //RELACION PIVOT
+    public function services()
+    {
+        return $this->belongsToMany(
+            Service::class,
+            'doctor_services',
+        )->withPivot('precio','estado');
+    }
 }

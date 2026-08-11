@@ -33,4 +33,18 @@ class Service extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function doctorServices()
+    {
+        return $this->hasMany(DoctorService::class);
+    }
+
+    //RELACION PIVOT
+    public function doctors()
+    {
+        return $this->belongsToMany(
+            Doctor::class,
+            'doctor_services'
+        )->withPivot('precio', 'estado');
+    }
 }
