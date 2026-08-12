@@ -105,13 +105,17 @@ async function buscarMedicoPorEspecialidadEditarCita(event) {
             })
         });
 
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
         const data = await res.json();
         console.log('RESPUESTA LISTA DE DOCTORES', data);
+        if (data.code === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Precaución',
+                text: data.message,
+                timer: 4000,
+                showConfirmButton: false
+            })
+        }
 
         // SELECT PARA EL LLENADO 
         const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
@@ -154,13 +158,17 @@ async function buscarServicioPorMedicoCalendario(event) {
             })
         });
 
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
         const data = await res.json();
         console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+        if (data.code === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Precaución',
+                text: data.message,
+                timer: 4000,
+                showConfirmButton: false
+            })
+        }
 
         // SELECT PARA EL LLENADO 
         const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');

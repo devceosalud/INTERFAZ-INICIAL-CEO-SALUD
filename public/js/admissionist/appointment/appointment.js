@@ -120,13 +120,17 @@ async function buscarMedicoPorEspecialidadCita(event) {
             })
         });
 
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
         const data = await res.json();
         console.log('RESPUESTA LISTA DE DOCTORES', data);
+        if (data.code === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Precaución',
+                text: data.message,
+                timer: 4000,
+                showConfirmButton: false
+            })
+        }
 
         // SELECT PARA EL LLENADO 
         const selectDoctor = document.querySelector('#appointmentModalCreate #doctor_id');
@@ -170,22 +174,27 @@ async function buscarServicioPorMedicoCita(event) {
             })
         });
 
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
         const data = await res.json();
         console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+        if (data.code === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Precaución',
+                text: data.message,
+                timer: 4000,
+                showConfirmButton: false
+            })
+        }
 
         // SELECT PARA EL LLENADO 
         const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
 
-        //limpiar los campos
+        //LIMPIAR LOS CAMPOS
         selectServicio.innerHTML = '<option value="">Seleccione</option>';
 
         //LLENANDO DATOS DE SERVICIOS
         data.data.forEach(service => {
+            console.log('servicios:', service);
             const opcion = document.createElement('option');
             opcion.value = service.id;
             opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
@@ -209,7 +218,7 @@ async function calcularPrecioCita() {
 
     //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
     const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
-    const service_id = document.querySelector('#appointmentModalCreate #service_id').value;
+    const service_id = document.querySelector('#appointmentModalCreate #service_id').value; //id de  pero de la tabla DoctorServices
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
 
@@ -461,6 +470,11 @@ function convertirHoraCita(minutos) {
     return `${h}:${m}`;
 }
 
+
+//FUNCION ALERTA
+function alerta() {
+
+}
 
 //FUNCION QUE SE RESTAURA LOS SELECT
 function initSelectCreate() {

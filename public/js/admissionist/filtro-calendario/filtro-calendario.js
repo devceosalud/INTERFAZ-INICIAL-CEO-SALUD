@@ -12,7 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     //ACTUALIZAR CUANDO SE CAMBIA DE MEDICO
-    doctor_id.addEventListener('change', function(event) {
+    doctor_id.addEventListener('change', function (event) {
         const doctorId = event.target.value;
         console.log('MEDICO ID - FILTRO CALENDARIO', doctorId);
 
@@ -31,7 +31,7 @@ async function buscarEspecialidadFiltroCalendario(event) {
     console.log('Id de la especialidad:', event.target.value);
 
     try {
-        const res = await fetch(`${window.location.origin}/api/appointment/specialty`, {
+        const res = await fetch(`${window.location.origin}/api/appointment/doctor/specialty`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -41,48 +41,35 @@ async function buscarEspecialidadFiltroCalendario(event) {
             })
         });
 
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
         const data = await res.json();
-        console.log('RESPUESTA ESPECIALIDAD', data);
+        console.log('RESPUESTA LISTA DE DOCTORES FILTRO CALENDARIO', data);
+        if (data.code === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Precaución',
+                text: data.message,
+                timer: 4000,
+                showConfirmButton: false
+            })
+        }
 
         // SELECT PARA EL LLENADO 
         const selectDoctor = document.querySelector('#filtro-calendar_doctor_id');
-        const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
 
-        //limpiar los campos
+        //LIMPIAR LOS CAMPOS
         selectDoctor.innerHTML = '<option value="">Seleccione</option>';
-        selectServicio.innerHTML = '<option value="">Seleccione</option>';
 
         //LLENANDO DATOS DE DOCTORES PARA EL FILTRO DEL CALENDARIO
         data.data.doctors.forEach(doctor => {
-            console.log('id', doctor.id);
-            console.log('nombre:', doctor.nombre);
             const opcion = document.createElement('option');
             opcion.value = doctor.id;
             opcion.textContent = doctor.nombre;
             selectDoctor.appendChild(opcion);
         })
 
-        //LLENANDO DATOS DE SERVICIOS PARA EL FILTRO DEL CALENDARIO
-        data.data.services.forEach(service => {
-            const opcion = document.createElement('option');
-            opcion.value = service.id;
-            opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
-            opcion.dataset.precio = service.precio_primera_consulta;
-            opcion.dataset.reconsulta = service.precio_reconsulta;
-            selectServicio.appendChild(opcion);
-        })
-
         //FUNCION QUE SE RESTAURA LOS SELECT
         $('#filtro-calendar_doctor_id').selectpicker('destroy');
-        $('#service_id').selectpicker('destroy');
-
         $('#filtro-calendar_doctor_id').selectpicker();
-        $('#service_id').selectpicker();
 
     } catch (error) {
         console.error('Error:', error);

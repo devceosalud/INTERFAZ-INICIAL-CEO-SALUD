@@ -15,21 +15,21 @@ class ScheduleController extends Controller
     //LISTA DE LOS HORARIOS PARA EL CALENDARIO WEB
     public function list(Request $request)
     {
+        //CITAS MES ACTUAL Y ANTERIOR
         $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
-            //MES ACTUAL Y ANTERIOR
             ->whereBetween('fecha_cita', [
                 Carbon::now()->startOfMonth(),
                 Carbon::now()->addMonth()->endOfMonth()
             ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
 
-        //PARA FILTRAR POR ESPECIALIDAD
+        //PARA FILTRAR CITAS POR ESPECIALIDAD
         if ($request->specialty_id) {
             $appointment->whereHas('service', function ($query) use ($request) {
                 $query->where('specialty_id', $request->specialty_id);
             });
         }
 
-        //FILTRO POR MEDICO
+        //PARA FILTRAR CITAS POR MEDICO
         if ($request->doctor_id) {
             $appointment->where('doctor_id', $request->doctor_id);
         }
@@ -37,49 +37,23 @@ class ScheduleController extends Controller
         $appointment = $appointment->get();
 
         $events = $appointment->map(function ($schedule) {
+            // Optimización de colores usando una matriz (Array Key) en lugar de un Switch pesado
+            $colors = [
+                1 => '#dc3545',
+                2 => '#0d6efd',
+                3 => '#ffc107',
+                4 => '#021209',
+                5 => '#ce14cb',
+                6 => '#118da6',
+                7 => '#110569',
+                8 => '#ffc107',
+            ];
 
-            switch ($schedule->service_id) {
-
-                case 1:
-                    $color = '#dc3545';
-                    break;
-
-                case 2:
-                    $color = '#0d6efd';
-                    break;
-
-                case 3:
-                    $color = '#ffc107';
-                    break;
-
-                case 4:
-                    $color = '#021209';
-                    break;
-
-                case 5:
-                    $color = '#ce14cb';
-                    break;
-
-                case 6:
-                    $color = '#118da6';
-                    break;
-
-                case 7:
-                    $color = '#110569';
-                    break;
-
-                case 8:
-                    $color = '#ffc107';
-                    break;
-
-                default:
-                    $color = '#198754';
-                    break;
-            }
+            $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
             return [
                 'id' => $schedule->id,
-                'title' => $schedule->patient->nombre,
+                'title' => $schedule->patient->nombre . ' - ' . $schedule->service->nombre, // Un título más descriptivo para el calendario
                 'start' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
                 'end' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
                 'color' => $color,

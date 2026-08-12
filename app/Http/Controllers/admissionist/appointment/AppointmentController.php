@@ -8,8 +8,10 @@ use App\Models\AdditionalRate;
 use App\Models\Appointment;
 use App\Models\Channel;
 use App\Models\DoctorSchedule;
+use App\Models\DoctorService;
 use App\Models\InteractionMedium;
 use App\Models\Patient;
+use App\Models\Service;
 use App\Models\Specialty;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -84,7 +86,7 @@ class AppointmentController extends Controller
         $validator = Validator::make($request->all(), [
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
-            'service_id' => 'required|integer',
+            'service_id' => 'required|integer',  //id de la tabla DoctorServices
             'additional_rate_id' => 'required|integer',
 
             'fecha_cita' => 'required|date',
@@ -136,27 +138,29 @@ class AppointmentController extends Controller
         //TRAEMOS LOS DATOS DEL HORARIO DEL DOCTOR 
         $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
         $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('dia_semana', $dia) // DIA DE LA SEMANA [1,2,3,4,5,6,7]
-            ->where('estado', 'ACTIVO')
-            ->where('hora_inicio', '<=', $request->hora_cita)
-            ->where('hora_fin', '>', $request->hora_cita)
+            ->where('dia_semana', $dia) // días de la semana [1,2,3,4,5,6,7]
+            ->where('estado', 'ACTIVO') //estado del horario
+            ->where('hora_inicio', '<=', $request->hora_cita) //hora incial
+            ->where('hora_fin', '>', $request->hora_cita) //hora final
             ->first();
 
         //DURACION DE LA CITA SI ES DOBLE O NORMAL
-        $duracion_base = $horario->duracion_cita;
-        $duracion_cita = $request->boolean('cita_doble')
+        $duracion_base = $horario->duracion_cita; //horario base
+        $duracion_cita = $request->boolean('cita_doble') //si esta marcado se duplica la hora
             ? $duracion_base * 2
             : $duracion_base;
 
 
-        //GUARDAMOS LOS DATOS 
+        //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
+        $doctorService = DoctorService::find($request->service_id); //accedemos el id del servicio por la tabla DoctorService
+        $service = Service::find($doctorService->service_id);
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,
 
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,
-            'service_id' => $request->service_id,
+            'service_id' => $service->id, //$request->service_id,
             'additional_rate_id' => $request->additional_rate_id,
 
             'fecha_cita' => $request->fecha_cita,
