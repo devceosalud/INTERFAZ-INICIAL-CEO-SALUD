@@ -1,7 +1,6 @@
 window.addEventListener("DOMContentLoaded", function () {
     console.log('CARGANDO PACIENTES');
 
-    
     const input = document.querySelector("#patientModalCreate #formCreatePatient #numero_identidad");
     const responsable_id = document.querySelector("#patientModalCreate #responsable_id");
     const modal_responsable = document.querySelector("#patientModalCreate #modal_responsable");
@@ -48,22 +47,15 @@ $("#formCreatePatient").on("submit", function (e) {
                     console.log(val[0]);
                 });
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Correcto",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    //location.reload();
-                    //MOSTRAMOS SI QUIERE CREAR CITA O CERRAR
-                    $('#appointmentModalOpen').modal("show");
-                    console.log('Datos del paciente:', response.patient);
-                    //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
-                    $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
-                    $('#appointmentModalCreate #patient_id').val(response.patient.id);
-                    $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
-                });
+                notificacion("success", "Correcto", response.msg, 2000, false, false);
+
+                console.log('Datos del paciente:', response.patient);
+                //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
+                $('#appointmentModalOpen').modal("show");
+                $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
+                $('#appointmentModalCreate #patient_id').val(response.patient.id);
+                $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
+
                 form.reset();
                 $("#patientModalCreate").modal("hide");
             }
@@ -90,24 +82,22 @@ $(document).on("click", ".edit-patient", async function (e) {
     let patientId = $(this).data("id");
 
     try {
-        const res = await fetch(`${window.location.origin}/api/patient/show/search`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    id: patientId,
-                }),
+        const res = await fetch(`${window.location.origin}/api/patient/show/search`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
-        );
+            body: JSON.stringify({
+                id: patientId,
+            }),
+        });
 
         const data = await res.json();
         console.log("DATOS PARA EDITAR:", data);
 
         if (data.message === "encontrado") {
             let p = data.patient;
-            
+
             //PINTAR DATOS EN EL MODAL
             $("#patientModalEdit #patient_id_edit").val(p.id);
             $("#patientModalEdit #nombre_paciente_edit").val(p.nombre);
@@ -166,16 +156,7 @@ $("#formUpdatePatient").on("submit", function (e) {
                     console.log(val[0]);
                 });
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
-
+                notificacion("success", "Actualizado", response.mgs, 2000, false, true);
                 $("#patientModalEdit").modal("hide");
             }
         },
@@ -284,21 +265,12 @@ $(document).on("click", ".delete-patient", async function (e) {
             body: JSON.stringify({
                 id: patientId,
             }),
-        }
-        );
+        });
 
         const data = await res.json();
 
         if (data.code === 1) {
-            Swal.fire({
-                title: "¡Inactivado!",
-                text: data.msg,
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+            notificacion("success", "Actualizado", response.mgs, 2000, false, true);
         } else {
             Swal.fire({
                 title: "Error",
@@ -318,7 +290,20 @@ $(document).on("click", ".delete-patient", async function (e) {
     }
 });
 
-
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) {
+            location.reload();
+        }
+    });
+}
 
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {

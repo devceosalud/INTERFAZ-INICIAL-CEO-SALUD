@@ -153,7 +153,7 @@ class AppointmentController extends Controller
 
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
         $doctorService = DoctorService::find($request->service_id); //accedemos el id del servicio por la tabla DoctorService
-        $service = Service::find($doctorService->service_id);
+        $service = Service::find($doctorService->service_id); //buscamos el servicio por id
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,

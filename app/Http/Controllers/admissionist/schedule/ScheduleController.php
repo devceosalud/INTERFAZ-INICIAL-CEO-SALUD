@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
+use App\Models\DoctorService;
+use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -85,7 +87,7 @@ class ScheduleController extends Controller
     }
 
 
-    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA EN EL CALENDAR
+    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA DEL CIONTILLO DEL CALENDAR
     public function update(Request $request)
     {
         //dd($request->all());
@@ -115,9 +117,11 @@ class ScheduleController extends Controller
             ]);
         }
 
+        $doctorService = DoctorService::find($request->service_id_edit); //accedemos el id del servicio por la tabla DoctorService
+        $service = Service::find($doctorService->service_id); //buscamos el servicio por id
         $exito = $schedule->update([
             'doctor_id' => $request->doctor_id_edit,
-            'service_id' => $request->service_id_edit,
+            'service_id' => $service->id,
             'fecha_cita' => $request->fecha_cita_edit,
             'hora_cita' => $request->hora_cita_edit,
             'estado_cita' => $request->estado_cita,

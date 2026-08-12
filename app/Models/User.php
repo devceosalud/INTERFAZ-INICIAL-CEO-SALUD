@@ -64,4 +64,22 @@ class User extends Authenticatable
             return redirect()->route('admissionit.patient.index');
         }
     }
+
+    //METODO PARA SACAR EL ROL DEL USUARIO
+    public function roleUser()
+    {
+        $roles = $this->getRoleNames();
+
+        if ($roles->contains('ADMISION')) {
+            return "ADMISION";
+        } elseif ($roles->contains('ADMINISTRADOR')) {
+            return "ADMINISTRADOR";
+        } elseif ($roles->contains('RECEPCION')) {
+            return "RECEPCION";
+        } elseif ($roles->contains('CAJA')) {
+            return "CAJA";
+        } elseif ($roles->contains('FACTURACION')) {
+            return "FACTURACION";
+        }
+    }
 }

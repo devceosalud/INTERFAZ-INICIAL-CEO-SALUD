@@ -55,7 +55,7 @@ Route::post('/admin/additonal-rate/search', [AdditionalRateController::class , '
 
 Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name('api.admin.doctor.search');
 
-Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.doctor.search');
+Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.service.search');
 
 Route::post('/admin/responsible/search', [responsibleController::class , 'search'])->name('api.admin.responsible.search');
 

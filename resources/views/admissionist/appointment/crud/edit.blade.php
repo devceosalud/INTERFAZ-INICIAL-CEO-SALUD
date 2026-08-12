@@ -6,7 +6,7 @@
 
             <!-- HEADER -->
             <div class="modal-header bg-dark">
-                <h5 class="modal-title text-white" id="appointmentModalEditLabel">Actualizar la Cita</h5>
+                <h5 class="modal-title text-white" id="appointmentModalEditLabel">Reprogramación de la Cita</h5>
 
                 <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close">
                 </button>

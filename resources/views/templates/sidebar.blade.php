@@ -95,11 +95,25 @@
                 </li>
             @endif
 
+
+            {{-- ENLACES RECEPCION --}}
+            @if (auth()->user()->getRoleNames()->contains('RECEPCION'))
+                <li>
+                    <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-user-7"></i>
+                        <span class="nav-text">Pacientes</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('receptionist.patient.index') }}">Pacientes</a></li>
+                    </ul>
+                </li>
+            @endif
+
             {{-- ENLACERS CAJA --}}
 
             {{-- ENLACES FACTURACION --}}
 
-            {{-- ENLACES RECEPCION --}}
+
 
             {{-- ENLACES GERENCIA --}}
 
