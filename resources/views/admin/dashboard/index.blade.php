@@ -32,20 +32,21 @@
             <div class="container-fluid">
                 <div class="form-head d-flex mb-3 mb-md-4 align-items-start">
                     <div class="me-auto d-none d-lg-block">
-                        <h3 class="text-black font-w600">Bienvenido a ERP CEO : {{ auth()->user()->name }} </h3>
+                        <h3 class="text-black font-w600">Bienvenido a ERPCEO : {{ auth()->user()->name }} </h3>
                         <p class="mb-0 fs-18">Panel: {{ auth()->user()->roleUser() }} </p>
                     </div>
 
+                    {{--
                     <div class="input-group search-area ms-auto d-inline-flex">
                         <input type="text" class="form-control" placeholder="Palabra Clave">
                         <div class="input-group-append">
                             <button type="button" class="input-group-text"><i class="flaticon-381-search-2"></i></button>
                         </div>
                     </div>
+                    --}}
                 </div>
                 <div class="row">
-
-        
+                    {{--VISTA DEL PERFIL ADMISION--}}
                     @if ($role->contains('ADMISION'))
                         <div class="col-xl-6 col-xxl-6 col-sm-6">
                             <a href="{{ route('admissionit.patient.index') }}" class="text-decoration-none">
@@ -54,13 +55,8 @@
                                         <div class="media align-items-center">
 
                                             <div class="media-body">
-                                                <p class="mb-1 fw-bold">
-                                                    Admisión Pacientes
-                                                </p>
-
-                                                <small class="text-white">
-                                                    Registrar y gestionar pacientes
-                                                </small>
+                                                <p class="mb-1 fw-bold">Admisión Pacientes</p>
+                                                <small class="text-white">Registrar y gestionar pacientes</small>
                                             </div>
 
                                             <span class="border rounded-circle p-4">
@@ -92,7 +88,6 @@
                                                         fill="white" opacity="0.7" />
                                                 </svg>
                                             </span>
-
                                         </div>
                                     </div>
                                 </div>
@@ -106,13 +101,8 @@
                                         <div class="media align-items-center">
 
                                             <div class="media-body">
-                                                <p class="mb-1 fw-bold">
-                                                    Admisión Citas
-                                                </p>
-
-                                                <small class="text-white">
-                                                    Programar y gestionar citas médicas
-                                                </small>
+                                                <p class="mb-1 fw-bold">Admisión Citas</p>
+                                                <small class="text-white">Programar y gestionar citas médicas</small>
                                             </div>
 
                                             <span class="border rounded-circle p-4">
@@ -123,14 +113,16 @@
                                                         fill="white" />
                                                 </svg>
                                             </span>
-
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         </div>
                     @endif
+                    {{--VISTA DEL PERFIL ADMISION--}}
 
+
+                    {{--VISTA ROL ADMINISTRADOR DEL SISTEMA--}}
                     @if ($role->contains('ADMINISTRADOR'))
                         <div class="col-xl-3 col-xxl-4 col-lg-4">
                             <div class="card">
@@ -169,7 +161,10 @@
                             </div>
                         </div>
                     @endif
+                    {{--VISTA ROL ADMINISTRADOR DEL SISTEMA--}}
 
+
+                    {{--VISTA ROL PERFIL RECEPCION--}}
                     @if ($role->contains('RECEPCION'))
                         <div class="col-xl-12 col-xxl-12 col-lg-12">
                             <div class="card border-0 pb-0">
@@ -228,6 +223,7 @@
                             </div>
                         </div>
                     @endif
+                    {{--VISTA ROL PERFIL RECEPCION--}}
 
                 </div>
             </div>

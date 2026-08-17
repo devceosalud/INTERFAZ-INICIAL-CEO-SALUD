@@ -138,7 +138,11 @@ document.addEventListener('DOMContentLoaded', function () {
             // SELECT PARA EL LLENADO  DE DOCTORES Y SERVICIOS
             const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
             const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
-           
+
+            //limpiar los campos
+            selectDoctor.innerHTML = '<option value="">Seleccione</option>';
+            selectServicio.innerHTML = '<option value="">Seleccione</option>';
+
             const option_doctor = document.createElement('option');
             option_doctor.value = doctor_id;
             option_doctor.textContent = nombre_doctor;

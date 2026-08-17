@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", function () {});
+window.addEventListener("DOMContentLoaded", function () { });
 
 
 
@@ -8,17 +8,15 @@ $(document).on("click", ".edit-responsible", async function (e) {
     let doctorId = $(this).data("id");
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/api/admin/responsible/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    id: doctorId,
-                }),
+        const res = await fetch(`${window.location.origin}/api/admin/responsible/search`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
             },
-        );
+            body: JSON.stringify({
+                id: doctorId,
+            }),
+        });
 
         const data = await res.json();
         console.log("DATOS RESPONSABLE PARA EDITAR:", data);
@@ -32,8 +30,7 @@ $(document).on("click", ".edit-responsible", async function (e) {
             $("#responsibleModalEdit #telefono_responsable").val(p.telefono);
             $("#responsibleModalEdit #tipo_identificacion_responsable").val(p.tipo_identificacion);
             $("#responsibleModalEdit #numero_identidad_responsable").val(p.numero_identidad);
-            //ABRIR MODAL
-            $("#responsibleModalEdit").modal("show");
+            $("#responsibleModalEdit").modal("show");//ABRIR MODAL
 
             initSelectEdit();
         }
@@ -64,40 +61,20 @@ $("#formUpdateResponsible").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
             } else if (response.code == 2) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Observado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                })
+                notificacion("warning", "Observado", response.msg, 2000, false, false);
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
+                notificacion("success", "Actualizado", response.msg, 2000, false, true);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el paciente",
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -131,48 +108,44 @@ $(document).on("click", ".delete-responsible", async function (e) {
     try {
         const res = await fetch(
             `${window.location.origin}/admissionist/responsible/delete`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: responsibleId,
-                }),
-            }
-        );
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: responsibleId,
+            }),
+        });
 
         const data = await res.json();
 
         if (data.code === 1) {
-            Swal.fire({
-                title: "¡Inactivado!",
-                text: data.msg,
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+            notificacion("success", "¡Inactivado!", data.msg, 2000, false, true);
         } else {
-            Swal.fire({
-                title: "Error",
-                text: data.msg,
-                icon: "error"
-            });
+            notificacion("error", "Error", data.msg, 4000, false, false);
         }
 
     } catch (error) {
         console.error(error);
-
-        Swal.fire({
-            title: "Error",
-            text: "Ocurrió un error al procesar la solicitud",
-            icon: "error"
-        });
+        notificacion("error", "Error", error, 4000, false, false);
     }
 });
+
+
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) { location.reload(); }
+    });
+}
 
 
 //FUNCION PARA PODER INICIAR LOS SELECT

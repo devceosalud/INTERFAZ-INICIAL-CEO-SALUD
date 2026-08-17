@@ -57,7 +57,7 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Pacientes</h4>
+                                <h4 class="card-title">Pacientes</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                                     data-bs-toggle="modal" data-bs-target="#patientModalCreate">

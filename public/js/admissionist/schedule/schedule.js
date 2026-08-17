@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", function () {});
+window.addEventListener("DOMContentLoaded", function () { });
 
 
 // GUARDAR DATOS DE LA ESPECIALIDAD
@@ -16,42 +16,25 @@ $("#formCreateDoctorSchedule").on("submit", function (e) {
         dataType: "json",
 
         beforeSend: function () {
-            // Limpiar errores anteriores
-            $(form).find("span.error-text").text("");
-            // deshabilitar boton de envio
-            $(form).find('input[type="submit"]').prop("disabled", true);
+            $(form).find("span.error-text").text(""); // Limpiar errores anteriores
+            $(form).find('input[type="submit"]').prop("disabled", true);// deshabilitar boton de envio
         },
 
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Correcto",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
-                form.reset();
+                notificacion("success", "Correcto", response.msg, 2000, false, true);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al guardar el horario",
-            });
+            notificacion("error", "Error", xhr.responseTextg, 4000, false, false);
         },
 
         complete: function () {
@@ -74,7 +57,7 @@ $(document).on("click", ".edit-doctor-schedule", async function (e) {
             body: JSON.stringify({
                 id: doctorScheduleId,
             }),
-        }, );
+        });
 
         const data = await res.json();
         console.log("DATOS DOCTOR HORARIOS PARA EDITAR:", data);
@@ -88,8 +71,7 @@ $(document).on("click", ".edit-doctor-schedule", async function (e) {
             $("#doctorScheduleModalEdit #hora_inicio_edit").val(p.hora_inicio.substring(0, 5));
             $("#doctorScheduleModalEdit #hora_fin_edit").val(p.hora_fin.substring(0, 5));
             $("#doctorScheduleModalEdit #duracion_edit_cita").val(p.duracion_cita);
-            //ABRIR MODAL
-            $("#doctorScheduleModalEdit").modal("show");
+            $("#doctorScheduleModalEdit").modal("show");//ABRIR MODAL
 
             initSelectEdit();
         }
@@ -120,40 +102,20 @@ $("#formUpdateDoctorSchedule").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
             } else if (response.code == 2) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Observado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                })
+                notificacion("warning", "Observado", response.msg, 2000, false, false);
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
+                notificacion("success", "Actualizado", response.msg, 2000, false, true);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el horario del doctor",
-            });
+            notificacion("error", "Error", xhr.responseTextg, 4000, false, false);
         },
 
         complete: function () {
@@ -185,51 +147,45 @@ $(document).on("click", ".delete-doctor-schedule", async function (e) {
     }
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/admissionist/doctor-schedule/delete`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: doctorScheduleId,
-                }),
-            }
-        );
+        const res = await fetch(`${window.location.origin}/admissionist/doctor-schedule/delete`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: doctorScheduleId,
+            }),
+        });
 
         const data = await res.json();
 
         if (data.code === 1) {
-            Swal.fire({
-                title: "¡Inactivado!",
-                text: data.msg,
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+            notificacion("success", "¡Inactivado!", data.msg, 1500, false, true);
         } else {
-            Swal.fire({
-                title: "Error",
-                text: data.msg,
-                icon: "error"
-            });
+            notificacion("error", "Error", data.msg, 4000, false, false);
         }
 
     } catch (error) {
         console.error(error);
-
-        Swal.fire({
-            title: "Error",
-            text: "Ocurrió un error al procesar la solicitud",
-            icon: "error"
-        });
+        notificacion("error", "Error", error, 4000, false, false);
     }
 });
 
+
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) { location.reload(); }
+    });
+}
 
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {

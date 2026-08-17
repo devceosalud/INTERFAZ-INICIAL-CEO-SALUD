@@ -32,7 +32,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 //PARA ACTUALIZAR LA CITA (REPROGRAMACION)
-$("#formUpdateSchedule").on("submit", function (e) {
+$("#formUpdateSchedule").on("submit", function (e) { //formUpdateSchedule
     e.preventDefault();
 
     let form = this;
@@ -179,7 +179,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         //LLENANDO DATOS DE SERVICIOS
         data.data.forEach(service => {
             const opcion = document.createElement('option');
-            opcion.value = service.id;
+            opcion.value = service.id;  // cargamos el id de la tabla DoctorServices
             opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
             opcion.dataset.precio = service.precio_primera_consulta;
             opcion.dataset.reconsulta = service.precio_reconsulta;

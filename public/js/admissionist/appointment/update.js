@@ -9,7 +9,7 @@ $(document).on("click", ".update-appointment", function (e) {
 });
 
 
-//PARA ACTUALIZAR LOS DATOS DEL PACIENTE
+//PARA ACTUALIZAR EL ESTADO DE LA CITA
 $("#formUpdateAppointmentState").on("submit", function (e) {
     e.preventDefault();
 

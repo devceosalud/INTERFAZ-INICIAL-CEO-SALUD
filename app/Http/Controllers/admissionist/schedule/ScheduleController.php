@@ -117,8 +117,9 @@ class ScheduleController extends Controller
             ]);
         }
 
-        $doctorService = DoctorService::find($request->service_id_edit); //accedemos el id del servicio por la tabla DoctorService
+        $doctorService = DoctorService::find($request->service_id_edit); //service_id_edit: es el Id de la tabla DoctorServices
         $service = Service::find($doctorService->service_id); //buscamos el servicio por id
+        //dd($service);
         $exito = $schedule->update([
             'doctor_id' => $request->doctor_id_edit,
             'service_id' => $service->id,

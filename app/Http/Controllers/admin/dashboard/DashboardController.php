@@ -17,6 +17,12 @@ class DashboardController extends Controller
     public function index()
     {
         $role = auth()->user()->getRoleNames();
+
+        //DATOS DEL DASHBOARD RECEPCION
+        
+
+
+
         return view('admin.dashboard.index', [
             'role' => $role
         ]);

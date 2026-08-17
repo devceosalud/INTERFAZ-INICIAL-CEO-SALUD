@@ -123,13 +123,7 @@ async function buscarMedicoPorEspecialidadCita(event) {
         const data = await res.json();
         console.log('RESPUESTA LISTA DE DOCTORES', data);
         if (data.code === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Precaución',
-                text: data.message,
-                timer: 4000,
-                showConfirmButton: false
-            })
+            notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
         // SELECT PARA EL LLENADO 
@@ -177,13 +171,7 @@ async function buscarServicioPorMedicoCita(event) {
         const data = await res.json();
         console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
         if (data.code === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Precaución',
-                text: data.message,
-                timer: 4000,
-                showConfirmButton: false
-            })
+            notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
         // SELECT PARA EL LLENADO 
@@ -196,7 +184,7 @@ async function buscarServicioPorMedicoCita(event) {
         data.data.forEach(service => {
             console.log('servicios:', service);
             const opcion = document.createElement('option');
-            opcion.value = service.id;
+            opcion.value = service.id;  // cargamos el id de la tabla DoctorServices
             opcion.textContent = service.nombre + ' - S/' + service.precio_primera_consulta;
             opcion.dataset.precio = service.precio_primera_consulta;
             opcion.dataset.reconsulta = service.precio_reconsulta;
@@ -320,29 +308,15 @@ $('#formCreateAppointment').on('submit', function (e) {
                 $('#patientModalCreate').modal('hide');
 
             } else if (response.code == 2) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Precaución',
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => { });
+                notificacion("warning", "Precaución", response.msg, 2000, false, false);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.msg
-                });
+                notificacion("error", "Error", response.msg, 3000, false, false);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Ocurrió un error al guardar el paciente'
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -365,8 +339,7 @@ async function cargarHorariosCita() {
     console.log('cita doble:', cita_doble);
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/api/appointment/schedule/available-hours`, {
+        const res = await fetch(`${window.location.origin}/api/appointment/schedule/available-hours`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -375,8 +348,7 @@ async function cargarHorariosCita() {
                 doctor_id: doctor_id,
                 fecha_cita: fecha_cita
             }),
-        },
-        );
+        });
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
@@ -472,8 +444,17 @@ function convertirHoraCita(minutos) {
 
 
 //FUNCION ALERTA
-function alerta() {
-
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) { location.reload(); }
+    });
 }
 
 //FUNCION QUE SE RESTAURA LOS SELECT

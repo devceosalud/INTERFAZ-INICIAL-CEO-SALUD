@@ -33,10 +33,8 @@ $("#formCreatePatient").on("submit", function (e) {
         dataType: "json",
 
         beforeSend: function () {
-            // Limpiar errores anteriores
-            $(form).find("span.error-text").text("");
-            // deshabilitar boton de envio
-            $(form).find('input[type="submit"]').prop("disabled", true);
+            $(form).find("span.error-text").text(""); // Limpiar errores anteriores
+            $(form).find('input[type="submit"]').prop("disabled", true);  // deshabilitar boton de envio
         },
 
         success: function (response) {
@@ -48,7 +46,6 @@ $("#formCreatePatient").on("submit", function (e) {
                 });
             } else {
                 notificacion("success", "Correcto", response.msg, 2000, false, false);
-
                 console.log('Datos del paciente:', response.patient);
                 //PINTAMOS LOS DATOS EN EL MODAL DE CITAS
                 $('#appointmentModalOpen').modal("show");
@@ -63,11 +60,7 @@ $("#formCreatePatient").on("submit", function (e) {
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al guardar el paciente",
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -116,9 +109,7 @@ $(document).on("click", ".edit-patient", async function (e) {
             $("#patientModalEdit #interaction_medium_edit").val(p.interaction_medium_id);
             $("#patientModalEdit #direccion_edit").val(p.direccion);
             $("#patientModalEdit #familiar_contacto_edit").val(p.familiar_contacto);
-            //ABRIR MODAL
-            $("#patientModalEdit").modal("show");
-
+            $("#patientModalEdit").modal("show"); //ABRIR MODAL
             //PARA REFREZCAR LOS SELECT
             initSelectEdit();
         }
@@ -149,25 +140,19 @@ $("#formUpdatePatient").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
             } else {
-                notificacion("success", "Actualizado", response.mgs, 2000, false, true);
+                notificacion("success", "Actualizado", response.msg, 2000, false, true);
                 $("#patientModalEdit").modal("hide");
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el paciente",
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -268,25 +253,15 @@ $(document).on("click", ".delete-patient", async function (e) {
         });
 
         const data = await res.json();
-
         if (data.code === 1) {
-            notificacion("success", "Actualizado", response.mgs, 2000, false, true);
+            notificacion("success", "Actualizado", data.msg, 2000, false, true);
         } else {
-            Swal.fire({
-                title: "Error",
-                text: data.msg,
-                icon: "error"
-            });
+            notificacion("error", "Error", data.msg, 4000, false, false);
         }
 
     } catch (error) {
         console.error(error);
-
-        Swal.fire({
-            title: "Error",
-            text: "Ocurrió un error al procesar la solicitud",
-            icon: "error"
-        });
+        notificacion("error", "Error", error, 4000, false, false);
     }
 });
 
@@ -299,9 +274,7 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
         timer: timer,
         showConfirmButton: showConfirmButton,
     }).then(() => {
-        if (recargar) {
-            location.reload();
-        }
+        if (recargar) { location.reload(); }
     });
 }
 
