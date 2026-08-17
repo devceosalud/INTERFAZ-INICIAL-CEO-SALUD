@@ -10,7 +10,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
 
-
     //PARA LLENAR DINAMICAMENTE EL PRECIO
     let precio_programado = document.querySelector('#precio_programado');
 
@@ -126,11 +125,8 @@ async function buscarMedicoPorEspecialidadCita(event) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
-        // SELECT PARA EL LLENADO 
-        const selectDoctor = document.querySelector('#appointmentModalCreate #doctor_id');
-
-        //limpiar los campos
-        selectDoctor.innerHTML = '<option value="">Seleccione</option>';
+        const selectDoctor = document.querySelector('#appointmentModalCreate #doctor_id');//SELECT PARA EL LLENADO 
+        selectDoctor.innerHTML = '<option value="">Seleccione</option>'; //limpiar los campos
 
         //LLENANDO DATOS DE DOCTORES
         data.data.doctors.forEach(doctor => {
@@ -174,11 +170,8 @@ async function buscarServicioPorMedicoCita(event) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
-        // SELECT PARA EL LLENADO 
-        const selectServicio = document.querySelector('#appointmentModalCreate #service_id');
-
-        //LIMPIAR LOS CAMPOS
-        selectServicio.innerHTML = '<option value="">Seleccione</option>';
+        const selectServicio = document.querySelector('#appointmentModalCreate #service_id'); // SELECT PARA EL LLENADO 
+        selectServicio.innerHTML = '<option value="">Seleccione</option>'; //LIMPIAR LOS CAMPOS
 
         //LLENANDO DATOS DE SERVICIOS
         data.data.forEach(service => {
@@ -280,13 +273,13 @@ $('#formCreateAppointment').on('submit', function (e) {
         dataType: 'json',
 
         beforeSend: function () {
-            // Limpiar errores anteriores
-            $(form).find('span.error-text').text('');
-            // deshabilitar boton de envio
-            $(form).find('input[type="submit"]').prop('disabled', true);
+            $(form).find('span.error-text').text('');  // Limpiar errores anteriores
+            $(form).find('input[type="submit"]').prop('disabled', true); // deshabilitar boton de envio
         },
 
         success: function (response) {
+            console.log('CITA CREADA:', response);
+
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
                     $(form).find('span.' + prefix + '_error').text(val[0]);
@@ -301,8 +294,7 @@ $('#formCreateAppointment').on('submit', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    //location.reload();
-                    window.location.href = "/admissionist/appointment";
+
                 });
                 form.reset();
                 $('#patientModalCreate').modal('hide');

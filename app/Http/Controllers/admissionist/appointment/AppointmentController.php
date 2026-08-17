@@ -152,7 +152,7 @@ class AppointmentController extends Controller
 
 
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
-        $doctorService = DoctorService::find($request->service_id); //accedemos el id del servicio por la tabla DoctorService
+        $doctorService = DoctorService::find($request->service_id); // cargamos el id de la tabla DoctorServices
         $service = Service::find($doctorService->service_id); //buscamos el servicio por id
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
@@ -195,7 +195,8 @@ class AppointmentController extends Controller
 
             return response()->json([
                 'code' => 1,
-                'msg' => 'Cita creada correctamente'
+                'msg' => 'Cita creada correctamente',
+                'role' => auth()->user()->roleUser()
             ]);
         } else {
             return response()->json([

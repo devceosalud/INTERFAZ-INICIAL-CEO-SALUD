@@ -48,6 +48,7 @@
                     </ul>
                 </li>
             @endif
+            {{-- ENLACES ADM --}}
 
 
 
@@ -94,6 +95,7 @@
                     </ul>
                 </li>
             @endif
+            {{-- ENLACES ADMISION --}}
 
 
             {{-- ENLACES RECEPCION --}}
@@ -107,7 +109,21 @@
                         <li><a href="{{ route('receptionist.patient.index') }}">Pacientes</a></li>
                     </ul>
                 </li>
+
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-calendar"></i>
+                        <span class="nav-text">Citas</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('receptionist.appointment.index') }}">Registrar Cita</a></li>
+                    </ul>
+                </li>
             @endif
+            {{-- ENLACES RECEPCION --}}
+
+
+
 
             {{-- ENLACERS CAJA --}}
 

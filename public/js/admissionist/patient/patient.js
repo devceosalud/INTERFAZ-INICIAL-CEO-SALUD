@@ -52,7 +52,7 @@ $("#formCreatePatient").on("submit", function (e) {
                 $('#appointmentModalCreate #documento_paciente').val(response.patient.numero_identidad);
                 $('#appointmentModalCreate #patient_id').val(response.patient.id);
                 $('#appointmentModalCreate #nombre_paciente').val(response.patient.nombre + ' ' + response.patient.apellido_paterno + ' ' + response.patient.apellido_materno);
-
+                
                 form.reset();
                 $("#patientModalCreate").modal("hide");
             }
