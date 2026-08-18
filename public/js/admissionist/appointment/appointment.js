@@ -58,6 +58,11 @@ window.addEventListener('DOMContentLoaded', () => {
     //REFREZCAR LOS HORARIOS DE CITA NORMAL Y DOBLE CITA
     document.querySelector('#appointmentModalCreate #cita_doble').addEventListener('change', function () {
         cargarHorariosCita();
+    });
+
+    //REFREZCAR SI HAY CAMBIOS EN LA FECHA
+    $('#appointmentModalCreate #fecha_cita').on('change', function () {
+        cargarHorariosCita();
     })
 
 });
@@ -136,9 +141,7 @@ async function buscarMedicoPorEspecialidadCita(event) {
             selectDoctor.appendChild(opcion);
         })
 
-        $('#doctor_id').selectpicker('destroy');
-        $('#doctor_id').selectpicker();
-
+        $('#doctor_id').selectpicker('refresh');
 
     } catch (error) {
         console.error('Error:', error);
@@ -184,8 +187,7 @@ async function buscarServicioPorMedicoCita(event) {
             selectServicio.appendChild(opcion);
         })
 
-        $('#service_id').selectpicker('destroy');
-        $('#service_id').selectpicker();
+        $('#service_id').selectpicker('refresh');
 
     } catch (error) {
         console.error('Error:', error);
@@ -278,6 +280,7 @@ $('#formCreateAppointment').on('submit', function (e) {
         },
 
         success: function (response) {
+            let role = document.querySelector('.table-responsive #rol_user_redirection').value; //VARIABLE ROL DEL USUARIO PARA REDIRECCION
             console.log('CITA CREADA:', response);
 
             if (response.code == 0) {
@@ -294,10 +297,12 @@ $('#formCreateAppointment').on('submit', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-
+                    if (role == 'ADMISION') {
+                        window.location.href = "/admissionist/appointment";
+                    } else if (role == 'RECEPCION') {
+                        window.location.href = "/receptionist/appointment";
+                    }
                 });
-                form.reset();
-                $('#patientModalCreate').modal('hide');
 
             } else if (response.code == 2) {
                 notificacion("warning", "Precaución", response.msg, 2000, false, false);
@@ -369,8 +374,7 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
             let horaOcupada = ocupadas.some(cita =>
                 cita.hora_cita.substring(0, 5) === hora
             );
-            console.log('hora:', hora);
-            console.log('¿ocupada?', horaOcupada);
+            console.log('hora:', hora + '¿ocupada?' + horaOcupada);
 
             // CITA NORMAL
             if (!cita_doble) {
@@ -401,8 +405,8 @@ function generarHorariosCita(horarios, ocupadas, cita_doble) {
             }
             actual += duracion;
         }
-        initSelectCreate();
     });
+    initSelectCreate();
 }
 
 function existeCruceCita(horaInicioNueva, duracionNueva, ocupadas) {
@@ -451,7 +455,5 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 
 //FUNCION QUE SE RESTAURA LOS SELECT
 function initSelectCreate() {
-    $('#appointmentModalCreate #hora_cita').selectpicker('destroy');
-
-    $('#appointmentModalCreate #hora_cita').selectpicker();
+    $('#appointmentModalCreate #hora_cita').selectpicker('refresh');
 }

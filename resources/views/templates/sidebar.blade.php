@@ -91,7 +91,7 @@
                         <span class="nav-text">Horarios</span>
                     </a>
                     <ul aria-expanded="false">
-                        <li><a href="{{ route('admissionit.doctor.schedule.index') }}">Horarios</a></li>
+                        <li><a href="{{ route('admissionit.doctor.schedule.index') }}">Horarios médicos</a></li>
                     </ul>
                 </li>
             @endif
@@ -119,13 +119,23 @@
                         <li><a href="{{ route('receptionist.appointment.index') }}">Registrar Cita</a></li>
                     </ul>
                 </li>
+
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-clock"></i>
+                        <span class="nav-text">Horarios</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('receptionist.doctor.schedule.index') }}">Horarios médicos</a></li>
+                    </ul>
+                </li>
             @endif
             {{-- ENLACES RECEPCION --}}
 
 
 
 
-            {{-- ENLACERS CAJA --}}
+            {{-- ENLACES CAJA --}}
 
             {{-- ENLACES FACTURACION --}}
 

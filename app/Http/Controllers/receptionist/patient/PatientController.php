@@ -33,15 +33,12 @@ class PatientController extends Controller
         $specialties = Specialty::where('estado', 'ACTIVO')->get();
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
-        $role = auth()->user()->getRoleNames();
-
         return view('receptionist.patient.index', [
             'patients' => $patients,
             'channels' => $channels,
             'interaction_media' => $interaction_media,
             'specialties' => $specialties,
             'additional_rates' => $additional_rates,
-            'role' => $role 
         ]);
     }
 }

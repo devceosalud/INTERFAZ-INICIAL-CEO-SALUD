@@ -1,5 +1,18 @@
 @extends('layouts.app')
 
+@php
+    use Carbon\Carbon;
+@endphp
+
+@section('css_data')
+    <!-- Datatable -->
+    <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('css/tesseract.css') }}" rel="stylesheet">
+@endsection
+
 
 @section('body')
     <!--*******************Preloader start********************-->
@@ -32,7 +45,7 @@
             <div class="container-fluid">
                 <div class="form-head d-flex mb-3 mb-md-4 align-items-start">
                     <div class="me-auto d-none d-lg-block">
-                        <h3 class="text-black font-w600">Bienvenido a ERPCEO : {{ auth()->user()->name }} </h3>
+                        <h3 class="text-black font-w600">ERP CEO SALUD {{-- auth()->user()->name --}} </h3>
                         <p class="mb-0 fs-18">Panel: {{ auth()->user()->roleUser() }} </p>
                     </div>
 
@@ -46,8 +59,8 @@
                     --}}
                 </div>
                 <div class="row">
-                    {{--VISTA DEL PERFIL ADMISION--}}
-                    @if ($role->contains('ADMISION'))
+                    {{-- VISTA DEL PERFIL ADMISION --}}
+                    @if (auth()->user()->roleUser() === 'ADMISION')
                         <div class="col-xl-6 col-xxl-6 col-sm-6">
                             <a href="{{ route('admissionit.patient.index') }}" class="text-decoration-none">
                                 <div class="card gradient-bx text-white bg-dark">
@@ -119,11 +132,11 @@
                             </a>
                         </div>
                     @endif
-                    {{--VISTA DEL PERFIL ADMISION--}}
+                    {{-- VISTA DEL PERFIL ADMISION --}}
 
 
-                    {{--VISTA ROL ADMINISTRADOR DEL SISTEMA--}}
-                    @if ($role->contains('ADMINISTRADOR'))
+                    {{-- VISTA ROL ADMINISTRADOR DEL SISTEMA --}}
+                    @if (auth()->user()->roleUser() === 'ADMINISTRADOR')
                         <div class="col-xl-3 col-xxl-4 col-lg-4">
                             <div class="card">
                                 <div class="card-header border-0 pb-0">
@@ -161,69 +174,204 @@
                             </div>
                         </div>
                     @endif
-                    {{--VISTA ROL ADMINISTRADOR DEL SISTEMA--}}
+                    {{-- VISTA ROL ADMINISTRADOR DEL SISTEMA --}}
 
 
-                    {{--VISTA ROL PERFIL RECEPCION--}}
-                    @if ($role->contains('RECEPCION'))
-                        <div class="col-xl-12 col-xxl-12 col-lg-12">
-                            <div class="card border-0 pb-0">
-                                <div class="card-header flex-wrap border-0 pb-0">
-                                    <h3 class="fs-20 mb-0 text-black">Pacientes Recientes</h3>
-                                    <!--<a href="patient-list.html" class="text-primary font-w500">View more >></a> -->
+                    {{-- VISTA ROL PERFIL RECEPCION --}}
+                    @if (auth()->user()->roleUser() === 'RECEPCION')
+                        @foreach ($doctors as $doctor)
+                            <div class="accordion" id="accordionExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapseOne{{ $doctor->id }}" aria-expanded="true"
+                                            aria-controls="collapseOne{{ $doctor->id }}">
+                                            Horarios del Dr: {{ $doctor->nombre }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOne{{ $doctor->id }}" class="accordion-collapse collapse show"
+                                        data-bs-parent="#accordionExample">
+                                        @foreach ($doctor->appointments as $appointment)
+                                            <div class="accordion-body">
+                                                <strong>Hora ocupada: </strong> {{ $appointment->hora_cita }} por <code>
+                                                    {{ $appointment->patient->nombre }} </code>.
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                                <div class="card-body recent-patient px-0">
-                                    <div id="DZ_W_Todo2" class="widget-media px-4 dz-scroll height320">
-                                        <ul class="timeline">
-                                            <li>
-                                                <div class="timeline-panel flex-wrap">
-                                                    <div class="media-body">
-                                                        <h5 class="mb-1"><a class='text-black'
-                                                                href='/patient-details'>JUan
-                                                                Arevalo</a></h5>
-                                                        <span class="fs-14">24 años</span>
-                                                    </div>
-                                                    <a href="javascript:void(0);" class="text-warning mt-2">Pendiente</a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="timeline-panel flex-wrap">
-                                                    <div class="media-body">
-                                                        <h5 class="mb-1"><a class='text-black'
-                                                                href='/patient-details'>Hillary Rivera</a></h5>
-                                                        <span class="fs-14">22 años</span>
-                                                    </div>
-                                                    <a href="javascript:void(0);" class="text-info mt-2">Atendido</a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="timeline-panel flex-wrap">
-                                                    <div class="media-body">
-                                                        <h5 class="mb-1"><a class='text-black'
-                                                                href='/patient-details'>Omar
-                                                                Meneses</a></h5>
-                                                        <span class="fs-14">44 años</span>
-                                                    </div>
-                                                    <a href="javascript:void(0);" class="text-danger mt-2">Cancelado</a>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="timeline-panel flex-wrap">
-                                                    <div class="media-body">
-                                                        <h5 class="mb-1"><a class='text-black'
-                                                                href='/patient-details'>Julia Porras</a></h5>
-                                                        <span class="fs-14">55 años</span>
-                                                    </div>
-                                                    <a href="javascript:void(0);" class="text-primary mt-2">No asistio</a>
-                                                </div>
-                                            </li>
-                                        </ul>
+                            </div>
+                        @endforeach
+
+
+                        {{-- CITAS DE HOY --}}
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div
+                                        class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                        <h4 class="card-title">Citas: {{ Date('Y-m-d') }} </h4>
+
+                                        {{-- <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                                    --}}
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table id="example4" class="display" style="min-width: 845px">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Estado</th>
+                                                        <th>Paciente</th>
+                                                        <th>Medico</th>
+                                                        <th>Servicio</th>
+                                                        <th>Citado </th>
+                                                        <th>Pago </th>
+                                                        <th>Debe</th>
+                                                        <th>Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($appointments as $appointment)
+                                                        <tr>
+                                                            <td><strong>{{ $appointment->estado_cita }}</strong></td>
+                                                            <td><span
+                                                                    class="small">{{ $appointment->patient->nombre }}</span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="small">{{ $appointment->doctor->nombre }}</span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="bage light badge-danger small"><strong>{{ $appointment->service->nombre }}</strong></span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="small"><strong>{{ $appointment->fecha_cita }}</strong></span>
+                                                                <span
+                                                                    class="badge light badge-primary">{{ $appointment->hora_cita }}</span>
+                                                            </td>
+                                                            <td>
+                                                                @switch($appointment->estado_pagado)
+                                                                    @case('PARCIAL')
+                                                                        <span
+                                                                            class="badge light badge-warning">{{ $appointment->estado_pagado }}</span>
+                                                                    @break
+
+                                                                    @case('PENDIENTE')
+                                                                        <span
+                                                                            class="badge light badge-danger">{{ $appointment->estado_pagado }}</span>
+                                                                    @break
+
+                                                                    @default
+                                                                        <span
+                                                                            class="badge light badge-success">{{ $appointment->estado_pagado }}</span>
+                                                                @endswitch
+                                                            </td>
+                                                            <td>{{ $appointment->saldo_pendiente }} </td>
+                                                            <td>
+
+                                                                <strong>
+                                                                    <span class="me-3">
+                                                                        <a href="#" class="update-appointment"
+                                                                            data-id="{{ $appointment->id }}"><i
+                                                                                class="fa fa-dollar fs-18 text-success"></i></a>
+                                                                    </span>
+                                                                </strong>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {{-- CITAS DE HOY --}}
+
+                        {{-- REEVALUACIONES --}}
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div
+                                        class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                        <h4 class="card-title">Reevaluaciones: {{ Date('Y-m-d') }} </h4>
+
+                                        {{-- <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                                    --}}
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table id="example4" class="display" style="min-width: 845px">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Estado</th>
+                                                        <th>Paciente</th>
+                                                        <th>Medico</th>
+                                                        <th>Servicio</th>
+                                                        <th>Citado </th>
+                                                        <th>Pago </th>
+                                                        <th>Debe</th>
+                                                        <th>X</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($revaluaciones as $appointment)
+                                                        <tr>
+                                                            <td><strong>{{ $appointment->estado_cita }}</strong></td>
+                                                            <td><span
+                                                                    class="small">{{ $appointment->patient->nombre }}</span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="small">{{ $appointment->doctor->nombre }}</span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="bage light badge-danger small"><strong>{{ $appointment->service->nombre }}</strong></span>
+                                                            </td>
+                                                            <td><span
+                                                                    class="small"><strong>{{ $appointment->fecha_cita }}</strong></span>
+                                                                <span
+                                                                    class="badge light badge-primary">{{ $appointment->hora_cita }}</span>
+                                                            </td>
+                                                            <td>
+                                                                @switch($appointment->estado_pagado)
+                                                                    @case('PARCIAL')
+                                                                        <span
+                                                                            class="badge light badge-warning">{{ $appointment->estado_pagado }}</span>
+                                                                    @break
+
+                                                                    @case('PENDIENTE')
+                                                                        <span
+                                                                            class="badge light badge-danger">{{ $appointment->estado_pagado }}</span>
+                                                                    @break
+
+                                                                    @default
+                                                                        <span
+                                                                            class="badge light badge-success">{{ $appointment->estado_pagado }}</span>
+                                                                @endswitch
+                                                            </td>
+                                                            <td>{{ $appointment->saldo_pendiente }} </td>
+                                                            <td>
+
+                                                                <strong>
+                                                                    <span class="me-3">
+                                                                        <a href="#" class="update-appointment"
+                                                                            data-id="{{ $appointment->id }}"><i
+                                                                                class="fa fa-pencil fs-18 text-success"></i></a>
+                                                                    </span>
+                                                                </strong>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- REEVALUACIONES --}}
                     @endif
-                    {{--VISTA ROL PERFIL RECEPCION--}}
+                    {{-- VISTA ROL PERFIL RECEPCION --}}
 
                 </div>
             </div>
@@ -232,19 +380,27 @@
 
 
         <!--**********************************Scripts***********************************-->
-        <!-- Required vendors -->
-        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+        @section('script_data')
+            <!-- Required vendors -->
+            <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+            <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 
-        <script src="{{ asset('assets/vendor/chart.js/Chart.bundle.min.js') }}"></script>
-        <script src="{{ asset('assets/vendor/owl-carousel/owl.carousel.js') }}"></script>
+            <script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
+            {{-- <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
+            <script src="{{ asset('assets/js/plugins-init/fullcalendar-init.js') }}"></script> --}}
 
-        <!-- Apex Chart -->
-        <script src="{{ asset('assets/vendor/apexchart/apexchart.js') }}"></script>
+            <!-- STANDARD JS -->
+            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/all/global.js"></script>
+            <!-- THEME JS -->
+            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
 
-        <!-- Dashboard 1 -->
-        <script src="{{ asset('assets/js/dashboard/dashboard-1.js') }}"></script>
-        <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-        <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+            <!-- Datatable -->
+            <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+            <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+            <script src="{{ asset('assets/js/custom.min.js') }}"></script>
+            <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+        @endsection
+
 
 
 

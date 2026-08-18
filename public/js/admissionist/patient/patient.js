@@ -281,33 +281,20 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {
     //para campos edit
-    $("#tipo_identificacion_edit").selectpicker("destroy");
-    $("#genero_paciente_edit").selectpicker("destroy");
-    $("#channel_edit").selectpicker("destroy");
-    $("#interaction_medium_edit").selectpicker("destroy");
-    $("#estado_civil_edit").selectpicker("destroy");
-
-    $("#tipo_identificacion_edit").selectpicker();
-    $("#genero_paciente_edit").selectpicker();
-    $("#channel_edit").selectpicker();
-    $("#interaction_medium_edit").selectpicker();
-    $("#estado_civil_edit").selectpicker();
+    $("#tipo_identificacion_edit").selectpicker("refresh");
+    $("#genero_paciente_edit").selectpicker("refresh");
+    $("#channel_edit").selectpicker("refresh");
+    $("#interaction_medium_edit").selectpicker("refresh");
+    $("#estado_civil_edit").selectpicker("refresh");
 }
 
 
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectCreate() {
-    $("#tipo_identificacion").selectpicker("destroy");
-    $("#genero_paciente").selectpicker("destroy");
-    $("#channel_id").selectpicker("destroy");
-    $("#interaction_medium_id").selectpicker("destroy");
-    $("#estado_civil").selectpicker("destroy");
-    $('#appointmentModalCreate #hora_cita').selectpicker('destroy');
-
-    $("#tipo_identificacion").selectpicker();
-    $("#genero_paciente").selectpicker();
-    $("#channel_id").selectpicker();
-    $("#interaction_medium_id").selectpicker();
-    $("#estado_civil").selectpicker();
-    $('#appointmentModalCreate #hora_cita').selectpicker();
+    $("#tipo_identificacion").selectpicker("refresh");
+    $("#genero_paciente").selectpicker("refresh");
+    $("#channel_id").selectpicker("refresh");
+    $("#interaction_medium_id").selectpicker("refresh");
+    $("#estado_civil").selectpicker("refresh");
+    $('#appointmentModalCreate #hora_cita').selectpicker('refresh');
 }

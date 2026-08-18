@@ -68,8 +68,7 @@ async function buscarEspecialidadFiltroCalendario(event) {
         })
 
         //FUNCION QUE SE RESTAURA LOS SELECT
-        $('#filtro-calendar_doctor_id').selectpicker('destroy');
-        $('#filtro-calendar_doctor_id').selectpicker();
+        $('#filtro-calendar_doctor_id').selectpicker('refresh');
 
     } catch (error) {
         console.error('Error:', error);

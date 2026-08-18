@@ -84,19 +84,21 @@
 
                 {{-- CITAS DE HOY --}}
                 <div class="row mt-3">
-
                     <div class="col-12">
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                                 <h4 class="card-title">Citas: {{ Date('Y-m-d') }} </h4>
 
-                                {{-- <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                                {{-- <a href="{{ route('admin.dashboard.index') }}" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">Actualizar</a>
                                     --}}
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
+                                    {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
+                                    <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
+                                        value="{{ auth()->user()->roleUser() }}">
                                     <table id="example4" class="display" style="min-width: 845px">
                                         <thead>
                                             <tr>
@@ -160,20 +162,19 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+                {{-- CITAS DE HOY --}}
 
                 {{-- REEVALUACIONES --}}
                 <div class="row">
-
                     <div class="col-12">
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                                 <h4 class="card-title">Reevaluaciones: {{ Date('Y-m-d') }} </h4>
 
-                                {{-- <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">+ Agregar Cita</a>
+                                {{-- <a href="{{ route('admin.dashboard.index') }}" class="btn btn-primary btn-rounded add-appointment"
+                                    data-bs-toggle="modal" data-bs-target="#appointmentModalCreate">Actualizar</a>
                                     --}}
                             </div>
                             <div class="card-body">
@@ -242,8 +243,8 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+                {{-- REEVALUACIONES --}}
 
             </div>
 

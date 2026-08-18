@@ -280,8 +280,8 @@ function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
             }
             actual += duracion;
         }
-        initSelectEditarCita();
     });
+    initSelectEditarCita();
 }
 
 function existeCruceEditarCita(horaInicioNueva, duracionNueva, ocupadas) {
@@ -314,15 +314,9 @@ function convertirHoraEditarCita(minutos) {
 }
 
 function initSelectEditarCita() {
-    $('#appointmentModalEdit #hora_cita_edit').selectpicker('destroy');
-    $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
-    $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');
-    $('#appointmentModalEdit #service_id_edit').selectpicker('destroy');
-    $('#appointmentModalEdit #estado_cita').selectpicker('destroy');
-
-    $('#appointmentModalEdit #hora_cita_edit').selectpicker();
-    $('#appointmentModalEdit #specialty_id_edit').selectpicker();
-    $('#appointmentModalEdit #doctor_id_edit').selectpicker();
-    $('#appointmentModalEdit #service_id_edit').selectpicker();
-    $('#appointmentModalEdit #estado_cita').selectpicker();
+    $('#appointmentModalEdit #hora_cita_edit').selectpicker('refresh');
+    $('#appointmentModalEdit #specialty_id_edit').selectpicker('refresh');
+    $('#appointmentModalEdit #doctor_id_edit').selectpicker('refresh');
+    $('#appointmentModalEdit #service_id_edit').selectpicker('refresh');
+    $('#appointmentModalEdit #estado_cita').selectpicker('refresh');
 }

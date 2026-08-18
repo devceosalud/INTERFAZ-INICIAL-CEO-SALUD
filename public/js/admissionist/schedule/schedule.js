@@ -190,11 +190,7 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {
     //para campos edit
-    $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker("destroy");
-    $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker("destroy");
-    $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker("destroy");
-
-    $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker();
-    $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker();
-    $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker();
+    $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker("refresh");
+    $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker("refresh");
+    $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker("refresh");
 }

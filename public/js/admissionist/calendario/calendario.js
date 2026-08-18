@@ -182,14 +182,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //FUNCION QUE SE RESTAURA LOS SELECT
     function initSelectEdit() {
-        $('#appointmentModalEdit #specialty_id_edit').selectpicker('destroy');
-        $('#appointmentModalEdit #doctor_id_edit').selectpicker('destroy');
-        $('#appointmentModalEdit #service_id_edit').selectpicker('destroy');
-        $('#appointmentModalEdit #estado_cita').selectpicker('destroy');
-
-        $('#appointmentModalEdit #specialty_id_edit').selectpicker();
-        $('#appointmentModalEdit #doctor_id_edit').selectpicker();
-        $('#appointmentModalEdit #service_id_edit').selectpicker();
-        $('#appointmentModalEdit #estado_cita').selectpicker();
+        $('#appointmentModalEdit #specialty_id_edit').selectpicker('refresh');
+        $('#appointmentModalEdit #doctor_id_edit').selectpicker('refresh');
+        $('#appointmentModalEdit #service_id_edit').selectpicker('refresh');
+        $('#appointmentModalEdit #estado_cita').selectpicker('refresh');
     }
 });

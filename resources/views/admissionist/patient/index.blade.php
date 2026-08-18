@@ -66,6 +66,9 @@
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
+                                    {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
+                                    <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
+                                        value="{{ auth()->user()->roleUser() }}">
                                     <table id="example4" class="display" style="min-width: 845px">
                                         <thead>
                                             <tr>

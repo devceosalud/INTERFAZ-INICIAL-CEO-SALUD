@@ -87,7 +87,7 @@ class ScheduleController extends Controller
     }
 
 
-    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA DEL CIONTILLO DEL CALENDAR
+    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA DEL CINTILLO DEL CALENDAR
     public function update(Request $request)
     {
         //dd($request->all());

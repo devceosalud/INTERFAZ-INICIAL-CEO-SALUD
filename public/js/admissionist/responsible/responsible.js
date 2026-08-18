@@ -150,10 +150,6 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 
 //FUNCION PARA PODER INICIAR LOS SELECT
 function initSelectEdit() {
-    //para campos edit
-    $("#responsibleModalEdit #responsable_tipo").selectpicker("destroy");
-    $("#responsibleModalEdit #tipo_identificacion_responsable").selectpicker("destroy");
-
-    $("#responsibleModalEdit #responsable_tipo").selectpicker();
-    $("#responsibleModalEdit #tipo_identificacion_responsable").selectpicker();
+    $("#responsibleModalEdit #responsable_tipo").selectpicker("refresh");
+    $("#responsibleModalEdit #tipo_identificacion_responsable").selectpicker("refresh");
 }

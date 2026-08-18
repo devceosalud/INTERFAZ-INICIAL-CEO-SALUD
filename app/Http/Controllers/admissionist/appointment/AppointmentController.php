@@ -69,20 +69,22 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         //dd($request->all());
-        //BUSCAR EL HORARIO QUE SE MANDA EN EL FORM CON LA BD PARA QUE NO HAYA ERRORES
-        //ESTE SERIA SI ES QUE OTRA ADMISION YA REGISTRO ESE HORARIO HACE UNOS INSTANTES
+        //BUSCAMOS AL MISMO PACIENTE SI YA TIENE UNA CITA CREADA CON LA MISMA ESPECIALIDAD/SERVICIO/DOCTOR
+        $paciente = Patient::find($request->patient_id);
+        if ($paciente) {
+            $existe = Appointment::where('estado_cita', 'PROGRAMADO')
+                ->where('doctor_id', $request->doctor_id)
+                ->where('fecha_cita', $request->fecha_cita)
+                ->where('patient_id', $request->patient_id)->first();
+            if ($existe) {
+                return response()->json([
+                    'code' => 2,
+                    'msg'  => 'El paciente ya cuenta con una cita activa con la misma especialidad'
+                ]);
+            }
+        }
 
-
-        //NO PERMITIR QUE SE REGISTRE UNA CITA CON UNA FECHA ANTERIOR
-        /*if ($request->fecha_cita < Date('Y-m-d')) {
-            return response()->json([
-                'code' => 0,
-                'msg'  => 'Fecha fuera de límite'
-            ]);
-        } */
-
-
-        //VALIDACIONES
+        //VALIDACIONES Y GUARDADO DE DATOS
         $validator = Validator::make($request->all(), [
             'patient_id' => 'required|integer',
             'doctor_id' => 'required|integer',
@@ -110,21 +112,6 @@ class AppointmentController extends Controller
             ]);
         }
 
-        //BUSCAMOS AL MISMO PACIENTE SI YA TIENE UNA CITA CREADA CON LA MISMA ESPECIALIDAD/SERVICIO/DOCTOR
-        $paciente = Patient::find($request->patient_id);
-        if ($paciente) {
-            $existe = Appointment::where('estado_cita', 'PROGRAMADO')
-                ->where('doctor_id', $request->doctor_id)
-                ->where('service_id', $request->service_id)
-                ->where('patient_id', $request->patient_id)->first();
-            if ($existe) {
-                return response()->json([
-                    'code' => 2,
-                    'msg'  => 'El paciente ya cuenta con una cita activa con la misma especialidad'
-                ]);
-            }
-        }
-
         $numero_cita = 'CIT-' . date('YmdHis');
         $estado_pagado = 'PENDIENTE';
 
@@ -138,22 +125,22 @@ class AppointmentController extends Controller
         //TRAEMOS LOS DATOS DEL HORARIO DEL DOCTOR 
         $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
         $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('dia_semana', $dia) // días de la semana [1,2,3,4,5,6,7]
-            ->where('estado', 'ACTIVO') //estado del horario
-            ->where('hora_inicio', '<=', $request->hora_cita) //hora incial
-            ->where('hora_fin', '>', $request->hora_cita) //hora final
+            ->where('dia_semana', $dia)                        //días de la semana [1,2,3,4,5,6,7]
+            ->where('estado', 'ACTIVO')                        //estado del horario
+            ->where('hora_inicio', '<=', $request->hora_cita)  //hora incial
+            ->where('hora_fin', '>', $request->hora_cita)      //hora final
             ->first();
 
         //DURACION DE LA CITA SI ES DOBLE O NORMAL
-        $duracion_base = $horario->duracion_cita; //horario base
+        $duracion_base = $horario->duracion_cita;        //horario base
         $duracion_cita = $request->boolean('cita_doble') //si esta marcado se duplica la hora
             ? $duracion_base * 2
             : $duracion_base;
 
 
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
-        $doctorService = DoctorService::find($request->service_id); // cargamos el id de la tabla DoctorServices
-        $service = Service::find($doctorService->service_id); //buscamos el servicio por id
+        $doctorService = DoctorService::find($request->service_id); //cargamos el id de la tabla DoctorServices
+        $service = Service::find($doctorService->service_id);       //buscamos el servicio por id
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,
@@ -187,7 +174,6 @@ class AppointmentController extends Controller
         ]);
 
         if ($appointment) {
-
             //PONERLO EN UN CRON JOB FLUJO ESCALA NOTIFICADOR
             //if ($appointment->patient->email) {
             //    Mail::to($appointment->patient->email)->send(new MailAppointment($appointment));
@@ -196,7 +182,6 @@ class AppointmentController extends Controller
             return response()->json([
                 'code' => 1,
                 'msg' => 'Cita creada correctamente',
-                'role' => auth()->user()->roleUser()
             ]);
         } else {
             return response()->json([
