@@ -1,0 +1,59 @@
+<div>
+    <div class="row">
+
+        <div class="col-12">
+            <div class="card">
+                <div
+                    class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <h4 class="card-title">Responsables</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
+                        <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
+                            value="{{ auth()->user()->roleUser() }}">
+                        <table id="example4" class="display" style="min-width: 845px">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Parentezco</th>
+                                    <th>Responsable de</th>
+                                    <th>Celular</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($responsibles as $responsible)
+                                    <tr>
+                                        <td><strong>{{ $responsible->id }}</strong></td>
+                                        <td>{{ $responsible->parentezco }}</td>
+                                        <th>{{ $responsible->patient->nombre }}
+                                            {{ $responsible->patient->apellido_paterno }}</th>
+                                        <td>{{ $responsible->telefono }}</td>
+                                        <td>
+                                            <strong>
+                                                <span class="me-3">
+                                                    <a href="#" class="edit-responsible"
+                                                        data-id="{{ $responsible->id }}">
+                                                        <i class="fa fa-pencil fs-18 text-success"></i>
+                                                    </a>
+                                                </span>
+                                                <span>
+                                                    <a href="#" class="delete-responsible"
+                                                        data-id="{{ $responsible->id }}">
+                                                        <i class="fa fa-trash fs-18 text-danger"></i>
+                                                    </a>
+                                                </span>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

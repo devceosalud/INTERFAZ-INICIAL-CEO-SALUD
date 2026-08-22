@@ -46,7 +46,7 @@ class AppointmentController extends Controller
         //ASC : DE MENOR A MAYOR
 
         //REEVALUACION DE HOY
-        $revaluaciones = Appointment::whereBetween('fecha_cita', [
+        $reevaluaciones = Appointment::whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -60,7 +60,7 @@ class AppointmentController extends Controller
             'interaction_media' => $interaction_media,
             'additional_rates' => $additional_rates,
             'appointments' => $appointments,
-            'revaluaciones' => $revaluaciones
+            'reevaluaciones' => $reevaluaciones
         ]);
     }
 
