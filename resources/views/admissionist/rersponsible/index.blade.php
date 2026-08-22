@@ -96,11 +96,10 @@
                         </div>
                     </div>
 
-
-                    @include('admissionist.rersponsible.crud.edit')
-
                 </div>
             </div>
+
+            @include('admissionist.rersponsible.crud.edit')
         </div>
         <!--**********************************Content body end***********************************-->
 
