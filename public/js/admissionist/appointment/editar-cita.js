@@ -244,15 +244,8 @@ function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
 
         while (actual < final) {
             let hora = convertirHoraEditarCita(actual);
-            // BUSCAR SI ESTA HORA YA ESTÁ OCUPADA
-            let horaOcupada = ocupadas.some(cita =>
-                cita.hora_cita.substring(0, 5) === hora
-            );
-            console.log('hora:', hora);
-            console.log('¿ocupada?', horaOcupada);
 
-            // CITA NORMAL
-            if (!cita_doble) {
+            if (!cita_doble) { // CITA NORMAL
                 let hayCruce = existeCruceEditarCita(hora, duracion, ocupadas);
                 if (!hayCruce) {
                     const opcion = document.createElement('option');
@@ -260,9 +253,7 @@ function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
                     opcion.textContent = hora;
                     select.appendChild(opcion);
                 }
-            }
-            // CITA DOBLE
-            else {
+            } else {  // CITA DOBLE
                 let duracionDoble = duracion * 2;
                 let siguienteMinuto = actual + duracionDoble;
                 // NO SALIR DEL HORARIO DEL MEDICO

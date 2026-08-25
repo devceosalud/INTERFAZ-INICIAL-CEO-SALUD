@@ -40,7 +40,7 @@
                                 <input class="form-check-input" type="checkbox" id="cita_doble_edit">
 
                                 <label class="form-check-label" for="cita_doble_edit">
-                                    Reservar turno doble (30 minutos)
+                                    Generar turno doble
                                 </label>
                             </div>
                         </div>

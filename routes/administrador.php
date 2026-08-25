@@ -11,6 +11,7 @@ use App\Http\Controllers\admin\master\service\ServiceController;
 use App\Http\Controllers\admin\master\specialty\SpecialtyController;
 use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\admin\patient\PatientController;
+use App\Http\Controllers\admin\responsible\ResponsibleController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -83,3 +84,5 @@ Route::put('/admin/user/update/{user}', [UserController::class, 'update'])->name
 
 Route::get('/admin/appointment', [AppointmentController::class, 'index'])->name('admin.appointment.index');
 Route::get('/admin/patient', [PatientController::class , 'index'])->name('admin.patient.index');
+
+Route::get('/admin/responsible', [ResponsibleController::class, 'index'])->name('admin.responsible.index');
