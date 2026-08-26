@@ -7,7 +7,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const doctor_id = document.querySelector('#available-schedule #available-schedule_doctor_id');
 
 
-
     //EVENTO QUE FILTRA MEDICOS POR LA ESPECIALIDAD
     specialty_id.addEventListener('change', function (event) {
         buscarMedicoPorEspecialidadCitaDisponibilidad(event);
@@ -15,7 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //EVENTO QUE FILTAR SERVICIOS POR EL MEDICO
     doctor_id.addEventListener('change', function (event) {
-        //    buscarServicioPorMedicoCita(event);
+        //buscarServicioPorMedicoCita(event);
         $('#available-schedule #available-schedule_fecha_cita').val('');
     })
 
@@ -28,7 +27,6 @@ window.addEventListener('DOMContentLoaded', () => {
     $('#available-schedule #available-schedule_fecha_cita').on('change', function () {
         cargarHorariosCitaDisponibilidad();
     })
-
 });
 
 
@@ -152,6 +150,20 @@ async function cargarHorariosCitaDisponibilidad() {
     }
 }
 
+//ABRIR MODAL DE AGENDA
+$(document).on("click", ".open-appointment", function (e) {
+    e.preventDefault();
+
+    let hora_escogida = $(this).data("hora");
+    let fecha_escogida = $('#available-schedule #available-schedule_fecha_cita').val();
+
+    $("#appointmentModalCreate").modal("show");
+    $("#appointmentModalCreate #hora_cita").val(hora_escogida);
+    $("#appointmentModalCreate #fecha_cita").val(fecha_escogida);
+
+    console.log('Hora: ' + hora_escogida + "Fecha escogida: " + fecha_escogida);
+});
+
 function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
 
     console.log('¿cita doble?', cita_doble);
@@ -175,8 +187,8 @@ function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
                         <tr>
                             <td class="">
                                 <span class="badge light badge-success">Hora: ${hora}</span>
-                                <a href="#" class="btn btn-primary btn-sm update-appointment"
-                                    data-id="{{ $appointment->id }}">
+                                <a href="#" class="btn btn-primary btn-sm open-appointment"
+                                    data-hora="${hora}">
                                     <i class="fa fa-pencil fs-18 text-success"></i>Escoger
                                 </a>
                             </td>
@@ -197,8 +209,8 @@ function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
                             <tr>
                                 <td class="">
                                     <span class="badge light badge-success">Hora: ${hora + ' - ' + siguienteHora}</span>
-                                    <a href="#" class="btn btn-primary btn-sm update-appointment"
-                                        data-id="{{ $appointment->id }}">
+                                    <a href="#" class="btn btn-primary btn-sm open-appointment"
+                                        data-hora="${hora}">
                                         <i class="fa fa-pencil fs-18 text-success"></i>Escoger
                                     </a>
                                 </td>

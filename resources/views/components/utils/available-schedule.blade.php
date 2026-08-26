@@ -11,7 +11,7 @@
 
                     {{-- FILTROS --}}
                     <div class="row mb-3" id="available-schedule">
-                        <div class="col-md-3">
+                        <div class="col-md-3 my-1">
                             <label class="form-label text-primary">Especialidad <span
                                     class="text-danger">*</span></label>
                             <select class="form-control" id="available-schedule_specialty_id">
@@ -27,7 +27,7 @@
                             <span class="text-danger error-text specialty_id_error"></span>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-3 my-1">
                             <label class="form-label text-primary">Médico <span class="text-danger">*</span></label>
                             <select class="form-control" name="available-schedule_doctor_id"
                                 id="available-schedule_doctor_id">
@@ -48,7 +48,7 @@
                             <span class="text-danger error-text service_id_error"></span>
                         </div>--}}
 
-                        <div class="col-md-3">
+                        <div class="col-md-3 my-1">
                             <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="available-schedule_fecha_cita"
                                 id="available-schedule_fecha_cita">
@@ -77,7 +77,8 @@
                                     <th>Horarios disponibles</th>
                                 </tr>
                             </thead>
-                            <tbody id="cuerpo-tabla">
+                            <hr>
+                            <tbody id="cuerpo-tabla" class="mt-3">
                                 <!-- Aquí se pintarán los datos con JS -->
                             </tbody>
                         </table>

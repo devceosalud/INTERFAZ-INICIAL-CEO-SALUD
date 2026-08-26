@@ -13,9 +13,6 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
-                        <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
-                            value="{{ auth()->user()->roleUser() }}">
                         <table id="example4" class="display" style="min-width: 845px">
                             <thead>
                                 <tr>
@@ -32,35 +29,51 @@
                             <tbody>
                                 @foreach ($appointments as $appointment)
                                     <tr>
-                                        <td><strong>{{ $appointment->estado_cita }}</strong></td>
+                                        @php
+                                            $colors = [
+                                                1 => '#118da6',
+                                                2 => '#0d6efd',
+                                                3 => '#ffc107',
+                                                4 => '#021209',
+                                                5 => '#ce14cb',
+                                                6 => '#dc3545',
+                                                7 => '#110569',
+                                                8 => '#ffc107',
+                                            ];
+
+                                            $color = $colors[$appointment->service->specialty->id] ?? '#198754';
+                                        @endphp
+                                        <td><span class="small"><strong>{{ $appointment->estado_cita }}</strong></span>
+                                        </td>
                                         <td><span class="small">{{ $appointment->patient->nombre }}</span></td>
                                         <td><span class="small">{{ $appointment->doctor->nombre }}</span></td>
-                                        <td><span
-                                                class="bage light badge-danger small"><strong>{{ $appointment->service->nombre }}</strong></span>
+                                        <td>
+                                            <span class="small" style="background-color: {{ $color }}; color:#fff; padding:3px; border-radius:10px"><strong>{{ $appointment->service->nombre }}</strong>
+                                            </span>
                                         </td>
                                         <td><span class="small"><strong>{{ $appointment->fecha_cita }}</strong></span>
-                                            <span class="badge light badge-primary">{{ $appointment->hora_cita }}</span>
+                                            <span
+                                                class="badge light badge-primary small">{{ $appointment->hora_cita }}</span>
                                         </td>
                                         <td>
                                             @switch($appointment->estado_pagado)
                                                 @case('PARCIAL')
                                                     <span
-                                                        class="badge light badge-warning">{{ $appointment->estado_pagado }}</span>
+                                                        class="badge light badge-warning small">{{ $appointment->estado_pagado }}</span>
                                                 @break
 
                                                 @case('PENDIENTE')
                                                     <span
-                                                        class="badge light badge-danger">{{ $appointment->estado_pagado }}</span>
+                                                        class="badge light badge-danger small">{{ $appointment->estado_pagado }}</span>
                                                 @break
 
                                                 @default
                                                     <span
-                                                        class="badge light badge-success">{{ $appointment->estado_pagado }}</span>
+                                                        class="badge light badge-success small">{{ $appointment->estado_pagado }}</span>
                                             @endswitch
                                         </td>
-                                        <td>{{ $appointment->saldo_pendiente }} </td>
+                                        <td><span class="small">{{ $appointment->saldo_pendiente }} </span></td>
                                         <td>
-
                                             <strong>
                                                 <span class="me-3">
                                                     <a href="#" class="update-appointment"

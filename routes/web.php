@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
 use App\Http\Controllers\authenticator\auth\AuthController;
+use App\Http\Controllers\message\MessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,3 +55,6 @@ require base_path('routes/recepcion.php');
  *MAESTRO : para las tablas independientes                                 *
  ***************************************************************************/
 require base_path('routes/administrador.php');
+
+
+Route::get('/sent', [MessageController::class, 'enviarSms'])->name('messages.sent');

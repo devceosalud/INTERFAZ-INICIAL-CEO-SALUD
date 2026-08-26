@@ -280,7 +280,7 @@ $('#formCreateAppointment').on('submit', function (e) {
         },
 
         success: function (response) {
-            let role = document.querySelector('.table-responsive #rol_user_redirection').value; //VARIABLE ROL DEL USUARIO PARA REDIRECCION
+            let role = document.querySelector('#appointmentModalCreate #rol_user_redirection').value; //VARIABLE ROL DEL USUARIO PARA REDIRECCION
             console.log('CITA CREADA:', response);
 
             if (response.code == 0) {
@@ -301,6 +301,8 @@ $('#formCreateAppointment').on('submit', function (e) {
                         window.location.href = "/admissionist/appointment";
                     } else if (role == 'RECEPCION') {
                         window.location.href = "/receptionist/appointment";
+                    } else if(role == 'ADMINISTRADOR') {
+                        window.location.href = "/admin/appointment";
                     }
                 });
 

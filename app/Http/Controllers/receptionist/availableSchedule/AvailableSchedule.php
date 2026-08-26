@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admissionist\availableSchedule;
+namespace App\Http\Controllers\receptionist\availableSchedule;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdditionalRate;
@@ -17,13 +17,13 @@ class AvailableSchedule extends Controller
 
     public function index()
     {
-        $specialties = Specialty::where('estado','ACTIVO')->get();
-        $additional_rates = AdditionalRate::where('estado','ACTIVO')->get();
+        $specialties = Specialty::where('estado', 'ACTIVO')->get();
+        $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
         $hora_cita = true;
-        return view('admissionist.available-schedule.index', [
+        return view('receptionist.available-schedule.index', [
             'specialties' => $specialties,
             'additional_rates' => $additional_rates,
-            'hora_cita' => $hora_cita 
+            'hora_cita' => $hora_cita
         ]);
     }
 }

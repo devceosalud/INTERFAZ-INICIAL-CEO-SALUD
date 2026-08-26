@@ -39,7 +39,18 @@
                         <span class="nav-text">Citas</span>
                     </a>
                     <ul aria-expanded="false">
+                        <li><a href="{{ route('admin.available.schedule.index') }}">Disponibles</a></li>
                         <li><a href="{{ route('admin.appointment.index') }}">Registrar Cita</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                        <i class="flaticon-381-clock"></i>
+                        <span class="nav-text">Horarios</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('admin.doctor.schedule.index') }}">Horarios médicos</a></li>
                     </ul>
                 </li>
 
@@ -158,6 +169,7 @@
                         <span class="nav-text">Citas</span>
                     </a>
                     <ul aria-expanded="false">
+                        <li><a href="{{ route('receptionist.available.schedule.index') }}">Disponibles</a></li>
                         <li><a href="{{ route('receptionist.appointment.index') }}">Registrar Cita</a></li>
                     </ul>
                 </li>

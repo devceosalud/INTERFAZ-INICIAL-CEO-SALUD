@@ -31,32 +31,18 @@ $("#formUpdateAppointmentState").on("submit", function (e) {
         success: function (response) {
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
-                    $(form)
-                        .find("span." + prefix + "_error")
-                        .text(val[0]);
+                    $(form).find("span." + prefix + "_error").text(val[0]);
                     console.log("span." + prefix + "_error");
                     console.log(val[0]);
                 });
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
+                notificacion("success", "Actualizado", response.msg, 2000, false, true);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el paciente",
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -64,3 +50,18 @@ $("#formUpdateAppointmentState").on("submit", function (e) {
         },
     });
 });
+
+
+//FUNCION ALERTA
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) { location.reload(); }
+    });
+}

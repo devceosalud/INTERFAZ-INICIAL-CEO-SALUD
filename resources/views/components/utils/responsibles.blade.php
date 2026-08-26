@@ -26,10 +26,11 @@
                                 @foreach ($responsibles as $responsible)
                                     <tr>
                                         <td><strong>{{ $responsible->id }}</strong></td>
-                                        <td>{{ $responsible->parentezco }}</td>
-                                        <th>{{ $responsible->patient->nombre }}
-                                            {{ $responsible->patient->apellido_paterno }}</th>
-                                        <td>{{ $responsible->telefono }}</td>
+                                        <td><span class="small">{{ $responsible->parentezco }}</span></td>
+                                        <th><span class="small">{{ $responsible->patient->nombre }}</span>
+                                            <span class="small">{{ $responsible->patient->apellido_paterno }}</span>
+                                        </th>
+                                        <td><span class="small">{{ $responsible->telefono }}</span></td>
                                         <td>
                                             <strong>
                                                 <span class="me-3">

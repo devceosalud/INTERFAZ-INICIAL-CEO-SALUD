@@ -7,14 +7,8 @@
     <!-- Custom Stylesheet -->
     <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
 
-    {{-- <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet"> --}}
-
-    <!-- STYLESHEETS CALENDAR-->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/skeleton.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/theme.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/palettes/purple.css' rel='stylesheet' />
-
-    <link href="{{ asset('css/tesseract.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 @endsection
 
 
@@ -45,47 +39,27 @@
 
 
         <!--**********************************Content body start***********************************-->
+
         <div class="content-body">
             <div class="container-fluid">
-                    
-                <!-- FILTRO CALENDARIO -->
-                <x-utils.calendar :specialties="$specialties" />
-                <!-- FILTRO CALENDARIO -->
-
-
-                {{-- CITAS DE HOY --}}
-                <x-utils.appointments :appointments="$appointments" />
-                {{-- CITAS DE HOY --}}
-
-
-                {{-- REEVALUACIONES --}}
-                <x-utils.reevaluations :reevaluaciones="$reevaluaciones" />
-                {{-- REEVALUACIONES --}}
-
+                <!-- row -->
+                <x-utils.schedules :doctors="$doctors" />
             </div>
 
-            @include('admissionist.appointment.crud.create')
+            @include('admissionist.schedule.crud.create')
 
-            @include('admissionist.appointment.crud.edit')
-
-            @include('admissionist.appointment.crud.update')
+            @include('admissionist.schedule.crud.edit');
         </div>
         <!--**********************************Content body end***********************************-->
 
+
         <!--**********************************Scripts***********************************-->
+
     @section('script_data')
         <!-- Required vendors -->
         <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
         <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 
-        <script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
-        {{-- <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
-            <script src="{{ asset('assets/js/plugins-init/fullcalendar-init.js') }}"></script> --}}
-
-        <!-- STANDARD JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/all/global.js"></script>
-        <!-- THEME JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
 
         <!-- Datatable -->
         <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
@@ -93,20 +67,10 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
-        <!-- TESSERACT -->
-        <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-        <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
-
-        <script src="{{ asset('js/admissionist/filtro-calendario/filtro-calendario.js') }}"></script>
-        <script src="{{ asset('js/admissionist/calendario/calendario.js') }}"></script>
-
-        <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
-        <script src="{{ asset('js/admissionist/appointment/update.js') }}"></script>
-
-        <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
     @endsection
+
 
 
     <!--**********************************Footer start***********************************-->
@@ -120,5 +84,6 @@
 
 </div>
 <!--**********************************Main wrapper end***********************************-->
+
 
 @endsection

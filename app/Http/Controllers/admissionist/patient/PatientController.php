@@ -82,10 +82,7 @@ class PatientController extends Controller
             : 1;
 
         // BUSCAMOS AL PACIENTE POR IDENTIDAD
-        $patient = Patient::where(
-            'numero_identidad',
-            $request->numero_identidad
-        )->first();
+        $patient = Patient::where('numero_identidad',$request->numero_identidad)->first();
 
         // SI NO EXISTE CREAMOS AL PACIENTE
         if (!$patient) {

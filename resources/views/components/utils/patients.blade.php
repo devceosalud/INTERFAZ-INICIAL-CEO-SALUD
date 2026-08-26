@@ -37,19 +37,24 @@
                             <tbody>
                                 @foreach ($patients as $patient)
                                     <tr>
-                                        <td><strong>{{ $patient->id }}</strong></td>
-                                        <td>{{ $patient->nombre }} {{ $patient->apellido_paterno }}</td>
-                                        <td>{{ $patient->numero_identidad }}</td>
-                                        <td>{{ Carbon::parse($patient->fecha_nacimiento)->age }}</td>
-                                        <td>{{ $patient->telefono }}</td>
+                                        <td><span class="small"><strong>{{ $patient->id }}</strong></span></td>
+                                        <td><span class="small">{{ $patient->nombre }}
+                                                {{ $patient->apellido_paterno }}</span></td>
+                                        <td><span class="small">{{ $patient->numero_identidad }}</span></td>
+                                        <td><span
+                                                class="small"><strong>{{ Carbon::parse($patient->fecha_nacimiento)->age }}</strong></span>
+                                        </td>
+                                        <td><span class="small">{{ $patient->telefono }}</span></td>
                                         <td>
                                             @if ($patient->genero == 'HOMBRE')
-                                                <span class="badge light badge-success">HOMBRE</span>
+                                                <span
+                                                    class="badge light badge-success small"><strong>HOMBRE</strong></span>
                                             @else
-                                                <span class="badge light badge-warning">MUJER</span>
+                                                <span
+                                                    class="badge light badge-warning small"><strong>MUJER</strong></span>
                                             @endif
                                         </td>
-                                        <td>{{ $patient->fecha_nacimiento }}</td>
+                                        <td><small class="small">{{ $patient->fecha_nacimiento }}</small></td>
                                         <td>
                                             <strong>
                                                 <span class="me-3">

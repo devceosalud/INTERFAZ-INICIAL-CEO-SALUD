@@ -58,25 +58,13 @@ $("#formUpdateSchedule").on("submit", function (e) { //formUpdateSchedule
                     console.log(val[0]);
                 });
             } else {
-                Swal.fire({
-                    icon: "success",
-                    title: "Actualizado",
-                    text: response.msg,
-                    timer: 2000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    location.reload();
-                });
+                notificacion("success", "Actualizado", response.msg, 2000, false, true);
             }
         },
 
         error: function (xhr) {
             console.log(xhr.responseText);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al actualizar el calendario",
-            });
+            notificacion("error", "Error", xhr.responseText, 4000, false, false);
         },
 
         complete: function () {
@@ -108,13 +96,7 @@ async function buscarMedicoPorEspecialidadEditarCita(event) {
         const data = await res.json();
         console.log('RESPUESTA LISTA DE DOCTORES', data);
         if (data.code === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Precaución',
-                text: data.message,
-                timer: 4000,
-                showConfirmButton: false
-            })
+            notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
         // SELECT PARA EL LLENADO 
@@ -161,13 +143,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         const data = await res.json();
         console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
         if (data.code === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Precaución',
-                text: data.message,
-                timer: 4000,
-                showConfirmButton: false
-            })
+            notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
 
         // SELECT PARA EL LLENADO 
@@ -208,8 +184,7 @@ async function cargarHorariosEditarCita() {
     console.log('cita doble:', cita_doble);
 
     try {
-        const res = await fetch(
-            `${window.location.origin}/api/appointment/schedule/available-hours`, {
+        const res = await fetch(`${window.location.origin}/api/appointment/schedule/available-hours`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -218,8 +193,7 @@ async function cargarHorariosEditarCita() {
                 doctor_id: doctor_id,
                 fecha_cita: fecha_cita
             }),
-        },
-        );
+        });
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
@@ -302,6 +276,20 @@ function convertirHoraEditarCita(minutos) {
     m = String(m).padStart(2, '0');
     console.log('funcion hora: ', `${h}:${m}`);
     return `${h}:${m}`;
+}
+
+//FUNCION ALERTA
+function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
+    Swal.fire({
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        text: text,
+        timer: timer,
+        showConfirmButton: showConfirmButton,
+    }).then(() => {
+        if (recargar) { location.reload(); }
+    });
 }
 
 function initSelectEditarCita() {

@@ -19,6 +19,9 @@
                 <div class="modal-body">
 
                     <input type="hidden" name="patient_id" id="patient_id">
+                    {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
+                    <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
+                        value="{{ auth()->user()->roleUser() }}">
 
                     <!-- ================= DATOS PACIENTE ================= -->
                     <h6 class="fw-bold mb-3">Datos del Paciente</h6>
@@ -58,37 +61,28 @@
                             <label class="form-label text-primary">Especialidad <span
                                     class="text-danger">*</span></label>
                             <select class="form-control" id="specialty_id">
-                                <option value="">
-                                    Seleccione
-                                </option>
-
+                                <option value="">Seleccione</option>
                                 @foreach ($specialties as $specialty)
                                     <option value="{{ $specialty->id }}">
                                         {{ $specialty->nombre }}
                                     </option>
                                 @endforeach
                             </select>
-
                             <span class="text-danger error-text specialty_id_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Médico <span class="text-danger">*</span></label>
                             <select class="form-control" name="doctor_id" id="doctor_id">
-                                <option value="">
-                                    Seleccione
-                                </option>
+                                <option value="">Seleccione</option>
                             </select>
-
                             <span class="text-danger error-text doctor_id_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Servicio <span class="text-danger">*</span></label>
                             <select class="form-control" name="service_id" id="service_id">
-                                <option value="">
-                                    Seleccione
-                                </option>
+                                <option value="">Seleccione</option>
                             </select>
                             <span class="text-danger error-text service_id_error"></span>
                         </div>
@@ -101,10 +95,17 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
-                            {{--  <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm"> --}}
-                            <select class="form-control" name="hora_cita" id="hora_cita">
-                                <option value="">Seleccione una hora</option>
-                            </select>
+                            {{-- VARIABLE QUE ME MUESTRA EL INPUT O SELECT: RUTA:admissionit.available.schedule.index --}}
+                            @isset($hora_cita)
+                                @if ($hora_cita)
+                                    <input type="text" class="form-control" name="hora_cita" id="hora_cita"
+                                        placeholder="HH:mm">
+                                @endif
+                            @else
+                                <select class="form-control" name="hora_cita" id="hora_cita">
+                                    <option value="">Seleccione una hora</option>
+                                </select>
+                            @endisset
                             <span class="text-danger error-text hora_cita_error"></span>
                         </div>
                     </div>
@@ -129,8 +130,8 @@
 
                         <div class="col-md-4">
                             <div class="form-check mt-4">
-                                <input class="form-check-input" type="checkbox" name="es_exonerado" id="es_exonerado"
-                                    value="1">
+                                <input class="form-check-input" type="checkbox" name="es_exonerado"
+                                    id="es_exonerado" value="1">
                                 <label class="form-check-label" for="es_exonerado">
                                     Exonerado (Paga Médico)
                                 </label>

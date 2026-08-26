@@ -20,16 +20,13 @@
                 <div class="modal-body">
 
                     <!-- DATOS PERSONALES -->
-                    <h6 class="fw-bold mb-3">
-                        Datos Personales
-                    </h6>
+                    <h6 class="fw-bold mb-3">Datos Personales</h6>
 
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label text-primary">Nombre <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="nombre_paciente" id="nombre_paciente"
                                 placeholder="Nombre completo">
-
                             <span class="text-danger error-text nombre_paciente_error"></span>
                         </div>
 
@@ -37,7 +34,6 @@
                             <label class="form-label text-primary">Apellido paterno <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="apellido_paterno" id="apellido_paterno"
                                 placeholder="Apellido paterno">
-
                             <span class="text-danger error-text apellido_paterno_error"></span>
                         </div>
 
@@ -45,7 +41,6 @@
                             <label class="form-label text-primary">Apellido materno <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="apellido_materno" id="apellido_materno"
                                 placeholder="Apellido materno">
-
                             <span class="text-danger error-text apellido_materno_error"></span>
                         </div>
                     </div>
@@ -53,9 +48,7 @@
                     <!-- IDENTIFICACION -->
                     <hr>
 
-                    <h6 class="fw-bold mb-3">
-                        Identificación
-                    </h6>
+                    <h6 class="fw-bold mb-3">Identificación</h6>
 
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -91,9 +84,7 @@
                     <!-- INFORMACION GENERAL -->
                     <hr>
 
-                    <h6 class="fw-bold mb-3">
-                        Información General
-                    </h6>
+                    <h6 class="fw-bold mb-3">Información General</h6>
 
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -129,7 +120,6 @@
                                 placeholder="correo@ejemplo.com">
                             <span class="text-danger error-text email_error"></span>
                         </div>
-
                     </div>
 
                     <!-- CONTACTO -->
@@ -177,7 +167,6 @@
                             <input type="text" class="form-control" name="familiar_contacto"
                                 id="familiar_contacto" placeholder="Nombre y relación">
                         </div>
-
                     </div>
 
                     <!-- RESPONSABLE -->

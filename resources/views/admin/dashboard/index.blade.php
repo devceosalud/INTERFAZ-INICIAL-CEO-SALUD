@@ -45,8 +45,8 @@
             <div class="container-fluid">
                 <div class="form-head d-flex mb-3 mb-md-4 align-items-start">
                     <div class="me-auto d-none d-lg-block">
-                        <h3 class="text-black font-w600">ERP CEO SALUD {{-- auth()->user()->name --}} </h3>
-                        <p class="mb-0 fs-18">Panel: {{ auth()->user()->roleUser() }} </p>
+                        <h3 class="text-black font-w600">{{ auth()->user()->roleUser() }} - ERP CEO SALUD </h3>
+                        <p class="mb-0 fs-18">{{ auth()->user()->name }} </p>
                     </div>
 
                     {{--

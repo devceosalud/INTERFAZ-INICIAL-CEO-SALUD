@@ -41,12 +41,12 @@ class ScheduleController extends Controller
         $events = $appointment->map(function ($schedule) {
             // Optimización de colores usando una matriz (Array Key) en lugar de un Switch pesado
             $colors = [
-                1 => '#dc3545',
+                1 => '#118da6',
                 2 => '#0d6efd',
                 3 => '#ffc107',
                 4 => '#021209',
                 5 => '#ce14cb',
-                6 => '#118da6',
+                6 => '#dc3545',
                 7 => '#110569',
                 8 => '#ffc107',
             ];

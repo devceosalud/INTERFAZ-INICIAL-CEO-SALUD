@@ -23,12 +23,9 @@
                 <div class="modal-body">
 
                     <!-- DATOS PERSONALES -->
-                    <h6 class="fw-bold mb-3">
-                        Datos Personales
-                    </h6>
+                    <h6 class="fw-bold mb-3">Datos Personales</h6>
 
                     <div class="row g-3">
-
                         <div class="col-md-4">
                             <label class="form-label text-primary">Nombre <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="nombre_paciente_edit"
@@ -48,18 +45,14 @@
                             <input type="text" class="form-control" name="apellido_materno_edit"
                                 id="apellido_materno_edit" placeholder="Apellido materno">
                         </div>
-
                     </div>
 
                     <!-- IDENTIFICACION -->
                     <hr>
 
-                    <h6 class="fw-bold mb-3">
-                        Identificación
-                    </h6>
+                    <h6 class="fw-bold mb-3">Identificación</h6>
 
                     <div class="row g-3">
-
                         <div class="col-md-4">
                             <label class="form-label text-primary">Tipo documento <span class="text-danger">*</span></label>
                             <select class="form-control" name="tipo_identificacion_edit" id="tipo_identificacion_edit">
@@ -86,18 +79,14 @@
                                 <option value="MUJER">Mujer</option>
                             </select>
                         </div>
-
                     </div>
 
                     <!-- INFORMACION GENERAL -->
                     <hr>
 
-                    <h6 class="fw-bold mb-3">
-                        Información General
-                    </h6>
+                    <h6 class="fw-bold mb-3">Información General</h6>
 
                     <div class="row g-3">
-
                         <div class="col-md-4">
                             <label class="form-label text-primary">Fecha de nacimiento <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_nacimiento_edit"
@@ -130,15 +119,12 @@
                             <input type="email" class="form-control" name="email_edit" id="email_edit"
                                 placeholder="correo@ejemplo.com">
                         </div>
-
                     </div>
 
                     <!-- CONTACTO -->
                     <hr>
 
-                    <h6 class="fw-bold mb-3">
-                        Información de Contacto
-                    </h6>
+                    <h6 class="fw-bold mb-3">Información de Contacto</h6>
 
                     <div class="row g-3">
 
@@ -152,7 +138,6 @@
                             <label class="form-label text-primary">Canal</label>
                             <select class="form-control" name="channel_edit" id="channel_edit">
                                 <option value="">Seleccione</option>
-
                                 @foreach ($channels as $channel)
                                     <option value="{{ $channel->id }}">
                                         {{ $channel->nombre }}
@@ -165,7 +150,6 @@
                             <label class="form-label text-primary">Medio Interacción</label>
                             <select class="form-control" name="interaction_medium_edit" id="interaction_medium_edit">
                                 <option value="">Seleccione</option>
-
                                 @foreach ($interaction_media as $medium)
                                     <option value="{{ $medium->id }}">
                                         {{ $medium->nombre }}
@@ -185,9 +169,7 @@
                             <input type="text" class="form-control" name="familiar_contacto_edit"
                                 id="familiar_contacto_edit" placeholder="Nombre y relación">
                         </div>
-
                     </div>
-
                 </div>
 
                 <!-- FOOTER -->
