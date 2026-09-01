@@ -74,4 +74,14 @@ class Patient extends Model
     {
         return $this->belongsTo(InteractionMedium::class, 'interaction_medium_id');
     }
+
+    public function vouchersComoAtiende()
+    {
+        return $this->hasMany(Voucher::class, 'patient_id');
+    }
+
+    public function vouchersComoPagador()
+    {
+        return $this->hasMany(Voucher::class, 'paga_patient_id');
+    }
 }

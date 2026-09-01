@@ -55,6 +55,11 @@ class Doctor extends Model
         return $this->belongsToMany(
             Service::class,
             'doctor_services',
-        )->withPivot('precio_primera_consulta', 'precio_reconsulta' ,'dias_reconsulta','estado');
+        )->withPivot('precio_primera_consulta', 'precio_reconsulta', 'dias_reconsulta', 'estado');
+    }
+
+    public function voucherItems()
+    {
+        return $this->hasMany(VoucherItem::class);
     }
 }
