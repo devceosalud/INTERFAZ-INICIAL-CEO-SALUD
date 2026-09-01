@@ -60,7 +60,7 @@ class ReniecService
 
         /*
         $token = 'apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N';
-        $numero = '76395743';
+        $numero = '78954622';
         $client = new Client(['base_uri' => 'https://api.apis.net.pe', 'verify' => true]);
         $parameters = [
             'http_errors' => true,

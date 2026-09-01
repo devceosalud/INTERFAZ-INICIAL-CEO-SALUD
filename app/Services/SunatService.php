@@ -22,12 +22,10 @@ class SunatService
     public function consultar($ruc)
     {
         /*
-        //https://dniruc.apisperu.com/api/v1/ruc/20131312955?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFudGhvbnkuYW5lY0BnbWFpbC5jb20ifQ.af-ZYh3Qr0_wjCG8HTWMWtHw5sFsOVjSekaS2d818sA
         $response = Http::acceptJson()
             ->get("{$this->url}/{$ruc}", [
                 'token' => $this->token
             ]);
-
 
         if (!$response->successful()) {
             return null;

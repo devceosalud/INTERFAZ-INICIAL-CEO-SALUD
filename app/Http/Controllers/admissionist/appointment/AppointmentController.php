@@ -144,16 +144,13 @@ class AppointmentController extends Controller
         $appointment = Appointment::create([
             'numero_cita' => $numero_cita,
             'user_id' => auth()->user()->id,
-
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,
             'service_id' => $service->id, //$request->service_id,
             'additional_rate_id' => $request->additional_rate_id,
-
             'fecha_cita' => $request->fecha_cita,
             'hora_cita' => $request->hora_cita,
             'duracion_cita' => $duracion_cita,
-
             'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
             'turno_cita' => 0,
 
@@ -167,8 +164,8 @@ class AppointmentController extends Controller
 
             'estado_pagado' => $estado_pagado,
             'numero_operacion' => $request->numero_operacion,
-            'estado_cita' => 'PROGRAMADO',
 
+            'estado_cita' => 'PROGRAMADO',
             'observaciones' => $request->observaciones ?? 'SIN OBSERVACIONES',
             'fecha_registro' => now()->toDateString(),
         ]);
@@ -196,7 +193,6 @@ class AppointmentController extends Controller
     public function update(Request $request)
     {
         //dd($request->all());
-
         $estadoCita = Appointment::find($request->appointment_id);
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita

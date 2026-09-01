@@ -145,6 +145,16 @@
             @if (auth()->user()->getRoleNames()->contains('RECEPCION'))
                 <li>
                     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
+                        <i class="flaticon-381-cashier"></i>
+                        <span class="nav-text">Caja</span>
+                    </a>
+                    <ul aria-expanded="false">
+                        <li><a href="{{ route('receptionist.cashier.shift') }}">Apertura</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
                         <i class="flaticon-381-user-7"></i>
                         <span class="nav-text">Pacientes</span>
                     </a>

@@ -15,7 +15,7 @@ class MessageController extends Controller
         $response = Http::withHeaders([
             'x-api-key' => config('httpsms.httpsms.key'),
             'Accept' => 'application/json',
-        ])->post('https://api.httpsms.com/v1/messages/send', [
+        ])->post(config('httpsms.httpsms.url'), [
             'content' => 'Hola, su cita en CEO SALUD ha sido confirmada.',
             'from' => config('httpsms.httpsms.from'),
             'to' => '+51924080517',
@@ -32,7 +32,7 @@ class MessageController extends Controller
 
         /*$response = Http::withHeaders([
             'x-api-key' => config('textbee.textbee.key'),
-        ])->post('https://api.textbee.dev/api/v1/gateway/send-sms', [
+        ])->post(env('textbee.textbee.url'), [
             'recipients' => ['+51924080517'],
             'message' => 'Enviado automáticamente desde CEO SALUD.',
             'deviceId' => config('textbee.textbee.device_id'),
@@ -56,23 +56,5 @@ class MessageController extends Controller
             'error' => $response->json(),
         ], $response->status()); */
 
-
-        /*$ch = curl_init('https://api.textbee.dev/api/v1/gateway/send-sms');
-
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'x-api-key: ' .  config('textbee.textbee.key'),
-                'Content-Type: application/json',
-            ],
-            CURLOPT_POSTFIELDS => json_encode([
-                'deviceId' => '6a91ab67f3dc6f0f7b909c4e',
-                'recipients' => ['+51924080517'],
-                'message' =>  'Cita pendiente a las 11:45 con el dr quiroz ',
-            ]),
-        ]);
-
-        echo curl_exec($ch); */
     }
 }

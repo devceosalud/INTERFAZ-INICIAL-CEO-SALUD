@@ -50,6 +50,9 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!--ESTILOS LIVEWIRE"-->
+    @livewireStyles
 </head>
 
 <body>
@@ -59,6 +62,8 @@
 
     @yield('script_data')
 
+    <!--SCRIPT LIVEWIRE-->
+    @livewireScripts
 </body>
 
 </html>

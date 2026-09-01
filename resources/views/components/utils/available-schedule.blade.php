@@ -46,7 +46,7 @@
                                 </option>
                             </select>
                             <span class="text-danger error-text service_id_error"></span>
-                        </div>--}}
+                        </div> --}}
 
                         <div class="col-md-3 my-1">
                             <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
@@ -71,17 +71,8 @@
 
                     {{-- LISTA DE HORARIOS DISPONIBLES --}}
                     <div class="table-responsive">
-                        <table  class="display" style="min-width: 845px">
-                            <thead>
-                                <tr>
-                                    <th>Horarios disponibles</th>
-                                </tr>
-                            </thead>
-                            <hr>
-                            <tbody id="cuerpo-tabla" class="mt-3">
-                                <!-- Aquí se pintarán los datos con JS -->
-                            </tbody>
-                        </table>
+                        <h5>Horarios disponibles</h5>
+                        <div id="cuerpo-tabla" class="row mt-3"> </div>
                     </div>
                     {{-- LISTA DE HORARIOS DISPONIBLES --}}
                 </div>

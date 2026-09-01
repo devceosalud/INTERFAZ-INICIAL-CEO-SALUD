@@ -184,16 +184,14 @@ function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
                 let hayCruce = existeCruceCitaDisponibilidad(hora, duracion, ocupadas);
                 if (!hayCruce) {
                     html += `
-                        <tr>
-                            <td class="">
-                                <span class="badge light badge-success">Hora: ${hora}</span>
-                                <a href="#" class="btn btn-primary btn-sm open-appointment"
-                                    data-hora="${hora}">
-                                    <i class="fa fa-pencil fs-18 text-success"></i>Escoger
+                        <div class="col-md-2">
+                            <div class="my-2">
+                                <a class="btn btn-primary btn-sm open-appointment"
+                                    data-hora="${hora}"> 
+                                    ${hora} <i class="fa fa-pencil fs-18 text-success"></i>Escoger
                                 </a>
-                            </td>
-                            <hr>
-                        </tr>
+                            </div>
+                        </div>
                     `;
                 }
             } else { // CITA DOBLE
@@ -206,16 +204,14 @@ function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
 
                     if (!hayCruce) {
                         html += `
-                            <tr>
-                                <td class="">
-                                    <span class="badge light badge-success">Hora: ${hora + ' - ' + siguienteHora}</span>
-                                    <a href="#" class="btn btn-primary btn-sm open-appointment"
-                                        data-hora="${hora}">
-                                        <i class="fa fa-pencil fs-18 text-success"></i>Escoger
+                            <div class="col-md-2">
+                                <div class="my-2">
+                                    <a class="btn btn-primary btn-sm open-appointment"
+                                        data-hora="${hora}"> 
+                                        ${hora + ' - ' + siguienteHora} <i class="fa fa-pencil fs-18 text-success"></i>Escoger
                                     </a>
-                                </td>
-                                <hr>
-                            </tr>
+                                </div>
+                            </div>
                         `;
                     }
                 }
