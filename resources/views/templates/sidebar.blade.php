@@ -96,7 +96,7 @@
 
 
             {{-- ENLACES ADMISION --}}
-            @if (auth()->user()->getRoleNames()->contains('ADMISION'))
+            @if (auth()->user()->getRoleNames()->contains('ADMISION') || auth()->user()->getRoleNames()->contains('COMERCIAL'))
                 <li>
                     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
                         <i class="flaticon-381-user-7"></i>
