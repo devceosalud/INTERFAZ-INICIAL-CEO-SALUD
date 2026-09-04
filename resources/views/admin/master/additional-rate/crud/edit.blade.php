@@ -6,7 +6,7 @@
             <!-- Header -->
             <div class="modal-header bg-dark">
                 <h5 class="modal-title text-white" id="additonalRateModalEditLabel">
-                    Actualizar Tarifa
+                    Actualizar 
                 </h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

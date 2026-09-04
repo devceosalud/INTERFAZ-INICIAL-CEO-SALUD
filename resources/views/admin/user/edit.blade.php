@@ -64,7 +64,7 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Lista de Roles</h4>
+                                <h4 class="card-title">Roles</h4>
 
                                 <a href="{{ route('admin.roles.index') }}"
                                     class="btn btn-primary btn-rounded add-appointment">

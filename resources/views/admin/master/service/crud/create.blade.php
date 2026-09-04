@@ -6,7 +6,7 @@
             <!-- Header -->
             <div class="modal-header bg-dark">
                 <h5 class="modal-title text-white" id="serviceModalCreateLabel">
-                    Registro de Servicio
+                    Registro nuevo
                 </h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
