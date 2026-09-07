@@ -1,4 +1,17 @@
 <div>
+    <style>
+        .fc-monarch-y37 {
+            background-color: #2d8a8c;
+        }
+
+        .fc-monarch-SJz:hover {
+            Background-color: #2d8a8c;
+        }
+
+        .fc-monarch-4os {
+            background-color: #2d8a8c;
+        }
+    </style>
     <div class="row">
         <div class="col-md-6">
             <label class="form-label text-primary">Especialidad <span class="text-danger">*</span></label>

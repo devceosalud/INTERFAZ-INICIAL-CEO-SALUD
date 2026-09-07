@@ -255,15 +255,15 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
   --bs-gray-700: #495057;
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
-  --bs-primary: #36C95F;
+  --bs-primary: #2d8a8c;
   --bs-secondary: #A336C9;
-  --bs-success: #2bc155;
+  --bs-success: #2d8a8c;
   --bs-info: #369DC9;
   --bs-warning: #ffb800;
   --bs-danger: #F46B68;
   --bs-light: #D1D1D1;
   --bs-dark: #3e4954;
-  --bs-primary-rgb: 54, 201, 95;
+  --bs-primary-rgb: 45, 138, 140;/*54, 201, 95; */
   --bs-secondary-rgb: 163, 54, 201;
   --bs-success-rgb: 43, 193, 85;
   --bs-info-rgb: 54, 157, 201;

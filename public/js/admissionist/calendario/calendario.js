@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar');
+    // Obtener la fecha actual en formato ISO (YYYY-MM-DD)
+    const hoy = new Date().toISOString().split('T')[0];
 
     window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
         initialView: 'dayGridMonth', // timeGridWeek : vista de semana
@@ -26,6 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
         selectable: true,
         businessHours: true,
         dayMaxEvents: false, // PARA MOSTRAR O NO LA LSITA COMPLETA DE LAS AGENTAS 
+
+        validRange: {
+            start: hoy // Bloquea la selección y navegación visual antes de hoy
+        },
 
 
         //TOOLTIP PARA VENTANAS RAPIDAS

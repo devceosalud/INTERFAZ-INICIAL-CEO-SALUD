@@ -1,10 +1,10 @@
-<div class="modal fade" id="appointmentModalOpen" tabindex="-1" aria-labelledby="appointmentModalOpenLabel" aria-hidden="true">
+<div class="modal fade" id="appointmentModalOpen" data-bs-backdrop="static" tabindex="-1" aria-labelledby="appointmentModalOpenLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="appointmentModalOpenLabel">Agendar una Cita</h5>
                 <p id="paciente_nombre"></p>
 
@@ -14,7 +14,7 @@
 
 
             <!-- FOOTER -->
-            <div class="modal-footer bg-dark">
+            <div class="modal-footer bg-primary">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
                     Cerrar
                 </button>

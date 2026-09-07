@@ -1,11 +1,11 @@
-<div class="modal fade" id="doctorScheduleModalCreate" tabindex="-1" aria-labelledby="doctorScheduleModalCreateLabel"
+<div class="modal fade" id="doctorScheduleModalCreate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="doctorScheduleModalCreateLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="doctorScheduleModalCreateLabel">
                     Guardar horario
                 </h5>
@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-primary">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

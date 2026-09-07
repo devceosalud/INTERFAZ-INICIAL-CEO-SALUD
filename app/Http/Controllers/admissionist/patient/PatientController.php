@@ -27,7 +27,7 @@ class PatientController extends Controller
         $start = Carbon::now()->startOfMonth();
         $end   = Carbon::now()->endOfMonth();
         $patients = Patient::whereBetween('fecha_registro', [$start, $end])
-            ->where('estado','ACTIVO')
+            ->where('estado', 'ACTIVO')
             ->orderBy('id', 'ASC')
             ->get();
         $channels  = Channel::where('estado', 'ACTIVO')->get();
@@ -56,8 +56,8 @@ class PatientController extends Controller
             'numero_identidad'    => 'required|string',
 
             'telefono'            => 'nullable|string',
-            'channel_id'          => 'required|integer',
-            'interaction_medium_id' => 'required|integer',
+            //'channel_id'          => 'required|integer',
+            //'interaction_medium_id' => 'required|integer',
             'fecha_nacimiento'    => 'required|date',
             'ocupacion'           => 'nullable|string',
             'grado_instruccion'   => 'nullable|string',
@@ -82,7 +82,7 @@ class PatientController extends Controller
             : 1;
 
         // BUSCAMOS AL PACIENTE POR IDENTIDAD
-        $patient = Patient::where('numero_identidad',$request->numero_identidad)->first();
+        $patient = Patient::where('numero_identidad', $request->numero_identidad)->first();
 
         // SI NO EXISTE CREAMOS AL PACIENTE
         if (!$patient) {
@@ -157,8 +157,8 @@ class PatientController extends Controller
             'numero_identidad_edit'    => 'required|string',
 
             'telefono_edit'            => 'nullable|string',
-            'channel_edit'          => 'required|integer',
-            'interaction_medium_edit' => 'required|integer',
+            // 'channel_edit'          => 'required|integer',
+            // 'interaction_medium_edit' => 'required|integer',
             'fecha_nacimiento_edit'    => 'nullable|date',
             'ocupacion_edit'           => 'nullable|string',
             'grado_instruccion_edit'   => 'nullable|string',

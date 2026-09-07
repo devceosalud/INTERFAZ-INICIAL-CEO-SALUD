@@ -1,11 +1,11 @@
-<div class="modal fade" id="appointmentModalEdit" tabindex="-1" aria-labelledby="appointmentModalEditLabel"
+<div class="modal fade" id="appointmentModalEdit" data-bs-backdrop="static" tabindex="-1" aria-labelledby="appointmentModalEditLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
 
             <!-- HEADER -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="appointmentModalEditLabel">Reprogramación de la Cita</h5>
 
                 <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close">
@@ -139,7 +139,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-primary">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

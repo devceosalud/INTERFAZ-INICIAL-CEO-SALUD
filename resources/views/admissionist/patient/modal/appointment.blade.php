@@ -1,11 +1,11 @@
-<div class="modal fade" id="appointmentModalCreate" tabindex="-1" aria-labelledby="appointmentModalCreateLabel"
+<div class="modal fade" id="appointmentModalCreate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="appointmentModalCreateLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
 
             <!-- HEADER -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="appointmentModalCreateLabel">Agregar nueva Cita</h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -19,6 +19,9 @@
                 <div class="modal-body">
 
                     <input type="hidden" name="patient_id" id="patient_id">
+                    {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
+                    <input type="text" name="rol_user_redirection" id="rol_user_redirection"
+                        value="{{ auth()->user()->roleUser() }}">
 
                     <!-- ================= DATOS PACIENTE ================= -->
                     <h6 class="fw-bold mb-3">Datos del Paciente</h6>
@@ -129,8 +132,8 @@
 
                         <div class="col-md-4">
                             <div class="form-check mt-4">
-                                <input class="form-check-input" type="checkbox" name="es_exonerado" id="es_exonerado"
-                                    value="1">
+                                <input class="form-check-input" type="checkbox" name="es_exonerado"
+                                    id="es_exonerado" value="1">
                                 <label class="form-check-label" for="es_exonerado">
                                     Exonerado (Paga Médico)
                                 </label>
@@ -253,7 +256,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-primary">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

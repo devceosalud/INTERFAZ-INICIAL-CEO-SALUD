@@ -1,11 +1,11 @@
-<div class="modal fade" id="appointmentModalState" tabindex="-1" aria-labelledby="appointmentModalStateLabel"
+<div class="modal fade" id="appointmentModalState" data-bs-backdrop="static" tabindex="-1" aria-labelledby="appointmentModalStateLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
 
             <!-- HEADER -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="appointmentModalStateLabel">Actualizar estado de la Cita</h5>
 
                 <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close">
@@ -51,7 +51,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-primary">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>

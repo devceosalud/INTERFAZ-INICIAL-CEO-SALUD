@@ -1,11 +1,11 @@
-<div class="modal fade" id="responsibleModalEdit" tabindex="-1" aria-labelledby="responsibleModalEditLabel"
+<div class="modal fade" id="responsibleModalEdit" data-bs-backdrop="static" tabindex="-1" aria-labelledby="responsibleModalEditLabel"
     aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <!-- Header -->
-            <div class="modal-header bg-dark">
+            <div class="modal-header bg-primary">
                 <h5 class="modal-title text-white" id="responsibleModalEditLabel">
                     Editar Responsable
                 </h5>
@@ -91,7 +91,7 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-primary">
                     <button type="button" class="btn btn-dark btn-rounded" data-bs-dismiss="modal">
                         Cancelar
                     </button>
