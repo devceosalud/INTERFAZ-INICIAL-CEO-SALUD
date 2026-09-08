@@ -43,15 +43,11 @@ class DashboardController extends Controller
             ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']) //['NO_ASISTIO', 'CANCELADO','ATENDIDO','REEVALUACION']
             ->get();
 
-        //dd($ocupadas);
-        $doctors = Doctor::where('estado','ACTIVO')->get();
-
 
         return view('admin.dashboard.index', [
             'appointments' => $appointments,
             'revaluaciones' => $revaluaciones,
-            'ocupadas' => $ocupadas,
-            'doctors' => $doctors
+            'ocupadas' => $ocupadas
         ]);
     }
 }

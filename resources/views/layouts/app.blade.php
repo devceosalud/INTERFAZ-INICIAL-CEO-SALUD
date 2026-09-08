@@ -53,7 +53,7 @@
 
     <style>
         .bg-primary {
-            background-color: #3db0b2 !important;
+            background-color: #2d8a8c !important;
         }
     </style>
     <!--ESTILOS LIVEWIRE"-->

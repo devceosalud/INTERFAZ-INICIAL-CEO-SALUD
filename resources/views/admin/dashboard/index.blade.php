@@ -340,69 +340,6 @@
                         </div>
                         {{-- REEVALUACIONES --}}
 
-                        <div class="col-xl-12 col-xxl-12 col-sm-12">
-                            <div class="card">
-                                <div
-                                    class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                    <h4 class="card-title">Pacientes programados</h4>
-
-                                    <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
-                                        data-bs-toggle="modal" data-bs-target="#doctorScheduleModalCreate">
-                                        actualizar datos
-                                    </a>
-                                </div>
-                                <div class="card-body">
-
-                                    <div class="tab-content" id="myTabContent">
-                                        <div class="tab-pane fade show active" id="Preview" role="tabpanel"
-                                            aria-labelledby="home-tab">
-                                            <div class="accordion accordion-primary" id="accordion-doctores">
-                                                @foreach ($doctors as $doctor)
-                                                    @php
-                                                        $collapseId = 'collapse-doctor-' . $doctor->id;
-                                                    @endphp
-                                                    <div class="accordion-item">
-                                                        <h2 class="accordion-header">
-                                                            <button
-                                                                class="accordion-button {{ $loop->first ? '' : 'collapsed' }}"
-                                                                type="button" data-bs-toggle="collapse"
-                                                                data-bs-target="#{{ $collapseId }}"
-                                                                aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
-                                                                aria-controls="{{ $collapseId }}">
-                                                                {{ $doctor->nombre }}
-                                                            </button>
-                                                        </h2>
-
-                                                        <div id="{{ $collapseId }}"
-                                                            class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
-                                                            data-bs-parent="#accordion-doctores">
-                                                            <div class="accordion-body">
-                                                                @forelse ($doctor->appointments as $appointment)
-                                                                    <p>
-                                                                        <span>
-                                                                            ocupado por <strong>
-                                                                                {{ $appointment->patient->nombre }}
-                                                                            </strong>
-                                                                        </span>
-                                                                        <span class="badge light badge-success"> a las
-                                                                            {{ $appointment->hora_cita }}</span>
-
-                                                                        <span><strong>{{ $appointment->doctor->nomnre }}
-                                                                            </strong></span>
-                                                                    </p>
-                                                                @empty
-                                                                    <p class="text-muted mb-0">Sin pacientes en lista</p>
-                                                                @endforelse
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     @endif
                     {{-- VISTA ROL PERFIL RECEPCION --}}
 
