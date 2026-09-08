@@ -51,6 +51,11 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <style>
+        .bg-primary {
+            background-color: #3db0b2 !important;
+        }
+    </style>
     <!--ESTILOS LIVEWIRE"-->
     @livewireStyles
 </head>
