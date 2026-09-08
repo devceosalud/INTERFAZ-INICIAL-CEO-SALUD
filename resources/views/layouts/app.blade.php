@@ -15,13 +15,13 @@
     <meta name="robots" content="">
 
     <meta name="keywords"
-        content="	admin dashboard, admin template, administration, analytics, bootstrap, disease, doctor, elegant, health, hospital admin, medical dashboard, modern, responsive admin dashboard">
+        content="sistema clinico erp, erp  administrativo, gestión de pacientes, gestión de  citas, gestión de usuarios.">
     <meta name="description"
-        content="Our HTML Admin Dashboard is built with a responsive design, ensuring seamless compatibility across different devices and screen sizes. The user-friendly interface makes navigation intuitive and straightforward for administrators.">
+        content="Sistema responsivo y adaptable para todo tipo ded pantallas, con diferentes tecnologias involucradas.">
 
-    <meta property="og:title" content="ERES - Hospital Admin Dashboard Bootstrap HTML Template">
+    <meta property="og:title" content="ERP Ceo Salud - Hospital administrativo multirol.">
     <meta property="og:description"
-        content="Our HTML Admin Dashboard is built with a responsive design, ensuring seamless compatibility across different devices and screen sizes. The user-friendly interface makes navigation intuitive and straightforward for administrators.">
+        content="Sistema responsivo y adaptable para todo tipo ded pantallas, con diferentes tecnologias involucradas.">
     <meta property="og:image" content="https://eres.dexignzone.com/xhtml/social-image.png">
     <meta name="format-detection" content="telephone=no">
 
@@ -29,7 +29,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Favicon icon -->
-    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/logo-full.png') }}">
     <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
 
 
