@@ -13,7 +13,7 @@
 
                 {{-- Si NO hay turno abierto, mostramos el formulario de apertura --}}
                 @if (!$turno)
-                    <h4 class="mb-3">Abrir turno de caja</h4>
+                    <h4 class="mb-3">Abrir turno</h4>
 
                     <div class="col-md-6">
                         <div class="form-group">

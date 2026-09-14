@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\availableSchedule\AvailableSchedule;
+use App\Http\Controllers\admissionist\cashierShift\CashierShiftController;
 use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\admissionist\responsible\ResponsibleController;
 use App\Http\Controllers\admissionist\schedule\ScheduleController;
@@ -34,3 +35,5 @@ Route::post('/admissionist/doctor-schedule/delete', [ScheduleController::class, 
 
 
 Route::get('/admissionist/available-schedule', [AvailableSchedule::class, 'index'])->name('admissionit.available.schedule.index');
+
+Route::get('/admissionist/cashier-shift', [CashierShiftController::class, 'index'])->name('admissionit.cashier.shift');
