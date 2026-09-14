@@ -406,6 +406,8 @@
                         `/receptionist/${event.detail.voucherId}/imprimir`,
                         '_blank'
                     );
+
+                    location.reload();
                 });
             </script>
         </div>
