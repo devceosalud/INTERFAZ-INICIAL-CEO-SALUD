@@ -14,6 +14,7 @@
                 </div>
                 <div class="card-body">
 
+                    {{--
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="Preview" role="tabpanel"
                             aria-labelledby="home-tab">
@@ -88,6 +89,11 @@
                             </div>
                         </div>
                     </div>
+                    --}}
+
+
+                    <div id="calendar-medico"></div>
+
                 </div>
             </div>
         </div>

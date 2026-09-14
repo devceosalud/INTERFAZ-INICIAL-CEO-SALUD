@@ -55,6 +55,17 @@
         .bg-primary {
             background-color: #2d8a8c !important;
         }
+         .fc-monarch-y37 {
+            background-color: #2d8a8c;
+        }
+
+        .fc-monarch-SJz:hover {
+            Background-color: #2d8a8c;
+        }
+
+        .fc-monarch-4os {
+            background-color: #2d8a8c;
+        }
     </style>
     <!--ESTILOS LIVEWIRE"-->
     @livewireStyles

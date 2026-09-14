@@ -145,8 +145,43 @@ class ScheduleController extends Controller
 
 
     /***************************************************************************
-     * CRUD DE HORARIOS MEDICOS                                                *
+     * CRUD DE HORARIOS MEDICOS  Y SU CALENDARIO WEB                                               *
      ***************************************************************************/
+
+    public function doctor_schedules()
+    {
+
+        $doctor_schedules = DoctorSchedule::all();
+        $events = $doctor_schedules->map(function ($schedule) {
+
+            $colors = [
+                1 => '#118da6',
+                2 => '#0d6efd',
+                3 => '#ffc107',
+                4 => '#021209',
+                5 => '#ce14cb',
+                6 => '#dc3545',
+                7 => '#110569',
+                8 => '#ffc107',
+            ];
+
+            $color = $colors[$schedule->doctor->id] ?? '#198754';
+
+            return [
+                'id' => $schedule->id,
+                'title' => $schedule->doctor->nombre, // Un título más descriptivo para el calendario
+                'start' => $schedule->fecha_cita . "T" . $schedule->hora_inicio, // hora inicio   '2026-09-16T10:00:00',
+                'end' => $schedule->fecha_cita . "T" . $schedule->hora_fin,      //hora fin
+                'color' => $color,
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'textColor' => '#ffffff',
+            ];
+        });
+
+        return response()->json($events);
+    }
+
 
     public function index()
     {
@@ -163,7 +198,8 @@ class ScheduleController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'doctor_id'      => 'required|exists:doctors,id',
-            'dia_semana'     => 'required|integer|between:1,7',
+            //'dia_semana'     => 'required|integer|between:1,7',
+            'fecha_cita'  => 'required|date',
             'hora_inicio'    => 'required|date_format:H:i',
             'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
             'duracion_cita'  => 'required|integer|in:10,15,20,30,45,60',
@@ -179,7 +215,8 @@ class ScheduleController extends Controller
         //GUARDAR DATOS
         $doctor_schedule = DoctorSchedule::create([
             'doctor_id' => $request->doctor_id,
-            'dia_semana' => $request->dia_semana,
+            'dia_semana' => '1', //Lunes por defecto
+            'fecha_cita' => $request->fecha_cita,
             'hora_inicio' => $request->hora_inicio,
             'hora_fin' => $request->hora_fin,
             'duracion_cita' => $request->duracion_cita,

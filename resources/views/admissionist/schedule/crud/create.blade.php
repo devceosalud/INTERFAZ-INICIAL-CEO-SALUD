@@ -1,5 +1,5 @@
-<div class="modal fade" id="doctorScheduleModalCreate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="doctorScheduleModalCreateLabel"
-    aria-hidden="true">
+<div class="modal fade" id="doctorScheduleModalCreate" data-bs-backdrop="static" tabindex="-1"
+    aria-labelledby="doctorScheduleModalCreateLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -14,7 +14,8 @@
                 </button>
             </div>
 
-            <form id="formCreateDoctorSchedule" method="POST" action="{{ route('admissionit.doctor.schedule.store') }}">
+            <form id="formCreateDoctorSchedule" method="POST"
+                action="{{ route('admissionit.doctor.schedule.store') }}">
 
                 @csrf
 
@@ -27,7 +28,7 @@
 
                     <div class="row g-3">
 
-                        <div class="col-md-3">
+                        <div class="col-md-12">
                             <label class="form-label text-primary">Doctor</label>
                             <select class="form-control" name="doctor_id" id="doctor_id">
                                 @foreach ($doctors as $doctor)
@@ -36,6 +37,7 @@
                             </select>
                         </div>
 
+                        {{--
                         <div class="col-md-3">
                             <input type="hidden">
                             <label class="form-label text-primary">día de la semana</label>
@@ -49,8 +51,9 @@
                                 <option value="1">Domingo</option>
                             </select>
                         </div>
+                        --}}
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">Hora inico</label>
                             <input type="time" class="form-control" name="hora_inicio" id="hora_inicio"
                                 placeholder="08:00">
@@ -58,7 +61,7 @@
                             <span class="text-danger error-text hora_inicio_error"></span>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">Hora fin</label>
                             <input type="time" class="form-control" name="hora_fin" id="hora_fin"
                                 placeholder="20:00">
@@ -66,7 +69,7 @@
                             <span class="text-danger error-text hora_fin_error"></span>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">duración</label>
                             <select class="form-control" name="duracion_cita" id="duracion_cita">
                                 @for ($i = 10; $i <= 60; $i++)
@@ -74,6 +77,13 @@
                                 @endfor
                             </select>
                         </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="fecha_cita" id="fecha_cita">
+                            <span class="text-danger error-text fecha_cita_error"></span>
+                        </div>
+
                     </div>
                 </div>
 

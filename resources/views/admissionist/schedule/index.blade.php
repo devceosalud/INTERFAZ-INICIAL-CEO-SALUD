@@ -9,6 +9,11 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- STYLESHEETS CALENDAR-->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/skeleton.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/theme.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/palettes/purple.css' rel='stylesheet' />
 @endsection
 
 
@@ -43,6 +48,7 @@
         <div class="content-body">
             <div class="container-fluid">
                 <!-- row -->
+
                 <x-utils.schedules :doctors="$doctors" />
             </div>
 
@@ -60,6 +66,7 @@
         <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
         <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 
+        <script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
 
         <!-- Datatable -->
         <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
@@ -67,8 +74,13 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
+        <!-- STANDARD JS -->
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/all/global.js"></script>
+        <!-- THEME JS -->
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
 
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
+        <script src="{{ asset('js/admissionist/calendario-medico/calendario-medico.js') }}"></script>
     @endsection
 
 

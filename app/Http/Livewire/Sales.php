@@ -626,7 +626,7 @@ class Sales extends Component
 
     /**═══════════════════════════════════════════════════════════
      * guardarVenta()
-     * El metodo más importante: toma todo lo armado  en pantalla (carrito, pagador/paciente y pagos)
+     * Toma todo lo armado  en pantalla (carrito, pagador/paciente y pagos)
      * y lo convierte en filas reales de la base de datos, de forma segura y "todo o nada"
      ═══════════════════════════════════════════════════════════*/
     public function guardarVenta()

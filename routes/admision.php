@@ -32,7 +32,7 @@ Route::get('/admissionist/doctor-schedule', [ScheduleController::class, 'index']
 Route::post('/admissionist/doctor-schedule/store', [ScheduleController::class, 'store'])->name('admissionit.doctor.schedule.store');
 Route::put('/admissionist/doctor-schedule/update', [ScheduleController::class, 'updateDoctorSchedule'])->name('admissionit.doctor.schedule.update');
 Route::post('/admissionist/doctor-schedule/delete', [ScheduleController::class, 'deleteDoctorSchedule'])->name('admissionit.doctor.schedule.delete');
-
+Route::get('/admissionist/doctor-schedule/calendar', [ScheduleController::class ,'doctor_schedules'])->name('admissionit.doctor.schedule.calendar');
 
 Route::get('/admissionist/available-schedule', [AvailableSchedule::class, 'index'])->name('admissionit.available.schedule.index');
 
