@@ -53,6 +53,7 @@ return new class extends Migration
             // (b) en NOTA_CREDITO/NOTA_DEBITO que anula una FACTURA/BOLETA -> esto SÍ viaja a SUNAT.
             $table->unsignedBigInteger('parent_voucher_id')->nullable();
             $table->string('sustento_nota')->nullable(); // VIAJA A SUNAT: motivo de anulación, solo en notas.
+            $table->text('observaciones')->nullable();
 
             $table->unsignedBigInteger('cashier_shift_id'); // INTERNO: para el arqueo de caja.
             $table->unsignedBigInteger('user_id'); // INTERNO: cajero que emitió el comprobante.

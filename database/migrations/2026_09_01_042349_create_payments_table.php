@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('numero_operacion')->nullable(); // INTERNO: voucher/referencia del pago.
             $table->unsignedBigInteger('user_id'); // INTERNO: cajero que recibió el dinero.
             $table->unsignedBigInteger('cashier_shift_id'); // INTERNO: turno donde entra el dinero (clave para el cuadre).
+            $table->string('entidad_origen')->nullable()->after('numero_operacion');
+            $table->string('entidad_destino')->nullable()->after('entidad_origen');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

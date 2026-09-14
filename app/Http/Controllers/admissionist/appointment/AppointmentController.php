@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\MailAppointment;
 use App\Models\AdditionalRate;
 use App\Models\Appointment;
+use App\Models\CashierShift;
 use App\Models\Channel;
 use App\Models\DoctorSchedule;
 use App\Models\DoctorService;
@@ -13,9 +14,12 @@ use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\Specialty;
+use App\Models\Voucher;
+use App\Models\VoucherSerie;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
@@ -112,6 +116,26 @@ class AppointmentController extends Controller
             ]);
         }
 
+        // NUEVO: si va a haber un adelanto (total_pagado > 0), esa plata
+        // tiene que quedar registrada contra una caja abierta — igual
+        // que exige el módulo de ventas. Se valida ANTES de crear nada,
+        // para no terminar con una cita creada pero sin poder registrar
+        // su cobro.
+        $turno = null;
+        if ($request->total_pagado > 0) {
+            $turno = CashierShift::where('user_id', auth()->id())
+                ->where('estado', 'ABIERTO')
+                ->latest('abierto_en')
+                ->first();
+
+            if (!$turno) {
+                return response()->json([
+                    'code' => 0,
+                    'msg' => 'Debes abrir tu caja antes de registrar un adelanto en la cita.',
+                ]);
+            }
+        }
+
         $numero_cita = 'CIT-' . date('YmdHis');
         $estado_pagado = 'PENDIENTE';
 
@@ -141,34 +165,131 @@ class AppointmentController extends Controller
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
         $doctorService = DoctorService::find($request->service_id); //cargamos el id de la tabla DoctorServices
         $service = Service::find($doctorService->service_id);       //buscamos el servicio por id
-        $appointment = Appointment::create([
-            'numero_cita' => $numero_cita,
-            'user_id' => auth()->user()->id,
-            'patient_id' => $request->patient_id,
-            'doctor_id' => $request->doctor_id,
-            'service_id' => $service->id, //$request->service_id,
-            'additional_rate_id' => $request->additional_rate_id,
-            'fecha_cita' => $request->fecha_cita,
-            'hora_cita' => $request->hora_cita,
-            'duracion_cita' => $duracion_cita,
-            'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
-            'turno_cita' => 0,
 
-            'precio_programado' => $request->precio_programado,
-            'total_pagado' => $request->total_pagado,
-            'saldo_pendiente' => $request->saldo_pendiente,
-            'metodo_pago' => $request->metodo_pago,
+        // NUEVO: se envuelve TODO (cita + ticket si aplica) en una sola
+        // transacción — si algo falla creando el ticket, la cita
+        // tampoco se guarda, evitando que quede una cita "huérfana" sin
+        // su registro de pago correspondiente.
+        $appointment = DB::transaction(function () use (
+            $request,
+            $numero_cita,
+            $service,
+            $duracion_cita,
+            $estado_pagado,
+            $turno
+        ) {
+            $appointment = Appointment::create([
+                'numero_cita' => $numero_cita,
+                'user_id' => auth()->user()->id,
+                'patient_id' => $request->patient_id,
+                'doctor_id' => $request->doctor_id,
+                'service_id' => $service->id, //$request->service_id,
+                'additional_rate_id' => $request->additional_rate_id,
+                'fecha_cita' => $request->fecha_cita,
+                'hora_cita' => $request->hora_cita,
+                'duracion_cita' => $duracion_cita,
+                'motivo_consulta' => $request->motivo_consulta ?? 'SIN MOTIVO',
+                'turno_cita' => 0,
 
-            'es_exonerado' => $request->es_exonerado ?? false,
-            'autorizado_por' => $request->autorizado_por,
+                'precio_programado' => $request->precio_programado,
+                'total_pagado' => $request->total_pagado,
+                'saldo_pendiente' => $request->saldo_pendiente,
+                'metodo_pago' => $request->metodo_pago,
 
-            'estado_pagado' => $estado_pagado,
-            'numero_operacion' => $request->numero_operacion,
+                'es_exonerado' => $request->es_exonerado ?? false,
+                'autorizado_por' => $request->autorizado_por,
 
-            'estado_cita' => 'PROGRAMADO',
-            'observaciones' => $request->observaciones ?? 'SIN OBSERVACIONES',
-            'fecha_registro' => now()->toDateString(),
-        ]);
+                'estado_pagado' => $estado_pagado,
+                'numero_operacion' => $request->numero_operacion,
+
+                'estado_cita' => 'PROGRAMADO',
+                'observaciones' => $request->observaciones ?? 'SIN OBSERVACIONES',
+                'fecha_registro' => now()->toDateString(),
+            ]);
+
+            // NUEVO: si hubo adelanto, se crea el TICKET equivalente en
+            // el módulo de ventas — esto es lo que hace que, después,
+            // el buscador de citas del módulo de ventas SÍ detecte el
+            // saldo pendiente correctamente (en vez de mostrar el
+            // precio completo como si nunca se hubiera cobrado nada).
+            if ($request->total_pagado > 0) {
+                $serie = VoucherSerie::where('tipo_comprobante', 'TICKET')
+                    ->where('estado', 'ACTIVO')
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $correlativo = $serie->correlativo_actual + 1;
+                $serie->update(['correlativo_actual' => $correlativo]);
+
+                // Mismo cálculo de IGV que en el resto del sistema:
+                // '10' = Gravado por defecto — confirma con tu contador
+                // si las consultas médicas de tu clínica van GRAVADA o
+                // EXONERADA antes de dejarlo así en producción.
+                $precioTotal = (float) $request->precio_programado;
+                $base = round($precioTotal / 1.18, 2);
+                $igv = round($precioTotal - $base, 2);
+
+                $ticket = Voucher::create([
+                    'tipo_comprobante' => 'TICKET',
+                    'serie' => $serie->serie,
+                    'correlativo' => $correlativo,
+                    'patient_id' => $request->patient_id,
+                    'paga_patient_id' => $request->patient_id,
+                    'total_gravado' => $base,
+                    'total_exonerado' => 0,
+                    'total_inafecto' => 0,
+                    'subtotal' => $base,
+                    'igv' => $igv,
+                    'total' => $precioTotal,
+                    'condicion_pago' => 'CONTADO',
+                    // Mismo estado que ya calculaste arriba para
+                    // 'estado_pagado' de la cita — se reutiliza tal
+                    // cual, sin recalcular nada distinto.
+                    'estado' => $estado_pagado === 'PAGADO' ? 'PAGADO' : 'PARCIAL',
+                    'cashier_shift_id' => $turno->id,
+                    'user_id' => auth()->id(),
+                    'aplica_detraccion' => false,
+                    // El TICKET nunca va a SUNAT — esto no cambia
+                    // aunque la cita se pague completa hoy mismo.
+                    'requiere_sunat' => false,
+                    'estado_sunat' => 'NO_APLICA',
+                ]);
+
+                $ticket->items()->create([
+                    'item_type' => 'cita', // el mismo alias que usa el morphMap para Appointment
+                    'item_id' => $appointment->id,
+                    'descripcion' => $service->nombre ?? 'Consulta médica',
+                    'cantidad' => 1,
+                    'precio_unitario' => $precioTotal,
+                    'total' => $precioTotal,
+                    'afectacion_igv' => '10',
+                    'igv_monto' => $igv,
+                    'codigo_sunat' => null,
+                    'unidad_medida_sunat' => 'ZZ',
+                    'doctor_id' => $request->doctor_id,
+                    'comision_porcentaje' => 0,
+                    'comision_monto' => 0,
+                ]);
+
+                // strtoupper() normaliza el texto que venga en
+                // metodo_pago (ej. "efectivo", "Efectivo") para que
+                // quede consistente con el resto del sistema
+                // (EFECTIVO, TARJETA, YAPE, PLIN). Si viene vacío o con
+                // un valor que no se puede identificar, cae en 'OTROS'
+                // en vez de romper el guardado.
+                $metodoPago = strtoupper($request->metodo_pago ?? '') ?: 'OTROS';
+
+                $ticket->payments()->create([
+                    'metodo_pago' => $metodoPago,
+                    'monto' => $request->total_pagado,
+                    'numero_operacion' => $request->numero_operacion,
+                    'user_id' => auth()->id(),
+                    'cashier_shift_id' => $turno->id,
+                ]);
+            }
+
+            return $appointment;
+        });
 
         if ($appointment) {
             //PONERLO EN UN CRON JOB FLUJO ESCALA NOTIFICADOR

@@ -3,6 +3,7 @@
 use App\Http\Controllers\receptionist\appointment\AppointmentController;
 use App\Http\Controllers\receptionist\availableSchedule\AvailableSchedule;
 use App\Http\Controllers\receptionist\cashierShift\CashierShiftController;
+use App\Http\Controllers\receptionist\cashMovement\CashMovementController;
 use App\Http\Controllers\receptionist\patient\PatientController;
 use App\Http\Controllers\receptionist\responsible\ResponsibleController;
 use App\Http\Controllers\receptionist\sale\SaleController;
@@ -22,3 +23,7 @@ Route::get('/receptionist/available-schedule', [AvailableSchedule::class, 'index
 Route::get('/receptionist/cashier-shift', [CashierShiftController::class, 'index'])->name('receptionist.cashier.shift');
 
 Route::get('/receptionist/sales', [SaleController::class, 'index'])->name('receptionist.sale.index');
+
+Route::get('/receptionist/cash-movement', [CashMovementController::class, 'index'])->name('receptionist.cash.movement');
+
+Route::get('/receptionist/{voucher}/imprimir', [SaleController::class , 'show'])->name('receptionist.sale.show'); 
