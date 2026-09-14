@@ -20,7 +20,7 @@
 
                     <input type="hidden" name="patient_id" id="patient_id">
                     {{-- CAMPOS DE ROL DEL USUARIO PARA PODER REDIRECCIONAR --}}
-                    <input type="text" name="rol_user_redirection" id="rol_user_redirection"
+                    <input type="hidden" name="rol_user_redirection" id="rol_user_redirection"
                         value="{{ auth()->user()->roleUser() }}">
 
                     <!-- ================= DATOS PACIENTE ================= -->

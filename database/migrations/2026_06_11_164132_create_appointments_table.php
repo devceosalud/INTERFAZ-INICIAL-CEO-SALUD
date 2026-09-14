@@ -30,6 +30,12 @@ return new class extends Migration
             $table->timestamp('hora_llamado')->nullable(); //DATO NUEVO 
             $table->text('motivo_consulta')->nullable();
 
+            //DATOS PARA EL LLAMADOR DE PACIENTES
+            $table->timestamp('hora_llegada')->nullable(); //cuando recepcion da click al boton
+            $table->timestamp('hora_llamado')->nullable(); //cuando medico llamada al paciente
+            $table->timestamp('hora_atencion')->nullable(); //cuando medico da click a consultorio
+            $table->timestamp('hora_atendido')->nullable(); //cuando medico da click a atentido
+
 
             //CAMPOS TEMPORALES DE PAGOS (se unira con la tabla pagos para MOD FACTURACION)
             $table->decimal('precio_programado', 10, 2)->default(0);
