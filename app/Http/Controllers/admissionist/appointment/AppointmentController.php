@@ -130,7 +130,7 @@ class AppointmentController extends Controller
 
             if (!$turno) {
                 return response()->json([
-                    'code' => 0,
+                    'code' => 3,
                     'msg' => 'Debes abrir tu caja antes de registrar un adelanto en la cita.',
                 ]);
             }

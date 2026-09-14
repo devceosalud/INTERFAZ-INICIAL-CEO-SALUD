@@ -308,6 +308,8 @@ $('#formCreateAppointment').on('submit', function (e) {
 
             } else if (response.code == 2) {
                 notificacion("warning", "Precaución", response.msg, 2000, false, false);
+            } else if(response.code == 3) {
+                notificacion("warning", "Precaución", response.msg, 2500, false, false);
             } else {
                 notificacion("error", "Error", response.msg, 3000, false, false);
             }
