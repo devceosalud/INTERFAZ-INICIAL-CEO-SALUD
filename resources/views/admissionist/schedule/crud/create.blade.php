@@ -79,7 +79,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Fecha Atención <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_cita" id="fecha_cita">
                             <span class="text-danger error-text fecha_cita_error"></span>
                         </div>

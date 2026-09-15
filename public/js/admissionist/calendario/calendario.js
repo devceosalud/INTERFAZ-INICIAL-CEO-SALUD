@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek,listWeek'
         },
 
-        editable: true,
+        editable: false,
         selectable: true,
         businessHours: true,
         dayMaxEvents: false, // PARA MOSTRAR O NO LA LSITA COMPLETA DE LAS AGENTAS 

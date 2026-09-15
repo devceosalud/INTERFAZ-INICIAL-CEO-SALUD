@@ -31,7 +31,7 @@ class DashboardController extends Controller
             ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get(); //DESC : DE MAYOR A MENOR - ASC : DE MENOR A MAYOR
 
-        $revaluaciones = Appointment::whereBetween('fecha_cita', [ //REEVALUACION DE HOY
+        $reevaluaciones = Appointment::whereBetween('fecha_cita', [ //REEVALUACION DE HOY
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
         return view('admin.dashboard.index', [
             'appointments' => $appointments,
-            'revaluaciones' => $revaluaciones,
+            'reevaluaciones' => $reevaluaciones,
             'ocupadas' => $ocupadas
         ]);
     }

@@ -72,13 +72,13 @@
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-doctor"
+                                                                <a href="#" class="edit-doctor btn btn-sm btn-primary"
                                                                     data-id="{{ $doctor->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                    <i class="fa fa-pencil fs-18"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-doctor"
+                                                                <a href="#" class="delete-doctor btn btn-sm btn-danger"
                                                                     data-id="{{ $doctor->id }}">
                                                                     <i class="fa fa-trash fs-18 text-danger"></i>
                                                                 </a>

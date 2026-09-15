@@ -32,7 +32,7 @@
                         <div class="form-group">
                             <div class="mb-3">
                                 <label class="form-label text-primary">Monto de apertura (sensillo)</label>
-                                <input type="number" step="0.01" wire:model="montoApertura" class="form-control">
+                                <input type="number" step="0.01" min="0" wire:model="montoApertura" class="form-control">
                             </div>
                         </div>
                     </div>

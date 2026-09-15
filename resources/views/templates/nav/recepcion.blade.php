@@ -1,4 +1,3 @@
- {{--
  <li>
      <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
          <i class="flaticon-381-calculator"></i>
@@ -6,11 +5,10 @@
      </a>
      <ul aria-expanded="false">
          <li><a href="{{ route('receptionist.cashier.shift') }}">Apertura</a></li>
-         <li><a href="{{ route('receptionist.sale.index') }}">Ventas</a></li>
-         <li><a href="{{ route('receptionist.cash.movement') }}">Movimientos</a></li>
+         {{-- <li><a href="{{ route('receptionist.sale.index') }}">Ventas</a></li> --}}
+         {{-- <li><a href="{{ route('receptionist.cash.movement') }}">Movimientos</a></li> --}}
      </ul>
  </li>
---}}
 
  <li>
      <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
@@ -38,7 +36,7 @@
          <span class="nav-text">Citas</span>
      </a>
      <ul aria-expanded="false">
-         <li><a href="{{ route('receptionist.available.schedule.index') }}">Disponibles</a></li>
+         {{-- <li><a href="{{ route('receptionist.available.schedule.index') }}">Disponibles</a></li> --}}
          <li><a href="{{ route('receptionist.appointment.index') }}">Registrar Cita</a></li>
      </ul>
  </li>

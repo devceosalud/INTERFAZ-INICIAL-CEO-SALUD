@@ -78,7 +78,7 @@
 
                                             <strong>
                                                 <span class="me-3">
-                                                    <a href="#" class="update-appointment"
+                                                    <a href="#" class="update-appointment btn btn-sm btn-pri ary"
                                                         data-id="{{ $appointment->id }}"><i
                                                             class="fa fa-pencil fs-18 text-success"></i></a>
                                                 </span>

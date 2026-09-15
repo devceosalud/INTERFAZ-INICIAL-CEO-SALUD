@@ -17,6 +17,7 @@
                                 <tr>
                                     <th>Código</th>
                                     <th>Parentezco</th>
+                                    <th>Responsable</th>
                                     <th>Responsable de</th>
                                     <th>Celular</th>
                                     <th>Acciones</th>
@@ -27,22 +28,28 @@
                                     <tr>
                                         <td><strong>{{ $responsible->id }}</strong></td>
                                         <td><span class="small">{{ $responsible->parentezco }}</span></td>
-                                        <th><span class="small">{{ $responsible->patient->nombre }}</span>
+                                        <td>
+                                            <span class="small">
+                                                <strong>{{ $responsible->patient->nombre }}
+                                                    {{ $responsible->patient->apellido_materno }} </strong>
+                                            </span>
+                                        </td>
+                                        <th><span class="small">{{ $responsible->nombres }}</span>
                                             <span class="small">{{ $responsible->patient->apellido_paterno }}</span>
                                         </th>
                                         <td><span class="small">{{ $responsible->telefono }}</span></td>
                                         <td>
                                             <strong>
                                                 <span class="me-3">
-                                                    <a href="#" class="edit-responsible"
+                                                    <a href="#" class="edit-responsible btn btn-sm btn-primary"
                                                         data-id="{{ $responsible->id }}">
-                                                        <i class="fa fa-pencil fs-18 text-success"></i>
+                                                        <i class="fa fa-pencil fs-18"></i>
                                                     </a>
                                                 </span>
                                                 <span>
-                                                    <a href="#" class="delete-responsible"
+                                                    <a href="#" class="delete-responsible btn btn-sm btn-danger"
                                                         data-id="{{ $responsible->id }}">
-                                                        <i class="fa fa-trash fs-18 text-danger"></i>
+                                                        <i class="fa fa-trash fs-18"></i>
                                                     </a>
                                                 </span>
                                             </strong>

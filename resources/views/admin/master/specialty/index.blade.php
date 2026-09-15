@@ -89,15 +89,15 @@
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-specialty"
+                                                                <a href="#" class="edit-specialty btn btn-sm btn-primary"
                                                                     data-id="{{ $specialty->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                    <i class="fa fa-pencil fs-18"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-specialty"
+                                                                <a href="#" class="delete-specialty btn btn-sm btn-danger"
                                                                     data-id="{{ $specialty->id }}"><i
-                                                                        class="fa fa-trash fs-18 text-danger"></i></a>
+                                                                        class="fa fa-trash fs-18"></i></a>
                                                             </span>
                                                         </strong>
                                                     </td>

@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar-medico');
     // Obtener la fecha actual en formato ISO (YYYY-MM-DD)
-    const hoy = new Date().toISOString().split('T')[0];
+    //const hoy = new Date().toISOString().split('T')[0];
 
-    window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
+    window.calendar_medico = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
         initialView: 'dayGridMonth', // timeGridWeek : vista de semana
         locale: 'es',
 
@@ -24,24 +24,24 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek,listWeek'
         },
 
-        editable: true,
+        editable: false,
         selectable: true,
         businessHours: true,
         dayMaxEvents: false, // PARA MOSTRAR O NO LA LSITA COMPLETA DE LAS AGENTAS 
 
-        validRange: {
-            start: hoy // Bloquea la selección y navegación visual antes de hoy
-        },
+        //validRange: {
+        //    start: hoy // Bloquea la selección y navegación visual antes de hoy
+        //},
 
         //PARA REGISTRAR UN EVENTO(MODEL DE AGENDA) EN EL MODAL
         dateClick: function (info) {
-            $('#appointmentModalCreate').modal('show');
+            $('#doctorScheduleModalCreate').modal('show');
 
             var clickedDate = info.date; // Obtener la fecha y la hora del clic
             var date = moment(clickedDate).format('YYYY-MM-DD');
             //var dateStr = moment(clickedDate).format('YYYY-MM-DDTHH:mm'); // Formato correcto para datetime-local
 
-            $('#appointmentModalCreate input[name="fecha_cita"]').val(date);
+            $('#doctorScheduleModalCreate input[name="fecha_cita"]').val(date);
             //$('#appointmentModalCreate input[name="fecha_cita"]').val(info.dateStr);
         },
 
@@ -53,108 +53,45 @@ document.addEventListener('DOMContentLoaded', function () {
             let eventComun = info.event.extendedProps; // Propiedades adicionales del evento
 
             console.log('eventCalendar:', eventCalendar);
-            console.log('eventComun',eventComun);
-            
-            
-
-            // Acceder a los datos del evento
-            let id = eventCalendar.id; // ID del evento
-            let title = eventCalendar.title;
-            let start = eventCalendar.start; // Formato correcto para datetime-local
-            let end = eventCalendar.start; // Usar start si end es null
-
-            // Acceder a los datos extendidos del evento (campos personalizados)
-            let documento_paciente = eventComun.documento_paciente;
-            let specialty_id = eventComun.specialty_id;
-            let nombre_especialidad = eventComun.nombre_especialidad;
-            let doctor_id = eventComun.doctor_id;
-            let nombre_doctor = eventComun.nombre_doctor;
-            let servicio_id = eventComun.service_id;
-            let nombre_servicio = eventComun.nombre_servicio;
-            let fecha_cita = eventComun.fecha_cita;
-            let hora_cita = eventComun.hora_cita;
-            let estado_cita = eventComun.estado_cita
-
-            // DATOS COMUNES SETEADOS
-            $('#appointmentModalEdit #appointment_id').val(id);
-            $('#appointmentModalEdit #documento_paciente_edit').val(documento_paciente);
-            $('#appointmentModalEdit #nombre_paciente_edit').val(title);
-            $('#appointmentModalEdit #specialty_id_edit').val(specialty_id);
-
-            // SELECT PARA EL LLENADO  DE DOCTORES Y SERVICIOS
-            const selectDoctor = document.querySelector('#appointmentModalEdit #doctor_id_edit');
-            const selectServicio = document.querySelector('#appointmentModalEdit #service_id_edit');
-
-            //limpiar los campos
-            selectDoctor.innerHTML = '<option value="">Seleccione</option>';
-            selectServicio.innerHTML = '<option value="">Seleccione</option>';
-
-            const option_doctor = document.createElement('option');
-            option_doctor.value = doctor_id;
-            option_doctor.textContent = nombre_doctor;
-            selectDoctor.appendChild(option_doctor);
-
-            const option_servicio = document.createElement('option');
-            option_servicio.value = servicio_id;
-            option_servicio.textContent = nombre_servicio;
-            selectServicio.appendChild(option_servicio);
+            console.log('eventComun', eventComun);
 
             //DATOS DE LA CITA MEDICA
-            $('#appointmentModalEdit #fecha_cita_edit').val(fecha_cita);
-            $('#appointmentModalEdit #hora_cita_edit').val(hora_cita);
-            $('#appointmentModalEdit #estado_cita').val(estado_cita);
+            $('#doctorScheduleModalEdit #doctor_schedule_id_edit').val(eventComun.doctor_schedule_id_edit);
+            $('#doctorScheduleModalEdit #doctor_id_edit').val(eventComun.doctor_id_edit);
+            $('#doctorScheduleModalEdit #hora_inicio_edit').val(eventComun.hora_inicio_edit);
+            $('#doctorScheduleModalEdit #hora_fin_edit').val(eventComun.hora_fin_edit);
+            $('#doctorScheduleModalEdit #duracion_edit_cita').val(eventComun.duracion_edit_cita);
+            $('#doctorScheduleModalEdit #fecha_cita_edit').val(eventComun.fecha_cita_edit);
+            $("#doctorScheduleModalEdit").modal("show");//ABRIR MODAL
 
             initSelectEdit();
-
-            // Mostrar el modal
-            $('#appointmentModalEdit').modal('show');
         },
 
-        events : {
-            url: '/admissionist/doctor-schedule/calendar'
-        }
-
-        /*events: [
-          {
-            title: 'Reunión de Negocios',
-            start: '2026-09-16T10:00:00',
-            end: '2026-09-16T12:30:00',
-            color: '#3788d8'
-          },
-          {
-            title: 'Almuerzo Ejecutivo',
-            start: '2026-09-17T13:00:00',
-            end: '2026-09-17T14:30:00',
-            color: '#2c3e50'
-          },
-          {
-            title: 'Conferencia Técnica',
-            start: '2026-09-18T09:00:00',
-            end: '2026-09-18T17:00:00',
-            color: '#27ae60'
-          }
-        ], */
-        // PARA PODER CARGAR DINAMICAMENTE Y PASARLE LOS PARAMETROS DE BUSQUEDA
         /*events: {
-            url: '/admissionist/reservation/list-calendar',
+            url: '/admissionist/doctor-schedule/calendar'
+        }*/
+
+        // PARA PODER CARGAR DINAMICAMENTE Y PASARLE LOS PARAMETROS DE BUSQUEDA
+        events: {
+            url: '/admissionist/doctor-schedule/calendar',
             extraParams: function () {
                 return {
                     //VARIABLES JALADAS DEL "filtro-calendario.js"
-                    specialty_id: document.querySelector('#filtro-calendar_specialty_id').value,
-                    doctor_id: document.querySelector('#filtro-calendar_doctor_id').value
+                    //specialty_id: document.querySelector('#filtro-calendar-medico_specialty_id').value,
+                    doctor_id: document.querySelector('#filtro-calendar-medico_doctor_id').value,
                 };
             }
-        }, */
+        }, 
     });
 
-    window.calendar.render(); //PARA HACERLO GLOBAL
+    window.calendar_medico.render(); //PARA HACERLO GLOBAL
 
 
-    //FUNCION QUE SE RESTAURA LOS SELECT
+    //FUNCION PARA PODER INICIAR LOS SELECT
     function initSelectEdit() {
-        $('#appointmentModalEdit #specialty_id_edit').selectpicker('refresh');
-        $('#appointmentModalEdit #doctor_id_edit').selectpicker('refresh');
-        $('#appointmentModalEdit #service_id_edit').selectpicker('refresh');
-        $('#appointmentModalEdit #estado_cita').selectpicker('refresh');
+        //para campos edit
+        $("#doctorScheduleModalEdit #doctor_id_edit").selectpicker("refresh");
+        $("#doctorScheduleModalEdit #dia_semana_edit").selectpicker("refresh");
+        $("#doctorScheduleModalEdit #duracion_edit_cita").selectpicker("refresh");
     }
 });

@@ -19,10 +19,11 @@
                         <a class="nav-link" href="javascript:;" role="button" data-bs-toggle="dropdown">
                             <img src="{{ asset('assets/images/profile/12.png') }}" width="20" alt="">
                             <div class="header-info">
-                                <span>Hola,<strong> {{ auth()->user()->name }}  </strong></span>
+                                <span>Hola,<strong> {{ auth()->user()->name }} </strong></span>
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
+                            {{--
                             <a class='dropdown-item ai-icon' href='/app-profile'>
                                 <svg id="icon-user1" xmlns="http://www.w3.org/2000/svg" class="text-primary"
                                     width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -45,6 +46,7 @@
                                 </svg>
                                 <span class="ms-2">Mensajes </span>
                             </a>
+                            --}}
 
                             <form class="mx-auto d-flex justify-content-center" action="{{ route('admin.logout') }}"
                                 method="POST">

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('dia_semana');
-            $table->date('fecha_cita')->nullable();
+            $table->date('fecha_cita')->nullable(); //fecha que el doctor atiende
             $table->time('hora_inicio');
             $table->time('hora_fin');
             $table->unsignedTinyInteger('duracion_cita');

@@ -13,10 +13,12 @@ class schedules extends Component
      */
 
     public $doctors;
+    public $specialties;
 
-    public function __construct($doctors)
+    public function __construct($doctors, $specialties)
     {
         //
+        $this->specialties = $specialties;
         $this->doctors = $doctors;
     }
 

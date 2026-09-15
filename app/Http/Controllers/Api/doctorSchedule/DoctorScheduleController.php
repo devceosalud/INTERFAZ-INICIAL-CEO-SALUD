@@ -17,7 +17,7 @@ class DoctorScheduleController extends Controller
 
         // Horarios del doctor
         $horarios = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('dia_semana', $dia)
+            ->where('fecha_cita', $request->fecha_cita)
             ->where('estado', 'ACTIVO')
             ->orderBy('hora_inicio')
             ->get();

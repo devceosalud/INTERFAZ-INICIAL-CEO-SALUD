@@ -47,7 +47,7 @@ class Sales extends Component
 
     /**═══════════════════════════════════════════════════════════
      * QUIEN PAGA?
-    ═══════════════════════════════════════════════════════════ */
+     ═══════════════════════════════════════════════════════════ */
     public string $buscarPaga = '';
     public array $resultadosPaga = [];
     public ?int $pagaId = null;
@@ -172,14 +172,14 @@ class Sales extends Component
     }
 
     /**
- * getNombreCompletoAttribute()
- * Cualquier método con el patrón "get{Campo}Attribute" es un
- * ACCESSOR de Eloquent — Laravel lo detecta solo y te permite
- * usarlo como si fuera una columna más: $paciente->nombre_completo
- * (con guion bajo, no camelCase), en vez de tener que llamarlo
- * como método. Internamente arma el nombre juntando las 3 columnas
- * reales que sí existen en la tabla.
- */
+     * getNombreCompletoAttribute()
+     * Cualquier método con el patrón "get{Campo}Attribute" es un
+     * ACCESSOR de Eloquent — Laravel lo detecta solo y te permite
+     * usarlo como si fuera una columna más: $paciente->nombre_completo
+     * (con guion bajo, no camelCase), en vez de tener que llamarlo
+     * como método. Internamente arma el nombre juntando las 3 columnas
+     * reales que sí existen en la tabla.
+     */
     public function getNombreCompletoAttribute(): string
     {
         // trim() al final quita espacios sobrantes si algún apellido
@@ -311,7 +311,7 @@ class Sales extends Component
         $this->resultadosBusqueda = $items->unionAll($servicios)
             ->limit(15)
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(fn($r) => (array) $r)
             ->toArray();
         //dd($this->resultadosBusqueda);
     }
@@ -454,7 +454,7 @@ class Sales extends Component
         return Voucher::where('patient_id', $this->atiendeId)
             ->where('tipo_comprobante', 'TICKET')
             ->whereDoesntHave('childVouchers')
-            ->whereHas('items', fn ($q) => $q->where('item_type', 'cita'))
+            ->whereHas('items', fn($q) => $q->where('item_type', 'cita'))
             ->get();
     }
 
@@ -471,7 +471,7 @@ class Sales extends Component
         $this->ticketOrigenId = $ticket->id;
         $this->tipoComprobante = 'BOLETA'; //el cajero lo puede cambiar a FACTURA si hace falta
 
-        $this->carrito = $ticket->items->map(fn ($item) => [
+        $this->carrito = $ticket->items->map(fn($item) => [
             'item_type' => $item->item_type,
             'item_id' => $item->item_id,
             'descripcion' => $item->descripcion,
@@ -558,7 +558,7 @@ class Sales extends Component
                 // filtrar por estado — puede estar PARCIAL o PAGADO,
                 // ambos casos necesitan revisión.
                 $ticket = Voucher::where('tipo_comprobante', 'TICKET')
-                    ->whereHas('items', fn ($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
+                    ->whereHas('items', fn($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
                     ->latest()
                     ->first();
 
@@ -761,15 +761,15 @@ class Sales extends Component
                 }
             }
 
-            // CORREGIDO: ahora cada método trae también su número de operación
-            // (y datos bancarios, si se llenaron) — antes 'numero_operacion'
-            // nunca se guardaba porque no existía ningún input para eso.
-            foreach ([
-                'EFECTIVO' => ['monto' => $this->pagoEfectivo, 'operacion' => null, 'origen' => null, 'destino' => null],
-                'TARJETA' => ['monto' => $this->pagoTarjeta, 'operacion' => $this->numeroOperacionTarjeta, 'origen' => $this->entidadOrigen, 'destino' => $this->entidadDestino],
-                'YAPE' => ['monto' => $this->pagoYape, 'operacion' => $this->numeroOperacionYape, 'origen' => null, 'destino' => null],
-                'PLIN' => ['monto' => $this->pagoPlin, 'operacion' => $this->numeroOperacionPlin, 'origen' => null, 'destino' => null],
-            ] as $metodo => $datos) {
+            // cada método trae también su número de operación
+            foreach (
+                [
+                    'EFECTIVO' => ['monto' => $this->pagoEfectivo, 'operacion' => null, 'origen' => null, 'destino' => null],
+                    'TARJETA' => ['monto' => $this->pagoTarjeta, 'operacion' => $this->numeroOperacionTarjeta, 'origen' => $this->entidadOrigen, 'destino' => $this->entidadDestino],
+                    'YAPE' => ['monto' => $this->pagoYape, 'operacion' => $this->numeroOperacionYape, 'origen' => null, 'destino' => null],
+                    'PLIN' => ['monto' => $this->pagoPlin, 'operacion' => $this->numeroOperacionPlin, 'origen' => null, 'destino' => null],
+                ] as $metodo => $datos
+            ) {
                 if ($datos['monto'] > 0) {
                     $voucher->payments()->create([
                         'metodo_pago' => $metodo,

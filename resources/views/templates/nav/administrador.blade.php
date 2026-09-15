@@ -24,7 +24,7 @@
           <span class="nav-text">Citas</span>
       </a>
       <ul aria-expanded="false">
-          <li><a href="{{ route('admin.available.schedule.index') }}">Disponibles</a></li>
+          {{-- <li><a href="{{ route('admin.available.schedule.index') }}">Disponibles</a></li> --}}
           <li><a href="{{ route('admin.appointment.index') }}">Registrar Cita</a></li>
       </ul>
   </li>

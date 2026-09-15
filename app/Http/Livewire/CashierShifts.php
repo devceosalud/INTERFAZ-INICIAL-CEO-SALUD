@@ -20,7 +20,7 @@ class CashierShifts extends Component
        ═══════════════════════════════════════════════════════════*/
     public $cajas = []; //LISTA DE CAJAS FISICAS DISPONIBLE PARA EL SELECT
     public ?int $cajaId = null;  //CAJA ELEGIDA
-    public ?float $montoApertura = null; //SENCILLO CON EL QUE ARRANCA EL DIA
+    public $montoApertura = 0; //SENCILLO CON EL QUE ARRANCA EL DIA
 
 
     /**═══════════════════════════════════════════════════════════
@@ -39,10 +39,16 @@ class CashierShifts extends Component
             ->latest('abierto_en')
             ->first();
 
-        //SOLO CARGAMOS LA LISTA DE CAJAS SI HACE FALTA MOSTRARLA
-        //(ES DECIR, SI EL CAJERO TODAVIA NO TIENE TURNO ABIERTO)
         if (!$this->turno) {
-            $this->cajas = Cashier::where('estado', 'ACTIVO')->orderBy('nombre')->get();
+            $this->cajas = Cashier::where('estado', 'ACTIVO')
+                ->whereNotIn('id', function ($query) {
+                    $query->select('cashier_id')
+                        ->from('cashier_shifts')
+                        ->where('estado', 'ABIERTO');
+                })
+                ->orderBy('nombre')
+                ->get();
+            //dd($this->cajas);
         }
     }
 
@@ -89,6 +95,11 @@ class CashierShifts extends Component
     public function abrirTurno()
     {
         //dd($this->cajaId);
+        if($this->montoApertura == ''){ 
+           session()->flash('error', 'El valo de Monto de apertura no puede estar vacio o rellene con un 0');
+           return;
+        }
+        
         if (!$this->cajaId) {
             session()->flash('error', 'Seleccione una caja');
             return;

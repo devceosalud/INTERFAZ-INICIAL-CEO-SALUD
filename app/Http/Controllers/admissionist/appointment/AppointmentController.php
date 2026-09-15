@@ -147,9 +147,10 @@ class AppointmentController extends Controller
         }
 
         //TRAEMOS LOS DATOS DEL HORARIO DEL DOCTOR 
-        $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
+        //$dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
         $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('dia_semana', $dia)                        //días de la semana [1,2,3,4,5,6,7]
+            // ->where('dia_semana', $dia)                        //días de la semana [1,2,3,4,5,6,7]
+            ->where('fecha_cita', $request->fecha_cita)
             ->where('estado', 'ACTIVO')                        //estado del horario
             ->where('hora_inicio', '<=', $request->hora_cita)  //hora incial
             ->where('hora_fin', '>', $request->hora_cita)      //hora final

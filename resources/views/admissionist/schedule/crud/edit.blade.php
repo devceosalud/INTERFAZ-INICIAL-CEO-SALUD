@@ -1,5 +1,5 @@
-<div class="modal fade" id="doctorScheduleModalEdit" tabindex="-1" data-bs-backdrop="static" aria-labelledby="doctorScheduleModalEditLabel"
-    aria-hidden="true">
+<div class="modal fade" id="doctorScheduleModalEdit" tabindex="-1" data-bs-backdrop="static"
+    aria-labelledby="doctorScheduleModalEditLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -14,7 +14,8 @@
                 </button>
             </div>
 
-            <form id="formUpdateDoctorSchedule" method="POST" action="{{ route('admissionit.doctor.schedule.update') }}">
+            <form id="formUpdateDoctorSchedule" method="POST"
+                action="{{ route('admissionit.doctor.schedule.update') }}">
 
                 @method('put')
                 @csrf
@@ -29,7 +30,7 @@
                     <div class="row g-3">
                         <input type="hidden" name="doctor_schedule_id_edit" id="doctor_schedule_id_edit">
 
-                        <div class="col-md-3">
+                        <div class="col-md-12">
                             <label class="form-label text-primary">Doctor</label>
                             <select class="form-control" name="doctor_id_edit" id="doctor_id_edit">
                                 @foreach ($doctors as $doctor)
@@ -38,6 +39,7 @@
                             </select>
                         </div>
 
+                        {{--
                         <div class="col-md-3">
                             <input type="hidden">
                             <label class="form-label text-primary">día de la semana</label>
@@ -51,8 +53,9 @@
                                 <option value="7">Domingo</option>
                             </select>
                         </div>
+                        --}}
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">Hora inico</label>
                             <input type="time" class="form-control" name="hora_inicio_edit" id="hora_inicio_edit"
                                 placeholder="08:00">
@@ -60,7 +63,7 @@
                             <span class="text-danger error-text hora_inicio_edit_error"></span>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">Hora fin</label>
                             <input type="time" class="form-control" name="hora_fin_edit" id="hora_fin_edit"
                                 placeholder="20:00">
@@ -68,13 +71,20 @@
                             <span class="text-danger error-text hora_fin_edit_error"></span>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label text-primary">duración</label>
                             <select class="form-control" name="duracion_edit_cita" id="duracion_edit_cita">
                                 @for ($i = 10; $i <= 60; $i++)
                                     <option value="{{ $i }}"> {{ $i }} min</option>
                                 @endfor
                             </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label text-primary">Fecha Atención <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="fecha_cita_edit" id="fecha_cita_edit">
+                            <span class="text-danger error-text fecha_cita_edit_error"></span>
                         </div>
                     </div>
                 </div>

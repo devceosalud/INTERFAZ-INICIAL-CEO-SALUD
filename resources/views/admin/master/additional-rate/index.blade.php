@@ -74,15 +74,15 @@
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-additional-rate"
+                                                                <a href="#" class="edit-additional-rate btn btn-sm btn-primary"
                                                                     data-id="{{ $additionalRate->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                    <i class="fa fa-pencil fs-18"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-additional-rate"
+                                                                <a href="#" class="delete-additional-rate btn btn-sm btn-danger"
                                                                     data-id="{{ $additionalRate->id }}"><i
-                                                                        class="fa fa-trash fs-18 text-danger"></i></a>
+                                                                        class="fa fa-trash fs-18"></i></a>
                                                             </span>
                                                         </strong>
                                                     </td>

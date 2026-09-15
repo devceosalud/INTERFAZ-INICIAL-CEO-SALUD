@@ -1,5 +1,5 @@
-<div class="modal fade" id="appointmentModalCreate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="appointmentModalCreateLabel"
-    aria-hidden="true">
+<div class="modal fade" id="appointmentModalCreate" data-bs-backdrop="static" tabindex="-1"
+    aria-labelledby="appointmentModalCreateLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -27,7 +27,7 @@
                     <h6 class="fw-bold mb-3">Datos del Paciente</h6>
 
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label text-primary">Nro Documento <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="documento_paciente">
@@ -35,20 +35,12 @@
                             <span class="text-danger error-text patient_id_error"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <label class="form-label text-primary">Paciente <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nombre_paciente" readonly>
                         </div>
 
-                        <div class="col-md-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="cita_doble">
 
-                                <label class="form-check-label" for="cita_doble">
-                                    Generar turno doble
-                                </label>
-                            </div>
-                        </div>
                     </div>
 
                     <hr>
@@ -96,14 +88,26 @@
                             <span class="text-danger error-text service_id_error"></span>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label text-primary">Fecha Cita <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="fecha_cita" id="fecha_cita">
                             <span class="text-danger error-text fecha_cita_error"></span>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label text-primary">Hora Cita <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label text-primary">Hora Cita <span
+                                        class="text-danger">*</span></label>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cita_doble">
+
+                                    <label class="form-check-label" for="cita_doble">
+                                        Generar turno doble
+                                    </label>
+                                </div>
+                            </div>
+
                             {{--  <input type="text" class="form-control" name="hora_cita" placeholder="HH:mm"> --}}
                             <select class="form-control" name="hora_cita" id="hora_cita">
                                 <option value="">Seleccione una hora</option>
@@ -130,18 +134,21 @@
                             </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="form-check mt-4">
-                                <input class="form-check-input" type="checkbox" name="es_exonerado"
-                                    id="es_exonerado" value="1">
-                                <label class="form-check-label" for="es_exonerado">
-                                    Exonerado (Paga Médico)
-                                </label>
-                            </div>
-                        </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label text-primary">Autorizado por</label>
+
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label text-primary">Autorizado por</label>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="es_exonerado"
+                                        id="es_exonerado" value="1">
+                                    <label class="form-check-label" for="es_exonerado">
+                                        Exonerado (Paga Médico)
+                                    </label>
+                                </div>
+                            </div>
+
                             <input type="text" class="form-control" name="autorizado_por" id="autorizado_por"
                                 placeholder="Ej. DR QUIROZ">
                         </div>
@@ -179,10 +186,10 @@
                         <div class="col-md-6">
                             <label class="form-label text-primary">Método de Pago</label>
                             <select class="form-control" name="metodo_pago" id="metodo_pago">
-                                <option value="YAPE">YAPE</option>
-                                <option value="PLIN">PLIN</option>
                                 <option value="EFECTIVO">EFECTIVO</option>
                                 <option value="TARJETA">TARJETA</option>
+                                <option value="YAPE">YAPE</option>
+                                <option value="PLIN">PLIN</option>
                             </select>
                         </div>
 

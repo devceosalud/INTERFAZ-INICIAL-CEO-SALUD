@@ -70,15 +70,15 @@
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
-                                                                <a href="#" class="edit-interaction-medium"
+                                                                <a href="#" class="edit-interaction-medium btn btn-sm btn-primary"
                                                                     data-id="{{ $interactionMedium->id }}">
-                                                                    <i class="fa fa-pencil fs-18 text-success"></i>
+                                                                    <i class="fa fa-pencil fs-18"></i>
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-interaction-media"
+                                                                <a href="#" class="delete-interaction-media btn btn-sm btn-primary"
                                                                     data-id="{{ $interactionMedium->id }}">
-                                                                    <i class="fa fa-trash fs-18 text-danger"></i>
+                                                                    <i class="fa fa-trash fs-18"></i>
                                                                 </a>
                                                             </span>
                                                         </strong>

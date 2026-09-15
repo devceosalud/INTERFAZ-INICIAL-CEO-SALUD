@@ -8,6 +8,7 @@ use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\DoctorService;
 use App\Models\Service;
+use App\Models\Specialty;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -39,7 +40,7 @@ class ScheduleController extends Controller
         $appointment = $appointment->get();
 
         $events = $appointment->map(function ($schedule) {
-            // Optimización de colores usando una matriz (Array Key) en lugar de un Switch pesado
+            // optimización de colores usando una matriz (Array Key) en lugar de un Switch pesado
             $colors = [
                 1 => '#118da6',
                 2 => '#0d6efd',
@@ -54,6 +55,7 @@ class ScheduleController extends Controller
             $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
             return [
+                //eventos calendario
                 'id' => $schedule->id,
                 'title' => $schedule->patient->nombre . ' - ' . $schedule->service->nombre, // Un título más descriptivo para el calendario
                 'start' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
@@ -63,6 +65,7 @@ class ScheduleController extends Controller
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
 
+                //eventos comunes
                 'patient_id' => $schedule->patient_id,
                 'documento_paciente' => $schedule->patient->numero_identidad,
                 'nombre_paciente' => $schedule->patient->nombre . ' ' . $schedule->patient->apellido_paterno . ' ' . $schedule->patient->apellido_materno,
@@ -144,14 +147,22 @@ class ScheduleController extends Controller
     }
 
 
-    /***************************************************************************
-     * CRUD DE HORARIOS MEDICOS  Y SU CALENDARIO WEB                                               *
-     ***************************************************************************/
-
-    public function doctor_schedules()
+    /********************************************************************************************************
+     * CRUD DE HORARIOS MEDICOS  Y SU CALENDARIO WEB                                                        *
+     ********************************************************************************************************/
+    public function doctor_schedules(Request $request)
     {
+        $mes = Date('Y-m');
+        $doctor_schedules = DoctorSchedule::where('estado', 'ACTIVO')
+            ->where('fecha_cita', 'like', '%' . $mes . '%');
 
-        $doctor_schedules = DoctorSchedule::all();
+        //PARA FILTRAR CITAS POR MEDICO
+        if ($request->doctor_id) {
+            $doctor_schedules->where('doctor_id', $request->doctor_id);
+        }
+
+        $doctor_schedules = $doctor_schedules->get();
+
         $events = $doctor_schedules->map(function ($schedule) {
 
             $colors = [
@@ -168,6 +179,7 @@ class ScheduleController extends Controller
             $color = $colors[$schedule->doctor->id] ?? '#198754';
 
             return [
+                //eventos calendarios
                 'id' => $schedule->id,
                 'title' => $schedule->doctor->nombre, // Un título más descriptivo para el calendario
                 'start' => $schedule->fecha_cita . "T" . $schedule->hora_inicio, // hora inicio   '2026-09-16T10:00:00',
@@ -176,6 +188,14 @@ class ScheduleController extends Controller
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
+
+                //eventos comunes
+                'doctor_schedule_id_edit' => $schedule->id,
+                'doctor_id_edit' => $schedule->doctor_id,
+                'hora_inicio_edit' => $schedule->hora_inicio,
+                'hora_fin_edit' => $schedule->hora_fin,
+                'duracion_edit_cita' => $schedule->duracion_cita,
+                'fecha_cita_edit' => $schedule->fecha_cita
             ];
         });
 
@@ -187,9 +207,12 @@ class ScheduleController extends Controller
     {
         $doctor_schedules = DoctorSchedule::where('estado', 'ACTIVO')->get();
         $doctors = Doctor::where('estado', 'ACTIVO')->get();
+        $specialties = Specialty::where('estado', 'ACTIVO')->get();
+
         return view('admissionist.schedule.index', [
             'doctor_schedules' => $doctor_schedules,
-            'doctors' => $doctors
+            'doctors' => $doctors,
+            'specialties' => $specialties
         ]);
     }
 
@@ -243,7 +266,7 @@ class ScheduleController extends Controller
         $validator = Validator::make($request->all(), [
             'doctor_schedule_id_edit' => 'required|exists:doctor_schedules,id',
             'doctor_id_edit' => 'required|exists:doctors,id',
-            'dia_semana_edit' => 'required|integer|between:1,7',
+            // 'dia_semana_edit' => 'required|integer|between:1,7',
             'hora_inicio_edit' => 'required|date_format:H:i',
             'hora_fin_edit' => 'required|date_format:H:i|after:hora_inicio_edit',
             'duracion_edit_cita' => 'required|integer|in:10,15,20,30,45,60',
@@ -266,7 +289,8 @@ class ScheduleController extends Controller
 
         $exito = $doctor_schedule->update([
             'doctor_id'     => $request->doctor_id_edit,
-            'dia_semana'    => $request->dia_semana_edit,
+            'dia_semana'    => '1',
+            'fecha_cita' => $request->fecha_cita_edit,
             'hora_inicio'   => $request->hora_inicio_edit,
             'hora_fin'      => $request->hora_fin_edit,
             'duracion_cita' => $request->duracion_edit_cita

@@ -49,7 +49,7 @@
             <div class="container-fluid">
                 <!-- row -->
 
-                <x-utils.schedules :doctors="$doctors" />
+                <x-utils.schedules :doctors="$doctors" :specialties="$specialties" />
             </div>
 
             @include('admissionist.schedule.crud.create')
@@ -80,6 +80,7 @@
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
 
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
+        <script src="{{ asset('js/admissionist/calendario-medico/filtro-calendario-medico.js') }}"></script>
         <script src="{{ asset('js/admissionist/calendario-medico/calendario-medico.js') }}"></script>
     @endsection
 

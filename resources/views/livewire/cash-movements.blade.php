@@ -81,7 +81,7 @@
                                     {{ $movimiento->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-warning"
+                                    <button type="button" class="btn btn-sm btn-pimary"
                                         wire:click="editar({{ $movimiento->id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
