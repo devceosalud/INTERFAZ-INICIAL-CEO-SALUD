@@ -117,6 +117,14 @@ document.addEventListener('DOMContentLoaded', function () {
             let eventCalendar = info.event; // Objeto de evento de FullCalendar
             let eventComun = info.event.extendedProps; // Propiedades adicionales del evento
 
+            if (eventComun.tipo === 'disponible') {
+                $('#appointmentModalCreate input[name="fecha_cita"]').val(eventComun.fecha_cita);
+                $('#appointmentModalCreate input[name="hora_cita"]').val(eventComun.hora_cita);
+                $('#appointmentModalCreate select[name="doctor_id"]').val(eventComun.doctor_id).trigger('change');
+                $('#appointmentModalCreate').modal('show');
+                return;
+            }
+
             // Acceder a los datos del evento
             let id = eventCalendar.id; // ID del evento
             let title = eventCalendar.title;

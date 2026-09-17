@@ -15,49 +15,45 @@ use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
 {
-    //LISTA DE LOS HORARIOS PARA EL CALENDARIO WEB
     public function list(Request $request)
     {
-        //CITAS MES ACTUAL Y ANTERIOR
-        $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
-            ->whereBetween('fecha_cita', [
-                Carbon::now()->startOfMonth(),
-                Carbon::now()->addMonth()->endOfMonth()
-            ])->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
+        // Uso el rango que FullCalendar manda automáticamente en
+        // 'start'/'end' (el mes que el usuario está viendo) en vez de
+        // un rango fijo — así, cuando el usuario navega con "next" a
+        // otro mes, la consulta se ajusta sola sin recargar la página.
+        $inicioRango = $request->start ? Carbon::parse($request->start) : Carbon::now()->startOfMonth();
+        $finRango = $request->end ? Carbon::parse($request->end) : Carbon::now()->addMonth()->endOfMonth();
 
-        //PARA FILTRAR CITAS POR ESPECIALIDAD
+        $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
+            ->whereBetween('fecha_cita', [$inicioRango, $finRango])
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
+
         if ($request->specialty_id) {
             $appointment->whereHas('service', function ($query) use ($request) {
                 $query->where('specialty_id', $request->specialty_id);
             });
         }
 
-        //PARA FILTRAR CITAS POR MEDICO
         if ($request->doctor_id) {
             $appointment->where('doctor_id', $request->doctor_id);
         }
 
         $appointment = $appointment->get();
 
-        $events = $appointment->map(function ($schedule) {
-            // optimización de colores usando una matriz (Array Key) en lugar de un Switch pesado
-            $colors = [
-                1 => '#118da6',
-                2 => '#0d6efd',
-                3 => '#ffc107',
-                4 => '#021209',
-                5 => '#ce14cb',
-                6 => '#dc3545',
-                7 => '#110569',
-                8 => '#ffc107',
-            ];
+        $colors = [
+            1 => '#118da6', 2 => '#0d6efd', 3 => '#ffc107', 4 => '#021209',
+            5 => '#ce14cb', 6 => '#dc3545', 7 => '#110569', 8 => '#ffc107',
+        ];
 
+        // Los eventos de citas OCUPADAS — tu mismo código de siempre,
+        // solo agrego 'tipo' => 'ocupado' para que eventClick() sepa
+        // qué modal abrir al hacer clic.
+        $events = $appointment->map(function ($schedule) use ($colors) {
             $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
             return [
-                //eventos calendario
                 'id' => $schedule->id,
-                'title' => $schedule->patient->nombre . ' - ' . $schedule->service->nombre, // Un título más descriptivo para el calendario
+                'title' => $schedule->patient->nombre . ' - ' . $schedule->service->nombre,
                 'start' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
                 'end' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
                 'color' => $color,
@@ -65,7 +61,7 @@ class ScheduleController extends Controller
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
 
-                //eventos comunes
+                'tipo' => 'ocupado', // NUEVO
                 'patient_id' => $schedule->patient_id,
                 'documento_paciente' => $schedule->patient->numero_identidad,
                 'nombre_paciente' => $schedule->patient->nombre . ' ' . $schedule->patient->apellido_paterno . ' ' . $schedule->patient->apellido_materno,
@@ -84,9 +80,104 @@ class ScheduleController extends Controller
                 'observaciones' => $schedule->observaciones ?? 'SIN OBSERVACIONES',
                 'motivo_consulta' => $schedule->motivo_consulta ?? 'SIN MOTIVO',
             ];
-        });
+        })->values();
 
-        return response()->json($events);
+        // NUEVO: si hay un médico seleccionado, se agregan sus slots
+        // DISPONIBLES como eventos verdes, junto a las citas ocupadas.
+        // Como en tu formulario "Médico" es obligatorio, esto se
+        // dispara siempre que el usuario haya elegido uno.
+        if ($request->doctor_id) {
+            $eventosDisponibles = $this->generarEventosDisponibles(
+                $request->doctor_id,
+                $inicioRango->copy()->max(Carbon::today()), // nunca generar disponibilidad en el pasado
+                $finRango
+            );
+
+            $events = $events->concat($eventosDisponibles);
+        }
+
+        return response()->json($events->values());
+    }
+
+    /**
+     * Genera un evento "Disponible" por cada slot libre del médico,
+     * recorriendo día por día dentro del rango visible del calendario.
+     * Reutiliza la misma lógica de cruce de horarios que ya tenías en
+     * availableHours() (que ahora puedes eliminar, junto con todo el
+     * JS de cargarHorariosCita/generarHorariosCita/existeCruceCita/
+     * convertirMinutosCita/convertirHoraCita y el <select id="hora_cita">
+     * — nada de eso vuelve a usarse con este enfoque).
+     */
+    private function generarEventosDisponibles(int $doctorId, Carbon $desde, Carbon $hasta)
+    {
+        $eventos = collect();
+        $fecha = $desde->copy();
+
+        while ($fecha->lte($hasta)) {
+            $fechaStr = $fecha->toDateString();
+            $dia = $fecha->dayOfWeekIso;
+
+            // Mismo criterio de siempre: primero busca un horario
+            // específico para ESA fecha (fecha_cita no nula), y si no
+            // existe, cae al horario recurrente por día de semana.
+            $horarios = DoctorSchedule::where('doctor_id', $doctorId)
+                ->where('estado', 'ACTIVO')
+                ->where(function ($q) use ($fechaStr, $dia) {
+                    $q->where('fecha_cita', $fechaStr)
+                      ->orWhere(function ($q2) use ($dia) {
+                          $q2->whereNull('fecha_cita')->where('dia_semana', $dia);
+                      });
+                })
+                ->get();
+
+            if ($horarios->isNotEmpty()) {
+                $ocupadas = Appointment::where('doctor_id', $doctorId)
+                    ->whereDate('fecha_cita', $fechaStr)
+                    ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION'])
+                    ->get(['hora_cita', 'duracion_cita']);
+
+                foreach ($horarios as $horario) {
+                    $cursor = Carbon::parse("{$fechaStr} {$horario->hora_inicio}");
+                    $finJornada = Carbon::parse("{$fechaStr} {$horario->hora_fin}");
+                    $duracion = $horario->duracion_cita;
+
+                    while ($cursor->copy()->addMinutes($duracion)->lte($finJornada)) {
+                        $slotInicio = $cursor->copy();
+                        $slotFin = $cursor->copy()->addMinutes($duracion);
+
+                        $hayCruce = $ocupadas->contains(function ($cita) use ($fechaStr, $slotInicio, $slotFin) {
+                            $ci = Carbon::parse("{$fechaStr} {$cita->hora_cita}");
+                            $cf = $ci->copy()->addMinutes($cita->duracion_cita ?? 0);
+                            return $slotInicio->lt($cf) && $ci->lt($slotFin);
+                        });
+
+                        if (!$hayCruce) {
+                            $eventos->push([
+                                'id' => 'libre-' . $fechaStr . '-' . $slotInicio->format('Hi'),
+                                'title' => 'Disponible',
+                                'start' => $fechaStr . 'T' . $slotInicio->format('H:i:s'),
+                                'end' => $fechaStr . 'T' . $slotFin->format('H:i:s'),
+                                'color' => '#28a745',
+                                'backgroundColor' => '#28a745',
+                                'borderColor' => '#28a745',
+                                'textColor' => '#ffffff',
+
+                                'tipo' => 'disponible',
+                                'doctor_id' => $doctorId,
+                                'fecha_cita' => $fechaStr,
+                                'hora_cita' => $slotInicio->format('H:i'),
+                            ]);
+                        }
+
+                        $cursor->addMinutes($duracion);
+                    }
+                }
+            }
+
+            $fecha->addDay();
+        }
+
+        return $eventos;
     }
 
 

@@ -97,8 +97,9 @@
                                 </div>
                             </div>
 
-
-                            {{-- VARIABLE QUE ME MUESTRA EL INPUT O SELECT: RUTA:admissionit.available.schedule.index --}}
+                            <input type="text" class="form-control" name="hora_cita" id="hora_cita"
+                                placeholder="HH:mm">
+                            {{-- VARIABLE QUE ME MUESTRA EL INPUT O SELECT: RUTA:admissionit.available.schedule.index 
                             @isset($hora_cita)
                                 @if ($hora_cita)
                                     <input type="text" class="form-control" name="hora_cita" id="hora_cita"
@@ -109,6 +110,7 @@
                                     <option value="">Seleccione una hora</option>
                                 </select>
                             @endisset
+                            --}}
                             <span class="text-danger error-text hora_cita_error"></span>
                         </div>
                     </div>
