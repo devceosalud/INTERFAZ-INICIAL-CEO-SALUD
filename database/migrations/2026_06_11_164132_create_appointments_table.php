@@ -54,14 +54,14 @@ return new class extends Migration
 
             //ESTADO DE LA CITA
             $table->enum('estado_cita', [
-                'PROGRAMADO',   //programado la cita en la bd
-                'CONFIRMADO',   //confirmo su cita 
-                'EN_ESPERA',    // en espera 
-                'LLAMANDO',     // cuando lo llaman 
-                'EN_ATENCION',  // en consultorio (llamado del paciente)
-                'ATENDIDO',     //se atendio 
-                'CANCELADO',    //cancelo su cita
-                'NO_ASISTIO'    //no vino
+                'PROGRAMADO',  
+                'CONFIRMADO',  
+                'EN_ESPERA',    
+                'LLAMANDO',     
+                'EN_ATENCION',  
+                'ATENDIDO',     
+                'CANCELADO',    
+                'NO_ASISTIO'    
             ])->default('PROGRAMADO');
             $table->text('observaciones')->nullable();
             $table->date('fecha_registro')->nullable();

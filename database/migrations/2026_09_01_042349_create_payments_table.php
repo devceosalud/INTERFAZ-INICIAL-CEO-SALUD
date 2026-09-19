@@ -13,19 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        // ═══════════════════════════════════════════════════════════
-        // pagos — Dinero recibido de la venta, una fila por cada
-        // método usado. 100% uso interno: a SUNAT solo le importa
-        // 'condicion_pago' en comprobantes, no si fue Yape o efectivo.
-        // ═══════════════════════════════════════════════════════════
+ 
         Schema::create('payments', function (Blueprint $table) {
-            $table->id(); // INTERNO.
-            $table->foreignId('voucher_id')->constrained()->cascadeOnDelete(); // INTERNO: a qué venta pertenece este pago.
-            $table->string('metodo_pago'); // INTERNO: EFECTIVO, TARJETA, TRANSFERENCIA, YAPE, PLIN, OTROS.
-            $table->decimal('monto', 10, 2); // INTERNO.
-            $table->string('numero_operacion')->nullable(); // INTERNO: voucher/referencia del pago.
-            $table->unsignedBigInteger('user_id'); // INTERNO: cajero que recibió el dinero.
-            $table->unsignedBigInteger('cashier_shift_id'); // INTERNO: turno donde entra el dinero (clave para el cuadre).
+            $table->id(); 
+            $table->foreignId('voucher_id')->constrained()->cascadeOnDelete(); 
+            $table->string('metodo_pago'); 
+            $table->decimal('monto', 10, 2); 
+            $table->string('numero_operacion')->nullable(); 
+            $table->unsignedBigInteger('user_id'); 
+            $table->unsignedBigInteger('cashier_shift_id'); 
             $table->string('entidad_origen')->nullable()->after('numero_operacion');
             $table->string('entidad_destino')->nullable()->after('entidad_origen');
             $table->timestamps();
