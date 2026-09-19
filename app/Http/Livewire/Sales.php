@@ -31,41 +31,24 @@ class Sales extends Component
     public bool $aplicaDetraccion = false;
     public ?string $tipoDetraccion = null;
 
-    /**═══════════════════════════════════════════════════════════
-     * BUSQUEDA POR RUC
-     ═══════════════════════════════════════════════════════════*/
     public string $buscarRuc = '';
 
-    /**═══════════════════════════════════════════════════════════
-     *  QUIEN SE ATIENDE?
-     ═══════════════════════════════════════════════════════════*/
     public string $buscarAtiende = '';
     public array $resultadosAtiende  = [];
     public ?int $atiendeId = null;
     public ?string $atiendeNombre = null;
 
 
-    /**═══════════════════════════════════════════════════════════
-     * QUIEN PAGA?
-     ═══════════════════════════════════════════════════════════ */
     public string $buscarPaga = '';
     public array $resultadosPaga = [];
     public ?int $pagaId = null;
     public ?string $pagaNombre = null;
 
 
-    /**═══════════════════════════════════════════════════════════
-     * LISTA DE DOCTORES  DEL SELECT
-     ═══════════════════════════════════════════════════════════*/
     public $doctores = [];
     public ?int $filtroDoctorId = null;
 
 
-    /*═══════════════════════════════════════════════════════════
-     * BUSCADOR TRANSVERSAL
-     * "Transversal" porque junta resultados de DOS tablas
-     * distintas (items y services) en una sola lista.
-     ═══════════════════════════════════════════════════════════*/
     public string $busqueda = '';
     public array $resultadosBusqueda = [];
 
@@ -77,29 +60,20 @@ class Sales extends Component
     public $pagoYape = 0;
     public $pagoPlin = 0;
 
-    // Número de operación por método (solo aplica a los que no son EFECTIVO)
+
     public $numeroOperacionTarjeta = '';
     public $numeroOperacionYape = '';
     public $numeroOperacionPlin = '';
 
-    // Detalle bancario (opcional, solo si quieres replicar el nivel de
-    // detalle de tu boleta de ejemplo con banco origen/destino)
+
     public $entidadOrigen = '';
     public $entidadDestino = '';
 
     public ?int $voucherGuardadoId = null;
 
-
-    /*═══════════════════════════════════════════════════════════
-     * Liquidar tickets con saldo pendiente
-     ═══════════════════════════════════════════════════════════*/
     public ?int $ticketOrigenId = null;
 
 
-
-    /*═══════════════════════════════════════════════════════════
-     * Buscador de citas agendadas
-     ═══════════════════════════════════════════════════════════*/
     public string $buscarCita = '';
     public array $resultadosCitas = [];
 
@@ -130,11 +104,6 @@ class Sales extends Component
         ];
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * El prefijo updated + el nombre EXACTO  de una propiedad púclica (BuscarAtiende) -> $buscarAtiende
-     * es una convención mágica de Livewire: este método corre SOLO cuando esa propiedad cambia - cada vez que el cajero
-     * escriba en el input con wire:model="BuscarAtiende"
-     ═══════════════════════════════════════════════════════════*/
     public function updatedBuscarAtiende()
     {
         if (strlen($this->buscarAtiende) < 2) {
@@ -171,31 +140,13 @@ class Sales extends Component
         $this->resultadosAtiende = [];
     }
 
-    /**
-     * getNombreCompletoAttribute()
-     * Cualquier método con el patrón "get{Campo}Attribute" es un
-     * ACCESSOR de Eloquent — Laravel lo detecta solo y te permite
-     * usarlo como si fuera una columna más: $paciente->nombre_completo
-     * (con guion bajo, no camelCase), en vez de tener que llamarlo
-     * como método. Internamente arma el nombre juntando las 3 columnas
-     * reales que sí existen en la tabla.
-     */
+
     public function getNombreCompletoAttribute(): string
     {
-        // trim() al final quita espacios sobrantes si algún apellido
-        // viene vacío (ej. sin apellido materno) — sin esto, quedaría
-        // un espacio doble en el nombre.
         return trim("{$this->nombre} {$this->apellido_paterno} {$this->apellido_materno}");
     }
 
 
-    /**═══════════════════════════════════════════════════════════
-     * buscarPorRuc(SuantService $sunat)
-     * Se dispara al hacer clic en "Buscar" junto al campo de RUC (solo visible cuando tipoComporbante = FACTURA)
-     * "SunatService $sunat" en la firma del método es INYECCION DE DEPENDENCIA: Livewire 3 ve ese tipo declarado
-     * y construye automáticamente una instancia de SunatService para entregartela lista para usar - no hace
-     * falta escribir "new SunatService()" en ningun lado de codigo
-     ═══════════════════════════════════════════════════════════*/
     public function buscarPorRuc(SunatService $sunat)
     {
         if (strlen($this->buscarRuc) !== 11) {
@@ -225,11 +176,7 @@ class Sales extends Component
         $this->buscarRuc = '';
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * updateBuscarPaga() / seleccionarPaga()
-     * Mismo patrón que los dos anteriores, aplicada al buscador de ¿Quién paga?
-     * (cuando el pagador es una persona, no una empresa)
-     ═══════════════════════════════════════════════════════════*/
+
     public function updatedBuscarPaga()
     {
         if (strlen($this->buscarPaga) < 2) {
@@ -264,11 +211,6 @@ class Sales extends Component
         $this->resultadosPaga = [];
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * updatedBusqueda()
-     * El buscador tranversal: una sola caja de texto que busca símultáneamente en DOS tablas distintas (items y servicios)
-     * y devuelve los resultados mezclados como si vinieran de un solo lugar
-     ═══════════════════════════════════════════════════════════*/
     public function updatedBusqueda()
     {
         if (strlen($this->busqueda) < 2) {
@@ -316,13 +258,6 @@ class Sales extends Component
         //dd($this->resultadosBusqueda);
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * agregarAlCarrito()
-     * Se dispara al hacer clic en un resultado del buscador
-     * Recibe el ARRAY COMPLETO (no solo el id) porque ya trae el precio, la afectacion de IGV
-     * el codigo SUNAT, etc. Evita una segunda consulta a la base de datos solo para "volver a preguntar"
-     * datos que ya teniamos en la mano
-     ═══════════════════════════════════════════════════════════*/
     public function agregarAlCarrito(array $resultado)
     {
         //dd($resultado);
@@ -339,8 +274,6 @@ class Sales extends Component
             'comision_porcentaje' => (float) $resultado['comision']
         ];
 
-        //limpiamos el buscador para que la lista desaparezca y el cajero
-        //pueda buscar el siguiente item de inmediato
         $this->busqueda = '';
         $this->resultadosBusqueda = [];
     }
@@ -354,9 +287,6 @@ class Sales extends Component
 
         foreach ($this->carrito as $linea) {
 
-            /**
-             * Para que acepte 0 en los input
-             */
             $precio = (float) ($linea['precio'] ?? 0);
             $cantidad = (float) ($linea['cantidad'] ?? 0);
             $totalLinea = round($precio * $cantidad, 2);
@@ -392,40 +322,21 @@ class Sales extends Component
 
     public function getVueltoProperty()
     {
-        // ANTES comparaba contra $this->calculoCarrito['total'] (el
-        // total COMPLETO) — eso hacía que, si pagabas los S/5.80 que
-        // realmente faltaban, el sistema pensara que te faltaban
-        // S/10.00 más (porque comparaba contra los S/15.80 completos).
         return max(0, $this->totalPagado - $this->montoACobrar); // CORREGIDO
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * QuitarDelCarrito()
-     * Elimina una línea especifico, identificada por su POSICION
-     * dentro del arrar (no por su id de producto)
-     ═══════════════════════════════════════════════════════════*/
+
     public function quitarDelCarrito(int $index)
     {
         unset($this->carrito[$index]);
         $this->carrito = array_values($this->carrito); //reordena el indice
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * actualizarDoctorLinea()
-     * Asigna (o cambia) el profesional responsable de UNA línea puntual del carrito
-     ═══════════════════════════════════════════════════════════*/
     public function actualizarDoctorLinea(int $index, ?int $doctorId)
     {
         $this->carrito[$index]['doctor_id'] = $doctorId;
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * updatedTipoComprobante()
-     * Corre automaticamente apenas cambia $tipoComprobante. Su trabaja es "limpiar"
-     * campos que dejam de tener sentido al cambiar de tipo - por ejemplo, si estaba en FACTURA
-     * con un RUC ya 2buscado, y cambia a BOLETA, no queremos que ese dato quede guardado por error
-     * si luego regresa a FACTURA
-     ═══════════════════════════════════════════════════════════*/
     public function updatedTipoComprobante()
     {
         if ($this->tipoComprobante !== 'FACTURA') {
@@ -438,13 +349,7 @@ class Sales extends Component
         }
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * NUEVO: solo se considera "pendiente de liquidar" un ticket
-     * que contenga al menos una CITA. Un ticket de venta directa
-     * (gasas, mascarillas, examen pagado al contado) solo tiene
-     * items de tipo 'item' — ese es un comprobante final por sí
-     * mismo, jamás espera una boleta/factura posterior.
-     ═══════════════════════════════════════════════════════════*/
+
     public function getTicketsPendientesProperty()
     {
         if (!$this->atiendeId) {
@@ -458,12 +363,6 @@ class Sales extends Component
             ->get();
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * El cajero elige uno de los tickets pendientes. Carga el carrito con los MISMOS items
-     * del ticket original - no se vuelven a buscar en items/service, proque el precio y la
-     * afectacion de IGV ya quedaron fijados en el dia que se creo el ticket, y no deben
-     * cambiar aunque el catalogo cambie despues
-    ═══════════════════════════════════════════════════════════*/
     public function liquidarTicket(int $ticketId)
     {
         $ticket = Voucher::with('items')->findOrFail($ticketId);
@@ -488,18 +387,10 @@ class Sales extends Component
         $this->resultadosCitas = [];
     }
 
-    /**═══════════════════════════════════════════════════════════
-     * Cuánto debe cobrar el cajero EN ESTE MOMENTO. Si se está
-     * liquidando un ticket (o una cita con adelanto), es solo la
-     * DIFERENCIA pendiente — no el total del comprobante. Si es una
-     * venta nueva desde cero, es el total completo, como siempre.
-     ═══════════════════════════════════════════════════════════*/
+
     public function getMontoACobrarProperty(): float
     {
         if ($this->ticketOrigenId) {
-            // Vuelve a consultar el ticket para tener su saldo_pendiente
-            // actualizado (por si acaso cambió algo entre que se cargó
-            // el carrito y este momento).
             $ticket = Voucher::find($this->ticketOrigenId);
             return $ticket ? $ticket->saldo_pendiente : $this->calculoCarrito['total'];
         }
@@ -509,9 +400,6 @@ class Sales extends Component
 
 
 
-    /**═══════════════════════════════════════════════════════════
-     * Buscador de Citas Agendadas
-     ═══════════════════════════════════════════════════════════*/
     public function updatedBuscarCita()
     {
         if (strlen($this->buscarCita) < 2) {
@@ -533,9 +421,7 @@ class Sales extends Component
                     ->orWhere('appointments.numero_cita', 'like', "%{$this->buscarCita}%");
             })
             ->whereNotIn('appointments.estado_cita', ['CANCELADO', 'NO_ASISTIO'])
-            // CORREGIDO: se QUITA el ->where('estado_pagado', '!=', 'PAGADO')
-            // de aquí — una cita pagada al 100% todavía puede necesitar
-            // su boleta/factura formal, así que no se descarta a este nivel.
+
             ->select(
                 'appointments.id',
                 'appointments.numero_cita',
@@ -553,18 +439,11 @@ class Sales extends Component
             ->get()
             ->map(function ($c) {
                 $precioTotal = (float) $c->precio_primera_consulta + (float) $c->tarifa_adicional;
-
-                // Se busca el TICKET más reciente de esta cita, sin
-                // filtrar por estado — puede estar PARCIAL o PAGADO,
-                // ambos casos necesitan revisión.
                 $ticket = Voucher::where('tipo_comprobante', 'TICKET')
                     ->whereHas('items', fn($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
                     ->latest()
                     ->first();
 
-                // Si ese ticket YA tiene una boleta/factura hija (ya se
-                // liquidó formalmente), esta cita está 100% resuelta —
-                // se descarta de los resultados (devuelve null).
                 if ($ticket && Voucher::where('parent_voucher_id', $ticket->id)->exists()) {
                     return null;
                 }
@@ -576,9 +455,6 @@ class Sales extends Component
                     'texto' => "{$c->servicio_nombre} — Dr. {$c->doctor_nombre} — " . Carbon::parse($c->fecha_cita)->format('d/m') . " {$c->hora_cita} [{$c->estado_cita}]",
                     'precio_total' => $precioTotal,
                     'ticket_pendiente_id' => $ticket?->id,
-                    // Si no hay ticket todavía, el saldo es el precio
-                    // completo (nunca se cobró nada). Si hay ticket, es
-                    // su saldo real (puede ser 0 si ya pagó todo).
                     'saldo_pendiente' => $ticket?->saldo_pendiente ?? $precioTotal,
                 ];
             })
@@ -588,13 +464,6 @@ class Sales extends Component
     }
 
 
-
-    /**═══════════════════════════════════════════════════════════
-     * Cobro NUEVO  de una cita (primera vez que se cobra, sea al 100%)
-     * o dejando un adelanto - el monto real lo decide el cajero despues en los inputs de pago)
-     * Ademas de apilarla en el carrito, selecciona automaticamente al paciente de esa cita como
-     * "quien se atiende", si  es que el cajero aun no habia elegido a nadie - asi no busca dos veces al mismo paciente
-     ═══════════════════════════════════════════════════════════*/
     public function agregarCitaAlCarrito(int $appointmentId, int $patientId, float $precio, ?int $doctorId)
     {
         if (!$this->atiendeId) {
@@ -622,13 +491,6 @@ class Sales extends Component
     }
 
 
-
-
-    /**═══════════════════════════════════════════════════════════
-     * guardarVenta()
-     * Toma todo lo armado  en pantalla (carrito, pagador/paciente y pagos)
-     * y lo convierte en filas reales de la base de datos, de forma segura y "todo o nada"
-     ═══════════════════════════════════════════════════════════*/
     public function guardarVenta()
     {
         if (!$this->turno) {
@@ -647,8 +509,7 @@ class Sales extends Component
         }
 
         $calculo = $this->calculoCarrito;
-        // El saldo real a exigir: si se está liquidando un ticket, es su
-        // saldo_pendiente (no el total completo del comprobante nuevo).
+
         $montoRequerido = $calculo['total'];
         if ($this->ticketOrigenId) {
             $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
@@ -664,11 +525,6 @@ class Sales extends Component
             return;
         }
 
-
-        // NUEVO: si se está liquidando un ticket, lo que hay que cubrir
-        // no es el total completo (¡eso ya se pagó en parte!), sino solo
-        // el saldo. saldo_pendiente es el accessor del modelo Voucher
-        // (total - suma de sus pagos ya registrados).
         $montoRequerido = $calculo['total'];
         if ($this->ticketOrigenId) {
             $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
@@ -680,11 +536,6 @@ class Sales extends Component
         }
 
 
-        /**═══════════════════════════════════════════════════════════
-         * LA TRANSACCION: TODO O ANDA
-         * DB::transaction() envuelve el codigo de adentro en un bloque atomico: si CUALQUIER
-         * linea lanza un erro, Laravel deshace automaticamente TODO lo que alcanzó a guardar antes
-         ═══════════════════════════════════════════════════════════*/
         $voucherId = DB::transaction(function () use ($calculo) {
             $serie = VoucherSerie::where('tipo_comprobante', $this->tipoComprobante)
                 ->where('estado', 'ACTIVO')
@@ -722,10 +573,6 @@ class Sales extends Component
                 'parent_voucher_id' => $this->ticketOrigenId, // null si es venta nueva, o el id del ticket si liquida uno
             ]);
 
-            // NUEVO: si se está liquidando un ticket, hay que marcarlo
-            // como resuelto — si no, seguirá apareciendo para siempre en
-            // getTicketsPendientesProperty(), aunque ya se haya cobrado
-            // el saldo completo en la boleta que se acaba de crear.
             if ($this->ticketOrigenId) {
                 Voucher::where('id', $this->ticketOrigenId)->update(['estado' => 'PAGADO']);
             }

@@ -224,26 +224,21 @@
                 {{-- CARRITO --}}
                 @if (count($carrito) > 0)
                     @foreach ($carrito as $index => $linea)
-                        {{-- wire:key sigue siendo obligatorio, ahora sobre el div de la tarjeta en vez de un <tr> --}}
+                
                         <div class="border rounded p-3 mb-3" wire:key="carrito-{{ $index }}">
                             <div class="row g-3">
 
-                                {{-- COLUMNA IZQUIERDA: identidad del ítem + profesional --}}
+                               
                                 <div class="col-md-7">
                                     <div class="d-flex align-items-start gap-2 mb-2">
-                                        {{-- círculo con ícono, solo decorativo, como el avatar de smartsystem --}}
+                                      
                                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0"
                                             style="width:40px;height:40px;">
                                             <i class="bi bi-search text-muted"></i>
                                         </div>
 
                                         <div class="flex-grow-1">
-                                            {{--
-                                            strtoupper() muestra 'SERVICIO' o 'ITEM' en mayúsculas como en la referencia. Si
-                                            item_type='item' pero el ítem real es un PRODUCTO, esto seguiría diciendo "ITEM" —
-                                            si quieres que diga literalmente "PRODUCTO", habría que guardar ese dato también en el
-                                            carrito al momento de agregarAlCarrito() (dime si lo necesitas y lo ajustamos).
-                                            --}}
+  
                                             <div class="small text-muted">{{ strtoupper($linea['item_type']) }}</div>
                                             <div class="small text-muted">Precio Ref.: S/
                                                 {{ number_format($linea['precio'], 2) }}</div>
@@ -257,11 +252,7 @@
                                     </div>
 
                                     <label class="form-label small mb-1">Nombre</label>
-                                    {{--
-                                    wire:model.live="carrito.{{ $index }}.descripcion" NUEVO respecto a la versión anterior: antes la
-                                    descripción no era editable en el carrito, ahora sí — igual que en tu imagen, donde "Nombre" es un
-                                    input editable debajo del ítem.
-                                    --}}
+
                                     <input type="text" wire:model.live="carrito.{{ $index }}.descripcion"
                                         class="form-control form-control-sm mb-2">
 
@@ -364,10 +355,6 @@
                                     {{ number_format($calculo['total_exonerado'], 2) }} </div>
                             @endif
 
-                            {{--
-                              NUEVO: solo aparece cuando se está liquidando un ticket 
-                              — muestra la aritmética completa para que el  cajero nunca tenga que adivinar cuánto cobrar.
-                            --}}
                             @if ($ticketOrigenId)
                                 <div class="small text-success">
                                     Ya pagado (adelanto): S/
@@ -379,7 +366,6 @@
                             @endif
 
                             <div class="small text-muted">IGV: S/ {{ number_format($calculo['igv'], 2) }}</div>
-                            {{-- CORREGIDO: el título grande muestra lo que hay que cobrar HOY, no el total completo del comprobante --}}
                             <h4>A pagar: S/ {{ number_format($this->montoACobrar, 2) }}</h4>
                             <button wire:click="guardarVenta" class="btn btn-primary btn-lg">Guardar venta</button>
                         </div>
@@ -391,15 +377,7 @@
                     </div>
                 @endif
             @endif
-            {{-- Livewire 3
-    <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('venta-guardada', (event) => {
-                window.open(`/vouchers/${event.voucherId}/imprimir`, '_blank');
-            });
-        });
-    </script>
-    --}}
+ 
             <script>
                 window.addEventListener('venta-guardada', event => {
                     window.open(

@@ -116,11 +116,7 @@ class AppointmentController extends Controller
             ]);
         }
 
-        // NUEVO: si va a haber un adelanto (total_pagado > 0), esa plata
-        // tiene que quedar registrada contra una caja abierta — igual
-        // que exige el módulo de ventas. Se valida ANTES de crear nada,
-        // para no terminar con una cita creada pero sin poder registrar
-        // su cobro.
+
         $turno = null;
         if ($request->total_pagado > 0) {
             $turno = CashierShift::where('user_id', auth()->id())
@@ -146,8 +142,7 @@ class AppointmentController extends Controller
             $estado_pagado = 'PAGADO';
         }
 
-        //TRAEMOS LOS DATOS DEL HORARIO DEL DOCTOR 
-        //$dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
+
         $horario = DoctorSchedule::where('doctor_id', $request->doctor_id)
             // ->where('dia_semana', $dia)                        //días de la semana [1,2,3,4,5,6,7]
             ->where('fecha_cita', $request->fecha_cita)
@@ -167,10 +162,6 @@ class AppointmentController extends Controller
         $doctorService = DoctorService::find($request->service_id); //cargamos el id de la tabla DoctorServices
         $service = Service::find($doctorService->service_id);       //buscamos el servicio por id
 
-        // NUEVO: se envuelve TODO (cita + ticket si aplica) en una sola
-        // transacción — si algo falla creando el ticket, la cita
-        // tampoco se guarda, evitando que quede una cita "huérfana" sin
-        // su registro de pago correspondiente.
         $appointment = DB::transaction(function () use (
             $request,
             $numero_cita,
@@ -208,11 +199,6 @@ class AppointmentController extends Controller
                 'fecha_registro' => now()->toDateString(),
             ]);
 
-            // NUEVO: si hubo adelanto, se crea el TICKET equivalente en
-            // el módulo de ventas — esto es lo que hace que, después,
-            // el buscador de citas del módulo de ventas SÍ detecte el
-            // saldo pendiente correctamente (en vez de mostrar el
-            // precio completo como si nunca se hubiera cobrado nada).
             if ($request->total_pagado > 0) {
                 $serie = VoucherSerie::where('tipo_comprobante', 'TICKET')
                     ->where('estado', 'ACTIVO')
@@ -222,10 +208,6 @@ class AppointmentController extends Controller
                 $correlativo = $serie->correlativo_actual + 1;
                 $serie->update(['correlativo_actual' => $correlativo]);
 
-                // Mismo cálculo de IGV que en el resto del sistema:
-                // '10' = Gravado por defecto — confirma con tu contador
-                // si las consultas médicas de tu clínica van GRAVADA o
-                // EXONERADA antes de dejarlo así en producción.
                 $precioTotal = (float) $request->precio_programado;
                 $base = round($precioTotal / 1.18, 2);
                 $igv = round($precioTotal - $base, 2);
@@ -243,15 +225,10 @@ class AppointmentController extends Controller
                     'igv' => $igv,
                     'total' => $precioTotal,
                     'condicion_pago' => 'CONTADO',
-                    // Mismo estado que ya calculaste arriba para
-                    // 'estado_pagado' de la cita — se reutiliza tal
-                    // cual, sin recalcular nada distinto.
                     'estado' => $estado_pagado === 'PAGADO' ? 'PAGADO' : 'PARCIAL',
                     'cashier_shift_id' => $turno->id,
                     'user_id' => auth()->id(),
                     'aplica_detraccion' => false,
-                    // El TICKET nunca va a SUNAT — esto no cambia
-                    // aunque la cita se pague completa hoy mismo.
                     'requiere_sunat' => false,
                     'estado_sunat' => 'NO_APLICA',
                 ]);
@@ -272,12 +249,6 @@ class AppointmentController extends Controller
                     'comision_monto' => 0,
                 ]);
 
-                // strtoupper() normaliza el texto que venga en
-                // metodo_pago (ej. "efectivo", "Efectivo") para que
-                // quede consistente con el resto del sistema
-                // (EFECTIVO, TARJETA, YAPE, PLIN). Si viene vacío o con
-                // un valor que no se puede identificar, cae en 'OTROS'
-                // en vez de romper el guardado.
                 $metodoPago = strtoupper($request->metodo_pago ?? '') ?: 'OTROS';
 
                 $ticket->payments()->create([

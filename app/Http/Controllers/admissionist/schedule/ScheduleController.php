@@ -17,10 +17,7 @@ class ScheduleController extends Controller
 {
     public function list(Request $request)
     {
-        // Uso el rango que FullCalendar manda automáticamente en
-        // 'start'/'end' (el mes que el usuario está viendo) en vez de
-        // un rango fijo — así, cuando el usuario navega con "next" a
-        // otro mes, la consulta se ajusta sola sin recargar la página.
+
         $inicioRango = $request->start ? Carbon::parse($request->start) : Carbon::now()->startOfMonth();
         $finRango = $request->end ? Carbon::parse($request->end) : Carbon::now()->addMonth()->endOfMonth();
 
@@ -45,9 +42,6 @@ class ScheduleController extends Controller
             5 => '#ce14cb', 6 => '#dc3545', 7 => '#110569', 8 => '#ffc107',
         ];
 
-        // Los eventos de citas OCUPADAS — tu mismo código de siempre,
-        // solo agrego 'tipo' => 'ocupado' para que eventClick() sepa
-        // qué modal abrir al hacer clic.
         $events = $appointment->map(function ($schedule) use ($colors) {
             $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
@@ -82,10 +76,6 @@ class ScheduleController extends Controller
             ];
         })->values();
 
-        // NUEVO: si hay un médico seleccionado, se agregan sus slots
-        // DISPONIBLES como eventos verdes, junto a las citas ocupadas.
-        // Como en tu formulario "Médico" es obligatorio, esto se
-        // dispara siempre que el usuario haya elegido uno.
         if ($request->doctor_id) {
             $eventosDisponibles = $this->generarEventosDisponibles(
                 $request->doctor_id,
@@ -99,15 +89,6 @@ class ScheduleController extends Controller
         return response()->json($events->values());
     }
 
-    /**
-     * Genera un evento "Disponible" por cada slot libre del médico,
-     * recorriendo día por día dentro del rango visible del calendario.
-     * Reutiliza la misma lógica de cruce de horarios que ya tenías en
-     * availableHours() (que ahora puedes eliminar, junto con todo el
-     * JS de cargarHorariosCita/generarHorariosCita/existeCruceCita/
-     * convertirMinutosCita/convertirHoraCita y el <select id="hora_cita">
-     * — nada de eso vuelve a usarse con este enfoque).
-     */
     private function generarEventosDisponibles(int $doctorId, Carbon $desde, Carbon $hasta)
     {
         $eventos = collect();
@@ -117,9 +98,6 @@ class ScheduleController extends Controller
             $fechaStr = $fecha->toDateString();
             $dia = $fecha->dayOfWeekIso;
 
-            // Mismo criterio de siempre: primero busca un horario
-            // específico para ESA fecha (fecha_cita no nula), y si no
-            // existe, cae al horario recurrente por día de semana.
             $horarios = DoctorSchedule::where('doctor_id', $doctorId)
                 ->where('estado', 'ACTIVO')
                 ->where(function ($q) use ($fechaStr, $dia) {
