@@ -10,12 +10,22 @@ use App\Models\Patient;
 use App\Models\Service;
 use App\Models\Specialty;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 trait BuildsBaselineData
 {
     protected function createUser(array $attributes = []): User
     {
         return User::factory()->create($attributes);
+    }
+
+    protected function createUserWithRole(string $roleName, array $attributes = []): User
+    {
+        $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        $user = $this->createUser($attributes);
+        $user->assignRole($role);
+
+        return $user;
     }
 
     protected function createPatient(?User $user = null, array $attributes = []): Patient
@@ -80,4 +90,3 @@ trait BuildsBaselineData
         return compact('specialty', 'doctor', 'service', 'doctorService', 'rate', 'schedule');
     }
 }
-

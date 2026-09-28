@@ -17,6 +17,7 @@ use App\Http\Controllers\admin\schedule\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::middleware(['auth', 'role:ADMINISTRADOR'])->group(function () {
 Route::get('/master/admin/specialty', [SpecialtyController::class, 'index'])->name('master.specialty.index');
 Route::post('/master/admin/specialty/store', [SpecialtyController::class, 'store'])->name('master.specialty.store');
 Route::put('/master/admin/specialty/update', [SpecialtyController::class, 'update'])->name('master.specialty.update');
@@ -92,3 +93,4 @@ Route::get('/admin/doctor-schedule', [ScheduleController::class, 'index'])->name
 Route::get('/admin/responsible', [ResponsibleController::class, 'index'])->name('admin.responsible.index');
 
 Route::get('/admin/available-schedule', [AvailableSchedule::class, 'index'])->name('admin.available.schedule.index');
+});

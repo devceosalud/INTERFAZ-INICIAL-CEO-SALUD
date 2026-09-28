@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Livewire\Concerns\RequiresRole;
 use App\Models\Appointment;
 use App\Models\CashierShift;
 use App\Models\Doctor;
@@ -17,6 +18,8 @@ use Livewire\Component;
 
 class Sales extends Component
 {
+    use RequiresRole;
+
     public ?CashierShift $turno = null;
 
     /**
@@ -80,12 +83,19 @@ class Sales extends Component
 
     public function mount()
     {
+        $this->requireRole('RECEPCION');
+
         $this->turno = CashierShift::where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
             ->first();
 
         $this->doctores = Doctor::where('estado', 'ACTIVO')->orderBy('nombre')->get();
+    }
+
+    public function hydrate()
+    {
+        $this->requireRole('RECEPCION');
     }
 
     public function getSeriePreviewProperty()

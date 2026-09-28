@@ -2,12 +2,15 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Livewire\Concerns\RequiresRole;
 use App\Models\Cashier;
 use App\Models\CashierShift;
 use Livewire\Component;
 
 class CashierShifts extends Component
 {
+    use RequiresRole;
+
     public ?CashierShift $turno = null;
 
 
@@ -22,6 +25,8 @@ class CashierShifts extends Component
 
     public function mount()
     {
+        $this->requireRole('RECEPCION');
+
         $this->turno = CashierShift::where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
@@ -38,6 +43,11 @@ class CashierShifts extends Component
                 ->get();
             //dd($this->cajas);
         }
+    }
+
+    public function hydrate()
+    {
+        $this->requireRole('RECEPCION');
     }
 
 

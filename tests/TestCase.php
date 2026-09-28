@@ -16,9 +16,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        Http::fake([
-            '*' => Http::response(['message' => 'External HTTP disabled in tests'], 503),
-        ]);
+        Http::preventStrayRequests();
         Mail::fake();
         Queue::fake();
         Notification::fake();

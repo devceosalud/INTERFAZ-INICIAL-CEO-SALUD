@@ -19,18 +19,6 @@
  </li>
 
  <li>
-     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-         <i class="flaticon-381-calculator"></i>
-         <span class="nav-text">Ventas</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('admissionit.cashier.shift') }}">Apertura</a></li>
-         {{-- <li><a href="{{ route('receptionist.sale.index') }}">Ventas</a></li> --}}
-         {{-- <li><a href="{{ route('receptionist.cash.movement') }}">Movimientos</a></li> --}}
-     </ul>
- </li>
-
- <li>
      <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
          <i class="flaticon-381-calendar"></i>
          <span class="nav-text">Citas</span>

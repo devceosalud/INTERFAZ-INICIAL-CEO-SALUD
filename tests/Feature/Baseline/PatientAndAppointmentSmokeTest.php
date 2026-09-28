@@ -13,7 +13,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
 
     public function test_authenticated_user_can_create_a_patient_with_current_contract(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUserWithRole('ADMISION');
 
         $this->actingAs($user)->postJson('/admissionist/patient/store', [
             'nombre_paciente' => 'Ana',
@@ -35,7 +35,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
 
     public function test_authenticated_user_can_create_an_unpaid_appointment_with_current_contract(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUserWithRole('ADMISION');
         $patient = $this->createPatient($user);
         $catalog = $this->createAppointmentCatalog();
 

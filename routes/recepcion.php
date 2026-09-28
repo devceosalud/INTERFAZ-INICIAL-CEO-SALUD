@@ -11,6 +11,7 @@ use App\Http\Controllers\receptionist\schedule\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::middleware(['auth', 'role:RECEPCION'])->group(function () {
 Route::get('/receptionist/patient', [PatientController::class , 'index'])->name('receptionist.patient.index');
 Route::get('/receptionist/appointment', [AppointmentController::class, 'index'])->name('receptionist.appointment.index');
 
@@ -26,4 +27,5 @@ Route::get('/receptionist/sales', [SaleController::class, 'index'])->name('recep
 
 Route::get('/receptionist/cash-movement', [CashMovementController::class, 'index'])->name('receptionist.cash.movement');
 
-Route::get('/receptionist/{voucher}/imprimir', [SaleController::class , 'show'])->name('receptionist.sale.show'); 
+Route::get('/receptionist/{voucher}/imprimir', [SaleController::class , 'show'])->name('receptionist.sale.show');
+});

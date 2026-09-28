@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\authenticator\auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\TryCatch;
 
 class AuthController extends Controller
 {
@@ -28,18 +25,23 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (!auth()->attempt($request->only('email', 'password'), $request->remember)) {
+        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             return back()->with('mensaje', 'Tus credenciales estan incorrectas');
-        } else {
-            // Usuario autenticado
-            return redirect()->route('admin.dashboard.index');
         }
+
+        $request->session()->regenerate();
+
+        return redirect()->route('admin.dashboard.index');
     }
 
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }

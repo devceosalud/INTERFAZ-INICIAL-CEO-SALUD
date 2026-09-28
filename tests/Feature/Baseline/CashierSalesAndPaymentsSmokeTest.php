@@ -20,7 +20,7 @@ class CashierSalesAndPaymentsSmokeTest extends TestCase
 
     public function test_current_livewire_flow_opens_cashier_and_records_sale_voucher_item_and_payment(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUserWithRole('RECEPCION');
         $patient = $this->createPatient($user);
         $cashier = Cashier::create(['nombre' => 'Caja baseline', 'estado' => 'ACTIVO']);
 
