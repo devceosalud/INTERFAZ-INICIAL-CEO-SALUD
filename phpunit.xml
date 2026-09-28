@@ -18,14 +18,39 @@
         </include>
     </coverage>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_DRIVER" value="array"/>
-        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
+        <!-- force="true" prevents inherited shell/.env values from selecting production services. -->
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_DEBUG" value="true" force="true"/>
+        <env name="APP_URL" value="http://localhost" force="true"/>
+        <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" force="true"/>
+        <env name="APP_CONFIG_CACHE" value="bootstrap/cache/testing-config.php" force="true"/>
+        <env name="APP_EVENTS_CACHE" value="bootstrap/cache/testing-events.php" force="true"/>
+        <env name="APP_PACKAGES_CACHE" value="bootstrap/cache/testing-packages.php" force="true"/>
+        <env name="APP_ROUTES_CACHE" value="bootstrap/cache/testing-routes.php" force="true"/>
+        <env name="APP_SERVICES_CACHE" value="bootstrap/cache/testing-services.php" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="LOG_CHANNEL" value="null" force="true"/>
+        <env name="CACHE_DRIVER" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <env name="DB_FOREIGN_KEYS" value="true" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="MAIL_FROM_ADDRESS" value="tests@example.invalid" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="BROADCAST_DRIVER" value="null" force="true"/>
+        <env name="FILESYSTEM_DISK" value="local" force="true"/>
+        <env name="AQPFACT_URL_DNI" value="http://127.0.0.1:9/test-only/reniec" force="true"/>
+        <env name="AQPFACT_URL_RUC" value="http://127.0.0.1:9/test-only/ruc" force="true"/>
+        <env name="AQPFACT_TOKEN" value="test-only-disabled" force="true"/>
+        <env name="APISPERU_URL" value="http://127.0.0.1:9/test-only/apisperu" force="true"/>
+        <env name="APISPERU_RUC_TOKEN" value="test-only-disabled" force="true"/>
+        <env name="HTTSMS_URL" value="http://127.0.0.1:9/test-only/sms" force="true"/>
+        <env name="HTTPSMS_API_KEY" value="test-only-disabled" force="true"/>
+        <env name="HTTPSMS_FROM" value="test-only-disabled" force="true"/>
+        <env name="TEXTBEE_URL" value="http://127.0.0.1:9/test-only/sms" force="true"/>
+        <env name="TEXTBEE_API_KEY" value="test-only-disabled" force="true"/>
+        <env name="TEXTBEE_DEVICE_ID" value="test-only-disabled" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
     </php>
 </phpunit>
