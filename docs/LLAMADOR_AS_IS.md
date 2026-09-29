@@ -15,8 +15,8 @@ Repositorio local inspeccionado en modo de solo lectura:
 No se modificó el repositorio ni se conectó a sus bases de datos.
 
 - **CONFIRMADO EN CÓDIGO:** existen flujos y rutas locales capaces de leer o modificar estados de citas según el código auditado.
-- **PENDIENTE DE PRODUCCIÓN:** no se confirmó qué commit/flujo está desplegado, qué conexión utiliza ni qué controles externos existen.
-- **RIESGO POTENCIAL PRODUCTIVO:** las rutas mutantes podrían afectar al ERP si el código está desplegado, accesible y conectado a su base; no se afirma exposición real sin evidencia productiva.
+- **CONFIRMADO EN PRODUCCIÓN:** el login operativo de ADMISION redirige al flujo `visorTemporal` en `/admision/temporal/gestion-paciente` y muestra el panel temporal de gestión.
+- **RIESGO POTENCIAL PRODUCTIVO:** el código desplegado conserva rutas legacy mutantes, pero no se confirmó su uso y la configuración productiva revisada no contiene `OTHER_SYSTEM_DB_*`; no se afirma exposición efectiva ni acceso al ERP.
 
 ## 2. Resumen arquitectónico
 
@@ -34,7 +34,7 @@ Browser -> rutas web -> controladores Eloquent
 
 No se encontró un proceso que sincronice ambos flujos. Tampoco se encontraron jobs, comandos programados, websockets o una API ERP↔llamador implementada.
 
-El flujo efectivamente desplegado en producción está **PENDIENTE DE COMPROBAR**.
+El flujo productivo primario de ADMISION queda **CONFIRMADO: `visorTemporal`**. La existencia del legacy en el mismo código no demuestra que siga siendo usado por personas o procesos externos.
 
 ## 3. Conexiones de base de datos
 
@@ -43,7 +43,9 @@ El flujo efectivamente desplegado en producción está **PENDIENTE DE COMPROBAR*
 - conexión por defecto configurable con `DB_*`;
 - conexión `other_system` mediante variables `OTHER_SYSTEM_DB_*` para acceso directo al ERP.
 
-El `.env` local del llamador no contiene claves `OTHER_SYSTEM_DB_*`. No se leyeron valores de ninguna credencial. La conexión podría estar configurada externamente, en cache de configuración o no estar operativa; queda pendiente de producción.
+**CONFIRMADO EN PRODUCCIÓN:** el llamador tiene una base por defecto propia; el `.env` revisado no contiene variables `OTHER_SYSTEM_DB_*` y `bootstrap/cache` no contiene `config.php` ni cache de rutas, solo `packages.php` y `services.php`. No se registraron nombres, usuarios ni credenciales.
+
+En consecuencia, el flujo temporal confirmado usa la base por defecto del llamador y no depende de `other_system`. La conexión legacy existe como definición de código, pero está **NO CONFIGURADA** en la evidencia productiva actual.
 
 ## 4. Flujo legacy: acceso directo al ERP
 
@@ -142,7 +144,9 @@ No se encontró código que:
 - publique eventos o callbacks;
 - elimine o archive citas locales.
 
-Por ello, `visorTemporal` debe tratarse como flujo alternativo aislado hasta obtener evidencia productiva.
+**CONFIRMADO EN PRODUCCIÓN:** este flujo aislado es el flujo normal de ADMISION. La pantalla observada estaba sin citas; esto puede corresponder simplemente a que no existían registros temporales para la fecha y filtros aplicados y no demuestra un error funcional.
+
+El botón **Traer Datos** de la vista es un enlace GET a la ruta nombrada `admision.temporal.index`. Solo recarga el índice temporal; no importa datos desde el ERP. No se encontró ni se observó sincronización ERP → llamador asociada a ese botón.
 
 ## 6. Autenticación, autorización y exposición
 
@@ -173,12 +177,9 @@ El código define rutas web no autenticadas capaces de modificar `appointments` 
 
 CSRF evita ciertos ataques desde terceros, pero no sustituye autenticación ni autorización: un cliente puede obtener su propia sesión/token y enviar la solicitud. `update()` además acepta un estado arbitrario.
 
-La explotabilidad productiva exacta está **PENDIENTE** de confirmar porque no se verificó:
+El mismo código productivo conserva estas rutas, pero el flujo normal confirmado es temporal y `other_system` no está configurada según el `.env` y caches revisados. Permanece pendiente verificar si algún usuario o proceso externo consume las rutas legacy y qué controles externos existen.
 
-- que el commit auditado esté desplegado;
-- que esas rutas sean accesibles públicamente;
-- que `other_system` esté configurado;
-- que un proxy/firewall imponga controles externos.
+Clasificación: **DEUDA/RIESGO LEGACY PENDIENTE DE RETIRO O CONTENCIÓN**. No se afirma que las rutas sean explotables productivamente ni que actualmente alcancen la BD del ERP.
 
 No se intervino el llamador ni producción.
 
@@ -249,30 +250,24 @@ No se diseña aún el contrato nuevo.
 
 ## 11. Evidencia productiva pendiente
 
-- commit desplegado del llamador;
-- URL y alcance de red;
-- ruta legacy, temporal o ambas realmente usadas;
-- base por defecto y conexión `other_system` configuradas sí/no;
-- estructura de ambas tablas `appointments`;
-- usuarios/roles operativos agregados;
-- logs sanitizados de polling y escritura;
+Ya están confirmados el flujo normal de ADMISION, su base por defecto independiente, la ausencia de configuración efectiva `other_system` y la función no importadora de **Traer Datos**. Continúa pendiente:
+
+- confirmar si algún usuario, enlace, integración o proceso externo usa rutas legacy;
+- URL y alcance de red de visores/rutas legacy;
+- estructura DDL de la tabla temporal `appointments` en vivo, sin leer filas;
+- usuarios/roles operativos agregados distintos de la sesión ADMISION observada;
+- logs sanitizados de uso por ruta, método y estado;
 - proxy, autenticación o restricciones externas;
-- flujo real en pantallas de admisión, médico y visor.
+- comportamiento productivo del panel médico y del visor público;
+- metadatos completos de deployment si se requieren para trazabilidad de infraestructura.
 
 ## 12. Fase 5A — dependencia del MVP de agendamiento
 
 ### 12.1 Regla de compatibilidad
 
-El MVP de agendamiento no puede asumir que una cita termina al confirmarse. El llamador potencialmente consume y modifica la misma fila `appointments` para representar llegada, espera, llamado, atención y finalización. Hasta comprobar producción, deben preservarse o proyectarse:
+El flujo productivo primario no comparte la fila `appointments` del ERP: opera sobre una tabla temporal propia, con datos desnormalizados y cuatro horas operativas. Tampoco existe sincronización confirmada entre ambos sistemas.
 
-- `appointments.id`;
-- `patient_id`, `doctor_id`, `service_id`;
-- `fecha_cita`, `duracion_cita`, `turno_cita`;
-- `estado_cita`;
-- `updated_at` cuando se use como señal de rellamado;
-- timestamps operativos si el flujo desplegado los consume.
-
-No se deben cambiar enum, significado ni ids por el MVP sin una prueba conjunta del flujo desplegado.
+El MVP **no debe intentar integrar mediante escritura directa compartida sobre `appointments`**. Deberá diseñarse posteriormente un contrato explícito ERP ↔ LLAMADOR que publique solo citas elegibles, mantenga correlación estable y devuelva transiciones operativas de manera autenticada, autorizada, idempotente y auditable. Todavía no se diseña ese contrato.
 
 ### 12.2 Efecto de los nuevos tipos de agenda
 
@@ -283,18 +278,82 @@ No se deben cambiar enum, significado ni ids por el MVP sin una prueba conjunta 
 
 ### 12.3 Riesgo prioritario para el piloto
 
-El código auditado del llamador contiene rutas potencialmente capaces de modificar `appointments` sin autenticación. Si están desplegadas y conectadas al ERP, pueden saltarse las nuevas autorizaciones, transiciones y auditoría del MVP. Antes de habilitar un piloto real debe comprobarse el riesgo y acordarse una mitigación autorizada; CSRF por sí solo no sustituye autenticación/autorización.
+El código productivo conserva rutas legacy sin autenticación de aplicación, pero el flujo operativo normal confirmado es temporal y `other_system` no está configurada. Antes del piloto debe comprobarse que ningún usuario/proceso dependa del legacy y contenerlo o retirarlo mediante una fase autorizada. No forma parte del contrato futuro.
 
 ### 12.4 Condiciones previas de aceptación
 
-Antes del piloto deben conocerse:
+Antes del piloto deben resolverse:
 
-1. repositorio/commit efectivamente desplegado;
-2. flujo legacy, temporal o ambos en uso;
-3. conexión y tabla realmente modificadas;
-4. estados/timestamps reales y transiciones operativas;
-5. alcance de red, proxy y autenticación;
-6. comportamiento esperado de una cita adicional;
-7. estrategia de compatibilidad, observabilidad y retorno.
+1. contrato explícito entre ERP y llamador, sin escritura directa compartida;
+2. correlación, estados/timestamps y transiciones operativas;
+3. autenticación, autorización, alcance de red y privacidad del visor;
+4. verificación de no uso y posterior contención/retiro del legacy;
+5. comportamiento esperado de una cita adicional;
+6. observabilidad, idempotencia, reconciliación y retorno.
 
 No se modificó el llamador en esta subfase.
+
+## 13. Verificación productiva del Gate C
+
+### 13.1 Evidencia confirmada
+
+Mediante una sesión real autenticada en producción se verificó:
+
+- el usuario operativo ADMISION inicia sesión y es redirigido a `/admision/temporal/gestion-paciente`;
+- la pantalla muestra **Panel de Gestión Operativa - admision**;
+- el comportamiento coincide con `AuthController`, que dirige ADMISION a `admision.temporal.index`;
+- `AdmisionTemporalController` exige middleware `auth`, usa `App\Models\Appointment` y la conexión por defecto del llamador;
+- la tabla temporal maneja `hora_llegada`, `hora_llamado`, `hora_atencion` y `hora_atendido`;
+- la base por defecto propia está configurada;
+- `OTHER_SYSTEM_DB_*` no está presente en el `.env` revisado;
+- no existe `bootstrap/cache/config.php` ni cache de rutas; solo se observaron `packages.php` y `services.php`;
+- **Traer Datos** es un enlace GET al mismo índice temporal y no una importación desde el ERP;
+- la pantalla se encontraba sin citas, hecho que no prueba un fallo y es compatible con ausencia de registros para la fecha/filtros.
+
+No se documentaron nombres de base, usuarios, hosts, passwords ni otros secretos.
+
+### 13.2 Estado de los dos flujos
+
+| Flujo | Estado productivo |
+|---|---|
+| `visorTemporal` | **CONFIRMADO COMO FLUJO PRODUCTIVO PRIMARIO DE ADMISION**; usa `appointments` propio del llamador y no depende de `other_system`. |
+| Legacy | El código y sus rutas permanecen desplegados, pero no está confirmado como flujo operativo normal ni como dependencia de usuarios/procesos externos. `other_system` está **NO CONFIGURADA** según la evidencia revisada. |
+
+El legacy sigue siendo compatible en forma con el DDL del ERP, pero esa compatibilidad ya no debe interpretarse como contrato vigente ni como evidencia de uso.
+
+### 13.3 Arquitectura AS-IS confirmada
+
+```text
+ERP
+  appointments productivo
+  estados y citas administrativas
+       │
+       │ NO EXISTE SINCRONIZACIÓN CONFIRMADA
+       ▼
+LLAMADOR
+  appointments temporal propio
+  llegada / llamado / atención
+```
+
+**DRIFT/SEPARACIÓN CONFIRMADA:** la tabla ERP no posee las cuatro horas del temporal y la tabla temporal desnormaliza datos sin ids de paciente, médico, servicio o consultorio del ERP. No existe código confirmado que transporte citas o estados entre ambas fuentes.
+
+### 13.4 Legacy residual
+
+El mismo código mantiene:
+
+- `PUT /admision/gestion-paciente/estado`;
+- `POST /llamar-paciente`;
+- controladores que usan `DB::connection('other_system')`;
+- `updated_at` como señal de rellamado en el visor legacy.
+
+Clasificación: **DEUDA/RIESGO LEGACY PENDIENTE DE RETIRO O CONTENCIÓN**. Antes de retirarlo debe verificarse mediante logs sanitizados y revisión de enlaces/procesos que no tenga consumidores. No se afirma que sea explotable ni que alcance actualmente al ERP.
+
+### 13.5 Consultorio o destino
+
+Ningún flujo auditado modela un consultorio o ubicación de destino. El temporal productivo tampoco tiene relación con consultorio. El futuro contrato deberá incorporar el destino físico sin inferirlo desde médico o especialidad.
+
+### 13.6 Resultado del Gate C
+
+**GATE C = CONFIRMADO — FLUJO PRODUCTIVO PRIMARIO: `visorTemporal`.**
+
+La evidencia es suficiente para decidir el límite arquitectónico: el MVP no debe compartir escrituras directas de `appointments` con el llamador. El TO-BE requiere un contrato explícito ERP ↔ LLAMADOR que reemplace la desconexión actual. Esta conclusión habilita planificación; no define todavía endpoints, tablas, eventos ni estrategia de despliegue.

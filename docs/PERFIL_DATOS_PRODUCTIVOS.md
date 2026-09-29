@@ -2,9 +2,9 @@
 
 ## 1. Resultado actual
 
-**PENDIENTE DE PRODUCCIÓN:** el perfil no fue ejecutado y no contiene resultados productivos.
+**VERIFICACIÓN PARCIAL:** se incorporaron agregados sanitizados de `appointments` y la confirmación de roles productivos básicos. El resto del perfil continúa **PENDIENTE DE PRODUCCIÓN**.
 
-No se ejecutaron consultas contra producción. No se leyeron nombres, documentos, teléfonos, correos, direcciones, historias clínicas, comprobantes de pago ni evidencias.
+El agente no ejecutó consultas ni abrió conexiones contra producción. La evidencia proporcionada no incluye nombres, documentos, teléfonos, correos, direcciones, historias clínicas, comprobantes de pago ni imágenes.
 
 Las consultas siguientes devuelven únicamente agregados, estados o nombres de roles. Deben ejecutarse con una cuenta de solo lectura después de verificar la base activa y los grants.
 
@@ -197,6 +197,23 @@ FROM (
 ```
 
 La segunda consulta es un indicador, no prueba por sí sola un error: podrían existir duraciones, recursos o reglas todavía no modeladas.
+
+### 6.4 Resultados productivos confirmados
+
+| Métrica agregada | Resultado |
+|---|---:|
+| Total de citas | 9 |
+| Usuarios creadores distintos | 3 |
+| Citas sin `user_id` | 0 |
+| Citas sin `patient_id` | 0 |
+| Citas sin `doctor_id` | 0 |
+| Citas sin `service_id` | 0 |
+| Duplicados exactos `doctor_id + fecha_cita + hora_cita` | 0 |
+| Estado `ATENDIDO` | 9 |
+
+**CONFIRMADO EN PRODUCCIÓN:** las nueve filas actuales están en `ATENDIDO`. Esto describe la distribución observada, no reduce el enum: el DDL confirma otros nueve estados válidos además de `ATENDIDO`.
+
+La ausencia actual de duplicados exactos no sustituye una protección de concurrencia. El DDL no contiene unique médico+fecha+hora.
 
 ## 7. Comprobantes, líneas y pagos
 
@@ -406,19 +423,24 @@ FROM model_has_permissions
 WHERE model_type = 'App\\Models\\User';
 ```
 
-Roles esperados por las rutas de la rama estabilizada: `ADMINISTRADOR`, `ADMISION`, `RECEPCION` y `COMERCIAL`. Su existencia productiva continúa pendiente.
+**CONFIRMADO EN PRODUCCIÓN:** los roles productivos básicos requeridos por el gate fueron confirmados. Las distribuciones detalladas de asignaciones/permisos permanecen pendientes y no se registran identidades de usuarios.
 
-## 12. Resultados pendientes
+## 12. Resultados incorporados y pendientes
 
 | Área | Resultado |
 |---|---|
-| Conteos exactos | PENDIENTE |
+| Total de `appointments` | CONFIRMADO: 9 |
+| Autoría básica de `appointments` | CONFIRMADO: 3 creadores distintos; 0 sin `user_id` |
+| FK obligatorias observadas en citas | CONFIRMADO: 0 sin paciente, médico o servicio |
+| Estados de citas | CONFIRMADO: `ATENDIDO = 9`; enum completo confirmado por DDL |
+| Colisión exacta médico+fecha+hora | CONFIRMADO: 0 grupos actuales |
+| Roles productivos básicos | CONFIRMADO |
+| Conteos exactos de otras tablas | PENDIENTE |
 | Nulos y duplicados | PENDIENTE |
 | Huérfanos | PENDIENTE |
-| Estados de citas | PENDIENTE |
 | Distribución de comprobantes | PENDIENTE |
 | Pagos y conciliación | PENDIENTE |
 | Caja | PENDIENTE |
 | Stock negativo | PENDIENTE |
 | Series/correlativos | PENDIENTE |
-| Roles y permisos | PENDIENTE |
+| Asignaciones detalladas de roles/permisos | PENDIENTE |

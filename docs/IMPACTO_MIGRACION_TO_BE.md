@@ -7,7 +7,7 @@ Esta evaluación cruza:
 - arquitectura TO-BE de Fase 4;
 - migrations y código local del ERP;
 - auditoría local del llamador;
-- ausencia de DDL y perfil de datos productivos.
+- DDL y agregados productivos ya confirmados para `appointments`, con el resto del esquema/perfil todavía pendiente.
 
 La evaluación es provisional. Ningún área está autorizada para implementación hasta completar la evidencia productiva aplicable.
 
@@ -36,22 +36,26 @@ La evaluación es provisional. Ningún área está autorizada para implementaci�
 
 Impactos:
 
-- contiene reserva, cita, timestamps de llamador, importes, adelanto, exoneración y estados;
+- contiene reserva, cita, importes, adelanto, exoneración y estados; producción no contiene los cuatro timestamps/horas previstos para el llamador;
 - la migration productiva declarada y la estabilizada difieren en `hora_llamado`;
-- el enum versionado no contiene todos los estados usados;
-- el llamador legacy lee y escribe directamente esta tabla;
-- el llamador temporal usa otra tabla `appointments` no sincronizada.
+- el enum productivo confirmado contiene `PACIENTE_LLEGO` y `REEVALUACION`, ausentes del enum versionado;
+- las cinco FK reales usan `ON DELETE CASCADE`, con riesgo de pérdida histórica ante deletes físicos todavía no comprobados;
+- `additional_rate_id` es obligatorio y no representa la cita adicional del MVP;
+- no existe unique médico+fecha+hora que impida colisiones concurrentes;
+- los campos financieros y `autorizado_por varchar(255)` confirman mezcla entre agenda y finanzas;
+- el código legacy puede leer/escribir directamente esta tabla si `other_system` estuviera configurada, pero la configuración productiva revisada no la contiene y su uso no está confirmado;
+- el flujo temporal productivo primario usa otra tabla `appointments` no sincronizada.
 
-Estrategia viable solo después de obtener DDL/estados/datos y confirmar el flujo del llamador:
+El DDL, enum, agregados básicos y flujo productivo del llamador ya están confirmados. La estrategia puede pasar a planificación, manteniendo como condiciones la evidencia de tablas dependientes y el diseño posterior del contrato explícito:
 
 1. añadir estructuras nuevas sin retirar columnas;
 2. backfill de conceptos demostrables;
-3. mantener una proyección legacy de lectura;
-4. cortar la escritura directa del llamador mediante un contrato posterior;
-5. cambiar escritores/lectores de forma controlada;
+3. diseñar correlación y proyección explícitas hacia el llamador temporal;
+4. introducir el contrato controlado sin compartir tablas;
+5. comprobar no uso y contener/retirar el legacy de forma controlada;
 6. retirar columnas únicamente tras reconciliación.
 
-No es viable una doble escritura segura mientras dos aplicaciones puedan modificar directamente la tabla sin un único coordinador.
+No debe introducirse doble escritura entre tablas ERP y temporal. La integración debe tener un coordinador, idempotencia y reconciliación explícitos.
 
 ### 3.2 `payments` — riesgo alto
 
@@ -105,7 +109,7 @@ Impactos:
 
 - usuario no está vinculado formalmente a trabajador/persona;
 - autoría histórica depende de ids actuales y cascades;
-- roles productivos y asignaciones no se verificaron;
+- roles productivos básicos confirmados; asignaciones y permisos detallados pendientes;
 - el despliegue futuro de Fase 1 depende de compatibilidad con roles reales.
 
 Se recomienda agregar vínculos sin cambiar ids ni eliminar cuentas. La desactivación debe conservar autoría. Los nombres de roles se compararán antes de cualquier despliegue.
@@ -129,7 +133,7 @@ El catálogo puede mapearse, pero el inventario requiere conteo físico y movimi
 | Persona/trabajador/usuario | Sí | Condicional | Sí, por enlaces | VIABLE CON REVISIÓN DE DUPLICADOS |
 | Pacientes/responsables | Sí | Condicional | Sí | VIABLE CON EXCEPCIONES MANUALES |
 | Profesionales/especialidades | Sí | Condicional | Sí | VIABLE si se resuelven huérfanos/duplicados |
-| Agenda/pre-reserva | Sí | Citas futuras | No mientras llamador escriba directo | BLOQUEADA POR CONTRATO AS-IS |
+| Agenda/pre-reserva | Sí | Citas futuras | Sí, sin compartir tabla | VIABLE PARA PLANIFICACIÓN; REQUIERE CONTRATO ERP–LLAMADOR |
 | Atención/HCE | Sí | Solo hechos demostrables | Sí | VIABLE COMO MÓDULO NUEVO |
 | Comercial/obligaciones | Sí | Condicional | Probable | BLOQUEADA POR CONCILIACIÓN FINANCIERA |
 | Pagos | Sí | Condicional | Probable | BLOQUEADA POR APLICACIONES/EXCEPCIONES |
@@ -170,16 +174,17 @@ Condiciones obligatorias:
 - fecha y condición de retiro;
 - retorno definido sin borrar datos.
 
-El llamador actual incumple la condición de centralización porque escribe directamente en el ERP. No debe añadirse otra escritura paralela hasta resolver ese límite.
+El flujo productivo primario está aislado y no sincronizado. No debe añadirse una escritura paralela improvisada entre `appointments` ERP y temporal; el contrato futuro debe ser el único coordinador. El legacy residual debe verificarse sin consumidores y contenerse antes del piloto.
 
 ## 6. Compatibilidad temporal recomendada
 
 ### Agenda/llamador
 
-- conservar columnas/estados legacy durante la transición;
-- impedir nuevos consumidores directos;
-- obtener primero un inventario de rutas desplegadas;
-- posteriormente sustituir escritura directa por contrato controlado;
+- conservar el esquema ERP actual mientras se introduce el contrato;
+- definir correlación entre cita ERP y registro temporal sin reutilizar ids por suposición;
+- impedir nuevos consumidores directos y verificar que el legacy no tenga uso;
+- publicar/recibir transiciones mediante un contrato controlado e idempotente;
+- retirar o contener las rutas legacy tras evidencia de no uso;
 - mantener proyección de visor mientras se valida el nuevo flujo.
 
 ### Finanzas
@@ -211,23 +216,24 @@ El llamador contiene rutas no autenticadas que, si están desplegadas y `other_s
 
 ### Otros riesgos altos
 
-1. Enum de citas incompatible con estados usados por ERP/llamador.
-2. DDL productivo desconocido pese a depender de cambios manuales posibles.
-3. Datos financieros potencialmente duplicados en cita/voucher/payment/caja.
-4. Correlativos sin reconciliación productiva.
-5. Stock sin trazabilidad ni saldo inicial validado.
-6. Roles productivos no comparados con la matriz provisional.
-7. APP_DEBUG, jobs, cron, backups y restauración no verificados.
-8. Despliegue puede no ser reproducible si el panel ejecuta `composer update`.
-9. Exposición de PII operativa en visores/logs de navegador.
+1. Enum versionado incompatible con el enum productivo confirmado.
+2. Cuatro columnas horarias esperadas por el código/llamador ausentes de `appointments` productivo.
+3. Cinco FK de citas con `ON DELETE CASCADE`; posible pérdida histórica si existen deletes físicos.
+4. Sin protección unique médico+fecha+hora frente a concurrencia/doble reserva.
+5. Datos financieros potencialmente duplicados en cita/voucher/payment/caja.
+6. Correlativos sin reconciliación productiva.
+7. Stock sin trazabilidad ni saldo inicial validado.
+8. APP_DEBUG, jobs, cron, backups y restauración no verificados.
+9. Despliegue puede no ser reproducible si el panel ejecuta `composer update`.
+10. Exposición de PII operativa en visores/logs de navegador.
 
 ## 8. Decisiones y evidencias pendientes
 
 ### Evidencia técnica
 
-- DDL de 32 tablas;
-- perfil agregado y reconciliación financiera;
-- roles/permisos agregados;
+- DDL de las 31 tablas restantes y detalles dependientes;
+- perfil agregado restante y reconciliación financiera;
+- asignaciones/permisos detallados; los roles productivos básicos ya fueron confirmados;
 - commit y rutas realmente desplegados del llamador;
 - configuración efectiva de Hostinger;
 - backups disponibles y restauración probada.
@@ -246,12 +252,12 @@ El llamador contiene rutas no autenticadas que, si están desplegadas y `other_s
 
 ## 9. Próximo paso seguro
 
-Ejecutar, por un operador autorizado, el paquete de consultas de solo lectura documentado en:
+Continuar, mediante un operador autorizado, el paquete de solo lectura únicamente para la evidencia todavía pendiente documentada en:
 
 - `SCHEMA_PRODUCTIVO_VERIFICADO.md`;
 - `PERFIL_DATOS_PRODUCTIVOS.md`.
 
-Después incorporar únicamente resultados agregados/DDL, recalcular la matriz de drift y decidir qué primera migración de diseño detallado es viable. No implementar antes de esa reconciliación.
+Después incorporar únicamente resultados agregados/DDL sanitizados, completar la matriz de drift y decidir qué primera migración de diseño detallado es viable. La evidencia actual no cierra la reconciliación ni autoriza implementación.
 
 ## 10. Fase 5A — impacto del MVP prioritario de agendamiento
 
@@ -272,7 +278,7 @@ El esquema versionado no representa de forma suficiente:
 - evidencia y verificación de pago;
 - restricción de concurrencia del cupo.
 
-Estos faltantes requieren diseño posterior de BD, pero sus migrations solo serán viables después de obtener DDL/índices/enums productivos y perfilar los datos afectados.
+Estos faltantes requieren diseño posterior de BD. El DDL/enum de `appointments` ya reduce incertidumbre, pero las migrations solo serán viables después de reconciliar tablas dependientes, contrato del llamador y datos afectados.
 
 ### 10.2 Campos legacy que deben preservarse
 
@@ -281,7 +287,7 @@ Durante el piloto se deben conservar o proyectar compatiblemente:
 - identidad y relaciones de `appointments`;
 - `user_id` como creador legado;
 - profesional, paciente, servicio, fecha, hora, duración y turno;
-- `estado_cita` y timestamps consumidos por el llamador;
+- `estado_cita` productivo y una proyección compatible para las cuatro horas que producción no almacena actualmente;
 - importes/estado de pago como evidencia histórica, aunque dejen de ser la fuente canónica futura;
 - ids usados por tickets, líneas, pagos y ventas.
 
@@ -289,7 +295,7 @@ No debe reinterpretarse `patients.user_id` como responsable de la cita ni `addit
 
 ### 10.3 Orden de migración recomendado para el MVP
 
-1. Reconciliar DDL, estados y contrato del llamador.
+1. Conservar el DDL/enum de `appointments` ya reconciliado y confirmar el contrato productivo del llamador/tablas dependientes.
 2. Añadir trazabilidad de creador, responsable, modificadores y reasignaciones sin retirar campos legacy.
 3. Introducir regla unificada de horarios, bloqueos y concurrencia.
 4. Incorporar pre-reserva y confirmación por adelanto/excepción.
@@ -300,8 +306,10 @@ No debe reinterpretarse `patients.user_id` como responsable de la cita ni `addit
 
 ### 10.4 Nuevos riesgos de migración identificados
 
-- usar el enum actual para nuevos estados puede fallar si producción difiere;
+- usar el enum versionado puede rechazar `PACIENTE_LLEGO` o `REEVALUACION`, presentes en producción;
 - agregar una unicidad simplista por médico/fecha/hora puede invalidar citas dobles, duraciones variables, sobreagenda y adicionales;
+- cambiar `ON DELETE CASCADE` sin analizar deletes existentes puede alterar comportamiento; mantenerlo sin control también arriesga historia;
+- agregar directamente las cuatro horas del llamador sin confirmar el flujo desplegado puede crear un contrato falso o duplicado;
 - poblar retroactivamente el responsable de la cita desde `user_id` produciría una certeza histórica no demostrada; como máximo puede proponerse un backfill provisional explícitamente marcado y validado;
 - recalcular precios históricos desde `doctor_services` puede cambiar el importe acordado;
 - mover estados del llamador sin proyección puede interrumpir llegada/llamado/atención;
@@ -322,4 +330,22 @@ La especificación detallada de brechas y criterios está en:
 - **CONFIRMADO POR NEGOCIO:** el piloto se configurará para un grupo todavía por confirmar en la sede actual; el modelo no puede hardcodear integrantes ni funciones exclusivas para ese grupo.
 - **CONFIRMADO POR NEGOCIO:** la fluidez UX forma parte del MVP, pero la maqueta es solo una referencia interna.
 - **PENDIENTE DE NEGOCIO:** la selección de un horario no disponible no define automáticamente cita adicional. Debe cerrarse la regla que distingue cita regular excepcional, sobreagendamiento autorizado y adicional.
-- **PENDIENTE DE PRODUCCIÓN:** DDL/estados reales de `appointments`, compatibilidad del llamador y roles productivos básicos siguen siendo el gate técnico previo a cambios integrados.
+- **CONFIRMADO EN PRODUCCIÓN:** DDL/enum de `appointments`, agregados básicos de citas y roles productivos básicos.
+- **CONFIRMADO EN PRODUCCIÓN:** el flujo productivo primario del llamador es `visorTemporal`, sobre base y `appointments` propios, sin sincronización confirmada con el ERP.
+- **PENDIENTE DE PRODUCCIÓN:** DDL dependiente, asignaciones detalladas y evidencia operativa no bloqueante restante.
+
+## 11. Impacto de la verificación pasiva del llamador
+
+**CONFIRMADO EN PRODUCCIÓN:** ADMISION inicia en `visorTemporal`; usa la base por defecto propia del llamador y no depende de `other_system`. La pantalla vacía observada no prueba error: puede no haber filas para la fecha/filtros. **Traer Datos** solo recarga el índice temporal y no sincroniza desde el ERP.
+
+**CONFIRMADO EN CÓDIGO:** `visorTemporal` requiere las cuatro horas ausentes de `appointments` ERP y opera sobre otro modelo de datos. No se encontró sincronización. El legacy compatible con el ERP permanece en el código, pero `OTHER_SYSTEM_DB_*` no está configurada en producción y su uso real no está confirmado.
+
+**RIESGO PRODUCTIVO POTENCIAL:**
+
+- las dos rutas legacy mutantes carecen de autenticación/autorización visible y siguen siendo deuda desplegada, aunque no se ha demostrado que tengan consumidores ni conexión efectiva al ERP;
+- el legacy usa `updated_at` como señal operativa de rellamado;
+- no existe consultorio/destino físico en el contrato auditado;
+- no hay correlación ni transporte confirmado entre la cita administrativa del ERP y la atención temporal del llamador;
+- compartir directamente una tabla nueva recrearía el acoplamiento que el TO-BE debe evitar.
+
+Consecuencia: **GATE C = CONFIRMADO — FLUJO PRODUCTIVO PRIMARIO: `visorTemporal`**. Existe evidencia suficiente para planificar el MVP con un límite claro: ERP y llamador deben integrarse posteriormente mediante un contrato explícito, sin escritura directa compartida. Aún deben diseñarse correlación, autenticación, idempotencia, estados, privacidad, observabilidad, reconciliación y transición; esta fase no implementa ninguno.

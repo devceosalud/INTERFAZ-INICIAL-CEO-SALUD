@@ -2,7 +2,7 @@
 
 ## 1. Alcance y clasificación
 
-**PENDIENTE DE PRODUCCIÓN:** la matriz prepara la comparación entre la expectativa del código actual y el DDL vivo. Como no se obtuvo DDL de producción, ninguna tabla puede clasificarse todavía como igual o con drift real.
+**VERIFICACIÓN PARCIAL:** el DDL de `appointments` fue confirmado mediante `SHOW CREATE TABLE appointments` y ya permite clasificar drift real en esa tabla. Las otras 31 tablas permanecen **PENDIENTES DE PRODUCCIÓN**.
 
 Clasificaciones:
 
@@ -18,19 +18,19 @@ Clasificaciones:
 |---|---:|
 | Tablas esperadas por el repositorio, incluida `migrations` | 32 |
 | Tablas productivas declaradas | 32 |
-| Tablas con DDL productivo obtenido | 0 |
+| Tablas con DDL productivo obtenido | 1 (`appointments`) |
 | Tablas clasificadas `IGUAL` | 0 |
-| Tablas con drift confirmado contra producción | 0 |
-| Tablas pendientes de comprobar | 32 |
+| Tablas con drift confirmado contra producción | 1 (`appointments`) |
+| Tablas pendientes de comprobar | 31 |
 
-No debe interpretarse “0 drift confirmado” como ausencia de drift.
+No debe generalizarse el drift de `appointments` al resto del esquema ni interpretarse la falta de evidencia de las otras tablas como igualdad.
 
 ## 3. Matriz de las 32 tablas
 
 | Tabla | Expectativa confirmada en código | Evidencia productiva | Clasificación |
 |---|---|---|---|
 | `additional_rates` | id, nombre/tipo nullable, tarifa decimal(10,2) nullable, vigencia, estado enum, timestamps | No obtenida | PENDIENTE DE COMPROBAR |
-| `appointments` | id, número único, 5 FK, agenda, 4 timestamps de llamador, 3 decimales, pago temporal, dos enums, observaciones y timestamps | No obtenida | PENDIENTE DE COMPROBAR — prioridad crítica |
+| `appointments` | Migration/código esperan número único, 5 FK, agenda, 4 timestamps de llamador, finanzas y enums | DDL obtenido: InnoDB; `numero_cita` unique; 5 FK cascade; `additional_rate_id NOT NULL`; enum real ampliado; 4 horas ausentes; sin unique médico+fecha+hora | DRIFT IMPORTANTE CONFIRMADO |
 | `cash_movements` | turno FK, tipo INGRESO/EGRESO, concepto, monto decimal(10,2), usuario FK, timestamps | No obtenida | PENDIENTE DE COMPROBAR |
 | `cashier_shifts` | caja/usuario FK, apertura, montos decimales, cierre, estado ABIERTO/CERRADO, timestamps | No obtenida | PENDIENTE DE COMPROBAR |
 | `cashiers` | nombre, estado ACTIVO/INACTIVO default ACTIVO, timestamps | No obtenida | PENDIENTE DE COMPROBAR |
@@ -62,35 +62,38 @@ No debe interpretarse “0 drift confirmado” como ausencia de drift.
 | `voucher_series` | tipo enum, serie varchar(4), correlativo unsigned, caja nullable, estado, unique tipo+serie | No obtenida | PENDIENTE DE COMPROBAR — prioridad crítica |
 | `vouchers` | documento/serie/correlativo, snapshots de cliente, totales, estado/pago, nota padre, turno/usuario, detracción y SUNAT | No obtenida | PENDIENTE DE COMPROBAR — prioridad crítica |
 
-## 4. Drift confirmado entre fuentes de código
+## 4. Drift confirmado entre código y producción
 
-Aunque el drift productivo sigue pendiente, sí existe una diferencia comprobable entre el código desplegado declarado y la rama estabilizada:
+El DDL recibido permite separar diferencias del archivo de migration y drift vivo:
 
 | Objeto | Commit productivo declarado | Rama actual | Evaluación |
 |---|---|---|---|
-| Migration `appointments` | Dos declaraciones de `hora_llamado` | Una declaración | Diferencia intencional de Fase 0; DDL vivo pendiente |
+| Migration `appointments` | Dos declaraciones de `hora_llamado` | Una declaración | Producción no contiene `hora_llamado`; ninguna migration auditada representa el DDL vivo |
 | Resto de migrations | 27 archivos | Los mismos 27 archivos | Sin otra diferencia de archivo frente a `6552e525` |
 
-También existe inconsistencia dentro del código actual:
+Drift e inconsistencias confirmadas:
 
-| Concepto | Migration ERP | Código consumidor | Riesgo |
+| Concepto | Migration/código | Producción confirmada | Evaluación/riesgo |
 |---|---|---|---|
-| Estado `PACIENTE_LLEGO` | No aparece en enum | Vistas ERP y llamador lo usan | Escritura inválida o drift manual productivo |
-| Estado `REEVALUACION` | No aparece en enum | Controladores, vistas y llamador lo consultan/escriben | Flujo imposible con DDL literal o drift manual |
-| `hora_llamado` | Existe una vez en rama actual | Llamador temporal la escribe; visor la lee | Contrato implícito que debe preservarse temporalmente |
-| Integridad `doctor_services` | No declara FK ni unique doctor+service | Consultas unen por ambos ids | Huérfanos/duplicados posibles |
+| `PACIENTE_LLEGO` | No aparece en enum versionado; ERP/llamador lo usan | Existe en enum | DRIFT CONFIRMADO; preservar compatibilidad |
+| `REEVALUACION` | No aparece en enum versionado; ERP/llamador lo usan | Existe en enum | DRIFT CONFIRMADO; preservar compatibilidad |
+| Horas del llamador | La rama contiene `hora_llegada`, `hora_llamado`, `hora_atencion`, `hora_atendido` | Las cuatro están ausentes | DRIFT IMPORTANTE; contrato productivo del llamador pendiente |
+| `additional_rate_id` | Concepto de tarifa adicional legado | `NOT NULL` y FK cascade | No equivale a cita adicional; investigar función histórica |
+| Colisión de cupo | Código valida principalmente antes de guardar | Sin unique médico+fecha+hora | Riesgo de concurrencia/doble reserva aunque hoy haya 0 duplicados exactos |
+| Borrado de citas | Cinco relaciones de cita | Todas `ON DELETE CASCADE` | Riesgo de pérdida histórica si la aplicación realiza deletes físicos; ocurrencia no demostrada |
+| Integridad `doctor_services` | No declara FK ni unique doctor+service | DDL no recibido | PENDIENTE DE PRODUCCIÓN |
 
 ## 5. Checklist columna por columna para tablas críticas
 
 ### `appointments`
 
-- `numero_cita`: longitud, unique y nulabilidad;
-- FK: signed/unsigned, nulabilidad y `ON DELETE`;
+- `numero_cita`: unique confirmado; otros detalles menores según DDL conservado;
+- cinco FK y `ON DELETE CASCADE` confirmados; `additional_rate_id NOT NULL`;
 - `fecha_cita`, `hora_cita`, duración y turno;
-- `hora_llegada`, `hora_llamado`, `hora_atencion`, `hora_atendido`;
+- `hora_llegada`, `hora_llamado`, `hora_atencion`, `hora_atendido`: confirmadas ausentes;
 - precisión/defaults de precio, pagado y saldo;
-- lista exacta de ambos enums;
-- índices reales para fecha, médico y estado;
+- lista exacta de `estado_cita` confirmada; otros enums/detalles deben conservarse desde el DDL recibido;
+- ausencia de unique `doctor_id + fecha_cita + hora_cita` confirmada;
 - timestamps y precisión temporal.
 
 ### Finanzas
@@ -127,9 +130,9 @@ Si aparece una tabla adicional, clasificarla `NO REPRESENTADO EN MIGRATIONS`. Si
 
 ## 7. Criterio de cierre de la reconciliación
 
-La matriz podrá cerrarse únicamente cuando:
+La reconciliación completa de la matriz podrá cerrarse únicamente cuando:
 
-1. se reciba el DDL de las 32 tablas;
+1. se reciba el DDL de las 31 tablas restantes, además del `appointments` ya incorporado;
 2. se compare automáticamente o manualmente cada atributo solicitado;
 3. se revise la salida por una segunda persona;
 4. las diferencias se relacionen con datos y código consumidor;

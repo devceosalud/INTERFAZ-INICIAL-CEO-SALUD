@@ -4,7 +4,7 @@
 
 Este documento prepara la evidencia mínima necesaria antes de diseñar migrations o implementar el MVP de agendamiento.
 
-**PENDIENTE DE PRODUCCIÓN:** el plan no fue ejecutado. No se conectó a producción, no se ejecutó SQL productivo y no se inspeccionaron credenciales, paneles ni logs productivos durante esta fase.
+**EJECUCIÓN PARCIAL CONFIRMADA:** se incorporó evidencia sanitizada de `SHOW CREATE TABLE appointments`, agregados de citas y roles productivos básicos. El agente no se conectó a producción ni ejecutó SQL. El resto del plan continúa **PENDIENTE DE PRODUCCIÓN**.
 
 El plan complementa, sin reemplazar:
 
@@ -183,17 +183,13 @@ Resultado esperado: catálogo efectivo usado y volumen agregado por estado. No c
 SELECT COUNT(*) AS total,
        COUNT(DISTINCT user_id) AS usuarios_creadores_distintos,
        COALESCE(SUM(user_id IS NULL), 0) AS sin_usuario,
-       COALESCE(SUM(hora_llegada IS NULL), 0) AS sin_hora_llegada,
-       COALESCE(SUM(hora_llamado IS NULL), 0) AS sin_hora_llamado,
-       COALESCE(SUM(hora_atencion IS NULL), 0) AS sin_hora_atencion,
-       COALESCE(SUM(hora_atendido IS NULL), 0) AS sin_hora_atendido,
        COALESCE(SUM(precio_programado IS NULL), 0) AS sin_precio,
        COALESCE(SUM(total_pagado IS NULL), 0) AS sin_total_pagado,
        COALESCE(SUM(saldo_pendiente IS NULL), 0) AS sin_saldo
 FROM appointments;
 ```
 
-Resultado esperado: cobertura agregada de autoría/timestamps/finanzas. No devuelve ids ni importes.
+Resultado esperado: cobertura agregada de autoría y finanzas. No devuelve ids ni importes. Las columnas `hora_llegada`, `hora_llamado`, `hora_atencion` y `hora_atendido` se retiraron de esta consulta preparada porque el DDL productivo confirmó que no existen.
 
 ### 5.7 Calidad financiera y colisiones técnicas
 
@@ -246,6 +242,31 @@ LEFT JOIN additional_rates ar ON ar.id = a.additional_rate_id;
 ```
 
 Resultado esperado: conteos sin ids. Si una FK no existe en el DDL, la consulta sigue permitiendo medir referencias rotas.
+
+### 5.9 Evidencia incorporada de `appointments`
+
+**CONFIRMADO EN PRODUCCIÓN mediante DDL sanitizado:**
+
+- InnoDB;
+- `numero_cita UNIQUE`;
+- cinco FK reales hacia usuarios, pacientes, médicos, servicios y tarifas adicionales, todas con `ON DELETE CASCADE`;
+- `additional_rate_id NOT NULL`;
+- ausencia de unique `doctor_id + fecha_cita + hora_cita`;
+- campos financieros dentro de cita y `autorizado_por varchar(255)`;
+- enum `PROGRAMADO`, `CONFIRMADO`, `PACIENTE_LLEGO`, `EN_ESPERA`, `LLAMANDO`, `EN_ATENCION`, `ATENDIDO`, `REEVALUACION`, `CANCELADO`, `NO_ASISTIO`, con default `PROGRAMADO`;
+- ausencia de `hora_llegada`, `hora_llamado`, `hora_atencion` y `hora_atendido`.
+
+**CONFIRMADO EN PRODUCCIÓN mediante agregados sin PII:**
+
+| Métrica | Resultado |
+|---|---:|
+| Total de citas | 9 |
+| Creadores distintos | 3 |
+| Sin usuario/paciente/médico/servicio | 0 en cada caso |
+| Duplicados exactos médico+fecha+hora | 0 |
+| `ATENDIDO` | 9 |
+
+El cero actual de duplicados no compensa la ausencia de protección estructural. `ATENDIDO = 9` no implica que los demás valores del enum estén prohibidos u obsoletos.
 
 ## 6. Prioridad 2 — tablas dependientes
 
@@ -460,8 +481,8 @@ Resultado esperado: nombres de roles y cantidades, nunca nombres, emails ni ids 
 
 | Evidencia | Consulta/paso | Resultado que habilita |
 |---|---|---|
-| DDL real de citas | 5.1–5.4 | Comparar migration/código/producción y diseñar cambios aditivos. |
-| Estados reales | 5.5 | Cerrar catálogo de compatibilidad con ERP/llamador. |
+| DDL real de citas | 5.1–5.4 | CONFIRMADO; permite comparar migration/código/producción y preparar cambios aditivos. |
+| Estados reales | 5.5 | Enum/distribución CONFIRMADOS; flujo productivo del llamador confirmado como temporal e independiente. |
 | Autoría/timestamps | 5.6 | Conocer cobertura histórica y necesidad de backfill. |
 | Finanzas/costo cero | 5.7 | Dimensionar reconciliación y excepciones legadas. |
 | Colisiones | 5.7 | Dimensionar coexistencia de dobles cupos sin calificarlos automáticamente. |
@@ -469,7 +490,7 @@ Resultado esperado: nombres de roles y cantidades, nunca nombres, emails ni ids 
 | Horarios reales | 6.1–6.4 | Distinguir recurrencia, fechas y reglas usadas. |
 | Captación disponible | 6.5 | Saber cuánto canal/medio existe; no reinterpretarlo como responsable de la cita. |
 | Pagos/comprobantes | 6.6 | Evitar doble cobro y definir conciliación mínima. |
-| Roles productivos | 7 | Comparar actores reales con capacidades provisionales del piloto. |
+| Roles productivos | 7 | Roles básicos CONFIRMADOS; asignaciones/permisos detallados pendientes. |
 
 ## 9. Anonimización y custodia
 
@@ -556,6 +577,22 @@ Un `405` ante GET/HEAD demuestra solo rechazo de ese método, no seguridad del P
 
 Estado actual de ambas rutas: **POTENCIALMENTE EXPUESTO** en el código auditado y **PENDIENTE** en producción.
 
+### 10.6 Resultado de la verificación productiva
+
+Mediante una sesión real autenticada se confirmó el flujo normal de ADMISION sin ejecutar endpoints mutantes ni modificar producción:
+
+- flujo primario: **`visorTemporal` CONFIRMADO**;
+- login ADMISION: redirección confirmada a `/admision/temporal/gestion-paciente`;
+- fuente: base por defecto propia y `appointments` temporal;
+- `other_system`: **NO CONFIGURADA** en el `.env` revisado y sin cache efectiva de configuración/rutas;
+- protección productiva de las rutas: **PENDIENTE DE PRODUCCIÓN**;
+- legacy: presente en el mismo código, pero no confirmado como flujo normal ni como dependencia externa;
+- sincronización ERP → llamador: **NO ENCONTRADA/NO CONFIRMADA**;
+- **Traer Datos**: recarga GET del índice temporal, no importa citas;
+- consultorio/destino: ausente del modelo auditado.
+
+La pantalla temporal estaba sin citas. Esto no prueba un fallo y puede corresponder a ausencia de registros para la fecha/filtros.
+
 ## 11. Evidencia mínima del informe de ejecución
 
 El operador debe devolver únicamente:
@@ -565,7 +602,7 @@ El operador debe devolver únicamente:
 - DDL/metadatos sanitizados;
 - tablas de agregados autorizadas;
 - commit/flujo del llamador;
-- `other_system` = ERP SÍ/NO/PENDIENTE;
+- estado de `other_system` sin valores sensibles; en esta ejecución documental quedó **NO CONFIGURADA**;
 - matriz de protección/alcance de las dos rutas;
 - errores estructurales sin stack traces ni datos;
 - clasificación final y fuente de cada afirmación.
@@ -574,10 +611,10 @@ El operador debe devolver únicamente:
 
 Los siguientes son bloqueos técnicos obligatorios antes de diseñar/aplicar cambios integrados sobre `appointments` o su contrato operativo:
 
-- **A. DDL productivo de `appointments`:** columnas, tipos, enums, índices, FK y unique constraints sanitizados.
-- **B. Estados reales utilizados:** distribución agregada y compatibilidad documentada entre ERP y llamador.
-- **C. Compatibilidad del llamador confirmada:** commit/flujo/conexión/rutas/alcance y estrategia temporal de integración.
-- **D. Evidencia de roles productivos básicos:** obtener y confirmar nombres de roles, asignaciones agregadas y actores del piloto, sin listar usuarios. Actualmente **PENDIENTE DE PRODUCCIÓN**.
+- **A. DDL productivo de `appointments`: CONFIRMADO.** DDL sanitizado incorporado.
+- **B. Estados productivos: CONFIRMADO.** Enum/default y distribución agregada actual incorporados; su compatibilidad operativa con el llamador forma parte de C.
+- **C. Flujo productivo del llamador: CONFIRMADO.** El primario es `visorTemporal`, aislado en una base propia y sin sincronización confirmada con el ERP. La planificación debe introducir un contrato explícito, no escritura compartida.
+- **D. Roles productivos básicos: CONFIRMADO.** Las asignaciones/permisos detallados pueden continuar pendientes sin reabrir este gate básico.
 
 **E. Grupo exacto del piloto:** permanece **PENDIENTE DE NEGOCIO**, pero no bloquea el desarrollo genérico una vez resueltos A–D si profesionales, usuarios y roles se mantienen configurables y no se hardcodean. Sí debe estar confirmado antes de configurar participantes, ejecutar UAT dirigida o activar el piloto.
 
@@ -589,12 +626,13 @@ Pendientes empresariales de alcance específico, no bloqueos globales del MVP:
 
 Ya no son bloqueos: el tipo de perfiles que pueden aprobar COSTO 0 —se administrará por maestro configurable—, la necesidad de aprobación médica manual para adicionales —no es obligatoria— ni la asignación/reasignación básica del responsable de la cita —creador como responsable inicial y cambio auditable—.
 
-Además, cualquier evidencia de ruta mutante expuesta debe tener una mitigación autorizada antes del piloto. Cumplir A–D habilita diseño técnico detallado y desarrollo local compatible; no autoriza por sí mismo migrar producción. Cumplir E y cerrar las políticas específicas aplicables es obligatorio antes de UAT/activación de los flujos correspondientes.
+Los gates técnicos A–D están confirmados y existe evidencia suficiente para pasar a la **planificación de implementación local** del MVP. Esto no autoriza migrations productivas, despliegue ni activación. El legacy debe verificarse sin consumidores y contenerse/retirarse antes del piloto; cumplir E y cerrar las políticas específicas aplicables continúa siendo obligatorio antes de UAT/activación.
 
 ## 13. Resultado de esta fase documental
 
-- paquete SQL preparado, no ejecutado;
-- guía pasiva del llamador preparada, no ejecutada;
-- datos productivos no consultados;
-- secretos y PII no inspeccionados;
-- gate de implementación reevaluado: A–D bloquean cambios integrados; E bloquea configuración/UAT/activación del piloto, no el desarrollo genérico sin hardcoding.
+- paquete SQL parcialmente ejecutado fuera de esta sesión; evidencia sanitizada de `appointments` incorporada;
+- flujo productivo primario del llamador confirmado como `visorTemporal` mediante sesión autenticada facilitada fuera de esta ejecución; el agente no modificó producción;
+- agregados productivos de citas incorporados sin PII; resto del perfil pendiente;
+- secretos y PII no incorporados ni inspeccionados por el agente;
+- gate de implementación reevaluado: A–D confirmados; E y las políticas específicas bloquean configuración/UAT/activación, no la planificación local genérica sin hardcoding;
+- paquete de evidencia suficiente para cerrar la Fase 5 documental y pasar a planificación, sin autorizar implementación productiva.
