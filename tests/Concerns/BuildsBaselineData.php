@@ -8,6 +8,7 @@ use App\Models\DoctorSchedule;
 use App\Models\DoctorService;
 use App\Models\Patient;
 use App\Models\Service;
+use App\Models\Site;
 use App\Models\Specialty;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
@@ -26,6 +27,15 @@ trait BuildsBaselineData
         $user->assignRole($role);
 
         return $user;
+    }
+
+    protected function createSite(array $attributes = []): Site
+    {
+        return Site::create(array_merge([
+            'codigo' => 'BASELINE',
+            'nombre' => 'Sede Baseline',
+            'estado' => 'ACTIVO',
+        ], $attributes));
     }
 
     protected function createPatient(?User $user = null, array $attributes = []): Patient

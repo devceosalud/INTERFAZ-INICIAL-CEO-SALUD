@@ -11,6 +11,7 @@ class DoctorSchedule extends Model
 
     protected $fillable = [
         'doctor_id',
+        'site_id',
         'dia_semana',
         'fecha_cita',
         'hora_inicio',
@@ -32,5 +33,13 @@ class DoctorSchedule extends Model
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    /**
+     * Sede donde se atiende el bloque. Nula en horarios heredados.
+     */
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
     }
 }

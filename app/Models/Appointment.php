@@ -11,7 +11,10 @@ class Appointment extends Model
 
     protected $fillable = [
         'numero_cita',
+        'site_id',
         'user_id',
+        'responsible_user_id',
+        'updated_by_user_id',
         'patient_id',
         'doctor_id',
         'service_id',
@@ -40,6 +43,30 @@ class Appointment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Obtiene la sede donde se atiende la cita. Nula en citas heredadas.
+     */
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * Obtiene el responsable actual de gestión de la cita, distinto del creador.
+     */
+    public function responsibleUser()
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
+    /**
+     * Obtiene el último usuario que modificó la cita, sin reemplazar al creador.
+     */
+    public function updatedByUser()
+    {
+        return $this->belongsTo(User::class, 'updated_by_user_id');
     }
 
     /**
