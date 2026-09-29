@@ -9,6 +9,9 @@ use App\Models\DoctorSchedule;
 use App\Models\DoctorService;
 use App\Models\Service;
 use App\Models\Specialty;
+use App\Services\Scheduling\DoctorAvailabilityService;
+use App\Support\Scheduling\AppointmentOccupancy;
+use App\Support\Scheduling\AvailabilityQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +25,9 @@ class ScheduleController extends Controller
         $finRango = $request->end ? Carbon::parse($request->end) : Carbon::now()->addMonth()->endOfMonth();
 
         $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
-            ->whereBetween('fecha_cita', [$inicioRango, $finRango])
+            // Compared as dates: binding datetimes against a date column silently dropped
+            // every appointment falling on the first day of the requested range.
+            ->whereBetween('fecha_cita', [$inicioRango->toDateString(), $finRango->toDateString()])
             ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
 
         if ($request->specialty_id) {
@@ -45,11 +50,15 @@ class ScheduleController extends Controller
         $events = $appointment->map(function ($schedule) use ($colors) {
             $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
+            // Same duration policy as the availability engine, so the calendar cannot drift.
+            $fin = Carbon::parse($schedule->fecha_cita . ' ' . $schedule->hora_cita)
+                ->addMinutes(AppointmentOccupancy::minutesFor($schedule->duracion_cita));
+
             return [
                 'id' => $schedule->id,
                 'title' => $schedule->patient->nombre . ' - ' . $schedule->service->nombre,
                 'start' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
-                'end' => $schedule->fecha_cita . 'T' . $schedule->hora_cita,
+                'end' => $schedule->fecha_cita . 'T' . $fin->format('H:i:s'),
                 'color' => $color,
                 'backgroundColor' => $color,
                 'borderColor' => $color,
@@ -89,67 +98,45 @@ class ScheduleController extends Controller
         return response()->json($events->values());
     }
 
+    /**
+     * Free slots for the calendar, resolved by the availability engine.
+     *
+     * The slot rules used to be duplicated here. Delegating inherits the corrections of
+     * MVP-2A: an appointment stored without `duracion_cita` still blocks, a slot never runs
+     * past `hora_fin`, overlap is detected by range, the set of consuming states is defined
+     * once, and a site filter tolerates legacy rows without one. The event shape is unchanged.
+     */
     private function generarEventosDisponibles(int $doctorId, Carbon $desde, Carbon $hasta)
     {
+        $availability = app(DoctorAvailabilityService::class);
         $eventos = collect();
         $fecha = $desde->copy();
 
         while ($fecha->lte($hasta)) {
             $fechaStr = $fecha->toDateString();
-            $dia = $fecha->dayOfWeekIso;
 
-            $horarios = DoctorSchedule::where('doctor_id', $doctorId)
-                ->where('estado', 'ACTIVO')
-                ->where(function ($q) use ($fechaStr, $dia) {
-                    $q->where('fecha_cita', $fechaStr)
-                      ->orWhere(function ($q2) use ($dia) {
-                          $q2->whereNull('fecha_cita')->where('dia_semana', $dia);
-                      });
-                })
-                ->get();
+            $slots = $availability
+                ->forDay(new AvailabilityQuery($doctorId, $fecha))
+                ->availableSlots();
 
-            if ($horarios->isNotEmpty()) {
-                $ocupadas = Appointment::where('doctor_id', $doctorId)
-                    ->whereDate('fecha_cita', $fechaStr)
-                    ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION'])
-                    ->get(['hora_cita', 'duracion_cita']);
+            foreach ($slots as $slot) {
+                $inicio = $slot->range()->start();
 
-                foreach ($horarios as $horario) {
-                    $cursor = Carbon::parse("{$fechaStr} {$horario->hora_inicio}");
-                    $finJornada = Carbon::parse("{$fechaStr} {$horario->hora_fin}");
-                    $duracion = $horario->duracion_cita;
+                $eventos->push([
+                    'id' => 'libre-' . $fechaStr . '-' . $inicio->format('Hi'),
+                    'title' => 'Disponible',
+                    'start' => $fechaStr . 'T' . $inicio->format('H:i:s'),
+                    'end' => $fechaStr . 'T' . $slot->range()->end()->format('H:i:s'),
+                    'color' => '#28a745',
+                    'backgroundColor' => '#28a745',
+                    'borderColor' => '#28a745',
+                    'textColor' => '#ffffff',
 
-                    while ($cursor->copy()->addMinutes($duracion)->lte($finJornada)) {
-                        $slotInicio = $cursor->copy();
-                        $slotFin = $cursor->copy()->addMinutes($duracion);
-
-                        $hayCruce = $ocupadas->contains(function ($cita) use ($fechaStr, $slotInicio, $slotFin) {
-                            $ci = Carbon::parse("{$fechaStr} {$cita->hora_cita}");
-                            $cf = $ci->copy()->addMinutes($cita->duracion_cita ?? 0);
-                            return $slotInicio->lt($cf) && $ci->lt($slotFin);
-                        });
-
-                        if (!$hayCruce) {
-                            $eventos->push([
-                                'id' => 'libre-' . $fechaStr . '-' . $slotInicio->format('Hi'),
-                                'title' => 'Disponible',
-                                'start' => $fechaStr . 'T' . $slotInicio->format('H:i:s'),
-                                'end' => $fechaStr . 'T' . $slotFin->format('H:i:s'),
-                                'color' => '#28a745',
-                                'backgroundColor' => '#28a745',
-                                'borderColor' => '#28a745',
-                                'textColor' => '#ffffff',
-
-                                'tipo' => 'disponible',
-                                'doctor_id' => $doctorId,
-                                'fecha_cita' => $fechaStr,
-                                'hora_cita' => $slotInicio->format('H:i'),
-                            ]);
-                        }
-
-                        $cursor->addMinutes($duracion);
-                    }
-                }
+                    'tipo' => 'disponible',
+                    'doctor_id' => $doctorId,
+                    'fecha_cita' => $fechaStr,
+                    'hora_cita' => $inicio->format('H:i'),
+                ]);
             }
 
             $fecha->addDay();
@@ -221,9 +208,19 @@ class ScheduleController extends Controller
      ********************************************************************************************************/
     public function doctor_schedules(Request $request)
     {
-        $mes = Date('Y-m');
+        // The calendar always sends the visible window. This used to look only at the
+        // server's current month with a LIKE, so navigating to any other month or year
+        // returned nothing.
+        $request->validate([
+            'start' => 'nullable|date',
+            'end' => 'nullable|date|after_or_equal:start',
+        ]);
+
+        $inicioRango = $request->start ? Carbon::parse($request->start) : Carbon::now()->startOfMonth();
+        $finRango = $request->end ? Carbon::parse($request->end) : Carbon::now()->endOfMonth();
+
         $doctor_schedules = DoctorSchedule::where('estado', 'ACTIVO')
-            ->where('fecha_cita', 'like', '%' . $mes . '%');
+            ->whereBetween('fecha_cita', [$inicioRango->toDateString(), $finRango->toDateString()]);
 
         //PARA FILTRAR CITAS POR MEDICO
         if ($request->doctor_id) {

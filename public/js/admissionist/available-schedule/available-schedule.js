@@ -138,13 +138,14 @@ async function cargarHorariosCitaDisponibilidad() {
             },
             body: JSON.stringify({
                 doctor_id: doctor_id,
-                fecha_cita: fecha_cita
+                fecha_cita: fecha_cita,
+                cita_doble: cita_doble
             }),
         });
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorariosCitaDisponibilidad(data.horarios, data.ocupadas, cita_doble);
+        generarHorariosCitaDisponibilidad(data.slots, cita_doble);
     } catch (error) {
         console.error(error);
     }
@@ -164,93 +165,30 @@ $(document).on("click", ".open-appointment", function (e) {
     console.log('Hora: ' + hora_escogida + "Fecha escogida: " + fecha_escogida);
 });
 
-function generarHorariosCitaDisponibilidad(horarios, ocupadas, cita_doble) {
+// El backend ya resuelve la disponibilidad. Aqui solo se pintan los slots libres.
+function generarHorariosCitaDisponibilidad(slots, cita_doble) {
 
-    console.log('¿cita doble?', cita_doble);
     const tbody = document.querySelector('#cuerpo-tabla');
     let html = '';
 
-    horarios.forEach(horario => {
-        let inicio = horario.hora_inicio.substring(0, 5);
-        let fin = horario.hora_fin.substring(0, 5);
-        let duracion = parseInt(horario.duracion_cita);
-        let actual = convertirMinutosCitaDisponibilidad(inicio);
-        let final = convertirMinutosCitaDisponibilidad(fin);
+    (slots || []).forEach(slot => {
+        let etiqueta = cita_doble ? `${slot.inicio} - ${slot.fin}` : slot.inicio;
 
-        while (actual < final) {
-            let hora = convertirHoraCitaDisponibilidad(actual);
-
-            if (!cita_doble) { // CITA NORMAL
-                let hayCruce = existeCruceCitaDisponibilidad(hora, duracion, ocupadas);
-                if (!hayCruce) {
-                    html += `
-                        <div class="col-md-2">
-                            <div class="my-2">
-                                <a class="btn btn-primary btn-sm open-appointment"
-                                    data-hora="${hora}"> 
-                                    ${hora} <i class="fa fa-pencil fs-18 text-success"></i>Escoger
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                }
-            } else { // CITA DOBLE
-                let duracionDoble = duracion * 2;
-                let siguienteMinuto = actual + duracionDoble;
-                // NO SALIR DEL HORARIO DEL MEDICO
-                if (siguienteMinuto <= final) {
-                    let siguienteHora = convertirHoraCitaDisponibilidad(siguienteMinuto);
-                    let hayCruce = existeCruceCitaDisponibilidad(hora, duracionDoble, ocupadas);
-
-                    if (!hayCruce) {
-                        html += `
-                            <div class="col-md-2">
-                                <div class="my-2">
-                                    <a class="btn btn-primary btn-sm open-appointment"
-                                        data-hora="${hora}"> 
-                                        ${hora + ' - ' + siguienteHora} <i class="fa fa-pencil fs-18 text-success"></i>Escoger
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-            }
-            actual += duracion;
-        }
+        html += `
+            <div class="col-md-2">
+                <div class="my-2">
+                    <a class="btn btn-primary btn-sm open-appointment"
+                        data-hora="${slot.inicio}">
+                        ${etiqueta} <i class="fa fa-pencil fs-18 text-success"></i>Escoger
+                    </a>
+                </div>
+            </div>
+        `;
     });
+
     // REGLA DE ORO: Insertar en el DOM una sola vez al terminar todos los ciclos
     tbody.innerHTML = html || '<tr><td colspan="3" class="text-center">No hay horarios disponibles para esta fecha.</td></tr>';
     initSelectDisponibilidad();
-}
-
-function existeCruceCitaDisponibilidad(horaInicioNueva, duracionNueva, ocupadas) {
-
-    let inicioNueva = convertirMinutosCitaDisponibilidad(horaInicioNueva);
-    let finNueva = inicioNueva + duracionNueva;
-    return ocupadas.some(cita => {
-        let inicioExistente = convertirMinutosCitaDisponibilidad(
-            cita.hora_cita.substring(0, 5)
-        );
-
-        let finExistente = inicioExistente + parseInt(cita.duracion_cita);
-        return (inicioNueva < finExistente && finNueva > inicioExistente);
-    });
-}
-
-function convertirMinutosCitaDisponibilidad(hora) {
-    let partes = hora.split(":");
-    console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
-    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
-}
-
-function convertirHoraCitaDisponibilidad(minutos) {
-    let h = Math.floor(minutos / 60);
-    let m = minutos % 60;
-    h = String(h).padStart(2, '0');
-    m = String(m).padStart(2, '0');
-    console.log('funcion hora: ', `${h}:${m}`);
-    return `${h}:${m}`;
 }
 
 //FUNCION ALERTA

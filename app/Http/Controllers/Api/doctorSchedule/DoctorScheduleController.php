@@ -3,37 +3,39 @@
 namespace App\Http\Controllers\Api\doctorSchedule;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appointment;
 use App\Models\DoctorSchedule;
+use App\Services\Scheduling\DoctorAvailabilityService;
+use App\Support\Scheduling\AvailabilityQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DoctorScheduleController extends Controller
 {
-    //PARA SACAR LOS HORARIOS
-    public function availableHours(Request $request)
+    /**
+     * Free hours for a professional on a date, already resolved by the availability engine.
+     *
+     * Until MVP-2B this returned the raw blocks and the raw occupied appointments and let three
+     * copies of JavaScript work out the slots, which is where the real defects lived. The
+     * response now carries only resolved slots: no raw appointment rows and no patient data.
+     */
+    public function availableHours(Request $request, DoctorAvailabilityService $availability)
     {
-        $dia = Carbon::parse($request->fecha_cita)->dayOfWeekIso;
+        $data = $request->validate([
+            'doctor_id' => 'required|integer',
+            'fecha_cita' => 'required|date',
+            'cita_doble' => 'nullable|boolean',
+        ]);
 
-        // Horarios del doctor
-        $horarios = DoctorSchedule::where('doctor_id', $request->doctor_id)
-            ->where('fecha_cita', $request->fecha_cita)
-            ->where('estado', 'ACTIVO')
-            ->orderBy('hora_inicio')
-            ->get();
-
-        // Horas ya ocupadas
-        $ocupadas = Appointment::where('doctor_id', $request->doctor_id)
-            ->whereDate('fecha_cita', $request->fecha_cita)
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO' ,'ATENDIDO','REEVALUACION']) //['NO_ASISTIO', 'CANCELADO','ATENDIDO','REEVALUACION']
-            ->get([
-                'hora_cita',
-                'duracion_cita'
-            ]);
+        $slots = $availability->forDay(new AvailabilityQuery(
+            (int) $data['doctor_id'],
+            Carbon::parse($data['fecha_cita']),
+            null,
+            null,
+            $request->boolean('cita_doble') ? 2 : 1
+        ))->availableSlots();
 
         return response()->json([
-            'horarios' => $horarios, // horarios del doctor
-            'ocupadas' => $ocupadas  // horarios ya tomados en la tabla cita
+            'slots' => $slots->map->toArray()->values(),
         ]);
     }
 

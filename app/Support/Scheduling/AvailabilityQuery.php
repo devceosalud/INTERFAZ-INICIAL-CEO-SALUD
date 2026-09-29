@@ -21,12 +21,20 @@ class AvailabilityQuery
 
     protected $requiredMinutes;
 
-    public function __construct(int $doctorId, Carbon $date, ?int $siteId = null, ?int $requiredMinutes = null)
-    {
+    protected $durationMultiplier;
+
+    public function __construct(
+        int $doctorId,
+        Carbon $date,
+        ?int $siteId = null,
+        ?int $requiredMinutes = null,
+        int $durationMultiplier = 1
+    ) {
         $this->doctorId = $doctorId;
         $this->date = $date->copy()->startOfDay();
         $this->siteId = $siteId;
         $this->requiredMinutes = $requiredMinutes;
+        $this->durationMultiplier = max(1, $durationMultiplier);
     }
 
     public function doctorId(): int
@@ -62,8 +70,18 @@ class AvailabilityQuery
         return $this->requiredMinutes;
     }
 
+    /**
+     * Multiplies each block's own slot length, which is how the inherited "cita doble" works:
+     * a double appointment is two consecutive slots of that block, not a fixed number of
+     * minutes shared across blocks of different lengths.
+     */
+    public function durationMultiplier(): int
+    {
+        return $this->durationMultiplier;
+    }
+
     public function withRequiredMinutes(?int $minutes): self
     {
-        return new self($this->doctorId, $this->date, $this->siteId, $minutes);
+        return new self($this->doctorId, $this->date, $this->siteId, $minutes, $this->durationMultiplier);
     }
 }

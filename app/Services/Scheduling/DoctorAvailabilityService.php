@@ -98,18 +98,15 @@ class DoctorAvailabilityService
      */
     protected function occupiedMinutes(Appointment $appointment, Carbon $start, Collection $blocks): int
     {
-        $stored = (int) $appointment->duracion_cita;
-
-        if ($stored > 0) {
-            return $stored;
-        }
-
         $containing = $blocks->first(function (DoctorSchedule $block) use ($start) {
             return $start->format('H:i:s') >= $this->time($block->hora_inicio)
                 && $start->format('H:i:s') < $this->time($block->hora_fin);
         });
 
-        return $containing ? (int) $containing->duracion_cita : AppointmentOccupancy::FALLBACK_MINUTES;
+        return AppointmentOccupancy::minutesFor(
+            $appointment->duracion_cita,
+            $containing ? $containing->duracion_cita : null
+        );
     }
 
     /**
@@ -124,7 +121,7 @@ class DoctorAvailabilityService
         );
 
         $step = (int) $block->duracion_cita;
-        $length = $query->requiredMinutes() ?: $step;
+        $length = $query->requiredMinutes() ?: $step * $query->durationMultiplier();
 
         $slots = collect();
         $cursor = $blockRange->start();

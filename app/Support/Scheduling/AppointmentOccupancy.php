@@ -60,4 +60,21 @@ class AppointmentOccupancy
     {
         return ! in_array($state, self::RELEASING_STATES, true);
     }
+
+    /**
+     * Single duration policy, so availability and calendar rendering cannot drift apart:
+     * the stored value wins, then the containing block's slot length, then the fallback.
+     */
+    public static function minutesFor(?int $storedMinutes, ?int $blockMinutes = null): int
+    {
+        if ((int) $storedMinutes > 0) {
+            return (int) $storedMinutes;
+        }
+
+        if ((int) $blockMinutes > 0) {
+            return (int) $blockMinutes;
+        }
+
+        return self::FALLBACK_MINUTES;
+    }
 }
