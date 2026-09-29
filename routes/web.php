@@ -39,6 +39,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
     ->name('admin.dashboard.index');
 
+// Future scheduling module. Its own middleware keeps the legacy routes intact.
+require base_path('routes/scheduling.php');
+
 
 /***************************************************************************
  * RUTAS ADMISION                                                          *

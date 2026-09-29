@@ -2,7 +2,10 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\EnsureSchedulingMvpEnabled;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Routing\Router;
 
 class Kernel extends HttpKernel
 {
@@ -77,5 +80,16 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'scheduling-mvp' => \App\Http\Middleware\EnsureSchedulingMvpEnabled::class,
     ];
+
+    public function __construct(Application $app, Router $router)
+    {
+        parent::__construct($app, $router);
+
+        // Laravel hoists `auth` above SubstituteBindings from the `web` group, so it would
+        // otherwise run before any route middleware and redirect anonymous visitors to the
+        // login page, revealing that a disabled module's route exists.
+        $this->prependToMiddlewarePriority(EnsureSchedulingMvpEnabled::class);
+    }
 }
