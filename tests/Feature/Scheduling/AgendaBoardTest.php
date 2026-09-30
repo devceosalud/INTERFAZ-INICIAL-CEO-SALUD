@@ -117,21 +117,27 @@ class AgendaBoardTest extends TestCase
             ->assertSee('js/scheduling/agenda-day-grid.js', false)
             ->assertSee('js/scheduling/agenda-week-event.js', false)
             ->assertSee('js/scheduling/agenda-week-background.js', false)
+            ->assertSee('js/scheduling/agenda-patient-lookup.js', false)
             ->assertSeeInOrder(['Hora', 'Citado', 'Pago', 'H.C.', 'Apellidos y nombres'])
             ->assertSee('Esta pantalla no crea ni modifica citas')
             ->assertDontSee('Guardar cita');
     }
 
-    public function test_the_quick_registration_patient_fields_are_explicitly_disabled(): void
+    public function test_the_quick_registration_exposes_a_local_document_lookup(): void
     {
         $this->actingAs($this->reader())
             ->get(self::PAGE_URI)
             ->assertOk()
-            ->assertSee('id="agenda-quick-dni"', false)
-            ->assertSee('placeholder="Disponible en el flujo de registro" disabled', false)
+            ->assertSee('id="agenda-patient-lookup"', false)
+            ->assertSee('id="agenda-document-type"', false)
+            ->assertSee('id="agenda-document-number"', false)
+            ->assertSee('id="agenda-document-search"', false)
+            ->assertSee('Buscar')
+            ->assertSee('id="agenda-patient-register"', false)
+            ->assertSee('Registrar paciente')
+            ->assertSee('disabled', false)
             ->assertSee('Sin paciente seleccionado')
-            ->assertSee('Completar registro')
-            ->assertSee('MVP-3 — DNI + paciente rápido/completar registro');
+            ->assertDontSee('placeholder="Disponible en el flujo de registro"', false);
     }
 
     public function test_the_operational_board_is_day_first_and_uses_versioned_calendar_assets(): void

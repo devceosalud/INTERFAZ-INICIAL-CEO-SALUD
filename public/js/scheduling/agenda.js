@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     const MAX_SELECTED_DOCTORS = 12;
     const selectionModel = window.AgendaSelection;
+    const lookupModel = window.AgendaPatientLookup;
     const dayGridModel = window.AgendaDayGrid;
     const weekEventModel = window.AgendaWeekEvent;
     const weekBackgroundModel = window.AgendaWeekBackground;
@@ -70,7 +71,13 @@ document.addEventListener('DOMContentLoaded', function () {
         contextClinicalRecord: document.getElementById('agenda-context-clinical-record'),
         rowHead: document.getElementById('agenda-row-head'),
         quickMode: document.getElementById('agenda-quick-mode'),
-        quickDni: document.getElementById('agenda-quick-dni'),
+        patientLookup: document.getElementById('agenda-patient-lookup'),
+        documentType: document.getElementById('agenda-document-type'),
+        documentNumber: document.getElementById('agenda-document-number'),
+        documentSearch: document.getElementById('agenda-document-search'),
+        lookupResult: document.getElementById('agenda-patient-lookup-result'),
+        lookupClinicalRecord: document.getElementById('agenda-lookup-clinical-record'),
+        patientRegister: document.getElementById('agenda-patient-register'),
         quickPatientId: document.getElementById('agenda-quick-patient-id'),
         quickPatientIdDisplay: document.getElementById('agenda-quick-patient-id-display'),
         quickPatientState: document.getElementById('agenda-quick-patient-state'),
@@ -109,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
         visibleEvents: [],
         selectedSlotEvent: null,
         requestController: null,
+        identity: lookupModel.blank(),
     };
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
@@ -840,8 +848,6 @@ document.addEventListener('DOMContentLoaded', function () {
             site: el.site.value ? siteName(el.site.value) : 'Todas las sedes',
         });
         applyQuickState(base);
-        el.quickDni.value = '';
-        el.quickDni.placeholder = 'Disponible en MVP-3';
         el.quickMessage.classList.remove('is-ready');
         el.quickMessage.textContent = isComparing()
             ? 'Seleccione un médico de la comparación y abra su agenda para elegir un intervalo.'
@@ -902,20 +908,19 @@ document.addEventListener('DOMContentLoaded', function () {
         applyQuickState(quick);
 
         if (context.tipo_contexto === 'cita_existente') {
-            el.quickDni.value = '';
-            el.quickDni.placeholder = 'Verificar al completar registro';
+            state.identity = lookupModel.blank();
+            el.lookupResult.textContent = '';
+            el.lookupResult.className = 'agenda-lookup__result';
+            el.lookupClinicalRecord.textContent = quick.clinicalRecord;
+            el.patientRegister.hidden = true;
             el.quickMessage.classList.remove('is-ready');
             el.quickMessage.textContent = context.responsable
                 ? 'Responsable: ' + context.responsable + '. Completar datos pertenece a MVP-3.'
                 : 'Cita identificada. Completar datos del mismo paciente pertenece a MVP-3.';
         } else if (context.tipo_contexto === 'fuera_horario') {
-            el.quickDni.value = '';
-            el.quickDni.placeholder = 'Disponible en MVP-3';
             el.quickMessage.classList.remove('is-ready');
             el.quickMessage.textContent = 'Hora fuera del horario configurado. La selección es informativa y no habilita una cita.';
         } else {
-            el.quickDni.value = '';
-            el.quickDni.placeholder = 'Disponible en MVP-3';
             el.quickMessage.classList.toggle('is-ready', Boolean(context.seleccionable));
             el.quickMessage.textContent = context.seleccionable
                 ? 'Médico, fecha, hora, sede y duración listos. MVP-2C no guarda la cita.'
@@ -953,6 +958,34 @@ document.addEventListener('DOMContentLoaded', function () {
         el.completeRegistration.hidden = !quick.showCompleteRegistration;
         el.completeRegistrationHelp.hidden = !quick.showCompleteRegistration;
         el.completeRegistration.classList.toggle('is-prepared', quick.showCompleteRegistration);
+
+        if (quick.mode !== 'Cita existente' && state.identity && state.identity.status) {
+            paintIdentity(state.identity);
+        }
+    }
+
+    function paintIdentity(identity) {
+        state.identity = identity;
+        el.quickPatientId.value = identity.patientId || '';
+        el.quickPatientIdDisplay.textContent = identity.patientId || '—';
+        el.quickPatientState.textContent = identity.name || 'Sin paciente seleccionado';
+        el.lookupClinicalRecord.textContent = identity.clinicalRecord || '—';
+        el.lookupResult.textContent = identity.message || '';
+        el.lookupResult.className = 'agenda-lookup__result'
+            + (identity.status === 'found' ? ' is-found' : '')
+            + (identity.status === 'not_found' ? ' is-missing' : '')
+            + (identity.status === 'inactive' ? ' is-inactive' : '')
+            + (identity.status === 'document_conflict' ? ' is-conflict' : '');
+        el.patientRegister.hidden = !identity.showRegister;
+        el.patientRegister.disabled = true;
+    }
+
+    function onDocumentEdited() {
+        const next = lookupModel.edited(state.identity, el.documentType.value, el.documentNumber.value);
+
+        if (next !== state.identity) {
+            paintIdentity(next);
+        }
     }
 
     function siteName(siteId) {
@@ -1030,6 +1063,59 @@ document.addEventListener('DOMContentLoaded', function () {
             window.requestAnimationFrame(releaseOperationsScroll);
         });
     }
+
+    el.documentType.addEventListener('change', onDocumentEdited);
+    el.documentNumber.addEventListener('input', onDocumentEdited);
+    el.patientLookup.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const tipo = el.documentType.value.trim();
+        const numero = el.documentNumber.value.trim();
+        const schedule = {
+            doctor: el.quickDoctor.textContent,
+            specialty: el.quickSpecialty.textContent,
+            date: el.quickDate.textContent,
+            time: el.quickTime.textContent,
+        };
+
+        paintIdentity(lookupModel.edited(null, tipo, numero));
+
+        if (!tipo || !numero) {
+            el.lookupResult.textContent = 'Indique tipo y número de documento.';
+            return;
+        }
+
+        el.documentSearch.disabled = true;
+
+        try {
+            const response = await fetch(el.patientLookup.dataset.endpoint, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({
+                    tipo_identificacion: tipo,
+                    numero_identidad: numero,
+                }),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                el.lookupResult.className = 'agenda-lookup__result is-conflict';
+                el.lookupResult.textContent = 'No se pudo consultar el documento.';
+                return;
+            }
+
+            paintIdentity(lookupModel.present(data, schedule));
+        } catch (error) {
+            el.lookupResult.className = 'agenda-lookup__result is-conflict';
+            el.lookupResult.textContent = 'No se pudo consultar el documento.';
+        } finally {
+            el.documentSearch.disabled = false;
+        }
+    });
 
     el.overlapForm.addEventListener('submit', async function (event) {
         event.preventDefault();

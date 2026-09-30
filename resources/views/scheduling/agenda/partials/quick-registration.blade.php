@@ -9,18 +9,47 @@
     </div>
 
     <div class="agenda-quick__body">
-        <div class="agenda-quick__patient">
+        <form class="agenda-lookup" id="agenda-patient-lookup" autocomplete="off"
+            data-endpoint="{{ route('scheduling.mvp.agenda.patient-lookup') }}">
             <label class="agenda-field">
-                <span class="agenda-field__label">DNI</span>
-                <input class="agenda-field__input" id="agenda-quick-dni" type="text"
-                    placeholder="Disponible en el flujo de registro" disabled>
+                <span class="agenda-field__label">Tipo documento</span>
+                <select class="agenda-field__input" id="agenda-document-type" name="tipo_identificacion">
+                    <option value="DNI">DNI</option>
+                    <option value="CARNET EXTRANJERIA">Carné de extranjería</option>
+                    <option value="PTP">PTP</option>
+                    <option value="TAM">TAM</option>
+                    <option value="RUC">RUC</option>
+                    <option value="PASAPORTE">Pasaporte</option>
+                    <option value="SALVOCONDUCTO">Salvoconducto</option>
+                    <option value="SIN DOCUMENTOS">Sin documentos</option>
+                </select>
             </label>
+            <label class="agenda-field">
+                <span class="agenda-field__label">Número documento</span>
+                <input class="agenda-field__input" id="agenda-document-number" name="numero_identidad"
+                    type="text" inputmode="text" maxlength="255" autocomplete="off" spellcheck="false">
+            </label>
+            <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-document-search">Buscar</button>
+        </form>
+
+        <p class="agenda-lookup__result" id="agenda-patient-lookup-result" role="status" aria-live="polite"></p>
+
+        <div class="agenda-quick__patient">
             <p>
                 <span>Paciente</span>
                 <strong id="agenda-quick-patient-state">Sin paciente seleccionado</strong>
             </p>
-            <input type="hidden" id="agenda-quick-patient-id">
+            <p>
+                <span>H.C.E.</span>
+                <strong id="agenda-lookup-clinical-record">—</strong>
+            </p>
+            <input type="hidden" id="agenda-quick-patient-id" value="">
         </div>
+
+        <button type="button" class="agenda-btn" id="agenda-patient-register" disabled hidden
+            title="El alta del paciente pertenece a la siguiente microtarea">
+            Registrar paciente
+        </button>
 
         <dl class="agenda-quick__context">
             <div><dt>ID paciente</dt><dd id="agenda-quick-patient-id-display">—</dd></div>

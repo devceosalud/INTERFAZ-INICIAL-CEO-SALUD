@@ -542,6 +542,40 @@
     align-items: end
 }
 
+.agenda-lookup {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) auto;
+    gap: 5px;
+    align-items: end;
+    margin-bottom: 5px
+}
+
+.agenda-lookup__result {
+    min-height: 16px;
+    margin: 0 0 5px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.3
+}
+
+.agenda-lookup__result.is-found {
+    color: #176b70
+}
+
+.agenda-lookup__result.is-missing {
+    color: #8a5a12
+}
+
+.agenda-lookup__result.is-inactive,
+.agenda-lookup__result.is-conflict {
+    color: #8f2d2d
+}
+
+.agenda-btn:disabled {
+    opacity: .55;
+    cursor: not-allowed
+}
+
 .agenda-quick__patient p {
     min-height: 27px;
     padding: 3px 5px;
