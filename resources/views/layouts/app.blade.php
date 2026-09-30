@@ -17,7 +17,7 @@
     <meta name="keywords"
         content="sistema clinico erp, erp  administrativo, gestión de pacientes, gestión de  citas, gestión de usuarios.">
     <meta name="description"
-        content="Sistema responsivo y adaptable para todo tipo ded pantallas, con diferentes tecnologias involucradas.">
+        content="Sistema responsivo y adaptable para todo tipo de pantallas, con diferentes tecnologias involucradas.">
 
     <meta property="og:title" content="ERP Ceo Salud - Hospital administrativo multirol.">
     <meta property="og:description"
@@ -38,6 +38,7 @@
 
     <!-- Style Css -->
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/erp-shell.css') }}" rel="stylesheet">
 
     <!-- DATATABLES CSS
     <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.css') }}">
@@ -71,7 +72,7 @@
     @livewireStyles
 </head>
 
-<body>
+<body @hasSection('body_class') class="@yield('body_class')" @endif>
 
     @yield('body')
 
@@ -105,6 +106,8 @@
     </script>
 
     @yield('script_data')
+
+    <script src="{{ asset('js/erp-shell.js') }}"></script>
 
     <!--SCRIPT LIVEWIRE-->
     @livewireScripts
