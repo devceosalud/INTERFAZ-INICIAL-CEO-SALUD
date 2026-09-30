@@ -86,7 +86,21 @@
                             <input type="date" class="form-control" name="fecha_cita_edit" id="fecha_cita_edit">
                             <span class="text-danger error-text fecha_cita_edit_error"></span>
                         </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label text-primary">Sede</label>
+                            <select class="form-control" name="site_id_edit" id="site_id_edit">
+                                <option value="">Sin sede</option>
+                                @foreach ($sites as $site)
+                                    <option value="{{ $site->id }}">{{ $site->nombre }}</option>
+                                @endforeach
+                            </select>
+                            <span class="text-danger error-text site_id_edit_error"></span>
+                        </div>
                     </div>
+
+                    {{-- Advertencia de cruce: informa, nunca impide guardar. --}}
+                    <p class="mt-3 mb-0 fw-bold schedule-overlap-warning" data-scope="edit"></p>
                 </div>
 
                 <!-- FOOTER -->

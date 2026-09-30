@@ -20,11 +20,18 @@ class AvailabilitySlot
 
     protected $siteId;
 
-    public function __construct(TimeRange $range, string $status, ?int $siteId = null)
-    {
+    protected $appointmentState;
+
+    public function __construct(
+        TimeRange $range,
+        string $status,
+        ?int $siteId = null,
+        ?string $appointmentState = null
+    ) {
         $this->range = $range;
         $this->status = $status;
         $this->siteId = $siteId;
+        $this->appointmentState = $appointmentState;
     }
 
     public static function available(TimeRange $range, ?int $siteId = null): self
@@ -32,9 +39,9 @@ class AvailabilitySlot
         return new self($range, self::STATUS_AVAILABLE, $siteId);
     }
 
-    public static function occupied(TimeRange $range, ?int $siteId = null): self
+    public static function occupied(TimeRange $range, ?int $siteId = null, ?string $appointmentState = null): self
     {
-        return new self($range, self::STATUS_OCCUPIED, $siteId);
+        return new self($range, self::STATUS_OCCUPIED, $siteId, $appointmentState);
     }
 
     public function range(): TimeRange
@@ -50,6 +57,15 @@ class AvailabilitySlot
     public function siteId(): ?int
     {
         return $this->siteId;
+    }
+
+    /**
+     * State of the appointment consuming the slot, when the slot is taken. Null for a free
+     * slot and for an occupied slot whose state was not recorded.
+     */
+    public function appointmentState(): ?string
+    {
+        return $this->appointmentState;
     }
 
     public function isAvailable(): bool
@@ -72,6 +88,7 @@ class AvailabilitySlot
             'fin' => $this->range->end()->format('H:i'),
             'minutos' => $this->range->minutes(),
             'estado' => $this->status,
+            'estado_cita' => $this->appointmentState,
             'site_id' => $this->siteId,
         ];
     }

@@ -50,6 +50,12 @@
                 <!-- row -->
 
                 <x-utils.schedules :doctors="$doctors" :specialties="$specialties" />
+
+                {{-- La asistencia de horarios vive detrás del feature flag del MVP de agenda. --}}
+                @if (config('scheduling.enabled'))
+                    <div id="schedule-assist" data-endpoint="{{ route('scheduling.mvp.schedule.overlap') }}" hidden>
+                    </div>
+                @endif
             </div>
 
             @include('admissionist.schedule.crud.create')
@@ -82,6 +88,10 @@
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
         <script src="{{ asset('js/admissionist/calendario-medico/filtro-calendario-medico.js') }}"></script>
         <script src="{{ asset('js/admissionist/calendario-medico/calendario-medico.js') }}"></script>
+
+        @if (config('scheduling.enabled'))
+            <script src="{{ asset('js/scheduling/schedule-assist.js') }}"></script>
+        @endif
     @endsection
 
 

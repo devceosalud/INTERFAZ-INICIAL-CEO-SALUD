@@ -8,6 +8,7 @@ use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\DoctorService;
 use App\Models\Service;
+use App\Models\Site;
 use App\Models\Specialty;
 use App\Services\Scheduling\DoctorAvailabilityService;
 use App\Support\Scheduling\AppointmentOccupancy;
@@ -272,13 +273,19 @@ class ScheduleController extends Controller
     public function index()
     {
         $doctor_schedules = DoctorSchedule::where('estado', 'ACTIVO')->get();
-        $doctors = Doctor::where('estado', 'ACTIVO')->get();
+
+        // Los bloques y su sede se cargan de una vez: la lista los recorre por médico y
+        // resolverlos dentro del bucle costaba una consulta por fila.
+        $doctors = Doctor::where('estado', 'ACTIVO')
+            ->with(['schedules' => fn ($query) => $query->where('estado', 'ACTIVO')->with('site:id,nombre')])
+            ->get();
         $specialties = Specialty::where('estado', 'ACTIVO')->get();
 
         return view('admissionist.schedule.index', [
             'doctor_schedules' => $doctor_schedules,
             'doctors' => $doctors,
-            'specialties' => $specialties
+            'specialties' => $specialties,
+            'sites' => Site::activo()->orderBy('nombre')->get(['id', 'nombre']),
         ]);
     }
 
@@ -292,6 +299,7 @@ class ScheduleController extends Controller
             'hora_inicio'    => 'required|date_format:H:i',
             'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
             'duracion_cita'  => 'required|integer|in:10,15,20,30,45,60',
+            'site_id'        => 'nullable|exists:sites,id',
         ]);
 
         if ($validator->fails()) {
@@ -304,6 +312,8 @@ class ScheduleController extends Controller
         //GUARDAR DATOS
         $doctor_schedule = DoctorSchedule::create([
             'doctor_id' => $request->doctor_id,
+            // La sede es opcional: sin ella el bloque queda como los heredados, sin sede.
+            'site_id' => $request->site_id ?: null,
             'dia_semana' => '1', //Lunes por defecto
             'fecha_cita' => $request->fecha_cita,
             'hora_inicio' => $request->hora_inicio,
@@ -336,6 +346,7 @@ class ScheduleController extends Controller
             'hora_inicio_edit' => 'required|date_format:H:i',
             'hora_fin_edit' => 'required|date_format:H:i|after:hora_inicio_edit',
             'duracion_edit_cita' => 'required|integer|in:10,15,20,30,45,60',
+            'site_id_edit' => 'nullable|exists:sites,id',
         ]);
 
         if ($validator->fails()) {
@@ -353,14 +364,22 @@ class ScheduleController extends Controller
             ]);
         }
 
-        $exito = $doctor_schedule->update([
+        $cambios = [
             'doctor_id'     => $request->doctor_id_edit,
             'dia_semana'    => '1',
             'fecha_cita' => $request->fecha_cita_edit,
             'hora_inicio'   => $request->hora_inicio_edit,
             'hora_fin'      => $request->hora_fin_edit,
             'duracion_cita' => $request->duracion_edit_cita
-        ]);
+        ];
+
+        // Solo se toca la sede si el formulario la envía: un formulario que no la incluye no
+        // debe borrar la sede ya registrada en el bloque.
+        if ($request->has('site_id_edit')) {
+            $cambios['site_id'] = $request->site_id_edit ?: null;
+        }
+
+        $exito = $doctor_schedule->update($cambios);
 
         if ($exito) {
             return response()->json([

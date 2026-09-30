@@ -95,6 +95,8 @@ class DoctorAvailabilityEndpointTest extends TestCase
         $this->assertStringNotContainsString($patient->numero_identidad, $body);
         $this->assertStringNotContainsString($appointment->numero_cita, $body);
         $this->assertStringNotContainsString('patient', $body);
+        $this->assertStringNotContainsString('estado_pagado', $body);
+        $this->assertStringNotContainsString('historia_clinica', $body);
     }
 
     public function test_the_endpoint_validates_its_input(): void

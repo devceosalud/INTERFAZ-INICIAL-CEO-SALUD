@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Scheduling\AgendaBoardController;
+use App\Http\Controllers\Scheduling\AgendaFeedController;
 use App\Http\Controllers\Scheduling\DoctorAvailabilityController;
 use App\Http\Controllers\Scheduling\MvpAccessController;
+use App\Http\Controllers\Scheduling\ScheduleOverlapWarningController;
 use App\Support\Scheduling\SchedulingCapability;
 use Illuminate\Support\Facades\Route;
 
@@ -13,7 +16,17 @@ Route::middleware([
     Route::get('/scheduling-mvp', MvpAccessController::class)
         ->name('scheduling.mvp.access');
 
-    Route::get('/scheduling-mvp/availability', DoctorAvailabilityController::class)
-        ->middleware('permission:'.SchedulingCapability::VIEW)
-        ->name('scheduling.mvp.availability');
+    Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        Route::get('/scheduling-mvp/availability', DoctorAvailabilityController::class)
+            ->name('scheduling.mvp.availability');
+
+        Route::get('/scheduling-mvp/agenda', AgendaBoardController::class)
+            ->name('scheduling.mvp.agenda');
+
+        Route::get('/scheduling-mvp/agenda/feed', AgendaFeedController::class)
+            ->name('scheduling.mvp.agenda.feed');
+
+        Route::get('/scheduling-mvp/schedule-overlap', ScheduleOverlapWarningController::class)
+            ->name('scheduling.mvp.schedule.overlap');
+    });
 });

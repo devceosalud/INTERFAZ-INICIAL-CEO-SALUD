@@ -4,7 +4,7 @@ namespace Tests\Feature\Scheduling;
 
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
-use App\Support\Scheduling\TimeRange;
+use App\Services\Scheduling\ScheduleOverlapDetector;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -84,46 +84,19 @@ class DoctorScheduleOverlapAuditTest extends TestCase
     }
 
     /**
-     * The detection rule: same professional, same date, and ranges that overlap as half-open
-     * intervals. Written with TimeRange so it cannot drift from the availability engine.
+     * The detection rule lives in ScheduleOverlapDetector, expressed with TimeRange, so the
+     * audit, the UI warning and any future validation cannot answer differently.
      *
      * @return Collection
      */
     private function overlappingPairs(): Collection
     {
-        $blocks = DoctorSchedule::where('estado', 'ACTIVO')
-            ->whereNotNull('fecha_cita')
-            ->orderBy('doctor_id')
-            ->orderBy('fecha_cita')
-            ->orderBy('hora_inicio')
-            ->get();
-
-        $pairs = collect();
-
-        foreach ($blocks as $index => $block) {
-            foreach ($blocks->slice($index + 1) as $candidate) {
-                if ($block->doctor_id !== $candidate->doctor_id) {
-                    continue;
-                }
-
-                if ((string) $block->fecha_cita !== (string) $candidate->fecha_cita) {
-                    continue;
-                }
-
-                if ($this->range($block)->overlaps($this->range($candidate))) {
-                    $pairs->push([$block->id, $candidate->id]);
-                }
-            }
-        }
-
-        return $pairs;
-    }
-
-    private function range(DoctorSchedule $block): TimeRange
-    {
-        return new TimeRange(
-            Carbon::parse($block->fecha_cita . ' ' . $block->hora_inicio),
-            Carbon::parse($block->fecha_cita . ' ' . $block->hora_fin)
+        return app(ScheduleOverlapDetector::class)->pairsIn(
+            DoctorSchedule::where('estado', 'ACTIVO')
+                ->orderBy('doctor_id')
+                ->orderBy('fecha_cita')
+                ->orderBy('hora_inicio')
+                ->get()
         );
     }
 

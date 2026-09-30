@@ -4,10 +4,12 @@ namespace App\Services\Scheduling;
 
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
+use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\AppointmentOccupancy;
 use App\Support\Scheduling\AvailabilityQuery;
 use App\Support\Scheduling\AvailabilitySlot;
 use App\Support\Scheduling\DayAvailability;
+use App\Support\Scheduling\OccupiedInterval;
 use App\Support\Scheduling\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,8 +32,57 @@ class DoctorAvailabilityService
             return new DayAvailability($query, collect());
         }
 
-        $occupied = $this->occupiedRanges($query, $blocks);
+        return $this->compose($query, $blocks, $this->occupiedIntervals($query, $blocks));
+    }
 
+    /**
+     * Availability for several professionals across a date range, in a fixed number of
+     * queries: one for the operating blocks and one for the appointments, however many days
+     * or professionals the range covers. Composing the days happens in memory with the same
+     * rules `forDay` uses, so a Day, Week or Month screen cannot answer differently.
+     *
+     * @return Collection<string, DayAvailability> keyed by "doctorId|Y-m-d"
+     */
+    public function forRange(AgendaQuery $agenda): Collection
+    {
+        if ($agenda->doctorIds() === []) {
+            return collect();
+        }
+
+        $blocks = $this->operatingBlocksInRange($agenda);
+        $appointments = $this->appointmentsInRange($agenda);
+        $result = collect();
+
+        foreach ($agenda->doctorIds() as $doctorId) {
+            foreach ($agenda->dates() as $date) {
+                $query = $agenda->forDate($date, $doctorId);
+                $dayBlocks = $this->blocksFor($blocks, $doctorId, $date);
+
+                if ($dayBlocks->isEmpty()) {
+                    $result->put($this->key($doctorId, $date), new DayAvailability($query, collect()));
+
+                    continue;
+                }
+
+                $occupied = $this->intervalsFrom(
+                    $query,
+                    $this->appointmentsFor($appointments, $doctorId, $date),
+                    $dayBlocks
+                );
+
+                $result->put($this->key($doctorId, $date), $this->compose($query, $dayBlocks, $occupied));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  Collection<int, DoctorSchedule>  $blocks
+     * @param  Collection<int, OccupiedInterval>  $occupied
+     */
+    protected function compose(AvailabilityQuery $query, Collection $blocks, Collection $occupied): DayAvailability
+    {
         $slots = $blocks
             ->flatMap(fn (DoctorSchedule $block) => $this->slotsForBlock($query, $block, $occupied))
             ->sortBy(fn (AvailabilitySlot $slot) => $slot->range()->start()->format('H:i:s'));
@@ -58,7 +109,7 @@ class DoctorAvailabilityService
                             ->where('dia_semana', $query->isoWeekday());
                     });
             })
-            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query))
+            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query->siteId()))
             ->orderBy('hora_inicio')
             ->get()
             ->filter(fn (DoctorSchedule $block) => (int) $block->duracion_cita > 0)
@@ -66,28 +117,109 @@ class DoctorAvailabilityService
     }
 
     /**
+     * @return Collection<int, DoctorSchedule>
+     */
+    protected function operatingBlocksInRange(AgendaQuery $agenda): Collection
+    {
+        return DoctorSchedule::query()
+            ->whereIn('doctor_id', $agenda->doctorIds())
+            ->where('estado', 'ACTIVO')
+            ->where(function (Builder $scoped) use ($agenda) {
+                $scoped->whereBetween('fecha_cita', [
+                    $agenda->start()->toDateString(),
+                    $agenda->end()->toDateString(),
+                ])->orWhere(function (Builder $recurring) use ($agenda) {
+                    $recurring->whereNull('fecha_cita')
+                        ->whereIn('dia_semana', $agenda->isoWeekdays());
+                });
+            })
+            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $agenda->siteId()))
+            ->orderBy('hora_inicio')
+            ->get()
+            ->filter(fn (DoctorSchedule $block) => (int) $block->duracion_cita > 0)
+            ->values();
+    }
+
+    /**
+     * @return Collection<int, Appointment>
+     */
+    protected function appointmentsInRange(AgendaQuery $agenda): Collection
+    {
+        return Appointment::query()
+            ->whereIn('doctor_id', $agenda->doctorIds())
+            ->whereBetween('fecha_cita', [
+                $agenda->start()->toDateString(),
+                $agenda->end()->toDateString(),
+            ])
+            ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
+            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $agenda->siteId()))
+            ->get(['doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita', 'estado_cita']);
+    }
+
+    /**
+     * @param  Collection<int, DoctorSchedule>  $blocks
+     * @return Collection<int, DoctorSchedule>
+     */
+    protected function blocksFor(Collection $blocks, int $doctorId, Carbon $date): Collection
+    {
+        return $blocks->filter(function (DoctorSchedule $block) use ($doctorId, $date) {
+            if ((int) $block->doctor_id !== $doctorId) {
+                return false;
+            }
+
+            if ($block->fecha_cita === null) {
+                return (int) $block->dia_semana === $date->dayOfWeekIso;
+            }
+
+            return $this->dateOf($block->fecha_cita) === $date->toDateString();
+        })->values();
+    }
+
+    /**
+     * @param  Collection<int, Appointment>  $appointments
+     * @return Collection<int, Appointment>
+     */
+    protected function appointmentsFor(Collection $appointments, int $doctorId, Carbon $date): Collection
+    {
+        return $appointments->filter(function (Appointment $appointment) use ($doctorId, $date) {
+            return (int) $appointment->doctor_id === $doctorId
+                && $this->dateOf($appointment->fecha_cita) === $date->toDateString();
+        })->values();
+    }
+
+    /**
      * Appointments that consume time on the date, as intervals.
      *
      * @param  Collection<int, DoctorSchedule>  $blocks
-     * @return Collection<int, TimeRange>
+     * @return Collection<int, OccupiedInterval>
      */
-    protected function occupiedRanges(AvailabilityQuery $query, Collection $blocks): Collection
+    protected function occupiedIntervals(AvailabilityQuery $query, Collection $blocks): Collection
     {
-        return Appointment::query()
+        $appointments = Appointment::query()
             ->where('doctor_id', $query->doctorId())
             ->whereDate('fecha_cita', $query->dateString())
             ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
-            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query))
-            ->get(['hora_cita', 'duracion_cita', 'estado_cita'])
-            ->map(function (Appointment $appointment) use ($query, $blocks) {
-                $start = $this->instant($query, $appointment->hora_cita);
+            ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query->siteId()))
+            ->get(['hora_cita', 'duracion_cita', 'estado_cita']);
 
-                return TimeRange::fromMinutes(
-                    $start,
-                    $this->occupiedMinutes($appointment, $start, $blocks)
-                );
-            })
-            ->values();
+        return $this->intervalsFrom($query, $appointments, $blocks);
+    }
+
+    /**
+     * @param  Collection<int, Appointment>  $appointments
+     * @param  Collection<int, DoctorSchedule>  $blocks
+     * @return Collection<int, OccupiedInterval>
+     */
+    protected function intervalsFrom(AvailabilityQuery $query, Collection $appointments, Collection $blocks): Collection
+    {
+        return $appointments->map(function (Appointment $appointment) use ($query, $blocks) {
+            $start = $this->instant($query, $appointment->hora_cita);
+
+            return new OccupiedInterval(
+                TimeRange::fromMinutes($start, $this->occupiedMinutes($appointment, $start, $blocks)),
+                $appointment->estado_cita
+            );
+        })->values();
     }
 
     /**
@@ -110,7 +242,7 @@ class DoctorAvailabilityService
     }
 
     /**
-     * @param  Collection<int, TimeRange>  $occupied
+     * @param  Collection<int, OccupiedInterval>  $occupied
      * @return Collection<int, AvailabilitySlot>
      */
     protected function slotsForBlock(AvailabilityQuery $query, DoctorSchedule $block, Collection $occupied): Collection
@@ -134,10 +266,12 @@ class DoctorAvailabilityService
                 break;
             }
 
-            $taken = $occupied->contains(fn (TimeRange $range) => $candidate->overlaps($range));
+            $taken = $occupied->first(
+                fn (OccupiedInterval $interval) => $candidate->overlaps($interval->range())
+            );
 
             $slots->push($taken
-                ? AvailabilitySlot::occupied($candidate, $block->site_id)
+                ? AvailabilitySlot::occupied($candidate, $block->site_id, $taken->state())
                 : AvailabilitySlot::available($candidate, $block->site_id));
 
             $cursor = $cursor->addMinutes($step);
@@ -150,14 +284,14 @@ class DoctorAvailabilityService
      * During the transition to multiple sites, a requested site also matches rows that have
      * no site yet. Ignoring legacy rows would hide real occupancy and invite double booking.
      */
-    protected function applySiteScope(Builder $builder, AvailabilityQuery $query): void
+    protected function applySiteScope(Builder $builder, ?int $siteId): void
     {
-        if ($query->siteId() === null) {
+        if ($siteId === null) {
             return;
         }
 
-        $builder->where(function (Builder $scoped) use ($query) {
-            $scoped->where('site_id', $query->siteId())->orWhereNull('site_id');
+        $builder->where(function (Builder $scoped) use ($siteId) {
+            $scoped->where('site_id', $siteId)->orWhereNull('site_id');
         });
     }
 
@@ -169,5 +303,15 @@ class DoctorAvailabilityService
     protected function time(string $time): string
     {
         return strlen($time) === 5 ? $time.':00' : $time;
+    }
+
+    protected function dateOf(string $value): string
+    {
+        return substr($value, 0, 10);
+    }
+
+    protected function key(int $doctorId, Carbon $date): string
+    {
+        return $doctorId.'|'.$date->toDateString();
     }
 }
