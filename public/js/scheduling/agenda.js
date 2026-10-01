@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const MAX_SELECTED_DOCTORS = 12;
     const selectionModel = window.AgendaSelection;
     const lookupModel = window.AgendaPatientLookup;
+    const draftModel = window.AgendaPatientDraft;
     const dayGridModel = window.AgendaDayGrid;
     const weekEventModel = window.AgendaWeekEvent;
     const weekBackgroundModel = window.AgendaWeekBackground;
@@ -78,6 +79,23 @@ document.addEventListener('DOMContentLoaded', function () {
         lookupResult: document.getElementById('agenda-patient-lookup-result'),
         lookupClinicalRecord: document.getElementById('agenda-lookup-clinical-record'),
         patientRegister: document.getElementById('agenda-patient-register'),
+        patientDraft: document.getElementById('agenda-patient-draft'),
+        draftType: document.getElementById('agenda-draft-type'),
+        draftNumber: document.getElementById('agenda-draft-number'),
+        draftNombre: document.getElementById('agenda-draft-nombre'),
+        draftApellidoPaterno: document.getElementById('agenda-draft-apellido-paterno'),
+        draftApellidoMaterno: document.getElementById('agenda-draft-apellido-materno'),
+        draftTelefono: document.getElementById('agenda-draft-telefono'),
+        draftEmail: document.getElementById('agenda-draft-email'),
+        draftFechaNacimiento: document.getElementById('agenda-draft-fecha-nacimiento'),
+        draftGenero: document.getElementById('agenda-draft-genero'),
+        draftEstadoCivil: document.getElementById('agenda-draft-estado-civil'),
+        draftDireccion: document.getElementById('agenda-draft-direccion'),
+        draftMotivo: document.getElementById('agenda-draft-motivo'),
+        draftMessage: document.getElementById('agenda-draft-message'),
+        draftRuc: document.getElementById('agenda-draft-ruc'),
+        draftReniec: document.getElementById('agenda-draft-reniec'),
+        draftCancel: document.getElementById('agenda-draft-cancel'),
         quickPatientId: document.getElementById('agenda-quick-patient-id'),
         quickPatientIdDisplay: document.getElementById('agenda-quick-patient-id-display'),
         quickPatientState: document.getElementById('agenda-quick-patient-state'),
@@ -117,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedSlotEvent: null,
         requestController: null,
         identity: lookupModel.blank(),
+        draft: null,
     };
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
@@ -909,6 +928,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (context.tipo_contexto === 'cita_existente') {
             state.identity = lookupModel.blank();
+            state.draft = null;
+            paintDraft(draftModel.discard(scheduleSnapshot()));
             el.lookupResult.textContent = '';
             el.lookupResult.className = 'agenda-lookup__result';
             el.lookupClinicalRecord.textContent = quick.clinicalRecord;
@@ -976,14 +997,73 @@ document.addEventListener('DOMContentLoaded', function () {
             + (identity.status === 'not_found' ? ' is-missing' : '')
             + (identity.status === 'inactive' ? ' is-inactive' : '')
             + (identity.status === 'document_conflict' ? ' is-conflict' : '');
-        el.patientRegister.hidden = !identity.showRegister;
-        el.patientRegister.disabled = true;
+        el.patientRegister.hidden = !identity.showRegister || Boolean(state.draft && state.draft.open);
+        el.patientRegister.disabled = !identity.showRegister;
+
+        if (identity.status !== 'not_found') {
+            state.draft = null;
+            paintDraft(draftModel.discard(scheduleSnapshot()));
+        }
+    }
+
+    function scheduleSnapshot() {
+        return {
+            doctor: el.quickDoctor.textContent,
+            specialty: el.quickSpecialty.textContent,
+            date: el.quickDate.textContent,
+            time: el.quickTime.textContent,
+            site: el.quickSite.textContent,
+        };
+    }
+
+    function paintDraft(draft) {
+        state.draft = draft && draft.open ? draft : null;
+        el.patientDraft.hidden = !state.draft;
+        el.draftRuc.hidden = !state.draft || state.draft.tipo !== 'RUC';
+        el.draftReniec.hidden = !state.draft || !state.draft.reniecOffered;
+
+        if (!state.draft) {
+            el.draftMessage.textContent = '';
+            return;
+        }
+
+        el.draftType.value = draft.tipo;
+        el.draftNumber.value = draft.numero;
+        el.draftNombre.value = draft.nombre;
+        el.draftApellidoPaterno.value = draft.apellido_paterno;
+        el.draftApellidoMaterno.value = draft.apellido_materno;
+        el.draftTelefono.value = draft.telefono;
+        el.draftEmail.value = draft.email;
+        el.draftFechaNacimiento.value = draft.fecha_nacimiento;
+        el.draftGenero.value = draft.genero;
+        el.draftEstadoCivil.value = draft.estado_civil;
+        el.draftDireccion.value = draft.direccion;
+        el.draftMotivo.value = draft.motivo;
+        el.draftMessage.textContent = draft.message || '';
+    }
+
+    function bindDraftField(input, field) {
+        input.addEventListener('input', function () {
+            if (!state.draft) {
+                return;
+            }
+
+            state.draft = draftModel.edit(state.draft, field, input.value);
+        });
+        input.addEventListener('change', function () {
+            if (!state.draft) {
+                return;
+            }
+
+            state.draft = draftModel.edit(state.draft, field, input.value);
+        });
     }
 
     function onDocumentEdited() {
         const next = lookupModel.edited(state.identity, el.documentType.value, el.documentNumber.value);
 
         if (next !== state.identity) {
+            state.draft = null;
             paintIdentity(next);
         }
     }
@@ -1071,14 +1151,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const tipo = el.documentType.value.trim();
         const numero = el.documentNumber.value.trim();
-        const schedule = {
-            doctor: el.quickDoctor.textContent,
-            specialty: el.quickSpecialty.textContent,
-            date: el.quickDate.textContent,
-            time: el.quickTime.textContent,
-        };
+        const schedule = scheduleSnapshot();
 
         paintIdentity(lookupModel.edited(null, tipo, numero));
+        state.draft = null;
 
         if (!tipo || !numero) {
             el.lookupResult.textContent = 'Indique tipo y número de documento.';
@@ -1108,13 +1184,83 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            paintIdentity(lookupModel.present(data, schedule));
+            const identity = lookupModel.present(data, schedule);
+
+            if (identity.status === 'not_found') {
+                identity.tipo = tipo;
+                identity.numero = numero;
+            }
+
+            paintIdentity(identity);
         } catch (error) {
             el.lookupResult.className = 'agenda-lookup__result is-conflict';
             el.lookupResult.textContent = 'No se pudo consultar el documento.';
         } finally {
             el.documentSearch.disabled = false;
         }
+    });
+
+    el.patientDraft.addEventListener('submit', function (event) {
+        event.preventDefault();
+    });
+    el.patientRegister.addEventListener('click', function () {
+        const draft = draftModel.open(state.identity, scheduleSnapshot());
+
+        if (!draft.open) {
+            return;
+        }
+
+        paintDraft(draft);
+        el.patientRegister.hidden = true;
+        el.quickPatientId.value = '';
+        el.quickPatientIdDisplay.textContent = '—';
+    });
+    el.draftCancel.addEventListener('click', function () {
+        paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
+        el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
+        el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
+    });
+    el.draftReniec.addEventListener('click', async function () {
+        if (!state.draft || !state.draft.reniecOffered) {
+            return;
+        }
+
+        el.draftReniec.disabled = true;
+
+        try {
+            const response = await fetch(el.patientDraft.dataset.endpoint, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({
+                    tipo_identificacion: 'DNI',
+                    numero_identidad: state.draft.numero,
+                }),
+            });
+            const data = response.ok ? await response.json() : null;
+            paintDraft(draftModel.applyReniec(state.draft, data));
+        } catch (error) {
+            paintDraft(draftModel.applyReniec(state.draft, null));
+        } finally {
+            el.draftReniec.disabled = false;
+        }
+    });
+    [
+        [el.draftNombre, 'nombre'],
+        [el.draftApellidoPaterno, 'apellido_paterno'],
+        [el.draftApellidoMaterno, 'apellido_materno'],
+        [el.draftTelefono, 'telefono'],
+        [el.draftEmail, 'email'],
+        [el.draftFechaNacimiento, 'fecha_nacimiento'],
+        [el.draftGenero, 'genero'],
+        [el.draftEstadoCivil, 'estado_civil'],
+        [el.draftDireccion, 'direccion'],
+        [el.draftMotivo, 'motivo'],
+    ].forEach(function (pair) {
+        bindDraftField(pair[0], pair[1]);
     });
 
     el.overlapForm.addEventListener('submit', async function (event) {

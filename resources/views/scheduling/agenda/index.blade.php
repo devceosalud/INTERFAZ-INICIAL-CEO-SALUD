@@ -134,5 +134,6 @@
     <script src="{{ asset('js/scheduling/agenda-week-event.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-week-background.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-lookup.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

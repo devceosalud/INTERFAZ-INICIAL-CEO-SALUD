@@ -576,6 +576,46 @@
     cursor: not-allowed
 }
 
+.agenda-draft {
+    margin: 0 0 6px;
+    padding: 6px;
+    background: #f7f9fa;
+    border: 1px solid #d3d9de
+}
+
+.agenda-draft__title,
+.agenda-draft__note,
+.agenda-draft__message {
+    margin: 0 0 5px;
+    font-size: 10px;
+    line-height: 1.3
+}
+
+.agenda-draft__title {
+    font-weight: 700
+}
+
+.agenda-draft__note,
+.agenda-draft__message {
+    color: var(--agenda-muted)
+}
+
+.agenda-draft__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px
+}
+
+.agenda-draft__wide {
+    grid-column: 1 / -1
+}
+
+.agenda-draft__actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px
+}
+
 .agenda-quick__patient p {
     min-height: 27px;
     padding: 3px 5px;

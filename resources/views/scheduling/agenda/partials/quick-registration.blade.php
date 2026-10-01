@@ -47,9 +47,81 @@
         </div>
 
         <button type="button" class="agenda-btn" id="agenda-patient-register" disabled hidden
-            title="El alta del paciente pertenece a la siguiente microtarea">
+            title="Abre el alta dentro de Agenda. Todavía no guarda al paciente.">
             Registrar paciente
         </button>
+
+        <form class="agenda-draft" id="agenda-patient-draft" hidden autocomplete="off"
+            data-endpoint="{{ route('scheduling.mvp.agenda.reniec-lookup') }}">
+            <p class="agenda-draft__title">Nuevo paciente</p>
+            <p class="agenda-draft__note" id="agenda-draft-note">Este registro todavía no se guarda.</p>
+            <p class="agenda-draft__note" id="agenda-draft-ruc" hidden>
+                RUC se registra de forma manual. La consulta de empresa queda pendiente de validación.
+            </p>
+
+            <div class="agenda-draft__grid">
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Tipo</span>
+                    <input class="agenda-field__input" id="agenda-draft-type" type="text" readonly>
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Número</span>
+                    <input class="agenda-field__input" id="agenda-draft-number" type="text" readonly>
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Nombre</span>
+                    <input class="agenda-field__input" id="agenda-draft-nombre" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Apellido paterno</span>
+                    <input class="agenda-field__input" id="agenda-draft-apellido-paterno" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Apellido materno</span>
+                    <input class="agenda-field__input" id="agenda-draft-apellido-materno" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Teléfono</span>
+                    <input class="agenda-field__input" id="agenda-draft-telefono" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Email</span>
+                    <input class="agenda-field__input" id="agenda-draft-email" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Fecha de nacimiento</span>
+                    <input class="agenda-field__input" id="agenda-draft-fecha-nacimiento" type="date">
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Género</span>
+                    <select class="agenda-field__input" id="agenda-draft-genero">
+                        <option value="">Sin indicar</option>
+                        <option value="HOMBRE">Hombre</option>
+                        <option value="MUJER">Mujer</option>
+                    </select>
+                </label>
+                <label class="agenda-field">
+                    <span class="agenda-field__label">Estado civil</span>
+                    <input class="agenda-field__input" id="agenda-draft-estado-civil" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field agenda-draft__wide">
+                    <span class="agenda-field__label">Dirección</span>
+                    <input class="agenda-field__input" id="agenda-draft-direccion" type="text" autocomplete="off">
+                </label>
+                <label class="agenda-field agenda-draft__wide">
+                    <span class="agenda-field__label">Motivo de la nueva cita</span>
+                    <input class="agenda-field__input" id="agenda-draft-motivo" type="text" autocomplete="off">
+                </label>
+            </div>
+
+            <p class="agenda-draft__message" id="agenda-draft-message" role="status" aria-live="polite"></p>
+            <div class="agenda-draft__actions">
+                <button type="button" class="agenda-btn" id="agenda-draft-reniec" hidden>
+                    Consultar RENIEC
+                </button>
+                <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar registro</button>
+            </div>
+        </form>
 
         <dl class="agenda-quick__context">
             <div><dt>ID paciente</dt><dd id="agenda-quick-patient-id-display">—</dd></div>

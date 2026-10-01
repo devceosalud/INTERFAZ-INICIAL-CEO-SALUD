@@ -3,6 +3,7 @@
 use App\Http\Controllers\Scheduling\AgendaBoardController;
 use App\Http\Controllers\Scheduling\AgendaFeedController;
 use App\Http\Controllers\Scheduling\AgendaPatientLookupController;
+use App\Http\Controllers\Scheduling\AgendaReniecLookupController;
 use App\Http\Controllers\Scheduling\DoctorAvailabilityController;
 use App\Http\Controllers\Scheduling\MvpAccessController;
 use App\Http\Controllers\Scheduling\ScheduleOverlapWarningController;
@@ -29,6 +30,9 @@ Route::middleware([
 
         Route::post('/scheduling-mvp/agenda/patient-lookup', AgendaPatientLookupController::class)
             ->name('scheduling.mvp.agenda.patient-lookup');
+
+        Route::post('/scheduling-mvp/agenda/reniec-lookup', AgendaReniecLookupController::class)
+            ->name('scheduling.mvp.agenda.reniec-lookup');
 
         Route::get('/scheduling-mvp/schedule-overlap', ScheduleOverlapWarningController::class)
             ->name('scheduling.mvp.schedule.overlap');

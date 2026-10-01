@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 class ReniecService
@@ -16,11 +17,30 @@ class ReniecService
         $this->url = config('apidatosperu.aqpfact.url_dni');
     }
 
-    public function consultar($dni)
+    /**
+     * The inherited caller keeps the previous behavior when no timeout is given.
+     * Agenda passes a short timeout so a slow provider becomes a manual registration
+     * instead of blocking the screen. A connection failure then returns null.
+     */
+    public function consultar($dni, $timeoutSeconds = null)
     {
-        $response = Http::withToken($this->token)
-            ->acceptJson()
-            ->get("{$this->url}/{$dni}");
+        $pending = Http::withToken($this->token)->acceptJson();
+
+        if ($timeoutSeconds !== null) {
+            $pending = $pending
+                ->connectTimeout((int) $timeoutSeconds)
+                ->timeout((int) $timeoutSeconds);
+        }
+
+        try {
+            $response = $pending->get("{$this->url}/{$dni}");
+        } catch (ConnectionException $exception) {
+            if ($timeoutSeconds === null) {
+                throw $exception;
+            }
+
+            return null;
+        }
 
         if (!$response->successful()) {
             return null;
