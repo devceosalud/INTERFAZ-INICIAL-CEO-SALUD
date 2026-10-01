@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Scheduling;
 
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
+use App\Models\Channel;
+use App\Models\InteractionMedium;
 use App\Models\Site;
 use App\Models\Specialty;
+use App\Models\User;
+use App\Support\Patients\PatientWriteAccess;
 use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaRange;
 use Carbon\Carbon;
@@ -25,6 +29,13 @@ class AgendaBoardController extends Controller
             'doctors' => Doctor::where('estado', 'ACTIVO')
                 ->orderBy('nombre')
                 ->get(['id', 'nombre', 'specialty_id']),
+            'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
+            'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
+            'commercialUsers' => User::query()
+                ->whereHas('roles', fn ($query) => $query->where('name', 'COMERCIAL'))
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'canWritePatients' => PatientWriteAccess::allows(auth()->user()),
             'legend' => AgendaLegend::ordered(),
             'views' => AgendaRange::views(),
             'today' => Carbon::today()->toDateString(),

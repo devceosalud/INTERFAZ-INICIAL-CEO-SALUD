@@ -3,6 +3,7 @@
 use App\Http\Controllers\admissionist\appointment\AppointmentController;
 use App\Http\Controllers\admissionist\availableSchedule\AvailableSchedule;
 use App\Http\Controllers\admissionist\patient\PatientController;
+use App\Http\Controllers\Patients\OperationalPatientController;
 use App\Http\Controllers\admissionist\responsible\ResponsibleController;
 use App\Http\Controllers\admissionist\schedule\ScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 $operationalReaders = 'ADMISION|RECEPCION|ADMINISTRADOR|COMERCIAL';
 
 Route::middleware(['auth', "role:{$operationalReaders}"])->group(function () {
-    Route::get('/admissionist/patient', [PatientController::class, 'index'])->name('admissionit.patient.index');
+    Route::get('/admissionist/patient', [OperationalPatientController::class, 'index'])->name('admissionit.patient.index');
     Route::get('/admissionist/appointment', [AppointmentController::class, 'index'])->name('admissionit.appointment.index');
     Route::get('/admissionist/responsible', [ResponsibleController::class, 'index'])->name('admissionit.responsible.index');
     Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class, 'list'])->name('admissionit.schedule.list');

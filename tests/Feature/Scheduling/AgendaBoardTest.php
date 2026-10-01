@@ -140,6 +140,61 @@ class AgendaBoardTest extends TestCase
             ->assertDontSee('placeholder="Disponible en el flujo de registro"', false);
     }
 
+    public function test_the_patient_modal_is_embedded_in_agenda_and_read_only_users_cannot_save(): void
+    {
+        $this->actingAs($this->reader())
+            ->get(self::PAGE_URI)
+            ->assertOk()
+            ->assertSee('id="agenda-patient-modal"', false)
+            ->assertSee('Datos esenciales')
+            ->assertSee('Datos completos')
+            ->assertSee('Guardar sin agendar')
+            ->assertSee('Guardar y agendar')
+            ->assertSee('data-store-endpoint="'.route('patients.operational.store').'"', false)
+            ->assertSee('data-can-write="0"', false)
+            ->assertSee('id="agenda-draft-save" disabled', false)
+            ->assertSee('Atribución comercial')
+            ->assertSee('persistencia pendiente');
+    }
+
+    public function test_admission_can_use_the_embedded_patient_write_actions(): void
+    {
+        $admission = $this->createUserWithRole('ADMISION');
+        $admission->givePermissionTo(Permission::findOrCreate(SchedulingCapability::MVP_ACCESS, 'web'));
+        $admission->givePermissionTo(Permission::findOrCreate(SchedulingCapability::VIEW, 'web'));
+
+        $this->actingAs($admission)
+            ->get(self::PAGE_URI)
+            ->assertOk()
+            ->assertSee('data-can-write="1"', false)
+            ->assertSee('Guardado habilitado para Admisión, Recepción y Comercial.')
+            ->assertDontSee('id="agenda-draft-save" disabled', false)
+            ->assertSee('Quién agenda')
+            ->assertSee($admission->name);
+    }
+
+    public function test_reception_and_commercial_can_use_the_embedded_patient_write_actions(): void
+    {
+        foreach (['RECEPCION', 'COMERCIAL'] as $role) {
+            $this->actingAs($this->agendaOperator($role))
+                ->get(self::PAGE_URI)
+                ->assertOk()
+                ->assertSee('data-can-write="1"', false)
+                ->assertSee('Guardado habilitado para Admisión, Recepción y Comercial.')
+                ->assertDontSee('id="agenda-draft-save" disabled', false);
+        }
+    }
+
+    public function test_an_administrator_with_agenda_access_cannot_save_patients(): void
+    {
+        $this->actingAs($this->agendaOperator('ADMINISTRADOR'))
+            ->get(self::PAGE_URI)
+            ->assertOk()
+            ->assertSee('data-can-write="0"', false)
+            ->assertSee('id="agenda-draft-save" disabled', false)
+            ->assertSee('Solo lectura: guardar requiere Admisión, Recepción o Comercial.');
+    }
+
     public function test_the_operational_board_is_day_first_and_uses_versioned_calendar_assets(): void
     {
         $this->actingAs($this->reader())
@@ -666,6 +721,15 @@ class AgendaBoardTest extends TestCase
             'vista' => $view,
             'fecha' => $date ?: $this->monday,
         ] + $extra);
+    }
+
+    private function agendaOperator(string $role): User
+    {
+        $user = $this->createUserWithRole($role);
+        $user->givePermissionTo(Permission::findOrCreate(SchedulingCapability::MVP_ACCESS, 'web'));
+        $user->givePermissionTo(Permission::findOrCreate(SchedulingCapability::VIEW, 'web'));
+
+        return $user;
     }
 
     private function reader(): User

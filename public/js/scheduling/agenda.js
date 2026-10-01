@@ -79,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function () {
         lookupResult: document.getElementById('agenda-patient-lookup-result'),
         lookupClinicalRecord: document.getElementById('agenda-lookup-clinical-record'),
         patientRegister: document.getElementById('agenda-patient-register'),
+        patientModal: document.getElementById('agenda-patient-modal'),
+        patientModalTitle: document.getElementById('agenda-patient-modal-title'),
         patientDraft: document.getElementById('agenda-patient-draft'),
         draftType: document.getElementById('agenda-draft-type'),
         draftNumber: document.getElementById('agenda-draft-number'),
@@ -91,11 +93,27 @@ document.addEventListener('DOMContentLoaded', function () {
         draftGenero: document.getElementById('agenda-draft-genero'),
         draftEstadoCivil: document.getElementById('agenda-draft-estado-civil'),
         draftDireccion: document.getElementById('agenda-draft-direccion'),
-        draftMotivo: document.getElementById('agenda-draft-motivo'),
+        draftChannel: document.getElementById('agenda-draft-channel'),
+        draftInteractionMedium: document.getElementById('agenda-draft-interaction-medium'),
+        draftOcupacion: document.getElementById('agenda-draft-ocupacion'),
+        draftGradoInstruccion: document.getElementById('agenda-draft-grado-instruccion'),
+        draftFamiliarContacto: document.getElementById('agenda-draft-familiar-contacto'),
+        draftCommercialOwner: document.getElementById('agenda-draft-commercial-owner'),
+        draftHce: document.getElementById('agenda-draft-hce'),
+        draftHceNote: document.getElementById('agenda-draft-hce-note'),
+        draftContextDoctor: document.getElementById('agenda-draft-context-doctor'),
+        draftContextDate: document.getElementById('agenda-draft-context-date'),
+        draftContextTime: document.getElementById('agenda-draft-context-time'),
+        draftContextSite: document.getElementById('agenda-draft-context-site'),
         draftMessage: document.getElementById('agenda-draft-message'),
         draftRuc: document.getElementById('agenda-draft-ruc'),
         draftReniec: document.getElementById('agenda-draft-reniec'),
         draftCancel: document.getElementById('agenda-draft-cancel'),
+        draftClose: document.getElementById('agenda-draft-close'),
+        draftSave: document.getElementById('agenda-draft-save'),
+        draftSaveSchedule: document.getElementById('agenda-draft-save-schedule'),
+        patientTabs: Array.from(document.querySelectorAll('[data-patient-tab]')),
+        patientPanels: Array.from(document.querySelectorAll('[data-patient-panel]')),
         quickPatientId: document.getElementById('agenda-quick-patient-id'),
         quickPatientIdDisplay: document.getElementById('agenda-quick-patient-id-display'),
         quickPatientState: document.getElementById('agenda-quick-patient-state'),
@@ -109,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
         quickStatus: document.getElementById('agenda-quick-status'),
         quickPayment: document.getElementById('agenda-quick-payment'),
         quickClinicalRecord: document.getElementById('agenda-quick-clinical-record'),
+        commercialOwner: document.getElementById('agenda-commercial-owner'),
         quickMessage: document.getElementById('agenda-quick-message'),
         completeRegistration: document.getElementById('agenda-complete-registration'),
         completeRegistrationHelp: document.getElementById('agenda-complete-registration-help'),
@@ -137,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         identity: lookupModel.blank(),
         draft: null,
     };
+    const canWritePatients = el.patientDraft.dataset.canWrite === '1';
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
         initialView: VIEW_TO_FULLCALENDAR.semana,
@@ -851,6 +871,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.contextPayment.hidden = true;
         el.contextClinicalRecord.hidden = true;
         el.overlapResult.textContent = '';
+        el.commercialOwner.textContent = 'Pendiente de selección';
         syncQuickBase();
     }
 
@@ -875,6 +896,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function selectInterval(context, node) {
         state.selection = context;
+        el.commercialOwner.textContent = 'Pendiente de selección';
         document.querySelectorAll('.agenda-calendar-event--appointment.is-selected, .agenda-day-row.is-selected, .agenda-day-entry.is-selected')
             .forEach((event) => event.classList.remove('is-selected'));
         if (state.selectedSlotEvent) {
@@ -936,8 +958,8 @@ document.addEventListener('DOMContentLoaded', function () {
             el.patientRegister.hidden = true;
             el.quickMessage.classList.remove('is-ready');
             el.quickMessage.textContent = context.responsable
-                ? 'Responsable: ' + context.responsable + '. Completar datos pertenece a MVP-3.'
-                : 'Cita identificada. Completar datos del mismo paciente pertenece a MVP-3.';
+                ? 'Responsable: ' + context.responsable + '. Puede abrir la ficha maestra del paciente.'
+                : 'Cita identificada. Puede abrir la ficha maestra del mismo paciente.';
         } else if (context.tipo_contexto === 'fuera_horario') {
             el.quickMessage.classList.remove('is-ready');
             el.quickMessage.textContent = 'Hora fuera del horario configurado. La selección es informativa y no habilita una cita.';
@@ -975,7 +997,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.quickStatus.textContent = quick.status;
         el.quickPayment.textContent = quick.payment;
         el.quickClinicalRecord.textContent = quick.clinicalRecord;
-        el.completeRegistration.disabled = true;
+        el.completeRegistration.disabled = !quick.showCompleteRegistration;
         el.completeRegistration.hidden = !quick.showCompleteRegistration;
         el.completeRegistrationHelp.hidden = !quick.showCompleteRegistration;
         el.completeRegistration.classList.toggle('is-prepared', quick.showCompleteRegistration);
@@ -999,6 +1021,9 @@ document.addEventListener('DOMContentLoaded', function () {
             + (identity.status === 'document_conflict' ? ' is-conflict' : '');
         el.patientRegister.hidden = !identity.showRegister || Boolean(state.draft && state.draft.open);
         el.patientRegister.disabled = !identity.showRegister;
+        el.completeRegistration.hidden = identity.status !== 'found';
+        el.completeRegistration.disabled = identity.status !== 'found';
+        el.completeRegistrationHelp.hidden = identity.status !== 'found';
 
         if (identity.status !== 'not_found') {
             state.draft = null;
@@ -1018,7 +1043,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function paintDraft(draft) {
         state.draft = draft && draft.open ? draft : null;
-        el.patientDraft.hidden = !state.draft;
+        el.patientModal.hidden = !state.draft;
+        el.patientModal.setAttribute('aria-hidden', state.draft ? 'false' : 'true');
+        document.body.classList.toggle('agenda-modal-open', Boolean(state.draft));
         el.draftRuc.hidden = !state.draft || state.draft.tipo !== 'RUC';
         el.draftReniec.hidden = !state.draft || !state.draft.reniecOffered;
 
@@ -1027,6 +1054,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
         el.draftType.value = draft.tipo;
         el.draftNumber.value = draft.numero;
         el.draftNombre.value = draft.nombre;
@@ -1038,8 +1066,26 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftGenero.value = draft.genero;
         el.draftEstadoCivil.value = draft.estado_civil;
         el.draftDireccion.value = draft.direccion;
-        el.draftMotivo.value = draft.motivo;
+        el.draftChannel.value = draft.channel_id || '';
+        el.draftInteractionMedium.value = draft.interaction_medium_id || '';
+        el.draftOcupacion.value = draft.ocupacion || '';
+        el.draftGradoInstruccion.value = draft.grado_instruccion || '';
+        el.draftFamiliarContacto.value = draft.familiar_contacto || '';
+        el.draftCommercialOwner.value = draft.commercial_owner_id || '';
+        el.draftContextDoctor.textContent = draft.doctor || '—';
+        el.draftContextDate.textContent = draft.date || '—';
+        el.draftContextTime.textContent = draft.time || '—';
+        el.draftContextSite.textContent = draft.site || '—';
+        const preview = draftModel.hcePreview(draft);
+        el.draftHce.textContent = preview.value;
+        el.draftHceNote.textContent = preview.message;
         el.draftMessage.textContent = draft.message || '';
+        el.draftSave.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.textContent = draft.patientId ? 'Guardar y continuar' : 'Guardar y agendar';
+        window.requestAnimationFrame(function () {
+            el.draftNombre.focus();
+        });
     }
 
     function bindDraftField(input, field) {
@@ -1049,6 +1095,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             state.draft = draftModel.edit(state.draft, field, input.value);
+            refreshDraftMetadata();
         });
         input.addEventListener('change', function () {
             if (!state.draft) {
@@ -1056,7 +1103,136 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             state.draft = draftModel.edit(state.draft, field, input.value);
+            refreshDraftMetadata();
         });
+    }
+
+    function refreshDraftMetadata() {
+        if (!state.draft) {
+            return;
+        }
+
+        const preview = draftModel.hcePreview(state.draft);
+        el.draftHce.textContent = preview.value;
+        el.draftHceNote.textContent = preview.message;
+        el.draftRuc.hidden = state.draft.tipo !== 'RUC';
+        el.draftReniec.hidden = !state.draft.reniecOffered;
+        el.draftSave.disabled = !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
+    }
+
+    function closePatientModal() {
+        paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
+        el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
+        el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
+    }
+
+    function patientValidationMessage(payload) {
+        const errors = payload && payload.errors ? payload.errors : {};
+        const field = Object.keys(errors)[0];
+
+        return field && errors[field] && errors[field][0]
+            ? errors[field][0]
+            : 'Revise los datos obligatorios e intente nuevamente.';
+    }
+
+    async function openExistingPatient() {
+        const patientId = el.quickPatientId.value;
+
+        if (!patientId) {
+            return;
+        }
+
+        el.completeRegistration.disabled = true;
+
+        try {
+            const url = el.patientDraft.dataset.detailTemplate.replace('__PATIENT__', encodeURIComponent(patientId));
+            const response = await fetch(url, {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.patient) {
+                throw new Error('No se pudo cargar la ficha.');
+            }
+
+            paintDraft(draftModel.openExisting(payload.patient, scheduleSnapshot()));
+        } catch (error) {
+            el.lookupResult.className = 'agenda-lookup__result is-conflict';
+            el.lookupResult.textContent = 'No se pudo cargar la ficha del paciente.';
+        } finally {
+            el.completeRegistration.disabled = false;
+        }
+    }
+
+    async function savePatient(attachToSchedule) {
+        if (!state.draft || !canWritePatients) {
+            return;
+        }
+
+        if (state.draft.tipo === 'SIN DOCUMENTOS') {
+            el.draftMessage.textContent = 'El identificador final para pacientes sin documentos sigue pendiente; no se guardó.';
+            return;
+        }
+
+        const currentDraft = state.draft;
+        const existing = Boolean(currentDraft.patientId);
+        const url = existing
+            ? el.patientDraft.dataset.updateTemplate.replace('__PATIENT__', encodeURIComponent(currentDraft.patientId))
+            : el.patientDraft.dataset.storeEndpoint;
+
+        el.draftSave.disabled = true;
+        el.draftSaveSchedule.disabled = true;
+        el.draftMessage.textContent = existing ? 'Guardando cambios…' : 'Registrando paciente…';
+
+        try {
+            const response = await fetch(url, {
+                method: existing ? 'PUT' : 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify(draftModel.toPayload(currentDraft)),
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.patient) {
+                throw new Error(patientValidationMessage(payload));
+            }
+
+            const ownerOption = el.draftCommercialOwner.selectedOptions[0];
+            const ownerName = currentDraft.commercial_owner_id && ownerOption
+                ? ownerOption.textContent.trim()
+                : 'Pendiente de selección';
+            const outcome = draftModel.saveOutcome(attachToSchedule, existing);
+            const schedule = scheduleSnapshot();
+
+            if (outcome.attach) {
+                const identity = lookupModel.present({ status: 'found', patient: payload.patient }, schedule);
+                identity.message = outcome.message;
+                paintIdentity(identity);
+                el.commercialOwner.textContent = ownerName;
+            } else {
+                paintDraft(draftModel.discard(schedule));
+                state.identity = lookupModel.blank();
+                el.quickPatientId.value = '';
+                el.quickPatientIdDisplay.textContent = '—';
+                el.quickPatientState.textContent = 'Sin paciente seleccionado';
+                el.lookupClinicalRecord.textContent = '—';
+                el.lookupResult.className = 'agenda-lookup__result is-found';
+                el.lookupResult.textContent = outcome.message;
+            }
+        } catch (error) {
+            el.draftMessage.textContent = error.message || 'No se pudo guardar el paciente.';
+        } finally {
+            if (state.draft) {
+                el.draftSave.disabled = !canWritePatients;
+                el.draftSaveSchedule.disabled = !canWritePatients;
+            }
+        }
     }
 
     function onDocumentEdited() {
@@ -1202,6 +1378,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     el.patientDraft.addEventListener('submit', function (event) {
         event.preventDefault();
+        savePatient(true);
     });
     el.patientRegister.addEventListener('click', function () {
         const draft = draftModel.open(state.identity, scheduleSnapshot());
@@ -1215,11 +1392,13 @@ document.addEventListener('DOMContentLoaded', function () {
         el.quickPatientId.value = '';
         el.quickPatientIdDisplay.textContent = '—';
     });
-    el.draftCancel.addEventListener('click', function () {
-        paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
-        el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
-        el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
+    el.draftCancel.addEventListener('click', closePatientModal);
+    el.draftClose.addEventListener('click', closePatientModal);
+    el.patientModal.querySelector('[data-modal-close]').addEventListener('click', closePatientModal);
+    el.draftSave.addEventListener('click', function () {
+        savePatient(false);
     });
+    el.completeRegistration.addEventListener('click', openExistingPatient);
     el.draftReniec.addEventListener('click', async function () {
         if (!state.draft || !state.draft.reniecOffered) {
             return;
@@ -1258,9 +1437,30 @@ document.addEventListener('DOMContentLoaded', function () {
         [el.draftGenero, 'genero'],
         [el.draftEstadoCivil, 'estado_civil'],
         [el.draftDireccion, 'direccion'],
-        [el.draftMotivo, 'motivo'],
+        [el.draftType, 'tipo'],
+        [el.draftNumber, 'numero'],
+        [el.draftChannel, 'channel_id'],
+        [el.draftInteractionMedium, 'interaction_medium_id'],
+        [el.draftOcupacion, 'ocupacion'],
+        [el.draftGradoInstruccion, 'grado_instruccion'],
+        [el.draftFamiliarContacto, 'familiar_contacto'],
+        [el.draftCommercialOwner, 'commercial_owner_id'],
     ].forEach(function (pair) {
         bindDraftField(pair[0], pair[1]);
+    });
+
+    el.patientTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            const selected = tab.dataset.patientTab;
+            el.patientTabs.forEach(function (item) {
+                const active = item.dataset.patientTab === selected;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            el.patientPanels.forEach(function (panel) {
+                panel.hidden = panel.dataset.patientPanel !== selected;
+            });
+        });
     });
 
     el.overlapForm.addEventListener('submit', async function (event) {
@@ -1393,6 +1593,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 calendar.updateSize();
             }
         }, 120);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && state.draft) {
+            closePatientModal();
+        }
     });
 
     applyDoctorVisibility();

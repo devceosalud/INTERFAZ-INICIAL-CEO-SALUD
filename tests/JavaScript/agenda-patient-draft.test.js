@@ -156,3 +156,74 @@ test('cancelar el registro conserva médico, fecha y hora', () => {
     assert.equal(cancelled.time, '09:20 – 09:40');
     assert.equal(cancelled.site, 'Sede Central');
 });
+
+test('una ficha existente conserva patient_id y la HCE almacenada al editar', () => {
+    const opened = draft.openExisting({
+        id: 17,
+        tipo_identificacion: 'DNI',
+        numero_identidad: '73378485',
+        historia_clinica: '9000',
+        nombre: 'Maria',
+        apellido_paterno: 'Perez',
+        apellido_materno: 'Demo',
+        genero: 'MUJER',
+    }, schedule);
+    const edited = draft.edit(opened, 'nombre', 'Maria Elena');
+
+    assert.equal(edited.patientId, '17');
+    assert.equal(edited.nombre, 'Maria Elena');
+    assert.deepEqual(draft.hcePreview(edited), {
+        value: '9000',
+        message: 'HCE almacenada; no se reformatea.',
+        pending: false,
+    });
+});
+
+test('un paciente nuevo muestra HCE provisional pero no la envía al backend', () => {
+    const opened = draft.open(Object.assign(identity('not_found'), {
+        tipo: 'DNI',
+        numero: '73378485',
+    }), schedule);
+    const completed = draft.edit(draft.edit(draft.edit(draft.edit(opened,
+        'nombre', 'Maria'), 'apellido_paterno', 'Perez'), 'apellido_materno', 'Demo'), 'genero', 'MUJER');
+    const payload = draft.toPayload(completed);
+
+    assert.equal(draft.hcePreview(completed).value, '01-73378485');
+    assert.equal(payload.numero_identidad, '73378485');
+    assert.equal(Object.hasOwn(payload, 'historia_clinica'), false);
+    assert.equal(Object.hasOwn(payload, 'commercial_owner_id'), false);
+});
+
+test('atribución comercial permanece en contexto sin simular persistencia', () => {
+    const opened = draft.open(Object.assign(identity('not_found'), {
+        tipo: 'DNI',
+        numero: '73378485',
+    }), schedule);
+    const attributed = draft.edit(opened, 'commercial_owner_id', '31');
+
+    assert.equal(attributed.commercial_owner_id, '31');
+    assert.equal(draft.toPayload(attributed).commercial_owner_id, undefined);
+    assert.equal(attributed.doctor, schedule.doctor);
+    assert.equal(attributed.time, schedule.time);
+});
+
+test('guardar sin agendar no asocia ni a un paciente nuevo ni a uno existente', () => {
+    const created = draft.saveOutcome(false, false);
+    const updated = draft.saveOutcome(false, true);
+
+    assert.equal(created.attach, false);
+    assert.equal(updated.attach, false);
+    assert.equal(created.message, 'Paciente registrado sin asociarlo al agendamiento actual.');
+    assert.equal(updated.message, 'Paciente actualizado sin asociarlo al agendamiento actual.');
+});
+
+test('guardar y agendar asocia el patient_id y no anuncia una cita', () => {
+    const created = draft.saveOutcome(true, false);
+    const updated = draft.saveOutcome(true, true);
+
+    assert.equal(created.attach, true);
+    assert.equal(updated.attach, true);
+    assert.equal(created.message, updated.message);
+    assert.match(created.message, /Registro rápido/);
+    assert.match(created.message, /todavía no se crea/);
+});

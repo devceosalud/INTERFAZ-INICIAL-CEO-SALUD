@@ -42,6 +42,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 // Future scheduling module. Its own middleware keeps the legacy routes intact.
 require base_path('routes/scheduling.php');
 
+// Operational patient workspace; write endpoints apply their own stricter role middleware.
+require base_path('routes/patients.php');
+
 
 /***************************************************************************
  * RUTAS ADMISION                                                          *

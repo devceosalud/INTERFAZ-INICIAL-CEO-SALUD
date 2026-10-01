@@ -116,6 +116,8 @@
                             <p class="agenda-center__foot" id="agenda-detail-hint"></p>
                         </section>
                     </div>
+
+                    @include('scheduling.agenda.partials.patient-modal')
                 </main>
             </div>
         </div>
