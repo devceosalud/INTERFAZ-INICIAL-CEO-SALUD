@@ -62,10 +62,17 @@
                             <span class="agenda-field__label">Apellido materno</span>
                             <input class="agenda-field__input" id="agenda-draft-apellido-materno" type="text" maxlength="255">
                         </label>
-                        <label class="agenda-field">
+                        <div class="agenda-field">
                             <span class="agenda-field__label">Celular</span>
-                            <input class="agenda-field__input" id="agenda-draft-telefono" type="tel" maxlength="255">
-                        </label>
+                            <div class="agenda-phone">
+                                <select class="agenda-field__input" id="agenda-draft-phone-prefix" aria-label="Código país">
+                                    @foreach ($phonePrefixes as $prefix => $country)
+                                        <option value="{{ $prefix }}">{{ $country }} {{ $prefix }}</option>
+                                    @endforeach
+                                </select>
+                                <input class="agenda-field__input" id="agenda-draft-telefono" type="tel" maxlength="32" inputmode="numeric" placeholder="999888777">
+                            </div>
+                        </div>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Género</span>
                             <select class="agenda-field__input" id="agenda-draft-genero">
@@ -106,7 +113,12 @@
                         </label>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Estado civil</span>
-                            <input class="agenda-field__input" id="agenda-draft-estado-civil" type="text" maxlength="255">
+                            <select class="agenda-field__input" id="agenda-draft-estado-civil">
+                                <option value="">Sin indicar</option>
+                                @foreach ($civilStatuses as $civilStatus)
+                                    <option value="{{ $civilStatus }}">{{ $civilStatus }}</option>
+                                @endforeach
+                            </select>
                         </label>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Ocupación</span>
@@ -143,6 +155,44 @@
                             </select>
                             <small>Se transporta en el borrador; persistencia pendiente.</small>
                         </label>
+                        <div class="agenda-field agenda-patient-form-grid__wide">
+                            <label class="agenda-check">
+                                <input type="checkbox" id="agenda-draft-register-responsible">
+                                <span>Registrar responsable o acompañante</span>
+                            </label>
+                            <div id="agenda-draft-responsible" hidden>
+                                <div class="agenda-patient-form-grid">
+                                    <label class="agenda-field">
+                                        <span class="agenda-field__label">Parentesco</span>
+                                        <select class="agenda-field__input" id="agenda-draft-responsible-relationship">
+                                            @foreach ($relationships as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                    <label class="agenda-field">
+                                        <span class="agenda-field__label">Nombre completo</span>
+                                        <input class="agenda-field__input" id="agenda-draft-responsible-name" type="text" maxlength="255">
+                                    </label>
+                                    <label class="agenda-field">
+                                        <span class="agenda-field__label">Teléfono</span>
+                                        <input class="agenda-field__input" id="agenda-draft-responsible-phone" type="tel" maxlength="255">
+                                    </label>
+                                    <label class="agenda-field">
+                                        <span class="agenda-field__label">Tipo de documento</span>
+                                        <select class="agenda-field__input" id="agenda-draft-responsible-document-type">
+                                            @foreach ($documentTypes as $documentType)
+                                                <option value="{{ $documentType }}">{{ $documentType }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                    <label class="agenda-field">
+                                        <span class="agenda-field__label">Número de documento</span>
+                                        <input class="agenda-field__input" id="agenda-draft-responsible-document-number" type="text" maxlength="255">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         <label class="agenda-field agenda-field--pending agenda-patient-form-grid__wide">
                             <span class="agenda-field__label">Observaciones clínicas opcionales</span>
                             <textarea class="agenda-field__input" disabled placeholder="Pendiente del modelo clínico / HCE"></textarea>

@@ -50,6 +50,9 @@
             apellido_paterno: '',
             apellido_materno: '',
             telefono: '',
+            telefono_prefijo: '+51',
+            telefono_numero: '',
+            telefono_sin_separar: false,
             email: '',
             fecha_nacimiento: '',
             genero: '',
@@ -61,6 +64,12 @@
             ocupacion: '',
             grado_instruccion: '',
             familiar_contacto: '',
+            registrar_responsable: false,
+            responsable_parentesco: 'PAPA',
+            responsable_nombres: '',
+            responsable_telefono: '',
+            responsable_tipo_identificacion: 'DNI',
+            responsable_numero_identidad: '',
             commercial_owner_id: '',
             commercial_owner_name: '',
             historia_clinica: '',
@@ -99,7 +108,7 @@
     function openExisting(patient, schedule) {
         patient = patient || {};
 
-        return Object.assign(scheduleOf(schedule), empty(
+        var opened = Object.assign(scheduleOf(schedule), empty(
             patient.tipo_identificacion,
             patient.numero_identidad
         ), patient, {
@@ -109,6 +118,24 @@
             manual: {},
             message: 'Ficha existente cargada. Revise los datos antes de guardar.',
         });
+        var phoneApi = typeof globalThis !== 'undefined' ? globalThis.PatientPhone : null;
+        var phone = phoneApi
+            ? phoneApi.split(patient.telefono)
+            : { parsed: false, prefijo: '+51', numero: '', raw: text(patient.telefono) };
+
+        opened.telefono_prefijo = phone.prefijo;
+        opened.telefono_numero = phone.parsed ? phone.numero : phone.raw;
+        opened.telefono_sin_separar = !phone.parsed;
+        opened.registrar_responsable = Boolean(patient.responsable);
+        if (patient.responsable) {
+            opened.responsable_parentesco = patient.responsable.parentezco || 'PAPA';
+            opened.responsable_nombres = patient.responsable.nombres || '';
+            opened.responsable_telefono = patient.responsable.telefono || '';
+            opened.responsable_tipo_identificacion = patient.responsable.tipo_identificacion || 'DNI';
+            opened.responsable_numero_identidad = patient.responsable.numero_identidad || '';
+        }
+
+        return opened;
     }
 
     function cancel(draft, schedule) {
@@ -214,7 +241,9 @@
             nombre: text(draft.nombre),
             apellido_paterno: text(draft.apellido_paterno),
             apellido_materno: text(draft.apellido_materno),
-            telefono: text(draft.telefono) || null,
+            telefono_prefijo: text(draft.telefono_prefijo) || '+51',
+            telefono_numero: text(draft.telefono_numero) || null,
+            telefono_sin_separar: Boolean(draft.telefono_sin_separar),
             genero: text(draft.genero),
             fecha_nacimiento: text(draft.fecha_nacimiento) || null,
             channel_id: text(draft.channel_id) || null,
@@ -225,6 +254,12 @@
             grado_instruccion: text(draft.grado_instruccion) || null,
             familiar_contacto: text(draft.familiar_contacto) || null,
             interaction_medium_id: text(draft.interaction_medium_id) || null,
+            registrar_responsable: Boolean(draft.registrar_responsable),
+            responsable_parentesco: text(draft.responsable_parentesco) || null,
+            responsable_nombres: text(draft.responsable_nombres) || null,
+            responsable_telefono: text(draft.responsable_telefono) || null,
+            responsable_tipo_identificacion: text(draft.responsable_tipo_identificacion) || null,
+            responsable_numero_identidad: text(draft.responsable_numero_identidad) || null,
         };
     }
 
@@ -239,5 +274,10 @@
         hcePreview: hcePreview,
         saveOutcome: saveOutcome,
         toPayload: toPayload,
+        emailMessage: function (value) {
+            var phoneApi = typeof globalThis !== 'undefined' ? globalThis.PatientPhone : null;
+
+            return phoneApi ? phoneApi.emailMessage(value) : '';
+        },
     };
 }));

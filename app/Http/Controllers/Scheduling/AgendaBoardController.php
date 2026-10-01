@@ -9,6 +9,9 @@ use App\Models\InteractionMedium;
 use App\Models\Site;
 use App\Models\Specialty;
 use App\Models\User;
+use App\Http\Controllers\Patients\OperationalPatientController;
+use App\Support\Patients\DemoChannelCatalog;
+use App\Support\Patients\PatientPhone;
 use App\Support\Patients\PatientWriteAccess;
 use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaRange;
@@ -23,6 +26,8 @@ class AgendaBoardController extends Controller
 {
     public function __invoke(): View
     {
+        DemoChannelCatalog::ensure();
+
         return view('scheduling.agenda.index', [
             'sites' => Site::activo()->orderBy('nombre')->get(['id', 'nombre']),
             'specialties' => Specialty::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
@@ -30,6 +35,10 @@ class AgendaBoardController extends Controller
                 ->orderBy('nombre')
                 ->get(['id', 'nombre', 'specialty_id']),
             'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
+            'civilStatuses' => OperationalPatientController::CIVIL_STATUSES,
+            'relationships' => OperationalPatientController::RELATIONSHIPS,
+            'phonePrefixes' => PatientPhone::PREFIXES,
+            'documentTypes' => OperationalPatientController::DOCUMENT_TYPES,
             'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'commercialUsers' => User::query()
                 ->whereHas('roles', fn ($query) => $query->where('name', 'COMERCIAL'))

@@ -47,7 +47,6 @@
         nombre: document.getElementById('patient-name'),
         apellido_paterno: document.getElementById('patient-paternal-name'),
         apellido_materno: document.getElementById('patient-maternal-name'),
-        telefono: document.getElementById('patient-phone'),
         email: document.getElementById('patient-email'),
         fecha_nacimiento: document.getElementById('patient-birth-date'),
         genero: document.getElementById('patient-gender'),
@@ -59,6 +58,17 @@
         grado_instruccion: document.getElementById('patient-education'),
         familiar_contacto: document.getElementById('patient-family-contact'),
     };
+    var phonePrefix = document.getElementById('patient-phone-prefix');
+    var phoneNumber = document.getElementById('patient-phone');
+    var registerResponsible = document.getElementById('patient-register-responsible');
+    var responsiblePanel = document.getElementById('patient-responsible');
+    var responsibleRelationship = document.getElementById('patient-responsible-relationship');
+    var responsibleName = document.getElementById('patient-responsible-name');
+    var responsiblePhone = document.getElementById('patient-responsible-phone');
+    var responsibleDocumentType = document.getElementById('patient-responsible-document-type');
+    var responsibleDocumentNumber = document.getElementById('patient-responsible-document-number');
+    var phoneUnparsed = false;
+    var phoneApi = window.PatientPhone;
 
     function value(valueToSet) {
         return valueToSet === null || valueToSet === undefined ? '' : String(valueToSet);
@@ -129,20 +139,66 @@
         (contextRow ? contextOpen : contextAdd).focus();
     }
 
+    function ensureOption(select, optionValue) {
+        var current = value(optionValue);
+
+        if (current === '' || Array.from(select.options).some(function (option) {
+            return option.value === current;
+        })) {
+            return;
+        }
+
+        var option = document.createElement('option');
+        option.value = current;
+        option.textContent = current;
+        select.appendChild(option);
+    }
+
+    function setPhone(stored) {
+        var parsed = phoneApi.split(stored);
+        phoneUnparsed = !parsed.parsed;
+        ensureOption(phonePrefix, parsed.prefijo);
+        phonePrefix.value = parsed.prefijo;
+        phoneNumber.value = parsed.parsed ? parsed.numero : parsed.raw;
+        phoneNumber.placeholder = phoneUnparsed ? '' : '999888777';
+    }
+
+    function setResponsible(responsible) {
+        var present = Boolean(responsible);
+        registerResponsible.checked = present;
+        responsiblePanel.hidden = !present;
+        responsibleRelationship.value = value(responsible && responsible.parentezco) || 'PAPA';
+        responsibleName.value = value(responsible && responsible.nombres);
+        responsiblePhone.value = value(responsible && responsible.telefono);
+        responsibleDocumentType.value = value(responsible && responsible.tipo_identificacion) || 'DNI';
+        responsibleDocumentNumber.value = value(responsible && responsible.numero_identidad);
+    }
+
     function setFields(patient) {
         hydrating = true;
         documentType.value = value(patient.tipo_identificacion) || 'DNI';
         documentNumber.value = value(patient.numero_identidad);
         Object.keys(fields).forEach(function (field) {
+            if (field === 'estado_civil') {
+                ensureOption(fields[field], patient[field]);
+            }
             fields[field].value = value(patient[field]);
         });
+        setPhone(patient.telefono);
+        setResponsible(patient.responsable);
         hydrating = false;
     }
 
     function clearFields() {
-        setFields({ tipo_identificacion: 'DNI' });
+        var blank = workspace.blankForm();
+        setFields({
+            tipo_identificacion: blank.tipo_identificacion,
+            responsable: null,
+            telefono: '',
+        });
         recordId.value = '';
         dirty = {};
+        setNotice('', false);
     }
 
     function renderHce() {
@@ -288,6 +344,18 @@
                 payload[field] = null;
             }
         });
+        payload.telefono_prefijo = phonePrefix.value || '+51';
+        payload.telefono_numero = phoneNumber.value.trim();
+        payload.telefono_sin_separar = phoneUnparsed;
+        payload.registrar_responsable = registerResponsible.checked;
+
+        if (registerResponsible.checked) {
+            payload.responsable_parentesco = responsibleRelationship.value;
+            payload.responsable_nombres = responsibleName.value.trim();
+            payload.responsable_telefono = responsiblePhone.value.trim();
+            payload.responsable_tipo_identificacion = responsibleDocumentType.value;
+            payload.responsable_numero_identidad = responsibleDocumentNumber.value.trim();
+        }
 
         return payload;
     }
@@ -310,6 +378,13 @@
 
         if (documentType.value === 'SIN DOCUMENTOS') {
             setNotice('El identificador final para pacientes sin documentos sigue pendiente de negocio; no se guardó.', true);
+            return;
+        }
+
+        var emailError = phoneApi.emailMessage(fields.email.value);
+        if (emailError) {
+            setNotice(emailError, true);
+            fields.email.focus();
             return;
         }
 
@@ -339,6 +414,15 @@
             }
 
             var patient = payload.patient || {};
+
+            if (!isExisting) {
+                state = workspace.afterCreate();
+                clearFields();
+                showList();
+                prependCreated(patient);
+                return;
+            }
+
             state.mode = 'existing';
             state.patient = patient;
             state.patientId = value(patient.id);
@@ -348,13 +432,62 @@
             saveButton.textContent = 'Guardar cambios';
             renderHce();
             renderReniec();
-            setNotice(payload.message || 'Paciente guardado correctamente.', false);
+            setNotice(payload.message || 'Paciente actualizado correctamente.', false);
         } catch (error) {
             setNotice(error.message || 'No se pudo guardar el paciente.', true);
         } finally {
             saveButton.disabled = !canWrite;
         }
     }
+
+    function prependCreated(patient) {
+        var body = document.getElementById('patients-table-body');
+        var current = Array.from(body.querySelectorAll('[data-patient-id]')).map(function (row) {
+            return { id: row.dataset.patientId };
+        });
+        var placed = workspace.placeCreated(current, patient);
+        var highlight = placed[0];
+        var empty = body.querySelector('.patients-table__empty');
+
+        if (empty) {
+            empty.remove();
+        }
+
+        body.querySelectorAll('[data-patient-id="' + highlight.id + '"]').forEach(function (row) {
+            row.remove();
+        });
+
+        var row = document.createElement('tr');
+        row.className = 'patients-table__row is-just-created';
+        row.tabIndex = 0;
+        row.dataset.patientId = highlight.id;
+        row.setAttribute('aria-label', 'Abrir ficha de ' + highlight.nombre);
+        [highlight.registro, highlight.hce, highlight.documento, highlight.nombre, highlight.fecha, '—', highlight.estado]
+            .forEach(function (cellText, index) {
+                var cell = document.createElement('td');
+                cell.textContent = cellText;
+                if (index === 0 || index === 4) {
+                    cell.className = 'patients-cell--pending';
+                }
+                row.appendChild(cell);
+            });
+        body.insertBefore(row, body.firstChild);
+        selectRow(row);
+        row.focus({ preventScroll: true });
+    }
+
+    function markPhoneEdited() {
+        if (!hydrating) {
+            phoneUnparsed = false;
+            phoneNumber.placeholder = '999888777';
+        }
+    }
+
+    phonePrefix.addEventListener('change', markPhoneEdited);
+    phoneNumber.addEventListener('input', markPhoneEdited);
+    registerResponsible.addEventListener('change', function () {
+        responsiblePanel.hidden = !registerResponsible.checked;
+    });
 
     tableRegion.addEventListener('click', function (event) {
         var row = event.target.closest('[data-patient-id]');

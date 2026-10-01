@@ -484,6 +484,30 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.patients-phone {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: 8px;
+}
+
+.patients-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: .92rem;
+}
+
+.patients-help {
+    margin: 0 0 10px;
+    color: #52606d;
+    font-size: .82rem;
+}
+
+.patients-table__row.is-just-created td {
+    background: #e7f4f5;
+}
+
 .patients-form-grid--personal {
     grid-template-columns: 150px 120px minmax(130px, .7fr) minmax(220px, 1.5fr);
 }

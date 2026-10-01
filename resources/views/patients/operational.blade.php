@@ -219,13 +219,20 @@
                             <fieldset class="patients-block">
                                 <legend>Contacto</legend>
                                 <div class="patients-form-grid patients-form-grid--two">
-                                    <label class="patients-field">
+                                    <div class="patients-field">
                                         <span>Teléfono</span>
-                                        <input type="tel" id="patient-phone" maxlength="255">
-                                    </label>
+                                        <div class="patients-phone">
+                                            <select id="patient-phone-prefix" aria-label="Código país">
+                                                @foreach ($phonePrefixes as $prefix => $country)
+                                                    <option value="{{ $prefix }}" @selected($prefix === '+51')>{{ $country }} {{ $prefix }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="tel" id="patient-phone" maxlength="32" inputmode="numeric" placeholder="999888777" autocomplete="off">
+                                        </div>
+                                    </div>
                                     <label class="patients-field">
                                         <span>Email</span>
-                                        <input type="email" id="patient-email" maxlength="255">
+                                        <input type="email" id="patient-email" maxlength="255" placeholder="persona@dominio.com" autocomplete="off">
                                     </label>
                                 </div>
                             </fieldset>
@@ -283,12 +290,58 @@
                                     </label>
                                     <label class="patients-field">
                                         <span>Estado civil</span>
-                                        <input type="text" id="patient-civil-status" maxlength="255">
+                                        <select id="patient-civil-status">
+                                            <option value="">Sin indicar</option>
+                                            @foreach ($civilStatuses as $civilStatus)
+                                                <option value="{{ $civilStatus }}">{{ $civilStatus }}</option>
+                                            @endforeach
+                                        </select>
                                     </label>
                                     <label class="patients-field patients-field--address">
                                         <span>Dirección</span>
                                         <input type="text" id="patient-address" maxlength="255">
                                     </label>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="patients-block">
+                                <legend>Responsable o acompañante</legend>
+                                <label class="patients-check">
+                                    <input type="checkbox" id="patient-register-responsible">
+                                    <span>Registrar responsable o acompañante</span>
+                                </label>
+                                <p class="patients-help">Los pacientes menores de 18 años deben registrar un responsable o acompañante adulto.</p>
+                                <div id="patient-responsible" hidden>
+                                    <div class="patients-form-grid patients-form-grid--three">
+                                        <label class="patients-field">
+                                            <span>Parentesco</span>
+                                            <select id="patient-responsible-relationship">
+                                                @foreach ($relationships as $value => $label)
+                                                    <option value="{{ $value }}">{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="patients-field">
+                                            <span>Nombre completo</span>
+                                            <input type="text" id="patient-responsible-name" maxlength="255" autocomplete="off">
+                                        </label>
+                                        <label class="patients-field">
+                                            <span>Teléfono</span>
+                                            <input type="tel" id="patient-responsible-phone" maxlength="255" autocomplete="off">
+                                        </label>
+                                        <label class="patients-field">
+                                            <span>Tipo de documento</span>
+                                            <select id="patient-responsible-document-type">
+                                                @foreach ($documentTypes as $documentType)
+                                                    <option value="{{ $documentType }}">{{ $documentType }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="patients-field">
+                                            <span>Número de documento</span>
+                                            <input type="text" id="patient-responsible-document-number" maxlength="255" autocomplete="off">
+                                        </label>
+                                    </div>
                                 </div>
                             </fieldset>
 
@@ -326,6 +379,7 @@
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+    <script src="{{ asset('js/patients/patient-phone.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
     <script src="{{ asset('js/patients/patient-workspace.js') }}"></script>
     <script src="{{ asset('js/patients/operational.js') }}"></script>

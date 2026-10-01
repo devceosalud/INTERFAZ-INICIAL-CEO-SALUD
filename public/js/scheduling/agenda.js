@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         draftNombre: document.getElementById('agenda-draft-nombre'),
         draftApellidoPaterno: document.getElementById('agenda-draft-apellido-paterno'),
         draftApellidoMaterno: document.getElementById('agenda-draft-apellido-materno'),
+        draftPhonePrefix: document.getElementById('agenda-draft-phone-prefix'),
         draftTelefono: document.getElementById('agenda-draft-telefono'),
         draftEmail: document.getElementById('agenda-draft-email'),
         draftFechaNacimiento: document.getElementById('agenda-draft-fecha-nacimiento'),
@@ -99,6 +100,13 @@ document.addEventListener('DOMContentLoaded', function () {
         draftOcupacion: document.getElementById('agenda-draft-ocupacion'),
         draftGradoInstruccion: document.getElementById('agenda-draft-grado-instruccion'),
         draftFamiliarContacto: document.getElementById('agenda-draft-familiar-contacto'),
+        draftRegisterResponsible: document.getElementById('agenda-draft-register-responsible'),
+        draftResponsible: document.getElementById('agenda-draft-responsible'),
+        draftResponsibleRelationship: document.getElementById('agenda-draft-responsible-relationship'),
+        draftResponsibleName: document.getElementById('agenda-draft-responsible-name'),
+        draftResponsiblePhone: document.getElementById('agenda-draft-responsible-phone'),
+        draftResponsibleDocumentType: document.getElementById('agenda-draft-responsible-document-type'),
+        draftResponsibleDocumentNumber: document.getElementById('agenda-draft-responsible-document-number'),
         draftCommercialOwner: document.getElementById('agenda-draft-commercial-owner'),
         draftHce: document.getElementById('agenda-draft-hce'),
         draftHceNote: document.getElementById('agenda-draft-hce-note'),
@@ -1082,7 +1090,15 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftNombre.value = draft.nombre;
         el.draftApellidoPaterno.value = draft.apellido_paterno;
         el.draftApellidoMaterno.value = draft.apellido_materno;
-        el.draftTelefono.value = draft.telefono;
+        el.draftPhonePrefix.value = draft.telefono_prefijo || '+51';
+        el.draftTelefono.value = draft.telefono_numero || '';
+        el.draftRegisterResponsible.checked = Boolean(draft.registrar_responsable);
+        el.draftResponsible.hidden = !draft.registrar_responsable;
+        el.draftResponsibleRelationship.value = draft.responsable_parentesco || 'PAPA';
+        el.draftResponsibleName.value = draft.responsable_nombres || '';
+        el.draftResponsiblePhone.value = draft.responsable_telefono || '';
+        el.draftResponsibleDocumentType.value = draft.responsable_tipo_identificacion || 'DNI';
+        el.draftResponsibleDocumentNumber.value = draft.responsable_numero_identidad || '';
         el.draftEmail.value = draft.email;
         el.draftFechaNacimiento.value = draft.fecha_nacimiento;
         el.draftGenero.value = draft.genero;
@@ -1190,6 +1206,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function savePatient(attachToSchedule) {
         if (!state.draft || !canWritePatients) {
+            return;
+        }
+
+        const emailError = draftModel.emailMessage(state.draft.email);
+        if (emailError) {
+            el.draftMessage.textContent = emailError;
             return;
         }
 
@@ -1453,7 +1475,13 @@ document.addEventListener('DOMContentLoaded', function () {
         [el.draftNombre, 'nombre'],
         [el.draftApellidoPaterno, 'apellido_paterno'],
         [el.draftApellidoMaterno, 'apellido_materno'],
-        [el.draftTelefono, 'telefono'],
+        [el.draftPhonePrefix, 'telefono_prefijo'],
+        [el.draftTelefono, 'telefono_numero'],
+        [el.draftResponsibleRelationship, 'responsable_parentesco'],
+        [el.draftResponsibleName, 'responsable_nombres'],
+        [el.draftResponsiblePhone, 'responsable_telefono'],
+        [el.draftResponsibleDocumentType, 'responsable_tipo_identificacion'],
+        [el.draftResponsibleDocumentNumber, 'responsable_numero_identidad'],
         [el.draftEmail, 'email'],
         [el.draftFechaNacimiento, 'fecha_nacimiento'],
         [el.draftGenero, 'genero'],
@@ -1469,6 +1497,24 @@ document.addEventListener('DOMContentLoaded', function () {
         [el.draftCommercialOwner, 'commercial_owner_id'],
     ].forEach(function (pair) {
         bindDraftField(pair[0], pair[1]);
+    });
+    el.draftPhonePrefix.addEventListener('change', function () {
+        if (state.draft) {
+            state.draft = draftModel.edit(state.draft, 'telefono_sin_separar', false);
+        }
+    });
+    el.draftTelefono.addEventListener('input', function () {
+        if (state.draft) {
+            state.draft = draftModel.edit(state.draft, 'telefono_sin_separar', false);
+        }
+    });
+    el.draftRegisterResponsible.addEventListener('change', function () {
+        if (!state.draft) {
+            return;
+        }
+
+        state.draft = draftModel.edit(state.draft, 'registrar_responsable', el.draftRegisterResponsible.checked);
+        el.draftResponsible.hidden = !el.draftRegisterResponsible.checked;
     });
 
     el.patientTabs.forEach(function (tab) {

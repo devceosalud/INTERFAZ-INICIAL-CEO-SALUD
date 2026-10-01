@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Channel;
 use App\Models\InteractionMedium;
+use App\Models\Responsible;
+use App\Support\Patients\DemoChannelCatalog;
+use App\Support\Patients\PatientPhone;
 use App\Support\Patients\PatientWriteAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +36,22 @@ class OperationalPatientController extends Controller
         // Supported by inherited patient rows. It has no proposed HCE prefix.
         'RUC',
         'SIN DOCUMENTOS',
+    ];
+
+    public const CIVIL_STATUSES = [
+        'SOLTERO',
+        'CASADO',
+        'VIUDO',
+        'DIVORCIADO',
+    ];
+
+    public const RELATIONSHIPS = [
+        'PAPA' => 'PAPÁ',
+        'MAMA' => 'MAMÁ',
+        'HERMANO' => 'HERMANO',
+        'PRIMO' => 'PRIMO',
+        'AMIGO' => 'AMIGO',
+        'CONOCIDO CERCANO' => 'CONOCIDO CERCANO',
     ];
 
     public function index(Request $request): View
@@ -94,8 +113,13 @@ class OperationalPatientController extends Controller
             ->paginate(100)
             ->withQueryString();
 
+        DemoChannelCatalog::ensure();
+
         return view('patients.operational', [
             'documentTypes' => self::DOCUMENT_TYPES,
+            'civilStatuses' => self::CIVIL_STATUSES,
+            'relationships' => self::RELATIONSHIPS,
+            'phonePrefixes' => PatientPhone::PREFIXES,
             'filters' => $filters,
             'patients' => $patients,
             'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
@@ -108,7 +132,7 @@ class OperationalPatientController extends Controller
     {
         // Resolve only after auth/role middleware has run. This avoids exposing a
         // 403/404 difference that could be used to enumerate patient identifiers.
-        $patient = Patient::query()->findOrFail($patientId, [
+        $patient = Patient::query()->with('responsibles')->findOrFail($patientId, [
             'id',
             'historia_clinica',
             'tipo_identificacion',
@@ -162,6 +186,30 @@ class OperationalPatientController extends Controller
             'channel_id' => $patient->channel_id,
             'interaction_medium_id' => $patient->interaction_medium_id,
             'estado' => $patient->estado,
+            'responsable' => self::responsiblePayload($patient),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private static function responsiblePayload(Patient $patient): ?array
+    {
+        $responsible = $patient->relationLoaded('responsibles')
+            ? $patient->responsibles->sortBy('id')->first()
+            : $patient->responsibles()->orderBy('id')->first();
+
+        if (!$responsible instanceof Responsible) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $responsible->id,
+            'parentezco' => $responsible->parentezco,
+            'nombres' => $responsible->nombres,
+            'telefono' => $responsible->telefono,
+            'tipo_identificacion' => $responsible->tipo_identificacion,
+            'numero_identidad' => $responsible->numero_identidad,
         ];
     }
 

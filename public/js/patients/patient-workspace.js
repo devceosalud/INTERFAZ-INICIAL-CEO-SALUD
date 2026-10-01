@@ -92,6 +92,69 @@
         return mode === 'new' && text(documentType) === 'DNI';
     }
 
+    function blankForm() {
+        return {
+            patientId: '',
+            tipo_identificacion: 'DNI',
+            numero_identidad: '',
+            nombre: '',
+            apellido_paterno: '',
+            apellido_materno: '',
+            telefono_prefijo: '+51',
+            telefono_numero: '',
+            telefono_sin_separar: false,
+            email: '',
+            fecha_nacimiento: '',
+            genero: '',
+            estado_civil: '',
+            direccion: '',
+            channel_id: '',
+            interaction_medium_id: '',
+            ocupacion: '',
+            grado_instruccion: '',
+            familiar_contacto: '',
+            registrar_responsable: false,
+            responsable_parentesco: 'PAPA',
+            responsable_nombres: '',
+            responsable_telefono: '',
+            responsable_tipo_identificacion: 'DNI',
+            responsable_numero_identidad: '',
+            notice: '',
+        };
+    }
+
+    function afterCreate() {
+        return {
+            surface: 'list',
+            mode: 'created',
+            patientId: '',
+            notice: '',
+        };
+    }
+
+    function placeCreated(rows, patient) {
+        var id = text(patient && patient.id);
+        var rest = (rows || []).filter(function (row) {
+            return text(row && row.id) !== id;
+        });
+
+        rest.unshift({
+            id: id,
+            highlight: true,
+            registro: '—',
+            hce: text(patient && patient.historia_clinica) || '—',
+            documento: text(patient && patient.tipo_identificacion) + ' ' + text(patient && patient.numero_identidad),
+            nombre: [patient && patient.apellido_paterno, patient && patient.apellido_materno, patient && patient.nombre]
+                .map(text)
+                .filter(Boolean)
+                .join(' '),
+            fecha: '—',
+            estado: text(patient && patient.estado) || 'ACTIVO',
+        });
+
+        return rest;
+    }
+
     return {
         DOCUMENT_CODES: DOCUMENT_CODES,
         hcePreview: hcePreview,
@@ -100,5 +163,8 @@
         openExisting: openExisting,
         back: back,
         canConsultReniec: canConsultReniec,
+        blankForm: blankForm,
+        afterCreate: afterCreate,
+        placeCreated: placeCreated,
     };
 }));
