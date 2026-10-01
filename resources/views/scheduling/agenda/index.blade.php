@@ -28,8 +28,10 @@
 
                     <div class="agenda-workspace">
                         <aside class="agenda-operations" aria-label="Selección y preparación de cita">
-                            @include('scheduling.agenda.partials.professionals')
-                            @include('scheduling.agenda.partials.mini-calendar')
+                            <div class="agenda-operations__pair">
+                                @include('scheduling.agenda.partials.professionals')
+                                @include('scheduling.agenda.partials.mini-calendar')
+                            </div>
                             @include('scheduling.agenda.partials.quick-registration')
                         </aside>
 
