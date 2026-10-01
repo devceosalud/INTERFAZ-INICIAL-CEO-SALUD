@@ -18,8 +18,22 @@ function professional(slots) {
     };
 }
 
-function free(start, end) {
-    return { inicio: start, fin: end, estado: 'DISPONIBLE', site_id: 1 };
+function free(start, end, minutos) {
+    return {
+        inicio: start,
+        fin: end,
+        minutos: minutos == null ? grid.minutes(end) - grid.minutes(start) : minutos,
+        estado: 'DISPONIBLE',
+        site_id: 1,
+    };
+}
+
+function cadence(start, end, step) {
+    const slots = [];
+    for (let cursor = grid.minutes(start); cursor < grid.minutes(end); cursor += step) {
+        slots.push(free(grid.time(cursor), grid.time(cursor + step), step));
+    }
+    return slots;
 }
 
 function appointment(id, start, end, state) {
@@ -123,6 +137,44 @@ test('el contexto de cita mantiene pago historia clínica y paciente reales', ()
     assert.equal(quick.payment, 'PENDIENTE');
     assert.equal(quick.clinicalRecord, 'HC3');
     assert.equal(quick.patient, 'PACIENTE DEMO 3');
+});
+
+test('la fila libre usa la duración real del slot y no la grilla de 20', () => {
+    [10, 20, 30].forEach((step) => {
+        const model = build([], cadence('10:00', '12:00', step));
+        const start = step === 30 ? '10:30' : '10:20';
+        const row = model.rows.find((candidate) => candidate.start === start);
+        const quick = selection.fromContext(row.context, 'Sede Central');
+
+        assert.equal(row.end, grid.time(grid.minutes(start) + step));
+        assert.equal(row.context.minutos, step);
+        assert.equal(quick.duration, step + ' min');
+        assert.equal(quick.time, start + ' – ' + row.end);
+    });
+
+    const ten = build([], cadence('10:00', '12:00', 10));
+    const selected = ten.rows.find((row) => row.start === '10:20');
+
+    assert.equal(selected.end, '10:30');
+    assert.equal(selection.fromContext(selected.context, 'Sede Central').duration, '10 min');
+});
+
+test('cambiar la cadencia del horario reemplaza la duración anterior', () => {
+    const previous = selection.fromContext(
+        build([], cadence('10:00', '12:00', 20)).rows.find((row) => row.start === '10:00').context,
+        'Sede Central'
+    );
+    const cleared = selection.empty({ doctor: 'Dra. Ana Quispe' });
+    const next = selection.fromContext(
+        build([], cadence('10:00', '12:00', 10)).rows.find((row) => row.start === '10:20').context,
+        'Sede Central'
+    );
+
+    assert.equal(previous.duration, '20 min');
+    assert.equal(previous.time, '10:00 – 10:20');
+    assert.equal(cleared.duration, '—');
+    assert.equal(next.duration, '10 min');
+    assert.equal(next.time, '10:20 – 10:30');
 });
 
 test('cabecera y filas comparten la única definición de columnas operativas', () => {

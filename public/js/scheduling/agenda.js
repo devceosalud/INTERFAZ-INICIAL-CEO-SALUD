@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const dayGridModel = window.AgendaDayGrid;
     const weekEventModel = window.AgendaWeekEvent;
     const weekBackgroundModel = window.AgendaWeekBackground;
+    const weekSlotModel = window.AgendaWeekSlots;
     const DAY_FORMAT = new Intl.DateTimeFormat('es-PE', {
         weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
     });
@@ -201,6 +202,21 @@ document.addEventListener('DOMContentLoaded', function () {
         eventDidMount: function (info) {
             const context = info.event.extendedProps;
 
+            if (context.tipo_contexto === 'slot_libre') {
+                info.el.setAttribute(
+                    'aria-label',
+                    [context.hora_inicio, context.hora_fin, context.minutos ? context.minutos + ' min' : '', context.doctor, context.fecha]
+                        .filter(Boolean)
+                        .join(', ')
+                );
+                info.el.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    selectInterval(context, null);
+                });
+                return;
+            }
+
             if (context.tipo_contexto !== 'cita_existente') {
                 return;
             }
@@ -275,6 +291,11 @@ document.addEventListener('DOMContentLoaded', function () {
             wrapper.appendChild(line);
             wrapper.appendChild(status);
 
+            return { domNodes: [wrapper] };
+        }
+
+        if (context.tipo_contexto === 'slot_libre') {
+            wrapper.classList.add('agenda-slot-hit__face');
             return { domNodes: [wrapper] };
         }
 
@@ -544,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 visibleHours.start,
                 visibleHours.end
             ).forEach((event) => calendar.addEvent(event));
+            weekSlotModel.hits(events).forEach((event) => calendar.addEvent(event));
         }
 
         resizeCalendar();

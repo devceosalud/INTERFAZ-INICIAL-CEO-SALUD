@@ -1511,6 +1511,31 @@ body.agenda-modal-open {
     pointer-events: none
 }
 
+.agenda-board--week .agenda-calendar.fc .fc-event.agenda-slot-hit,
+.agenda-board--week .agenda-calendar.fc .fc-event.agenda-slot-hit .fc-event-main {
+    height: 100%;
+    margin: 0 !important;
+    border-radius: 0;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: transparent;
+}
+
+.agenda-board--week .agenda-calendar.fc .fc-event.agenda-slot-hit .agenda-slot-hit__face {
+    display: block;
+    min-height: 100%;
+    background: transparent;
+}
+
+.agenda-board--week .agenda-calendar.fc .fc-timegrid-event-harness:has(.agenda-slot-hit) {
+    z-index: 1 !important;
+}
+
+.agenda-board--week .agenda-calendar.fc .fc-timegrid-event-harness:has(.agenda-calendar-event--appointment) {
+    z-index: 4 !important;
+}
+
 .agenda-calendar.fc .fc-bg-event.agenda-selected-slot {
     z-index: 2;
     background: rgba(14, 116, 144, .08) !important;

@@ -100,8 +100,31 @@
         return false;
     }
 
-    function baseContext(options, rowStart, rowEnd, availableSlot, available) {
+    function slotSpan(slot) {
+        return {
+            slot: slot,
+            start: minutes(slot.inicio),
+            end: minutes(slot.fin),
+        };
+    }
+
+    function slotMinutes(slot, rowStart, rowEnd) {
+        const span = rowEnd - rowStart;
+        const declared = Number(slot && slot.minutos);
+        const sameSlot = slot
+            && minutes(slot.inicio) === rowStart
+            && minutes(slot.fin) === rowEnd;
+
+        if (sameSlot && declared > 0) {
+            return declared;
+        }
+
+        return span;
+    }
+
+    function baseContext(options, rowStart, rowEnd, slot) {
         const professional = options.professional || {};
+        const available = Boolean(slot && slot.estado === AVAILABLE);
 
         return {
             leyenda: available ? AVAILABLE : OFF_HOURS,
@@ -112,9 +135,9 @@
             fecha: options.date,
             hora_inicio: time(rowStart),
             hora_fin: time(rowEnd),
-            minutos: rowEnd - rowStart,
+            minutos: slotMinutes(slot, rowStart, rowEnd),
             estado: available ? AVAILABLE : OFF_HOURS,
-            site_id: availableSlot ? availableSlot.site_id : null,
+            site_id: slot ? slot.site_id : null,
             seleccionable: available,
             tipo_contexto: available ? 'slot_libre' : 'fuera_horario',
             appointment_id: null,
@@ -129,26 +152,40 @@
         const step = options.gridMinutes || 20;
         const range = bounds(options);
         const day = dayFor(options.professional, options.date);
-        const slots = day && day.slots || [];
+        const slots = (day && day.slots || [])
+            .map(slotSpan)
+            .filter((span) => span.end > span.start)
+            .sort((left, right) => left.start - right.start || left.end - right.end);
         const appointments = appointmentEvents(options.events, options.date);
         const rows = [];
 
-        for (let rowStart = range.start; rowStart < range.end; rowStart += step) {
-            const rowEnd = Math.min(range.end, rowStart + step);
+        for (let rowStart = range.start; rowStart < range.end;) {
+            const covering = slots.find((span) => span.start <= rowStart && span.end > rowStart);
+            const nextSlot = slots.find((span) => span.start > rowStart);
+            const stepped = Math.min(range.end, rowStart + step);
+            const rowEnd = covering
+                ? covering.end
+                : (nextSlot ? Math.min(stepped, nextSlot.start) : stepped);
+
+            if (rowEnd <= rowStart) {
+                break;
+            }
+
             const starting = appointments.filter((event) => event.start >= rowStart && event.start < rowEnd);
             const continuing = appointments.filter((event) => event.start < rowStart && event.end > rowStart);
             const items = starting.map((event) => Object.assign({ kind: 'appointment' }, event))
                 .concat(continuing.map((event) => Object.assign({ kind: 'continuation' }, event)))
                 .sort((left, right) => left.start - right.start || (left.kind === 'appointment' ? -1 : 1));
-            const available = covers(slots, rowStart, rowEnd, (slot) => slot.estado === AVAILABLE);
-            const availableSlot = slots.find((slot) => {
-                return slot.estado === AVAILABLE
-                    && minutes(slot.inicio) < rowEnd
-                    && minutes(slot.fin) > rowStart;
-            }) || null;
+            const slot = covering ? covering.slot : null;
+            const available = Boolean(slot && slot.estado === AVAILABLE && covers(
+                [slot],
+                rowStart,
+                rowEnd,
+                (candidate) => candidate.estado === AVAILABLE
+            ));
             const context = items.length > 0
                 ? items[0].context
-                : baseContext(options, rowStart, rowEnd, availableSlot, available);
+                : baseContext(options, rowStart, rowEnd, available ? slot : null);
 
             rows.push({
                 id: 'agenda-day-row-' + options.date + '-' + time(rowStart).replace(':', ''),
@@ -159,6 +196,7 @@
                 context: context,
                 items: items,
             });
+            rowStart = rowEnd;
         }
 
         return { bounds: range, rows: rows };
