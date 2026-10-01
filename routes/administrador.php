@@ -14,6 +14,7 @@ use App\Http\Controllers\admin\master\user\UserController;
 use App\Http\Controllers\Patients\OperationalPatientController;
 use App\Http\Controllers\admin\responsible\ResponsibleController;
 use App\Http\Controllers\admin\schedule\ScheduleController;
+use App\Http\Controllers\Scheduling\DoctorScheduleWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -88,7 +89,7 @@ Route::put('/admin/user/update/{user}', [UserController::class, 'update'])->name
 Route::get('/admin/appointment', [AppointmentController::class, 'index'])->name('admin.appointment.index');
 Route::get('/admin/patient', [OperationalPatientController::class, 'index'])->name('admin.patient.index');
 
-Route::get('/admin/doctor-schedule', [ScheduleController::class, 'index'])->name('admin.doctor.schedule.index');
+Route::get('/admin/doctor-schedule', [DoctorScheduleWorkspaceController::class, 'index'])->name('admin.doctor.schedule.index');
 
 Route::get('/admin/responsible', [ResponsibleController::class, 'index'])->name('admin.responsible.index');
 

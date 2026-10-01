@@ -38,12 +38,22 @@ class ScheduleOverlapDetector
         return DoctorSchedule::query()
             ->where('doctor_id', $doctorId)
             ->where('estado', 'ACTIVO')
-            ->whereDate('fecha_cita', $date->toDateString())
+            ->where(function ($scope) use ($date) {
+                $scope->whereDate('fecha_cita', $date->toDateString())
+                    ->orWhere(function ($recurring) use ($date) {
+                        $recurring->whereNull('fecha_cita')
+                            ->where('dia_semana', $date->dayOfWeekIso);
+                    });
+            })
             ->when($ignoreScheduleId, fn ($query) => $query->whereKeyNot($ignoreScheduleId))
             ->orderBy('hora_inicio')
             ->get()
-            ->filter(function (DoctorSchedule $block) use ($proposed) {
-                $existing = $this->rangeOf($block);
+            ->filter(function (DoctorSchedule $block) use ($proposed, $date) {
+                $existing = $this->range(
+                    $date->toDateString(),
+                    (string) $block->hora_inicio,
+                    (string) $block->hora_fin
+                );
 
                 return $existing !== null && $proposed->overlaps($existing);
             })
@@ -67,12 +77,12 @@ class ScheduleOverlapDetector
                     continue;
                 }
 
-                if ($this->dateOf($block) === null || $this->dateOf($block) !== $this->dateOf($candidate)) {
+                if (! $this->shareOccurrence($block, $candidate)) {
                     continue;
                 }
 
-                $left = $this->rangeOf($block);
-                $right = $this->rangeOf($candidate);
+                $left = $this->timeRangeOf($block);
+                $right = $this->timeRangeOf($candidate);
 
                 if ($left !== null && $right !== null && $left->overlaps($right)) {
                     $pairs->push([(int) $block->id, (int) $candidate->id]);
@@ -83,15 +93,9 @@ class ScheduleOverlapDetector
         return $pairs;
     }
 
-    protected function rangeOf(DoctorSchedule $block): ?TimeRange
+    protected function timeRangeOf(DoctorSchedule $block): ?TimeRange
     {
-        $date = $this->dateOf($block);
-
-        if ($date === null) {
-            return null;
-        }
-
-        return $this->range($date, (string) $block->hora_inicio, (string) $block->hora_fin);
+        return $this->range('2000-01-03', (string) $block->hora_inicio, (string) $block->hora_fin);
     }
 
     /**
@@ -113,5 +117,24 @@ class ScheduleOverlapDetector
     protected function dateOf(DoctorSchedule $block): ?string
     {
         return $block->fecha_cita === null ? null : substr((string) $block->fecha_cita, 0, 10);
+    }
+
+    protected function shareOccurrence(DoctorSchedule $left, DoctorSchedule $right): bool
+    {
+        $leftDate = $this->dateOf($left);
+        $rightDate = $this->dateOf($right);
+
+        if ($leftDate !== null && $rightDate !== null) {
+            return $leftDate === $rightDate;
+        }
+
+        if ($leftDate === null && $rightDate === null) {
+            return (int) $left->dia_semana === (int) $right->dia_semana;
+        }
+
+        $dated = $leftDate !== null ? $left : $right;
+        $recurring = $leftDate === null ? $left : $right;
+
+        return Carbon::parse($dated->fecha_cita)->dayOfWeekIso === (int) $recurring->dia_semana;
     }
 }

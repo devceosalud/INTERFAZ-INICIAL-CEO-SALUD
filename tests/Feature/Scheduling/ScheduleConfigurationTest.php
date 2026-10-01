@@ -256,21 +256,36 @@ class ScheduleConfigurationTest extends TestCase
     |--------------------------------------------------------------------------
     */
 
-    public function test_the_schedule_page_shows_start_end_duration_and_shift(): void
+    public function test_the_schedule_page_exposes_the_operational_calendar_and_real_feed(): void
     {
         $site = $this->createSite(['nombre' => 'Sede Norte']);
         $this->block('08:00:00', '12:00:00')->update(['site_id' => $site->id]);
         $this->block('15:00:00', '18:00:00');
 
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $user = $this->createUserWithRole('ADMISION');
+
+        $this->actingAs($user)
             ->get('/admissionist/doctor-schedule')
             ->assertOk()
-            ->assertSee('Mañana')
-            ->assertSee('Tarde')
-            ->assertSee('08:00')
-            ->assertSee('12:00')
-            ->assertSee('30 min')
+            ->assertSee('Horarios médicos')
+            ->assertSee('data-calendar-view="timeGridWeek"', false)
+            ->assertSee('Duración programada por cita')
             ->assertSee('Sede Norte');
+
+        $this->actingAs($user)
+            ->getJson('/admissionist/doctor-schedule/calendar?'.http_build_query([
+                'start' => $this->date,
+                'end' => $this->date,
+                'doctor_id' => $this->catalog['doctor']->id,
+            ]))
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonPath('0.extendedProps.start_time', '08:00')
+            ->assertJsonPath('0.extendedProps.end_time', '12:00')
+            ->assertJsonPath('0.extendedProps.appointment_duration', 30)
+            ->assertJsonPath('0.extendedProps.site_name', 'Sede Norte')
+            ->assertJsonPath('1.extendedProps.start_time', '15:00')
+            ->assertJsonPath('1.extendedProps.end_time', '18:00');
     }
 
     private function overlapUri(string $start, string $end, array $extra = []): string

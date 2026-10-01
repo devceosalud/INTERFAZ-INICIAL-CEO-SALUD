@@ -10,11 +10,14 @@ use App\Models\DoctorService;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\Specialty;
+use App\Services\Scheduling\ConcreteScheduleConflict;
 use App\Services\Scheduling\DoctorAvailabilityService;
+use App\Services\Scheduling\ScheduleOverlapDetector;
 use App\Support\Scheduling\AppointmentOccupancy;
 use App\Support\Scheduling\AvailabilityQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
@@ -292,41 +295,82 @@ class ScheduleController extends Controller
     //PARA GUARDAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function store(Request $request)
     {
+        $request->merge(['scope' => $request->input('scope', 'single')]);
+
         $validator = Validator::make($request->all(), [
             'doctor_id'      => 'required|exists:doctors,id',
-            //'dia_semana'     => 'required|integer|between:1,7',
-            'fecha_cita'  => 'required|date',
+            'scope' => 'required|in:single,selected,weekly,dates',
+            'fecha_cita' => 'required_unless:scope,weekly,dates|nullable|date',
+            // single and concrete dates omit weekdays; selected and weekly still require at least one day.
+            'weekdays' => 'exclude_if:scope,single|exclude_if:scope,dates|required|array',
+            'weekdays.*' => 'integer|between:1,7|distinct',
+            'dates' => 'exclude_unless:scope,dates|required|array',
+            'dates.*' => 'date_format:Y-m-d|distinct',
             'hora_inicio'    => 'required|date_format:H:i',
             'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
             'duracion_cita'  => 'required|integer|in:10,15,20,30,45,60',
             'site_id'        => 'nullable|exists:sites,id',
+        ], [
+            'weekdays.required' => 'Selecciona al menos un día de la semana.',
+            'dates.required' => 'Selecciona al menos una fecha.',
+            'dates.*.date_format' => 'La fecha no es válida.',
+            'dates.*.distinct' => 'No repitas la misma fecha.',
         ]);
 
         if ($validator->fails()) {
+            $errors = $validator->errors();
+
             return response()->json([
                 'code'  => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
+                'error' => $errors->toArray()
+            ], ($errors->has('weekdays') || $errors->has('dates') || $errors->has('dates.*')) ? 422 : 200);
         }
 
-        //GUARDAR DATOS
-        $doctor_schedule = DoctorSchedule::create([
-            'doctor_id' => $request->doctor_id,
-            // La sede es opcional: sin ella el bloque queda como los heredados, sin sede.
-            'site_id' => $request->site_id ?: null,
-            'dia_semana' => '1', //Lunes por defecto
-            'fecha_cita' => $request->fecha_cita,
-            'hora_inicio' => $request->hora_inicio,
-            'hora_fin' => $request->hora_fin,
-            'duracion_cita' => $request->duracion_cita,
-            'estado' => 'ACTIVO'
-        ]);
+        if ($request->scope === 'dates') {
+            return $this->storeConcreteDates($request);
+        }
+
+        $scope = $request->scope;
+        $weekdays = collect($request->input('weekdays', []))->map(fn ($day) => (int) $day)->unique()->sort()->values();
+
+        if ($scope === 'single') {
+            $date = Carbon::parse($request->fecha_cita);
+            $targets = collect([['date' => $date->toDateString(), 'weekday' => $date->dayOfWeekIso]]);
+        } elseif ($scope === 'selected') {
+            $weekStart = Carbon::parse($request->fecha_cita)->startOfWeek();
+            $targets = $weekdays->map(fn (int $weekday) => [
+                'date' => $weekStart->copy()->addDays($weekday - 1)->toDateString(),
+                'weekday' => $weekday,
+            ]);
+        } else {
+            // The real inherited recurrence contract is fecha_cita NULL + ISO weekday.
+            $targets = $weekdays->map(fn (int $weekday) => ['date' => null, 'weekday' => $weekday]);
+        }
+
+        $created = DB::transaction(function () use ($request, $targets) {
+            return $targets->map(function (array $target) use ($request) {
+                return DoctorSchedule::create([
+                    'doctor_id' => $request->doctor_id,
+                    'site_id' => $request->site_id ?: null,
+                    'dia_semana' => $target['weekday'],
+                    'fecha_cita' => $target['date'],
+                    'hora_inicio' => $request->hora_inicio,
+                    'hora_fin' => $request->hora_fin,
+                    'duracion_cita' => $request->duracion_cita,
+                    'estado' => 'ACTIVO',
+                ]);
+            });
+        });
 
         //RESPUESTA DE CONSUMO
-        if ($doctor_schedule) {
+        if ($created->isNotEmpty()) {
             return response()->json([
                 'code' => 1,
-                'msg' => "Horario del doctor guardado correctamente",
+                'msg' => $created->count() === 1
+                    ? 'Horario del médico guardado correctamente.'
+                    : $created->count().' horarios del médico guardados correctamente.',
+                'created_count' => $created->count(),
+                'schedule_ids' => $created->pluck('id')->all(),
             ], 200);
         } else {
             return response()->json([
@@ -336,13 +380,93 @@ class ScheduleController extends Controller
         }
     }
 
+    private function storeConcreteDates(Request $request)
+    {
+        $targets = collect($request->input('dates'))->map(function ($date) {
+            $parsed = Carbon::createFromFormat('!Y-m-d', $date)->startOfDay();
+
+            return [
+                'date' => $parsed->toDateString(),
+                'weekday' => (int) $parsed->dayOfWeekIso,
+            ];
+        })->values();
+
+        $detector = app(ScheduleOverlapDetector::class);
+
+        try {
+            $created = DB::transaction(function () use ($request, $targets, $detector) {
+                $conflicts = [];
+
+                foreach ($targets as $target) {
+                    $hits = $detector->overlappingWith(
+                        (int) $request->doctor_id,
+                        Carbon::parse($target['date']),
+                        $request->hora_inicio,
+                        $request->hora_fin
+                    );
+
+                    if ($hits->isNotEmpty()) {
+                        $conflicts[] = $target['date'];
+                    }
+                }
+
+                if ($conflicts !== []) {
+                    throw new ConcreteScheduleConflict($conflicts);
+                }
+
+                return $targets->map(function (array $target) use ($request) {
+                    return DoctorSchedule::create([
+                        'doctor_id' => $request->doctor_id,
+                        'site_id' => $request->site_id ?: null,
+                        'dia_semana' => $target['weekday'],
+                        'fecha_cita' => $target['date'],
+                        'hora_inicio' => $request->hora_inicio,
+                        'hora_fin' => $request->hora_fin,
+                        'duracion_cita' => $request->duracion_cita,
+                        'estado' => 'ACTIVO',
+                    ]);
+                });
+            });
+        } catch (ConcreteScheduleConflict $exception) {
+            return response()->json([
+                'code' => 0,
+                'message' => $this->concreteConflictMessage($exception->dates()),
+                'conflict_dates' => $exception->dates(),
+            ], 422);
+        }
+
+        $dates = $created->map(function (DoctorSchedule $row) {
+            return substr((string) $row->fecha_cita, 0, 10);
+        })->all();
+
+        return response()->json([
+            'code' => 1,
+            'msg' => 'Se programaron '.$created->count().' horarios correctamente.',
+            'message' => 'Se programaron '.$created->count().' horarios correctamente.',
+            'created' => $created->count(),
+            'created_count' => $created->count(),
+            'dates' => $dates,
+            'schedule_ids' => $created->pluck('id')->all(),
+        ]);
+    }
+
+    private function concreteConflictMessage(array $dates): string
+    {
+        $lines = collect($dates)->map(function ($date) {
+            return Carbon::parse($date)->format('d/m');
+        })->implode("\n- ");
+
+        return "No se pudo aplicar el horario porque existen cruces.\nFechas con conflicto:\n- ".$lines;
+    }
+
     //PARA ACTUALIZAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function updateDoctorSchedule(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'doctor_schedule_id_edit' => 'required|exists:doctor_schedules,id',
             'doctor_id_edit' => 'required|exists:doctors,id',
-            // 'dia_semana_edit' => 'required|integer|between:1,7',
+            'dia_semana_edit' => 'nullable|integer|between:1,7',
+            'fecha_cita_edit' => 'nullable|date',
             'hora_inicio_edit' => 'required|date_format:H:i',
             'hora_fin_edit' => 'required|date_format:H:i|after:hora_inicio_edit',
             'duracion_edit_cita' => 'required|integer|in:10,15,20,30,45,60',
@@ -364,10 +488,26 @@ class ScheduleController extends Controller
             ]);
         }
 
+        $isRecurring = $doctor_schedule->fecha_cita === null;
+        $newDate = $request->fecha_cita_edit
+            ? Carbon::parse($request->fecha_cita_edit)
+            : null;
+
+        if (! $isRecurring && $newDate === null) {
+            return response()->json([
+                'code' => 0,
+                'error' => ['fecha_cita_edit' => ['La fecha es obligatoria para un horario puntual.']],
+            ]);
+        }
+
         $cambios = [
             'doctor_id'     => $request->doctor_id_edit,
-            'dia_semana'    => '1',
-            'fecha_cita' => $request->fecha_cita_edit,
+            'dia_semana'    => $isRecurring
+                ? (int) ($request->dia_semana_edit ?: $doctor_schedule->dia_semana)
+                : $newDate->dayOfWeekIso,
+            // Editing a weekly block updates that recurring row. It never fabricates a
+            // dated exception, because the current schema cannot express an override.
+            'fecha_cita' => $isRecurring ? null : $newDate->toDateString(),
             'hora_inicio'   => $request->hora_inicio_edit,
             'hora_fin'      => $request->hora_fin_edit,
             'duracion_cita' => $request->duracion_edit_cita
@@ -397,7 +537,11 @@ class ScheduleController extends Controller
     //PARA DESACTIVAR EL HOARIO DEL DOCTOR
     public function deleteDoctorSchedule(Request $request)
     {
-        $doctor_schedule = DoctorSchedule::find($request->id);
+        $data = $request->validate([
+            'id' => 'required|integer|exists:doctor_schedules,id',
+        ]);
+
+        $doctor_schedule = DoctorSchedule::findOrFail($data['id']);
         $exito = $doctor_schedule->update([
             'estado' => 'INACTIVO'
         ]);

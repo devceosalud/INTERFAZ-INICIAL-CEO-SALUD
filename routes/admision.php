@@ -6,6 +6,8 @@ use App\Http\Controllers\admissionist\patient\PatientController;
 use App\Http\Controllers\Patients\OperationalPatientController;
 use App\Http\Controllers\admissionist\responsible\ResponsibleController;
 use App\Http\Controllers\admissionist\schedule\ScheduleController;
+use App\Http\Controllers\Scheduling\DoctorScheduleWorkspaceController;
+use App\Http\Controllers\Scheduling\ScheduleOverlapWarningController;
 use Illuminate\Support\Facades\Route;
 
 $operationalReaders = 'ADMISION|RECEPCION|ADMINISTRADOR|COMERCIAL';
@@ -15,8 +17,12 @@ Route::middleware(['auth', "role:{$operationalReaders}"])->group(function () {
     Route::get('/admissionist/appointment', [AppointmentController::class, 'index'])->name('admissionit.appointment.index');
     Route::get('/admissionist/responsible', [ResponsibleController::class, 'index'])->name('admissionit.responsible.index');
     Route::get('/admissionist/reservation/list-calendar', [ScheduleController::class, 'list'])->name('admissionit.schedule.list');
-    Route::get('/admissionist/doctor-schedule', [ScheduleController::class, 'index'])->name('admissionit.doctor.schedule.index');
-    Route::get('/admissionist/doctor-schedule/calendar', [ScheduleController::class, 'doctor_schedules'])->name('admissionit.doctor.schedule.calendar');
+    Route::get('/admissionist/doctor-schedule', [DoctorScheduleWorkspaceController::class, 'index'])->name('admissionit.doctor.schedule.index');
+    Route::get('/admissionist/doctor-schedule/calendar', [DoctorScheduleWorkspaceController::class, 'feed'])->name('admissionit.doctor.schedule.calendar');
+    Route::get('/admissionist/doctor-schedule/overlap', ScheduleOverlapWarningController::class)
+        ->name('admissionit.doctor.schedule.overlap');
+    Route::get('/admissionist/doctor-schedule/{doctorSchedule}/impact', [DoctorScheduleWorkspaceController::class, 'impact'])
+        ->name('admissionit.doctor.schedule.impact');
     Route::get('/admissionist/available-schedule', [AvailableSchedule::class, 'index'])->name('admissionit.available.schedule.index');
 });
 

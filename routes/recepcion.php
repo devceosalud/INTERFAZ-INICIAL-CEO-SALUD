@@ -8,6 +8,7 @@ use App\Http\Controllers\Patients\OperationalPatientController;
 use App\Http\Controllers\receptionist\responsible\ResponsibleController;
 use App\Http\Controllers\receptionist\sale\SaleController;
 use App\Http\Controllers\receptionist\schedule\ScheduleController;
+use App\Http\Controllers\Scheduling\DoctorScheduleWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -15,7 +16,7 @@ Route::middleware(['auth', 'role:RECEPCION'])->group(function () {
 Route::get('/receptionist/patient', [OperationalPatientController::class, 'index'])->name('receptionist.patient.index');
 Route::get('/receptionist/appointment', [AppointmentController::class, 'index'])->name('receptionist.appointment.index');
 
-Route::get('/receptionist/doctor-schedule', [ScheduleController::class, 'index'])->name('receptionist.doctor.schedule.index');
+Route::get('/receptionist/doctor-schedule', [DoctorScheduleWorkspaceController::class, 'index'])->name('receptionist.doctor.schedule.index');
 
 Route::get('/receptionist/responsible', [ResponsibleController::class, 'index'])->name('receptionist.responsible.index');
 
