@@ -12,9 +12,7 @@ use App\Services\Scheduling\DoctorAvailabilityService;
 use App\Support\Scheduling\AppointmentOccupancy;
 use App\Support\Scheduling\AvailabilityQuery;
 use Carbon\Carbon;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\BuildsBaselineData;
 use Tests\TestCase;
 
@@ -200,39 +198,23 @@ class DoctorAvailabilityEngineTest extends TestCase
      * appointment is free again". The TO-BE still has to model the original care event, its
      * linked reevaluation and the reevaluation's own slot; until then this blocks.
      *
-     * Asserted on the rule rather than on a stored row: REEVALUACION and PACIENTE_LLEGO exist
-     * in production but are missing from the versioned migration enum, which Laravel compiles
-     * into a CHECK constraint, so those two values cannot be inserted locally at all. The
-     * drift is recorded in MATRIZ_DRIFT_BD.md and in MVP_2A_DISPONIBILIDAD_HORARIOS.md.
+     * The MariaDB enum is reconciled by MVP-4A. This test remains focused on the independent
+     * scheduling rule: both states consume their original interval.
      *
-     * @dataProvider statesMissingFromTheVersionedEnum
+     * @dataProvider reconciledBlockingStates
      */
-    public function test_a_production_state_absent_from_the_versioned_enum_still_blocks(string $state): void
+    public function test_a_reconciled_production_state_still_blocks(string $state): void
     {
         $this->assertTrue(AppointmentOccupancy::blocks($state));
         $this->assertContains($state, AppointmentOccupancy::BLOCKING_STATES);
-        $this->assertNotContains($state, Schema::getColumnListing('appointments'));
     }
 
-    public function statesMissingFromTheVersionedEnum(): array
+    public function reconciledBlockingStates(): array
     {
         return [
             'reevaluation' => ['REEVALUACION'],
             'patient arrived' => ['PACIENTE_LLEGO'],
         ];
-    }
-
-    /**
-     * Characterizes the drift itself, so the day the enum is aligned this test fails and the
-     * end-to-end coverage above can replace the rule-level assertion.
-     */
-    public function test_the_versioned_enum_still_rejects_two_production_states(): void
-    {
-        $this->block(['hora_inicio' => '08:00:00', 'hora_fin' => '09:00:00', 'duracion_cita' => 30]);
-
-        $this->expectException(QueryException::class);
-
-        $this->appointment('08:00:00', 30, ['estado_cita' => 'REEVALUACION']);
     }
 
     /**
