@@ -230,7 +230,12 @@ class OperationalPatientModuleTest extends TestCase
             ->get('/receptionist/patient?tipo_documento=&numero_documento=&hce=&nombre=')
             ->assertOk();
 
-        $sql = strtolower(collect(DB::getQueryLog())->pluck('query')->implode("\n"));
+        $listQuery = collect(DB::getQueryLog())
+            ->pluck('query')
+            ->first(fn ($query) => str_contains($query, 'from "patients"') && str_contains(strtolower($query), 'limit 100'));
+
+        $this->assertNotNull($listQuery);
+        $sql = strtolower($listQuery);
         $this->assertStringNotContainsString('is null', $sql);
         $this->assertStringNotContainsString('like', $sql);
     }

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Patients;
 
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Channel;
 use App\Models\InteractionMedium;
 use App\Models\Responsible;
+use App\Services\Patients\PendingPatientChartQuery;
 use App\Support\Patients\DemoChannelCatalog;
 use App\Support\Patients\PatientPhone;
 use App\Support\Patients\PatientWriteAccess;
@@ -66,6 +68,7 @@ class OperationalPatientController extends Controller
             // Reserved for the future encounter source. It is displayed but is not
             // silently mapped to fecha_registro or fecha_cita.
             'fecha' => ['nullable', 'date_format:Y-m-d'],
+            'vista' => ['nullable', 'string', Rule::in(['pendientes'])],
         ]);
 
         $filters = array_merge([
@@ -74,44 +77,64 @@ class OperationalPatientController extends Controller
             'hce' => null,
             'nombre' => null,
             'fecha' => Carbon::today()->toDateString(),
+            'vista' => null,
         ], $filters);
+        $pendingView = ($filters['vista'] ?? null) === 'pendientes';
+        $pendingCount = PendingPatientChartQuery::apply(Patient::query())->count();
 
-        $patients = Patient::query()
-            ->with('user:id,name')
-            ->select([
-                'id',
-                'user_id',
-                'historia_clinica',
-                'tipo_identificacion',
-                'numero_identidad',
-                'nombre',
-                'apellido_paterno',
-                'apellido_materno',
-                'estado',
-            ])
-            ->when(!blank($filters['tipo_documento']), function (Builder $query) use ($filters): void {
-                $query->where('tipo_identificacion', $filters['tipo_documento']);
+        $patients = $this->filteredPatients(Patient::query(), $filters)
+            ->when($pendingView, function (Builder $query): void {
+                PendingPatientChartQuery::apply($query);
             })
-            ->when(!blank($filters['numero_documento']), function (Builder $query) use ($filters): void {
-                $query->where('numero_identidad', 'like', '%'.$filters['numero_documento'].'%');
-            })
-            ->when(!blank($filters['hce']), function (Builder $query) use ($filters): void {
-                $query->where('historia_clinica', 'like', '%'.$filters['hce'].'%');
-            })
-            ->when(!blank($filters['nombre']), function (Builder $query) use ($filters): void {
-                foreach (preg_split('/\s+/', $filters['nombre'], -1, PREG_SPLIT_NO_EMPTY) ?: [] as $term) {
-                    $query->where(function (Builder $nameQuery) use ($term): void {
-                        $nameQuery->where('nombre', 'like', '%'.$term.'%')
-                            ->orWhere('apellido_paterno', 'like', '%'.$term.'%')
-                            ->orWhere('apellido_materno', 'like', '%'.$term.'%');
-                    });
+            ->when(
+                $pendingView,
+                function (Builder $query): void {
+                    $query->select([
+                        'patients.id',
+                        'patients.historia_clinica',
+                        'patients.tipo_identificacion',
+                        'patients.numero_identidad',
+                        'patients.nombre',
+                        'patients.apellido_paterno',
+                        'patients.apellido_materno',
+                        'patients.fecha_nacimiento',
+                        'patients.telefono',
+                        'patients.email',
+                        'patients.direccion',
+                        'patients.estado_civil',
+                        'patients.channel_id',
+                        'patients.ocupacion',
+                        'patients.grado_instruccion',
+                        'patients.familiar_contacto',
+                    ]);
+                    PendingPatientChartQuery::withRelevantAppointment($query);
+                    $query->withExists('responsibles');
+                },
+                function (Builder $query): void {
+                    $query->with('user:id,name')->select([
+                        'id',
+                        'user_id',
+                        'historia_clinica',
+                        'tipo_identificacion',
+                        'numero_identidad',
+                        'nombre',
+                        'apellido_paterno',
+                        'apellido_materno',
+                        'estado',
+                    ]);
                 }
-            })
+            )
             ->orderBy('apellido_paterno')
             ->orderBy('apellido_materno')
             ->orderBy('nombre')
-            ->paginate(100)
+            ->paginate($pendingView ? 25 : 100)
             ->withQueryString();
+
+        if ($pendingView) {
+            $this->hydratePendingRows($patients);
+        }
+
+        $pendingDocument = $this->pendingDocumentNotice($filters, $pendingView);
 
         DemoChannelCatalog::ensure();
 
@@ -122,6 +145,11 @@ class OperationalPatientController extends Controller
             'phonePrefixes' => PatientPhone::PREFIXES,
             'filters' => $filters,
             'patients' => $patients,
+            'pendingView' => $pendingView,
+            'pendingCount' => $pendingCount,
+            'pendingDocument' => $pendingDocument,
+            'patientListUrl' => $this->patientListUrl($request, false),
+            'pendingListUrl' => $this->patientListUrl($request, true),
             'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'canWritePatients' => PatientWriteAccess::allows($request->user()),
@@ -240,5 +268,103 @@ class OperationalPatientController extends Controller
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     * @param Builder<Patient> $query
+     * @return Builder<Patient>
+     */
+    private function filteredPatients(Builder $query, array $filters): Builder
+    {
+        return $query
+            ->when(!blank($filters['tipo_documento']), function (Builder $patients) use ($filters): void {
+                $patients->where('tipo_identificacion', $filters['tipo_documento']);
+            })
+            ->when(!blank($filters['numero_documento']), function (Builder $patients) use ($filters): void {
+                $patients->where('numero_identidad', 'like', '%'.$filters['numero_documento'].'%');
+            })
+            ->when(!blank($filters['hce']), function (Builder $patients) use ($filters): void {
+                $patients->where('historia_clinica', 'like', '%'.$filters['hce'].'%');
+            })
+            ->when(!blank($filters['nombre']), function (Builder $patients) use ($filters): void {
+                foreach (preg_split('/\s+/', $filters['nombre'], -1, PREG_SPLIT_NO_EMPTY) ?: [] as $term) {
+                    $patients->where(function (Builder $nameQuery) use ($term): void {
+                        $nameQuery->where('nombre', 'like', '%'.$term.'%')
+                            ->orWhere('apellido_paterno', 'like', '%'.$term.'%')
+                            ->orWhere('apellido_materno', 'like', '%'.$term.'%');
+                    });
+                }
+            });
+    }
+
+    private function hydratePendingRows(\Illuminate\Contracts\Pagination\LengthAwarePaginator $patients): void
+    {
+        $ids = $patients->getCollection()
+            ->pluck('relevant_appointment_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $appointments = Appointment::query()
+            ->with('doctor:id,nombre')
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy(fn (Appointment $appointment) => (int) $appointment->id);
+
+        $patients->getCollection()->transform(function (Patient $patient) use ($appointments) {
+            $appointment = $appointments->get((int) $patient->relevant_appointment_id);
+            $patient->setAttribute('pending_gaps', PendingPatientChartQuery::blockingLabels(
+                $patient,
+                (bool) $patient->responsibles_exists
+            ));
+            $patient->setAttribute('pending_recommended', PendingPatientChartQuery::recommendedLabels($patient));
+            $patient->setAttribute('pending_visit', PendingPatientChartQuery::visitLabel($appointment));
+            $patient->setAttribute('pending_doctor', $appointment?->doctor?->nombre ?: '—');
+
+            return $patient;
+        });
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     * @return array{mode: string, id?: int}|null
+     */
+    private function pendingDocumentNotice(array $filters, bool $pendingView): ?array
+    {
+        if ($pendingView || blank($filters['numero_documento'] ?? null)) {
+            return null;
+        }
+
+        $matches = $this->filteredPatients(PendingPatientChartQuery::missingBlocking(Patient::query()), $filters)
+            ->orderBy('patients.id')
+            ->limit(2)
+            ->get(['patients.id']);
+
+        if ($matches->isEmpty()) {
+            return null;
+        }
+
+        if ($matches->count() > 1) {
+            return ['mode' => 'many'];
+        }
+
+        return ['mode' => 'one', 'id' => (int) $matches->first()->id];
+    }
+
+    private function patientListUrl(Request $request, bool $pending): string
+    {
+        $query = collect($request->query())
+            ->only(['tipo_documento', 'numero_documento', 'hce', 'nombre', 'fecha'])
+            ->reject(fn ($value) => $value === null || $value === '')
+            ->all();
+
+        if ($pending) {
+            $query['vista'] = 'pendientes';
+        }
+
+        $base = url()->current();
+
+        return $query === [] ? $base : $base.'?'.http_build_query($query);
     }
 }

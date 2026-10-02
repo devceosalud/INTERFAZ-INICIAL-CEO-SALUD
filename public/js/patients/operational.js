@@ -88,7 +88,7 @@
     }
 
     function selectRow(row) {
-        if (!row || !row.dataset.patientId) {
+        if (!row || !row.classList || !row.dataset || !row.dataset.patientId) {
             return;
         }
 
@@ -470,6 +470,10 @@
             saveButton.textContent = 'Guardar cambios';
             renderHce();
             renderReniec();
+            if (new URLSearchParams(location.search).get('vista') === 'pendientes') {
+                location.reload();
+                return;
+            }
             setNotice(payload.message || 'Paciente actualizado correctamente.', false);
         } catch (error) {
             setNotice(error.message || 'No se pudo guardar el paciente.', true);
@@ -527,11 +531,33 @@
         responsiblePanel.hidden = !registerResponsible.checked;
     });
 
+    function openCompleteTarget(target) {
+        var row = target.closest('[data-patient-id]');
+        if (!row) {
+            row = tableRegion.querySelector('[data-patient-id="' + target.getAttribute('data-complete-patient') + '"]');
+        }
+        openExisting(row || { dataset: { patientId: target.getAttribute('data-complete-patient') } });
+    }
+
     tableRegion.addEventListener('click', function (event) {
+        var complete = event.target.closest('[data-complete-patient]');
+        if (complete) {
+            openCompleteTarget(complete);
+            return;
+        }
+
         var row = event.target.closest('[data-patient-id]');
         if (row) {
             selectRow(row);
         }
+    });
+
+    listSurface.addEventListener('click', function (event) {
+        var complete = event.target.closest('[data-complete-patient]');
+        if (!complete || tableRegion.contains(complete)) {
+            return;
+        }
+        openCompleteTarget(complete);
     });
 
     tableRegion.addEventListener('contextmenu', function (event) {

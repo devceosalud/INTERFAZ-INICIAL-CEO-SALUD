@@ -221,6 +221,78 @@
     outline-offset: 1px;
 }
 
+.patients-views {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0;
+    padding: 0 9px;
+    background: #f7f9fa;
+    border-bottom: 1px solid var(--patients-border-soft);
+}
+
+.patients-views__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    color: var(--patients-muted);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 28px;
+    text-decoration: none;
+}
+
+.patients-views__tab.is-active {
+    color: var(--patients-ink);
+    background: #fff;
+    border-color: var(--patients-border-soft);
+}
+
+.patients-views__count {
+    min-width: 16px;
+    padding: 0 5px;
+    border-radius: 8px;
+    background: #e7eef2;
+    color: #245066;
+    font-size: 9px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.patients-views__tab.is-active .patients-views__count {
+    background: var(--patients-accent);
+    color: #fff;
+}
+
+.patients-pending-banner {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 9px;
+    color: #5a3b12;
+    background: #fff6e8;
+    border-bottom: 1px solid #ead7b5;
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.patients-pending-banner strong {
+    white-space: nowrap;
+}
+
+.patients-pending-banner span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.patients-pending-banner .patients-btn {
+    text-decoration: none;
+}
+
 .patients-source-note {
     flex: 0 0 auto;
     padding: 5px 9px;
@@ -270,6 +342,39 @@
 .patients-table th:nth-child(5) { width: 125px; }
 .patients-table th:nth-child(6) { width: 155px; }
 .patients-table th:nth-child(7) { width: 90px; }
+
+.patients-table--pending {
+    min-width: 760px;
+}
+
+.patients-table--pending th:nth-child(1) { width: 132px; }
+.patients-table--pending th:nth-child(2) { width: 64px; }
+.patients-table--pending th:nth-child(3) { width: 22%; }
+.patients-table--pending th:nth-child(4) { width: 168px; }
+.patients-table--pending th:nth-child(5) { width: 120px; }
+.patients-table--pending th:nth-child(6) { width: 92px; }
+.patients-table--pending th:nth-child(7) { width: 124px; }
+
+.patients-table--pending td:last-child {
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.patients-table--pending td:nth-child(6) {
+    height: auto;
+    overflow: visible;
+    white-space: normal;
+}
+
+.patients-recommended {
+    display: block;
+    margin-top: 2px;
+    color: #6a747d;
+    font-size: 8px;
+    font-weight: 650;
+    line-height: 1.3;
+    white-space: normal;
+}
 
 .patients-table td {
     height: 31px;
@@ -646,6 +751,13 @@
 
     .patients-reniec-action .patients-btn {
         width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .patients-pending-banner {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 

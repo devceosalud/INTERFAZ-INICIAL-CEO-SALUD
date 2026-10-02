@@ -11,4 +11,16 @@ return [
     |
     */
     'enabled' => (bool) env('SCHEDULING_MVP_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Operational timezone
+    |--------------------------------------------------------------------------
+    |
+    | fecha_cita and hora_cita are wall-clock values chosen in Agenda. They are
+    | not stored with a timezone and are not converted to UTC. Comparisons that
+    | decide whether a visit is still ahead use this clinic clock.
+    |
+    */
+    'operational_timezone' => env('SCHEDULING_OPERATIONAL_TIMEZONE', 'America/Lima'),
 ];

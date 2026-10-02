@@ -30,12 +30,31 @@
                         <header class="patients-titlebar">
                             <div>
                                 <p class="patients-eyebrow">Gestión asistencial</p>
-                                <h1 id="patients-list-title">Pacientes</h1>
+                                <h1 id="patients-list-title">{{ $pendingView ? 'Fichas pendientes' : 'Pacientes' }}</h1>
                             </div>
-                            <p class="patients-titlebar__summary">{{ $patients->total() }} registros maestros</p>
+                            <p class="patients-titlebar__summary">
+                                @if ($pendingView)
+                                    {{ $patients->total() }} con los filtros actuales
+                                @else
+                                    {{ $patients->total() }} registros maestros
+                                @endif
+                            </p>
                         </header>
 
+                        <nav class="patients-views" aria-label="Vistas de pacientes">
+                            <a class="patients-views__tab @unless($pendingView) is-active @endunless" href="{{ $patientListUrl }}">
+                                Pacientes
+                            </a>
+                            <a class="patients-views__tab @if($pendingView) is-active @endif" href="{{ $pendingListUrl }}" id="patients-pending-tab">
+                                Fichas pendientes
+                                <span class="patients-views__count">{{ $pendingCount }}</span>
+                            </a>
+                        </nav>
+
                         <form class="patients-filterbar" method="GET" action="{{ url()->current() }}" id="patients-filter-form">
+                            @if ($pendingView)
+                                <input type="hidden" name="vista" value="pendientes">
+                            @endif
                             <label class="patients-field">
                                 <span>Tipo documento</span>
                                 <select name="tipo_documento" id="patient-filter-document-type">
@@ -80,46 +99,105 @@
                             </div>
                         </form>
 
+                        @if ($pendingDocument)
+                            <div class="patients-pending-banner" id="patient-pending-banner" role="status">
+                                <strong>Ficha pendiente de completar</strong>
+                                <span>A este paciente le faltan datos operativos de la ficha. Puede completarlos aunque no tenga una cita próxima.</span>
+                                @if (($pendingDocument['mode'] ?? null) === 'one')
+                                    <button class="patients-btn patients-btn--primary" type="button"
+                                        data-complete-patient="{{ $pendingDocument['id'] }}">
+                                        Completar ficha
+                                    </button>
+                                @else
+                                    <a class="patients-btn patients-btn--primary" href="{{ $pendingListUrl }}">Ver fichas pendientes</a>
+                                @endif
+                            </div>
+                        @endif
+
                         <div class="patients-source-note" id="patient-date-source-note" role="note">
-                            <strong>Fuente actual:</strong> una fila representa la ficha maestra del paciente. No existe todavía
-                            una entidad persistida de atención ambulatoria; por ello Fecha no filtra atenciones y N.° Registro / Fecha
-                            de atención se mantienen pendientes, sin reutilizar datos de citas.
+                            @if ($pendingView)
+                                <strong>Ficha pendiente de completar:</strong> el paciente tiene una cita próxima, distinta de cancelada o no asistió,
+                                y todavía falta fecha de nacimiento, teléfono, dirección, estado civil, canal de captación, o el responsable
+                                cuando es menor de 18 años. El correo y otros datos recomendados no retienen la fila.
+                            @else
+                                <strong>Fuente actual:</strong> una fila representa la ficha maestra del paciente. No existe todavía
+                                una entidad persistida de atención ambulatoria; por ello Fecha no filtra atenciones y N.° Registro / Fecha
+                                de atención se mantienen pendientes, sin reutilizar datos de citas.
+                            @endif
                         </div>
 
                         <div class="patients-table-region" id="patients-table-region" tabindex="0"
                             aria-label="Listado operativo de pacientes. Un clic selecciona; el menú contextual permite abrir.">
-                            <table class="patients-table">
+                            <table class="patients-table {{ $pendingView ? 'patients-table--pending' : '' }}">
                                 <thead>
-                                    <tr>
-                                        <th scope="col">N.° Registro</th>
-                                        <th scope="col">HCE</th>
-                                        <th scope="col">Documento</th>
-                                        <th scope="col">Paciente</th>
-                                        <th scope="col">Fecha de atención</th>
-                                        <th scope="col">Usuario</th>
-                                        <th scope="col">Estado</th>
-                                    </tr>
+                                    @if ($pendingView)
+                                        <tr>
+                                            <th scope="col">Documento</th>
+                                            <th scope="col">HCE</th>
+                                            <th scope="col">Paciente</th>
+                                            <th scope="col">Próxima cita</th>
+                                            <th scope="col">Médico</th>
+                                            <th scope="col">Datos faltantes</th>
+                                            <th scope="col">Acción</th>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <th scope="col">N.° Registro</th>
+                                            <th scope="col">HCE</th>
+                                            <th scope="col">Documento</th>
+                                            <th scope="col">Paciente</th>
+                                            <th scope="col">Fecha de atención</th>
+                                            <th scope="col">Usuario</th>
+                                            <th scope="col">Estado</th>
+                                        </tr>
+                                    @endif
                                 </thead>
                                 <tbody id="patients-table-body">
                                     @forelse ($patients as $patient)
+                                        @php
+                                            $patientName = trim($patient->apellido_paterno.' '.$patient->apellido_materno.' '.$patient->nombre);
+                                        @endphp
                                         <tr class="patients-table__row" tabindex="0" data-patient-id="{{ $patient->id }}"
-                                            aria-label="Abrir ficha de {{ trim($patient->apellido_paterno.' '.$patient->apellido_materno.' '.$patient->nombre) }}">
-                                            <td class="patients-cell--pending" title="Pendiente de modelo de atención">—</td>
-                                            <td class="patients-cell--hce">{{ $patient->historia_clinica ?: '—' }}</td>
-                                            <td>
-                                                <span class="patients-document-type">{{ $patient->tipo_identificacion }}</span>
-                                                <span>{{ $patient->numero_identidad }}</span>
-                                            </td>
-                                            <td class="patients-cell--name">
-                                                {{ trim($patient->apellido_paterno.' '.$patient->apellido_materno.' '.$patient->nombre) }}
-                                            </td>
-                                            <td class="patients-cell--pending" title="No equivale a fecha de cita">—</td>
-                                            <td>{{ $patient->user?->name ?: '—' }}</td>
-                                            <td><span class="patients-state patients-state--{{ strtolower($patient->estado) }}">{{ $patient->estado }}</span></td>
+                                            aria-label="Abrir ficha de {{ $patientName }}">
+                                            @if ($pendingView)
+                                                <td>
+                                                    <span class="patients-document-type">{{ $patient->tipo_identificacion }}</span>
+                                                    <span>{{ $patient->numero_identidad }}</span>
+                                                </td>
+                                                <td class="patients-cell--hce">{{ $patient->historia_clinica ?: '—' }}</td>
+                                                <td class="patients-cell--name">{{ $patientName }}</td>
+                                                <td>{{ $patient->pending_visit }}</td>
+                                                <td>{{ $patient->pending_doctor }}</td>
+                                                <td>
+                                                    {{ implode(', ', $patient->pending_gaps ?? []) ?: '—' }}
+                                                    @if (!empty($patient->pending_recommended))
+                                                        <small class="patients-recommended">Datos recomendados pendientes: {{ implode(', ', $patient->pending_recommended) }}</small>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <button class="patients-btn patients-btn--primary" type="button"
+                                                        data-complete-patient="{{ $patient->id }}">
+                                                        Completar ficha
+                                                    </button>
+                                                </td>
+                                            @else
+                                                <td class="patients-cell--pending" title="Pendiente de modelo de atención">—</td>
+                                                <td class="patients-cell--hce">{{ $patient->historia_clinica ?: '—' }}</td>
+                                                <td>
+                                                    <span class="patients-document-type">{{ $patient->tipo_identificacion }}</span>
+                                                    <span>{{ $patient->numero_identidad }}</span>
+                                                </td>
+                                                <td class="patients-cell--name">{{ $patientName }}</td>
+                                                <td class="patients-cell--pending" title="No equivale a fecha de cita">—</td>
+                                                <td>{{ $patient->user?->name ?: '—' }}</td>
+                                                <td><span class="patients-state patients-state--{{ strtolower($patient->estado) }}">{{ $patient->estado }}</span></td>
+                                            @endif
                                         </tr>
                                     @empty
                                         <tr class="patients-table__empty">
-                                            <td colspan="7">No hay pacientes que coincidan con los filtros.</td>
+                                            <td colspan="7">
+                                                {{ $pendingView ? 'No hay fichas pendientes de completar.' : 'No hay pacientes que coincidan con los filtros.' }}
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
