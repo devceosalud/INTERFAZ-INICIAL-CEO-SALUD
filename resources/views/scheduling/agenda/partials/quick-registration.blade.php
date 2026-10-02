@@ -3,7 +3,7 @@
     <div class="agenda-pane-head">
         <div>
             <h2 class="agenda-section-title" id="agenda-quick-title">Registro rápido</h2>
-            <p>Identificación y ficha conectadas; la cita se guarda en una fase posterior</p>
+            <p>Identificación, paciente y agendamiento normal en un solo flujo</p>
         </div>
         <span class="agenda-quick__mode" id="agenda-quick-mode">Sin selección</span>
     </div>
@@ -60,16 +60,42 @@
             <div><dt>Duración</dt><dd id="agenda-quick-duration">—</dd></div>
             <div><dt>Sede</dt><dd id="agenda-quick-site">—</dd></div>
             <div><dt>Servicio</dt><dd id="agenda-quick-service">Pendiente de selección</dd></div>
+            <div><dt>Precio normal</dt><dd id="agenda-quick-price">—</dd></div>
             <div><dt>Estado</dt><dd id="agenda-quick-status">Sin cita</dd></div>
             <div><dt>Pago</dt><dd id="agenda-quick-payment">—</dd></div>
             <div><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
             <div><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ auth()->user()->name ?? 'Usuario autenticado' }}</dd></div>
-            <div><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Pendiente de selección</dd></div>
+            <div><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Sin asignar</dd></div>
         </dl>
 
+        <div class="agenda-quick__booking-fields">
+            <label class="agenda-field">
+                <span class="agenda-field__label">Servicio</span>
+                <select class="agenda-field__input" id="agenda-service-select" disabled>
+                    <option value="">Seleccione un intervalo</option>
+                </select>
+            </label>
+            <label class="agenda-field">
+                <span class="agenda-field__label">Comercial dueño</span>
+                <select class="agenda-field__input" id="agenda-responsible-select" @disabled(!$canAssignResponsible)>
+                    <option value="">Sin asignar</option>
+                    @foreach ($commercialUsers as $commercial)
+                        <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
+                    @endforeach
+                </select>
+                @unless ($canAssignResponsible)
+                    <small>Requiere permiso para asignar responsable.</small>
+                @endunless
+            </label>
+        </div>
+
         <p class="agenda-quick__message" id="agenda-quick-message">
-            Seleccione médico, fecha e intervalo disponible. Esta pantalla no crea ni modifica citas.
+            Seleccione médico, fecha, intervalo disponible, paciente y servicio.
         </p>
+
+        <button type="button" class="agenda-btn agenda-btn--primary" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
+            Agendar cita
+        </button>
 
         <button type="button" class="agenda-btn agenda-complete-registration"
             id="agenda-complete-registration" disabled hidden

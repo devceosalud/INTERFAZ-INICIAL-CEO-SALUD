@@ -258,7 +258,7 @@ test('guardar y agendar asocia el patient_id y no anuncia una cita', () => {
     assert.equal(updated.attach, true);
     assert.equal(created.message, updated.message);
     assert.match(created.message, /Registro rápido/);
-    assert.match(created.message, /todavía no se crea/);
+    assert.match(created.message, /Preparando la cita/);
 });
 
 test('Consultar RENIEC de Agenda usa el endpoint propio de la ficha', () => {

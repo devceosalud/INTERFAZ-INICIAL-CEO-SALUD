@@ -20,7 +20,8 @@
             data-store-endpoint="{{ route('patients.operational.store') }}"
             data-update-template="{{ url('/patients/__PATIENT__') }}"
             data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
-            data-can-write="{{ $canWritePatients ? '1' : '0' }}">
+            data-can-write="{{ $canWritePatients ? '1' : '0' }}"
+            data-can-schedule="{{ $canCreateAppointments ? '1' : '0' }}">
             <div class="agenda-patient-tabs" role="tablist" aria-label="Datos del paciente">
                 <button type="button" role="tab" aria-selected="true" class="is-active" data-patient-tab="essential">Datos esenciales</button>
                 <button type="button" role="tab" aria-selected="false" data-patient-tab="complete">Datos completos</button>
@@ -154,7 +155,7 @@
                                     <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
                                 @endforeach
                             </select>
-                            <small>Se transporta en el borrador; persistencia pendiente.</small>
+                            <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
                         </label>
                         <div class="agenda-field agenda-patient-form-grid__wide">
                             <label class="agenda-check">
@@ -216,7 +217,7 @@
                 </span>
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
                 <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar sin agendar</button>
-                <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients)>
+                <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
                     Guardar y agendar
                 </button>
             </footer>

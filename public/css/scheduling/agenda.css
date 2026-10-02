@@ -931,6 +931,18 @@ body.agenda-modal-open {
     white-space: nowrap
 }
 
+.agenda-quick__booking-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+    gap: 5px;
+    margin-top: 6px
+}
+
+#agenda-appointment-submit {
+    width: 100%;
+    margin-top: 5px
+}
+
 .agenda-quick__message {
     padding: 4px 5px;
     margin: 5px 0 0;
@@ -1961,6 +1973,7 @@ body.agenda-modal-open {
     .agenda-quick { flex: none; min-height: 190px; overflow: visible }
     .agenda-quick__body { overflow: visible }
     .agenda-quick__context { grid-template-columns: 1fr 1fr }
+    .agenda-quick__booking-fields { grid-template-columns: 1fr }
     .agenda-center { min-height: 620px; overflow: visible }
     .agenda-center__head { align-items: flex-start }
     .agenda-kpis div { min-width: 51px; padding-inline: 4px }

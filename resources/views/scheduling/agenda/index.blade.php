@@ -21,8 +21,13 @@
             <div class="container-fluid agenda-page__container">
                 <main class="agenda-board agenda-board--day" id="agenda-board"
                     data-feed="{{ route('scheduling.mvp.agenda.feed') }}"
+                    data-appointment-store="{{ route('scheduling.mvp.agenda.appointments.store') }}"
+                    data-can-create-appointments="{{ $canCreateAppointments ? '1' : '0' }}"
+                    data-can-assign-responsible="{{ $canAssignResponsible ? '1' : '0' }}"
                     data-today="{{ $today }}"
                     data-grid-minutes="20">
+
+                    <script type="application/json" id="agenda-doctor-services">@json($doctorServices)</script>
 
                     @include('scheduling.agenda.partials.toolbar')
 
@@ -141,5 +146,6 @@
     <script src="{{ asset('js/patients/patient-phone.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-lookup.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

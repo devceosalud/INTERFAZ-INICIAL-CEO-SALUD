@@ -213,7 +213,7 @@
         if (attachToSchedule) {
             return {
                 attach: true,
-                message: 'Paciente guardado y asociado al Registro rápido. La cita todavía no se crea en este MVP.',
+                message: 'Paciente guardado y asociado al Registro rápido. Preparando la cita.',
             };
         }
 

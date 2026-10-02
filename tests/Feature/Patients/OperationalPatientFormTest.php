@@ -248,9 +248,13 @@ class OperationalPatientFormTest extends TestCase
             ->assertJsonPath('patient.historia_clinica', '01-73378485')
             ->assertJsonPath('patient.telefono', '+51987654321');
         $this->assertStringContainsString('outcome.attach', $script);
+        $this->assertStringContainsString('await createAppointment()', $script);
         $this->assertStringContainsString('draftModel.toPayload(currentDraft)', $script);
         $this->assertStringNotContainsString("location.href", $script);
-        $this->assertStringContainsString('La cita todavía no se crea', file_get_contents(public_path('js/scheduling/agenda-patient-draft.js')));
+        $this->assertStringContainsString(
+            'Preparando la cita.',
+            file_get_contents(public_path('js/scheduling/agenda-patient-draft.js'))
+        );
     }
 
     /**

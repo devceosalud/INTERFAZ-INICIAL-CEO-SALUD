@@ -30,6 +30,7 @@ class OperationalAgendaAppointmentService
         return Appointment::query()
             ->select([
                 'id',
+                'user_id',
                 'patient_id',
                 'doctor_id',
                 'service_id',
@@ -38,6 +39,7 @@ class OperationalAgendaAppointmentService
                 'fecha_cita',
                 'hora_cita',
                 'duracion_cita',
+                'precio_programado',
                 'estado_cita',
                 'estado_pagado',
             ])
@@ -45,6 +47,7 @@ class OperationalAgendaAppointmentService
                 'patient:id,historia_clinica,nombre,apellido_paterno,apellido_materno',
                 'service:id,nombre',
                 'responsibleUser:id,name',
+                'user:id,name',
             ])
             ->whereIn('doctor_id', $query->doctorIds())
             ->whereBetween('fecha_cita', [

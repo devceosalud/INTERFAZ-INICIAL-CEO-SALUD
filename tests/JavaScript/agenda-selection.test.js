@@ -16,9 +16,16 @@ function appointment(id, name) {
         hora_fin: '09:45',
         minutos: 30,
         servicio: 'Consulta',
+        service_id: 3,
+        precio_programado: 150,
+        responsable: 'Demo Comercial Local',
+        responsible_user_id: 11,
+        creador: 'Demo Admision Local',
+        creator_user_id: 10,
         estado_cita: 'CONFIRMADO',
         estado_pagado: 'PARCIAL',
         historia_clinica: 'HC-100',
+        seleccionable: false,
     };
 }
 
@@ -30,7 +37,52 @@ test('una cita existente carga paciente, pago e historia clínica', () => {
     assert.equal(state.patient, 'PÉREZ GÓMEZ MARÍA');
     assert.equal(state.payment, 'PARCIAL');
     assert.equal(state.clinicalRecord, 'HC-100');
+    assert.equal(state.service, 'Consulta');
+    assert.equal(state.price, 'S/ 150.00');
+    assert.equal(state.commercial, 'Demo Comercial Local');
+    assert.equal(state.creator, 'Demo Admision Local');
+    assert.equal(state.status, 'CONFIRMADO');
+    assert.equal(state.payment, 'PARCIAL');
     assert.equal(state.showCompleteRegistration, true);
+    assert.equal(state.schedulable, false);
+});
+
+test('el precio mostrado es el persistido y un slot ocupado no se agenda', () => {
+    const context = appointment(12, 'PACIENTE HISTORICO');
+    context.servicio = 'PIE DIABETICO';
+    context.precio_programado = 150;
+    context.estado_cita = 'PROGRAMADO';
+    context.estado_pagado = 'PENDIENTE';
+
+    const state = selection.fromContext(context, 'Todas las sedes');
+
+    assert.equal(state.service, 'PIE DIABETICO');
+    assert.equal(state.price, 'S/ 150.00');
+    assert.equal(state.status, 'PROGRAMADO');
+    assert.equal(state.payment, 'PENDIENTE');
+    assert.equal(state.schedulable, false);
+});
+
+test('un slot libre sigue sin precio historico y puede agendarse', () => {
+    const state = selection.fromContext({
+        tipo_contexto: 'slot_libre',
+        seleccionable: true,
+        doctor: 'Dra. Operativa',
+        fecha: '2026-10-05',
+        hora_inicio: '10:00',
+        hora_fin: '10:20',
+        minutos: 20,
+        servicio: 'NO USAR',
+        precio_programado: 999,
+        responsable: 'NO USAR',
+        creador: 'NO USAR',
+    }, 'Sede Central');
+
+    assert.equal(state.service, 'Pendiente de selección');
+    assert.equal(state.price, '—');
+    assert.equal(state.commercial, 'Sin asignar');
+    assert.equal(state.creator, null);
+    assert.equal(state.schedulable, true);
 });
 
 test('cambiar de cita reemplaza por completo el contexto anterior', () => {

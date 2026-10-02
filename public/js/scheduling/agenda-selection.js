@@ -27,11 +27,25 @@
             patientId: '',
             patient: 'Sin paciente seleccionado',
             service: 'Pendiente de selección',
+            price: '—',
+            commercial: 'Sin asignar',
+            creator: null,
             status: 'Sin cita',
             payment: '—',
             clinicalRecord: '—',
             showCompleteRegistration: false,
+            schedulable: false,
         };
+    }
+
+    function money(value) {
+        if (value === null || value === undefined || String(value).trim() === '') {
+            return '—';
+        }
+
+        const amount = Number(value);
+
+        return Number.isFinite(amount) ? 'S/ ' + amount.toFixed(2) : '—';
     }
 
     function fromContext(context, siteName) {
@@ -51,12 +65,16 @@
             patientId: appointment && context.patient_id ? String(context.patient_id) : '',
             patient: appointment ? (context.paciente || 'Paciente sin nombre') : 'Sin paciente seleccionado',
             service: appointment ? (context.servicio || 'Servicio no registrado') : 'Pendiente de selección',
+            price: appointment ? money(context.precio_programado) : '—',
+            commercial: appointment ? (context.responsable || 'Sin asignar') : 'Sin asignar',
+            creator: appointment ? (context.creador || '—') : null,
             status: appointment
                 ? (context.estado_cita || context.etiqueta || 'Ocupada')
                 : (offHours ? 'Fuera de horario' : 'Sin cita'),
             payment: appointment ? valueOrDash(context.estado_pagado) : '—',
             clinicalRecord: appointment ? valueOrDash(context.historia_clinica) : '—',
             showCompleteRegistration: appointment,
+            schedulable: !appointment && !offHours && context.seleccionable === true,
         };
     }
 

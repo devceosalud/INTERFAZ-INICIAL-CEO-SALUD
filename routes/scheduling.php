@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Scheduling\AgendaBoardController;
+use App\Http\Controllers\Scheduling\AgendaAppointmentController;
 use App\Http\Controllers\Scheduling\AgendaFeedController;
 use App\Http\Controllers\Scheduling\AgendaPatientLookupController;
 use App\Http\Controllers\Scheduling\AgendaReniecLookupController;
@@ -37,4 +38,8 @@ Route::middleware([
         Route::get('/scheduling-mvp/schedule-overlap', ScheduleOverlapWarningController::class)
             ->name('scheduling.mvp.schedule.overlap');
     });
+
+    Route::post('/scheduling-mvp/agenda/appointments', [AgendaAppointmentController::class, 'store'])
+        ->middleware('permission:'.SchedulingCapability::CREATE)
+        ->name('scheduling.mvp.agenda.appointments.store');
 });

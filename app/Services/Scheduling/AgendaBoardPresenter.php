@@ -302,10 +302,19 @@ class AgendaBoardPresenter
                 'appointment_id' => (int) $appointment->id,
                 'patient_id' => (int) $appointment->patient_id,
                 'paciente' => $patientName,
+                'service_id' => (int) $appointment->service_id,
                 'servicio' => $serviceName,
+                'precio_programado' => $appointment->precio_programado !== null
+                    ? (float) $appointment->precio_programado
+                    : null,
+                'responsible_user_id' => $appointment->responsible_user_id
+                    ? (int) $appointment->responsible_user_id
+                    : null,
                 'responsable' => $appointment->responsibleUser
                     ? $appointment->responsibleUser->name
                     : null,
+                'creator_user_id' => $appointment->user_id ? (int) $appointment->user_id : null,
+                'creador' => $appointment->user ? $appointment->user->name : null,
             ],
         ];
     }

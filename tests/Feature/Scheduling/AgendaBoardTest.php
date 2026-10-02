@@ -118,9 +118,11 @@ class AgendaBoardTest extends TestCase
             ->assertSee('js/scheduling/agenda-week-event.js', false)
             ->assertSee('js/scheduling/agenda-week-background.js', false)
             ->assertSee('js/scheduling/agenda-patient-lookup.js', false)
+            ->assertSee('js/scheduling/agenda-appointment-create.js', false)
             ->assertSeeInOrder(['Hora', 'Citado', 'Pago', 'H.C.', 'Apellidos y nombres'])
-            ->assertSee('Esta pantalla no crea ni modifica citas')
-            ->assertDontSee('Guardar cita');
+            ->assertSee('Seleccione médico, fecha, intervalo disponible, paciente y servicio.')
+            ->assertSee('id="agenda-appointment-submit"', false)
+            ->assertSee('id="agenda-appointment-submit" disabled', false);
     }
 
     public function test_the_quick_registration_exposes_a_local_document_lookup(): void
@@ -154,7 +156,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('data-can-write="0"', false)
             ->assertSee('id="agenda-draft-save" disabled', false)
             ->assertSee('Atribución comercial')
-            ->assertSee('persistencia pendiente');
+            ->assertSee('separado del usuario creador');
     }
 
     public function test_admission_can_use_the_embedded_patient_write_actions(): void
@@ -171,6 +173,21 @@ class AgendaBoardTest extends TestCase
             ->assertDontSee('id="agenda-draft-save" disabled', false)
             ->assertSee('Quién agenda')
             ->assertSee($admission->name);
+    }
+
+    public function test_appointment_create_capability_exposes_the_real_endpoint_and_service_selection(): void
+    {
+        $creator = $this->agendaOperator('ADMISION');
+        $creator->givePermissionTo(Permission::findOrCreate(SchedulingCapability::CREATE, 'web'));
+
+        $this->actingAs($creator)
+            ->get(self::PAGE_URI)
+            ->assertOk()
+            ->assertSee('data-appointment-store="'.route('scheduling.mvp.agenda.appointments.store').'"', false)
+            ->assertSee('data-can-create-appointments="1"', false)
+            ->assertSee('id="agenda-service-select"', false)
+            ->assertSee('id="agenda-responsible-select" disabled', false)
+            ->assertDontSee('id="agenda-appointment-submit" disabled', false);
     }
 
     public function test_reception_and_commercial_can_use_the_embedded_patient_write_actions(): void
@@ -582,16 +599,48 @@ class AgendaBoardTest extends TestCase
         );
         $this->assertStringContainsString($appointment->patient->nombre, $body);
 
-        // This operational feed is deliberately minimal: it carries the legacy H.C. number,
-        // but no contact, identity-document, financial amount or clinical content.
+        // The feed stays minimal: legacy H.C. and the price already stored on the
+        // appointment, without contact data, identity document or clinical notes.
         $this->assertStringNotContainsString($appointment->patient->numero_identidad, $body);
         $this->assertStringNotContainsString($appointment->numero_cita, $body);
         $this->assertArrayNotHasKey('numero_identidad', $event['extendedProps']);
         $this->assertArrayNotHasKey('email', $event['extendedProps']);
         $this->assertArrayNotHasKey('telefono', $event['extendedProps']);
         $this->assertArrayNotHasKey('observaciones', $event['extendedProps']);
-        $this->assertArrayNotHasKey('precio_programado', $event['extendedProps']);
+        $this->assertEquals(
+            (float) $appointment->precio_programado,
+            (float) $event['extendedProps']['precio_programado']
+        );
+        $this->assertSame($appointment->service_id, $event['extendedProps']['service_id']);
+        $this->assertSame((int) $appointment->user_id, $event['extendedProps']['creator_user_id']);
+        $this->assertNull($event['extendedProps']['responsible_user_id']);
         $this->assertStringNotContainsString('hora_cita', $body);
+    }
+
+    public function test_an_existing_appointment_exposes_its_stored_price_service_and_people(): void
+    {
+        $this->block($this->monday, '08:00:00', '09:00:00', 30);
+        $appointment = $this->appointment($this->monday, '08:00:00', 30, 'PROGRAMADO');
+        $commercial = $this->createUser();
+        $appointment->forceFill([
+            'precio_programado' => 150,
+            'responsible_user_id' => $commercial->id,
+        ])->save();
+
+        $event = collect($this->feed('dia', $this->monday)->assertOk()->json('eventos'))
+            ->firstWhere('id', 'cita-'.$appointment->id);
+
+        $this->assertSame('cita_existente', $event['extendedProps']['tipo_contexto']);
+        $this->assertFalse($event['extendedProps']['seleccionable']);
+        $this->assertSame($this->catalog['service']->id, $event['extendedProps']['service_id']);
+        $this->assertSame('Consulta baseline', $event['extendedProps']['servicio']);
+        $this->assertEquals(150, (float) $event['extendedProps']['precio_programado']);
+        $this->assertSame($commercial->id, $event['extendedProps']['responsible_user_id']);
+        $this->assertSame($commercial->name, $event['extendedProps']['responsable']);
+        $this->assertSame((int) $appointment->user_id, $event['extendedProps']['creator_user_id']);
+        $this->assertSame($appointment->user->name, $event['extendedProps']['creador']);
+        $this->assertSame('PROGRAMADO', $event['extendedProps']['estado_cita']);
+        $this->assertSame('PENDIENTE', $event['extendedProps']['estado_pagado']);
     }
 
     public function test_an_occupied_row_reads_as_time_state_patient_and_service(): void
