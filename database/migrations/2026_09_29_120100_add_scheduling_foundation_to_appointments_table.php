@@ -47,11 +47,24 @@ return new class extends Migration
      */
     public function down()
     {
+        // MariaDB may use the composite Scheduling index to support the site FK.
+        // Remove all constraints first, then the explicit index, then the columns.
+        Schema::table('appointments', function (Blueprint $table) {
+            $table->dropForeign(['updated_by_user_id']);
+            $table->dropForeign(['responsible_user_id']);
+            $table->dropForeign(['site_id']);
+        });
+
         Schema::table('appointments', function (Blueprint $table) {
             $table->dropIndex('appointments_site_fecha_doctor_index');
-            $table->dropConstrainedForeignId('updated_by_user_id');
-            $table->dropConstrainedForeignId('responsible_user_id');
-            $table->dropConstrainedForeignId('site_id');
+        });
+
+        Schema::table('appointments', function (Blueprint $table) {
+            $table->dropColumn([
+                'updated_by_user_id',
+                'responsible_user_id',
+                'site_id',
+            ]);
         });
     }
 };
