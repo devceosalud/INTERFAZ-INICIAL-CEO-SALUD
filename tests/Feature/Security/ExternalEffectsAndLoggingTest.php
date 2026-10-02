@@ -28,6 +28,8 @@ class ExternalEffectsAndLoggingTest extends TestCase
 
     public function test_successful_reniec_response_is_not_written_to_logs(): void
     {
+        config()->set('apidatosperu.aqpfact.url_dni', 'http://reniec.test/dni');
+        config()->set('apidatosperu.aqpfact.token', 'test-token-not-for-the-browser');
         Http::fake([
             '*' => Http::response([
                 'success' => true,

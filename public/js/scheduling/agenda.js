@@ -1451,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftReniec.disabled = true;
 
         try {
-            const response = await fetch(el.patientDraft.dataset.endpoint, {
+            const response = await fetch(el.patientDraft.dataset.reniecEndpoint, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',

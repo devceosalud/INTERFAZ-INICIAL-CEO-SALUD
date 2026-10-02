@@ -62,6 +62,59 @@ class AgendaReniecLookupTest extends TestCase
         Log::shouldNotHaveReceived('error');
     }
 
+    public function test_an_unconfigured_provider_keeps_manual_registration_and_hides_the_transport_error(): void
+    {
+        Http::preventStrayRequests();
+        config()->set('apidatosperu.aqpfact.url_dni', null);
+        config()->set('apidatosperu.aqpfact.token', null);
+
+        $this->actingAs($this->reader())
+            ->postJson(self::URI, [
+                'tipo_identificacion' => 'DNI',
+                'numero_identidad' => '00000000',
+            ])
+            ->assertOk()
+            ->assertExactJson([
+                'status' => 'unavailable',
+                'message' => 'No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.',
+            ]);
+
+        Http::assertNothingSent();
+        $this->assertSame(0, Patient::count());
+    }
+
+    public function test_a_missing_url_or_token_does_not_call_the_provider(): void
+    {
+        Http::preventStrayRequests();
+
+        foreach ([['http://reniec.test/dni', null], [null, 'test-token-not-for-the-browser']] as [$url, $token]) {
+            config()->set('apidatosperu.aqpfact.url_dni', $url);
+            config()->set('apidatosperu.aqpfact.token', $token);
+
+            $this->actingAs($this->reader())
+                ->postJson(self::URI, $this->dni())
+                ->assertOk()
+                ->assertJsonPath('status', 'unavailable');
+        }
+
+        Http::assertNothingSent();
+        $this->assertSame(0, Patient::count());
+    }
+
+    public function test_the_agenda_form_wires_the_reniec_button_to_its_own_endpoint(): void
+    {
+        $form = file_get_contents(resource_path('views/scheduling/agenda/partials/patient-modal.blade.php'));
+        $script = file_get_contents(public_path('js/scheduling/agenda.js'));
+        $start = strpos($script, "el.draftReniec.addEventListener('click'");
+        $listener = substr($script, $start, 900);
+
+        $this->assertIsString($form);
+        $this->assertIsString($script);
+        $this->assertStringContainsString('data-reniec-endpoint="{{ route(\'scheduling.mvp.agenda.reniec-lookup\') }}"', $form);
+        $this->assertStringContainsString('dataset.reniecEndpoint', $listener);
+        $this->assertStringNotContainsString('dataset.endpoint', $listener);
+    }
+
     public function test_a_provider_failure_keeps_manual_registration_available(): void
     {
         Http::fake(function () {

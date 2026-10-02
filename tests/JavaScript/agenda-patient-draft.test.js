@@ -2,6 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const lookup = require('../../public/js/scheduling/agenda-patient-lookup.js');
 const draft = require('../../public/js/scheduling/agenda-patient-draft.js');
 
@@ -226,4 +228,21 @@ test('guardar y agendar asocia el patient_id y no anuncia una cita', () => {
     assert.equal(created.message, updated.message);
     assert.match(created.message, /Registro rápido/);
     assert.match(created.message, /todavía no se crea/);
+});
+
+test('Consultar RENIEC de Agenda usa el endpoint propio de la ficha', () => {
+    const form = fs.readFileSync(
+        path.join(__dirname, '../../resources/views/scheduling/agenda/partials/patient-modal.blade.php'),
+        'utf8'
+    );
+    const script = fs.readFileSync(
+        path.join(__dirname, '../../public/js/scheduling/agenda.js'),
+        'utf8'
+    );
+    const start = script.indexOf("el.draftReniec.addEventListener('click'");
+    const listener = script.slice(start, start + 900);
+
+    assert.match(form, /data-reniec-endpoint="\{\{ route\('scheduling\.mvp\.agenda\.reniec-lookup'\) \}\}"/);
+    assert.match(listener, /dataset\.reniecEndpoint/);
+    assert.equal(listener.includes('dataset.endpoint'), false);
 });

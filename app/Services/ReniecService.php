@@ -24,6 +24,10 @@ class ReniecService
      */
     public function consultar($dni, $timeoutSeconds = null)
     {
+        if (!is_string($this->url) || trim($this->url) === '' || !is_string($this->token) || trim($this->token) === '') {
+            return null;
+        }
+
         $pending = Http::withToken($this->token)->acceptJson();
 
         if ($timeoutSeconds !== null) {
