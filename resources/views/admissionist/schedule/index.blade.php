@@ -151,5 +151,6 @@
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
     <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
+    <script src="{{ asset('js/scheduling/schedule-time.js') }}"></script>
     <script src="{{ asset('js/scheduling/schedule-workspace.js') }}"></script>
 @endsection

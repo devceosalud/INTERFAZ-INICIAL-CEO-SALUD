@@ -1166,6 +1166,18 @@
             });
             form.addEventListener('submit', submitForm);
             document.getElementById('schedule-delete').addEventListener('click', deleteSchedule);
+            if (globalThis.ScheduleTime) {
+                globalThis.ScheduleTime.bind(document.getElementById('schedule-editor'));
+            }
+        }
+
+        function syncScheduleTimes() {
+            if (!globalThis.ScheduleTime) {
+                return;
+            }
+
+            globalThis.ScheduleTime.sync(document.getElementById('schedule-start'));
+            globalThis.ScheduleTime.sync(document.getElementById('schedule-end'));
         }
 
         function openCreateScheduleModal(context) {
@@ -1177,6 +1189,7 @@
             document.getElementById('schedule-date').value = context.date;
             document.getElementById('schedule-start').value = context.start;
             document.getElementById('schedule-end').value = context.end;
+            syncScheduleTimes();
             document.getElementById('schedule-duration').value = context.duration ? String(context.duration) : '20';
             document.getElementById('schedule-site').value = context.siteId;
             document.getElementById('schedule-doctor').value = context.doctorId;
@@ -1221,6 +1234,7 @@
             document.getElementById('schedule-date').value = proposal?.date || props.occurrence_date;
             document.getElementById('schedule-start').value = proposal?.start || props.start_time;
             document.getElementById('schedule-end').value = proposal?.end || props.end_time;
+            syncScheduleTimes();
             document.getElementById('schedule-duration').value = props.appointment_duration;
             document.getElementById('schedule-scope').hidden = true;
             document.getElementById('schedule-weekdays').hidden = true;

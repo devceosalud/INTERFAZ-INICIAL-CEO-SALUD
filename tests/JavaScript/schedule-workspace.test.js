@@ -80,7 +80,17 @@ test('cada label del modal envuelve un solo control', () => {
 });
 
 test('los inputs de hora quedan contenidos en su propio campo', () => {
-    assert.match(css, /\.schedule-modal input\[type="time"\]\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
+    assert.equal(modal.includes('type="time"'), false);
+    assert.ok(modal.includes('data-schedule-time="schedule-start"'));
+    assert.ok(modal.includes('data-schedule-time="schedule-end"'));
+    assert.ok(modal.includes('name="hora_inicio"'));
+    assert.ok(modal.includes('name="hora_fin"'));
+    assert.match(css, /\.schedule-attention\s*\{[^}]*grid-column:\s*1 \/ -1;/s);
+    assert.match(css, /\.schedule-attention__range\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/s);
+    assert.ok(modal.includes('Inicio de atención'));
+    assert.ok(modal.includes('Fin de atención'));
+    assert.ok(modal.includes('Minutos rápidos'));
+    assert.match(index, /schedule-time\.js/);
 });
 
 function at(year, month, day, hours, minutes) {

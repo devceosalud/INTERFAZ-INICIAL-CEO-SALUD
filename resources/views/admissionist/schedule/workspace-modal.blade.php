@@ -46,14 +46,79 @@
                             <span>Fecha de referencia</span>
                             <input type="date" id="schedule-date" name="fecha_cita" required>
                         </label>
-                        <label>
-                            <span>Hora inicio</span>
-                            <input type="time" id="schedule-start" name="hora_inicio" required>
-                        </label>
-                        <label>
-                            <span>Hora fin</span>
-                            <input type="time" id="schedule-end" name="hora_fin" required>
-                        </label>
+                        <section class="schedule-attention" aria-label="Horario de atención">
+                            <p class="schedule-attention__title">Horario de atención</p>
+                            <div class="schedule-attention__range">
+                                <div class="schedule-time-field" data-schedule-time="schedule-start">
+                                    <p class="schedule-time-field__title">Inicio de atención</p>
+                                    <div class="schedule-time">
+                                        <label>
+                                            <span>Hora</span>
+                                            <select id="schedule-start-hour" data-part="hour">
+                                                @for ($hour = 0; $hour <= 23; $hour++)
+                                                    <option value="{{ sprintf('%02d', $hour) }}">{{ sprintf('%02d', $hour) }}</option>
+                                                @endfor
+                                            </select>
+                                        </label>
+                                        <span class="schedule-time__colon" aria-hidden="true">:</span>
+                                        <label>
+                                            <span>Minuto</span>
+                                            <select id="schedule-start-minute" data-part="minute">
+                                                @for ($minute = 0; $minute <= 55; $minute += 5)
+                                                    <option value="{{ sprintf('%02d', $minute) }}">{{ sprintf('%02d', $minute) }}</option>
+                                                @endfor
+                                                <option value="other">Otro</option>
+                                            </select>
+                                        </label>
+                                        <label data-part="custom-wrap" hidden>
+                                            <span>Otro</span>
+                                            <input id="schedule-start-custom" data-part="custom" inputmode="numeric" maxlength="2" autocomplete="off">
+                                        </label>
+                                    </div>
+                                    <p class="schedule-time__chips-label">Minutos rápidos</p>
+                                    <div class="schedule-time__chips" role="group" aria-label="Minutos rápidos de inicio de atención">
+                                        @for ($minute = 0; $minute <= 55; $minute += 5)
+                                            <button type="button" data-minute="{{ sprintf('%02d', $minute) }}">{{ sprintf('%02d', $minute) }}</button>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" id="schedule-start" name="hora_inicio" required>
+                                </div>
+                                <div class="schedule-time-field" data-schedule-time="schedule-end">
+                                    <p class="schedule-time-field__title">Fin de atención</p>
+                                    <div class="schedule-time">
+                                        <label>
+                                            <span>Hora</span>
+                                            <select id="schedule-end-hour" data-part="hour">
+                                                @for ($hour = 0; $hour <= 23; $hour++)
+                                                    <option value="{{ sprintf('%02d', $hour) }}">{{ sprintf('%02d', $hour) }}</option>
+                                                @endfor
+                                            </select>
+                                        </label>
+                                        <span class="schedule-time__colon" aria-hidden="true">:</span>
+                                        <label>
+                                            <span>Minuto</span>
+                                            <select id="schedule-end-minute" data-part="minute">
+                                                @for ($minute = 0; $minute <= 55; $minute += 5)
+                                                    <option value="{{ sprintf('%02d', $minute) }}">{{ sprintf('%02d', $minute) }}</option>
+                                                @endfor
+                                                <option value="other">Otro</option>
+                                            </select>
+                                        </label>
+                                        <label data-part="custom-wrap" hidden>
+                                            <span>Otro</span>
+                                            <input id="schedule-end-custom" data-part="custom" inputmode="numeric" maxlength="2" autocomplete="off">
+                                        </label>
+                                    </div>
+                                    <p class="schedule-time__chips-label">Minutos rápidos</p>
+                                    <div class="schedule-time__chips" role="group" aria-label="Minutos rápidos de fin de atención">
+                                        @for ($minute = 0; $minute <= 55; $minute += 5)
+                                            <button type="button" data-minute="{{ sprintf('%02d', $minute) }}">{{ sprintf('%02d', $minute) }}</button>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" id="schedule-end" name="hora_fin" required>
+                                </div>
+                            </div>
+                        </section>
                         <label class="schedule-form-grid__duration">
                             <span>Duración programada por cita</span>
                             <select id="schedule-duration" name="duracion_cita" required>

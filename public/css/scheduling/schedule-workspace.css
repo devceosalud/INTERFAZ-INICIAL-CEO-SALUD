@@ -600,18 +600,111 @@
     padding: .8rem;
 }
 
-/* Theme CSS stretches the time picker indicator to the nearest positioned
-   ancestor. In this dialog that ancestor is .modal-body, so the indicator
-   covered every other control. Keep it inside the time field. */
-.schedule-modal input[type="time"] {
-    position: relative;
-    overflow: hidden;
+.schedule-attention {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.schedule-attention__title {
+    margin: .1rem 0 .4rem;
+    font-size: .68rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #52626f;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.schedule-attention__range {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+}
+
+.schedule-time-field {
+    min-width: 0;
+    padding: .55rem .6rem .5rem;
+    background: #f7f9fb;
+    border: 1px solid var(--schedule-border);
+    border-radius: 2px;
+}
+
+.schedule-time-field__title {
+    margin: 0 0 .45rem;
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--schedule-text);
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.schedule-time {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: .35rem;
+}
+
+.schedule-time label {
+    width: 4.6rem;
+    flex: 1 1 4.2rem;
+    max-width: 6.5rem;
+}
+
+.schedule-time__colon {
+    display: flex;
+    align-items: center;
+    height: 2rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--schedule-text);
+}
+
+.schedule-time__chips-label {
+    margin: .5rem 0 .25rem;
+    font-size: .62rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--schedule-muted);
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.schedule-time__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    margin-top: 0;
+}
+
+.schedule-time__chips button {
+    min-width: 2rem;
+    height: 1.55rem;
+    padding: 0 .35rem;
+    color: #30414e;
+    background: #fff;
+    border: 1px solid var(--schedule-border-strong);
+    border-radius: 2px;
+    font-size: .72rem;
+}
+
+.schedule-time__chips button.is-selected {
+    color: #fff;
+    background: var(--schedule-accent);
+    border-color: var(--schedule-accent-dark);
 }
 
 .schedule-form-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .65rem;
+}
+
+.schedule-form-grid__duration {
+    grid-column: 1 / -1;
+    margin-top: .15rem;
 }
 
 .schedule-form-grid__duration small {
@@ -736,7 +829,8 @@
     .schedule-toolbar,
     .schedule-toolbar__filters,
     .schedule-main,
-    .schedule-form-grid {
+    .schedule-form-grid,
+    .schedule-attention__range {
         grid-template-columns: 1fr;
     }
 
