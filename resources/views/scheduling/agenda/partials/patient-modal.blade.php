@@ -9,7 +9,7 @@
             <div class="agenda-patient-dialog__hce">
                 <span>HCE</span>
                 <strong id="agenda-draft-hce">—</strong>
-                <small id="agenda-draft-hce-note">Previsualización provisional</small>
+                <small id="agenda-draft-hce-note">La HCE real se confirma después de guardar</small>
             </div>
             <button type="button" class="agenda-patient-dialog__close" id="agenda-draft-close" aria-label="Cerrar">×</button>
         </header>
@@ -19,6 +19,7 @@
             data-detail-template="{{ url('/patients/__PATIENT__') }}"
             data-store-endpoint="{{ route('patients.operational.store') }}"
             data-update-template="{{ url('/patients/__PATIENT__') }}"
+            data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
             data-can-write="{{ $canWritePatients ? '1' : '0' }}">
             <div class="agenda-patient-tabs" role="tablist" aria-label="Datos del paciente">
                 <button type="button" role="tab" aria-selected="true" class="is-active" data-patient-tab="essential">Datos esenciales</button>
@@ -27,10 +28,10 @@
 
             <div class="agenda-patient-dialog__body">
                 <p class="agenda-patient-dialog__notice" id="agenda-draft-note">
-                    La HCE mostrada es una previsualización y no se asigna hasta que exista una regla definitiva.
+                    La HCE definitiva es asignada y devuelta por el backend al registrar al paciente.
                 </p>
                 <p class="agenda-patient-dialog__notice is-warning" id="agenda-draft-ruc" hidden>
-                    RUC se registra manualmente; no utiliza RENIEC.
+                    RUC se registra manualmente, no utiliza RENIEC y todavía no tiene una regla HCE aprobada.
                 </p>
 
                 <section class="agenda-patient-tabpanel" data-patient-panel="essential">

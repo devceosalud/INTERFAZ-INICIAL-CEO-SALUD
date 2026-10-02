@@ -90,12 +90,13 @@ se transporta en memoria y se declara pendiente de persistencia.
 ## HCE y RENIEC
 
 - Una ficha existente muestra literalmente `patients.historia_clinica`.
-- Una ficha nueva calcula solo en navegador la previsualización `código-documento`.
+- Una ficha nueva no calcula la HCE en navegador: informa que se asignará al guardar y espera el
+  valor persistido devuelto por backend.
 - Los registros heredados con tipo `RUC` se pueden consultar, pero una ficha nueva de ese tipo no
   inventa un prefijo HCE: la propuesta de negocio no definió uno.
-- `SIN DOCUMENTOS` muestra `99-…` y declara pendiente el identificador final.
-- La previsualización nunca se envía ni se escribe en `patients`; al crear, HCE queda nula hasta
-  que exista la regla definitiva.
+- `SIN DOCUMENTOS` no inventa `99-…` y declara pendiente el identificador final.
+- La HCE de nuevos pacientes con documento soportado se asigna una sola vez en backend mediante
+  `PatientClinicalHistoryNumber`; editar después el documento no la regenera.
 - La consulta RENIEC aparece solo para una ficha nueva con DNI.
 - El endpoint reutiliza `AgendaReniecLookupController` y `ReniecService`; no existe una segunda
   integración.
@@ -107,7 +108,8 @@ se transporta en memoria y se declara pendiente de persistencia.
 
 ## Pendientes fuera de alcance
 
-- una HCE nueva todavía no se persiste: el alta deja `patients.historia_clinica` nula;
+- una HCE nueva se persiste para DNI, Carnet de Extranjería, Pasaporte, PTP, TAM y
+  Salvoconducto; no se hace backfill de filas heredadas;
 - `SIN DOCUMENTOS` sigue pendiente de la regla definitiva del identificador;
 - Guardar y agendar todavía no crea `Appointment`;
 - cuando exista el alta real de la cita, `appointments.user_id` será quién agenda;

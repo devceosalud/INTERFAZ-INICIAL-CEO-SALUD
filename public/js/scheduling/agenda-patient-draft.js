@@ -18,16 +18,6 @@
         'estado_civil',
         'direccion',
     ];
-    var DOCUMENT_CODES = {
-        DNI: '01',
-        'CARNET EXTRANJERIA': '02',
-        PASAPORTE: '03',
-        PTP: '04',
-        TAM: '05',
-        SALVOCONDUCTO: '06',
-        'SIN DOCUMENTOS': '99',
-    };
-
     function text(value) {
         return value === null || value === undefined ? '' : String(value).trim();
     }
@@ -190,7 +180,7 @@
         return next;
     }
 
-    function hcePreview(draft) {
+    function hcePreview(draft, supportedDocumentTypes) {
         if (text(draft && draft.patientId) !== '') {
             return {
                 value: text(draft.historia_clinica) || '—',
@@ -201,20 +191,21 @@
 
         var type = text(draft && draft.tipo);
         var number = text(draft && draft.numero);
-        var code = DOCUMENT_CODES[type] || '';
+        var supported = Array.isArray(supportedDocumentTypes)
+            && supportedDocumentTypes.indexOf(type) !== -1;
 
         if (type === 'SIN DOCUMENTOS') {
-            return { value: '99-…', message: 'Identificador final pendiente; no se puede guardar todavía.', pending: true };
+            return { value: '—', message: 'La regla HCE para pacientes sin documentos está pendiente; no se puede guardar todavía.', pending: true };
         }
 
-        if (code === '') {
-            return { value: '—', message: 'Este tipo no tiene prefijo HCE propuesto.', pending: true };
+        if (!supported) {
+            return { value: '—', message: 'Este tipo todavía no tiene una regla HCE aprobada.', pending: true };
         }
 
         return {
-            value: code + '-' + (number || '…'),
-            message: number ? 'Previsualización provisional; todavía no se persiste.' : 'Complete el documento.',
-            pending: !number,
+            value: number ? 'Se asignará al guardar' : '—',
+            message: number ? 'El backend devolverá la HCE real persistida.' : 'Complete el documento; la HCE se asignará al guardar.',
+            pending: true,
         };
     }
 

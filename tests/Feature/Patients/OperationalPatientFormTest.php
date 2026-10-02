@@ -245,6 +245,7 @@ class OperationalPatientFormTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonPath('patient.patient_id', fn ($id) => is_int($id))
+            ->assertJsonPath('patient.historia_clinica', '01-73378485')
             ->assertJsonPath('patient.telefono', '+51987654321');
         $this->assertStringContainsString('outcome.attach', $script);
         $this->assertStringContainsString('draftModel.toPayload(currentDraft)', $script);

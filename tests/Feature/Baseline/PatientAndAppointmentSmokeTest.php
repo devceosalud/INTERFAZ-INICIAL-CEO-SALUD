@@ -29,7 +29,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
         $this->assertDatabaseHas('patients', [
             'numero_identidad' => '71111111',
             'user_id' => $user->id,
-            'historia_clinica' => '1',
+            'historia_clinica' => '01-71111111',
         ]);
     }
 

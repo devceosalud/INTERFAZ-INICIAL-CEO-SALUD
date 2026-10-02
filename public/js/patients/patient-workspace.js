@@ -9,49 +9,40 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
     'use strict';
 
-    var DOCUMENT_CODES = {
-        DNI: '01',
-        'CARNET EXTRANJERIA': '02',
-        PASAPORTE: '03',
-        PTP: '04',
-        TAM: '05',
-        SALVOCONDUCTO: '06',
-        'SIN DOCUMENTOS': '99',
-    };
-
     function text(value) {
         return value === null || value === undefined ? '' : String(value).trim();
     }
 
-    function hcePreview(documentType, documentNumber) {
+    function hcePreview(documentType, documentNumber, supportedDocumentTypes) {
         var type = text(documentType);
         var number = text(documentNumber);
-        var code = DOCUMENT_CODES[type] || '';
-
-        if (code === '') {
-            return { value: '—', pending: true, message: 'Seleccione un tipo de documento.' };
-        }
+        var supported = Array.isArray(supportedDocumentTypes)
+            && supportedDocumentTypes.indexOf(type) !== -1;
 
         if (type === 'SIN DOCUMENTOS') {
             return {
-                value: '99-…',
+                value: '—',
                 pending: true,
-                message: 'Identificador final pendiente de definición.',
+                message: 'La regla HCE para pacientes sin documentos está pendiente de negocio.',
             };
+        }
+
+        if (!supported) {
+            return { value: '—', pending: true, message: 'Este tipo todavía no tiene una regla HCE aprobada.' };
         }
 
         if (number === '') {
             return {
-                value: code + '-…',
+                value: '—',
                 pending: true,
-                message: 'Complete el número para previsualizar.',
+                message: 'Complete el documento; la HCE se asignará al guardar.',
             };
         }
 
         return {
-            value: code + '-' + number,
-            pending: false,
-            message: 'Previsualización; no se guarda en esta fase.',
+            value: 'Se asignará al guardar',
+            pending: true,
+            message: 'El backend devolverá la HCE real persistida.',
         };
     }
 
@@ -156,7 +147,6 @@
     }
 
     return {
-        DOCUMENT_CODES: DOCUMENT_CODES,
         hcePreview: hcePreview,
         listState: listState,
         openNew: openNew,

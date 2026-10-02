@@ -212,7 +212,7 @@ test('una ficha existente conserva patient_id y la HCE almacenada al editar', ()
     });
 });
 
-test('un paciente nuevo muestra HCE provisional pero no la envía al backend', () => {
+test('un paciente nuevo espera la HCE persistida y no envía una calculada por frontend', () => {
     const opened = draft.open(Object.assign(identity('not_found'), {
         tipo: 'DNI',
         numero: '73378485',
@@ -221,7 +221,7 @@ test('un paciente nuevo muestra HCE provisional pero no la envía al backend', (
         'nombre', 'Maria'), 'apellido_paterno', 'Perez'), 'apellido_materno', 'Demo'), 'genero', 'MUJER');
     const payload = draft.toPayload(completed);
 
-    assert.equal(draft.hcePreview(completed).value, '01-73378485');
+    assert.equal(draft.hcePreview(completed, ['DNI']).value, 'Se asignará al guardar');
     assert.equal(payload.numero_identidad, '73378485');
     assert.equal(Object.hasOwn(payload, 'historia_clinica'), false);
     assert.equal(Object.hasOwn(payload, 'commercial_owner_id'), false);

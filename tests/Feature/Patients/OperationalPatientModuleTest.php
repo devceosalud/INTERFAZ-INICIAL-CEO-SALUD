@@ -352,7 +352,7 @@ class OperationalPatientModuleTest extends TestCase
 
         $patient = Patient::query()->where('numero_identidad', '73378485')->firstOrFail();
         $this->assertEquals($admission->id, $patient->user_id);
-        $this->assertNull($patient->historia_clinica);
+        $this->assertSame('01-73378485', $patient->historia_clinica);
         $this->assertEquals($channel->id, $patient->channel_id);
         $this->assertEquals($medium->id, $patient->interaction_medium_id);
 
@@ -368,7 +368,7 @@ class OperationalPatientModuleTest extends TestCase
 
         $patient->refresh();
         $this->assertEquals($admission->id, $patient->user_id);
-        $this->assertNull($patient->historia_clinica);
+        $this->assertSame('01-73378485', $patient->historia_clinica);
 
         foreach (['RECEPCION' => '70000011', 'COMERCIAL' => '70000012'] as $role => $document) {
             $writer = $this->createUserWithRole($role);

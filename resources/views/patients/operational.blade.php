@@ -22,6 +22,7 @@
                     data-store-url="{{ route('patients.operational.store') }}"
                     data-update-template="{{ url('/patients/__PATIENT__') }}"
                     data-reniec-url="{{ route('patients.operational.reniec-lookup') }}"
+                    data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
                     data-can-write="{{ $canWritePatients ? '1' : '0' }}"
                     data-today="{{ $filters['fecha'] }}">
 

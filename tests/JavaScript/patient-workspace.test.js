@@ -4,34 +4,34 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const workspace = require('../../public/js/patients/patient-workspace.js');
 
-test('a new DNI shows the proposed HCE preview without mutating a patient', () => {
-    assert.deepEqual(workspace.hcePreview('DNI', '73378485'), {
-        value: '01-73378485',
-        pending: false,
-        message: 'Previsualización; no se guarda en esta fase.',
+const supportedTypes = ['DNI', 'CARNET EXTRANJERIA', 'PASAPORTE', 'PTP', 'TAM', 'SALVOCONDUCTO'];
+
+test('a new DNI waits for the persisted backend HCE instead of previewing a value', () => {
+    assert.deepEqual(workspace.hcePreview('DNI', '73378485', supportedTypes), {
+        value: 'Se asignará al guardar',
+        pending: true,
+        message: 'El backend devolverá la HCE real persistida.',
     });
 });
 
-test('the preview changes with each supported document type', () => {
-    assert.equal(workspace.hcePreview('CARNET EXTRANJERIA', 'CE-1').value, '02-CE-1');
-    assert.equal(workspace.hcePreview('PASAPORTE', 'P-1').value, '03-P-1');
-    assert.equal(workspace.hcePreview('PTP', 'PTP-1').value, '04-PTP-1');
-    assert.equal(workspace.hcePreview('TAM', 'TAM-1').value, '05-TAM-1');
-    assert.equal(workspace.hcePreview('SALVOCONDUCTO', 'S-1').value, '06-S-1');
-    assert.equal(workspace.hcePreview('RUC', '20123456789').value, '—');
+test('all mapped document types defer the final value to the backend', () => {
+    supportedTypes.forEach((type) => {
+        assert.equal(workspace.hcePreview(type, 'DOC-1', supportedTypes).value, 'Se asignará al guardar');
+    });
+    assert.equal(workspace.hcePreview('RUC', '20123456789', supportedTypes).value, '—');
 });
 
 test('an undocumented patient keeps the final identifier pending', () => {
-    assert.deepEqual(workspace.hcePreview('SIN DOCUMENTOS', ''), {
-        value: '99-…',
+    assert.deepEqual(workspace.hcePreview('SIN DOCUMENTOS', '', supportedTypes), {
+        value: '—',
         pending: true,
-        message: 'Identificador final pendiente de definición.',
+        message: 'La regla HCE para pacientes sin documentos está pendiente de negocio.',
     });
 });
 
 test('an empty document never invents a suffix', () => {
-    assert.equal(workspace.hcePreview('DNI', '').value, '01-…');
-    assert.equal(workspace.hcePreview('DNI', '').pending, true);
+    assert.equal(workspace.hcePreview('DNI', '', supportedTypes).value, '—');
+    assert.equal(workspace.hcePreview('DNI', '', supportedTypes).pending, true);
 });
 
 test('Add opens a new record and Back restores list selection and scroll', () => {

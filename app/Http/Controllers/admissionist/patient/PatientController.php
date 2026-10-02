@@ -9,6 +9,7 @@ use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Responsible;
 use App\Models\Specialty;
+use App\Support\Patients\PatientClinicalHistoryNumber;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class PatientController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, PatientClinicalHistoryNumber $clinicalHistoryNumber)
     {
         //dd($request->all());
         $validator = Validator::make($request->all(), [
@@ -53,7 +54,7 @@ class PatientController extends Controller
             'apellido_materno'    => 'required|string',
             'genero_paciente'     => 'required|string',
             'tipo_identificacion' => 'required|string',
-            'numero_identidad'    => 'required|string',
+            'numero_identidad'    => 'required|string|max:252',
 
             'telefono'            => 'nullable|string',
             //'channel_id'          => 'required|integer',
@@ -73,21 +74,12 @@ class PatientController extends Controller
             ]);
         }
 
-        // OBTENER LA ULTIMA HOSTORIA CLINICA
-        $ultimoPaciente = Patient::latest('id')->first();
-
-        //CREAMOS EL NUMERO DE LA HISTORIA CLINICA
-        $historiaNueva = $ultimoPaciente
-            ? ((int) $ultimoPaciente->historia_clinica + 1)
-            : 1;
-
         // BUSCAMOS AL PACIENTE POR IDENTIDAD
         $patient = Patient::where('numero_identidad', $request->numero_identidad)->first();
 
         // SI NO EXISTE CREAMOS AL PACIENTE
         if (!$patient) {
             $patient = new Patient();
-            $patient->historia_clinica = $historiaNueva;
             $patient->fecha_registro = date('Y-m-d');
         }
 
@@ -109,6 +101,7 @@ class PatientController extends Controller
         $patient->email = $request->email;
         $patient->familiar_contacto = $request->familiar_contacto;
         $patient->estado_civil = $request->estado_civil;
+        $clinicalHistoryNumber->assignToNewPatient($patient);
 
         $exito = $patient->save();
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Patients;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Responsible;
+use App\Support\Patients\PatientClinicalHistoryNumber;
 use App\Support\Patients\PatientPhone;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -17,22 +18,23 @@ use Illuminate\Validation\ValidationException;
 /**
  * Controlled writes for the new operational patient surfaces.
  *
- * HCE assignment and fields without an inherited database column are
- * deliberately outside this controller. They must not be simulated.
+ * Fields without an inherited database column remain outside this controller.
  */
 class OperationalPatientMutationController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, PatientClinicalHistoryNumber $clinicalHistoryNumber): JsonResponse
     {
         $data = $this->validated($request);
 
         try {
-            $patient = DB::transaction(function () use ($request, $data): Patient {
-                $patient = Patient::query()->create(array_merge($data, [
+            $patient = DB::transaction(function () use ($request, $data, $clinicalHistoryNumber): Patient {
+                $patient = new Patient(array_merge($data, [
                     'user_id' => $request->user()->id,
                     'fecha_registro' => Carbon::today()->toDateString(),
                     'estado' => 'ACTIVO',
                 ]));
+                $clinicalHistoryNumber->assignToNewPatient($patient);
+                $patient->save();
                 $this->syncResponsible($patient, $request);
 
                 return $patient;
@@ -85,7 +87,7 @@ class OperationalPatientMutationController extends Controller
             'numero_identidad' => [
                 'required',
                 'string',
-                'max:255',
+                'max:252',
                 Rule::unique('patients', 'numero_identidad')->ignore($patient?->id),
             ],
             'nombre' => ['required', 'string', 'max:255'],

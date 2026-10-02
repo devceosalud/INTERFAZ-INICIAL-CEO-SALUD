@@ -34,6 +34,7 @@
     var dirty = {};
     var hydrating = false;
     var canWrite = root.dataset.canWrite === '1';
+    var hceSupportedTypes = JSON.parse(root.dataset.hceSupportedTypes || '[]');
 
     if (!canWrite) {
         Array.from(document.querySelectorAll('#patient-record-form input, #patient-record-form select'))
@@ -208,7 +209,7 @@
             return;
         }
 
-        var preview = workspace.hcePreview(documentType.value, documentNumber.value);
+        var preview = workspace.hcePreview(documentType.value, documentNumber.value, hceSupportedTypes);
         hce.textContent = preview.value;
         hceNote.textContent = preview.message;
     }

@@ -149,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         overlapResult: document.getElementById('agenda-overlap-result'),
         scheduleLink: document.getElementById('agenda-schedule-link'),
     };
+    const hceSupportedTypes = JSON.parse(el.patientDraft.dataset.hceSupportedTypes || '[]');
 
     const state = {
         view: 'dia',
@@ -1114,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftContextDate.textContent = draft.date || '—';
         el.draftContextTime.textContent = draft.time || '—';
         el.draftContextSite.textContent = draft.site || '—';
-        const preview = draftModel.hcePreview(draft);
+        const preview = draftModel.hcePreview(draft, hceSupportedTypes);
         el.draftHce.textContent = preview.value;
         el.draftHceNote.textContent = preview.message;
         el.draftMessage.textContent = draft.message || '';
@@ -1150,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const preview = draftModel.hcePreview(state.draft);
+        const preview = draftModel.hcePreview(state.draft, hceSupportedTypes);
         el.draftHce.textContent = preview.value;
         el.draftHceNote.textContent = preview.message;
         el.draftRuc.hidden = state.draft.tipo !== 'RUC';
