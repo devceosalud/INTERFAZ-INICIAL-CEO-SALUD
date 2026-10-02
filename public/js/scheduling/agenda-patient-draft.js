@@ -104,6 +104,8 @@
         ), patient, {
             open: true,
             patientId: text(patient.id || patient.patient_id),
+            stored_tipo: text(patient.tipo_identificacion),
+            stored_numero: text(patient.numero_identidad),
             reniecOffered: false,
             manual: {},
             message: 'Ficha existente cargada. Revise los datos antes de guardar.',
@@ -209,6 +211,24 @@
         };
     }
 
+    function dniMessage(draft) {
+        if (text(draft && draft.tipo) !== 'DNI') {
+            return '';
+        }
+
+        var number = text(draft.numero);
+
+        if (draft.patientId
+            && text(draft.stored_tipo) === 'DNI'
+            && text(draft.stored_numero) === number) {
+            return '';
+        }
+
+        return /^\d{8}$/.test(number)
+            ? ''
+            : 'El DNI debe tener exactamente 8 dígitos numéricos.';
+    }
+
     function saveOutcome(attachToSchedule, existing) {
         if (attachToSchedule) {
             return {
@@ -264,6 +284,7 @@
         applyReniec: applyReniec,
         hcePreview: hcePreview,
         saveOutcome: saveOutcome,
+        dniMessage: dniMessage,
         toPayload: toPayload,
         emailMessage: function (value) {
             var phoneApi = typeof globalThis !== 'undefined' ? globalThis.PatientPhone : null;

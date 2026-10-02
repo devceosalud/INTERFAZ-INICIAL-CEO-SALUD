@@ -81,6 +81,13 @@ class OperationalPatientMutationController extends Controller
             ['SIN DOCUMENTOS']
         ));
 
+        if ($patient !== null) {
+            $storedType = (string) $patient->tipo_identificacion;
+            if ($storedType !== '' && !in_array($storedType, $documentTypes, true)) {
+                $documentTypes[] = $storedType;
+            }
+        }
+
         $registerResponsible = $request->boolean('registrar_responsable');
         $data = $request->validate([
             'tipo_identificacion' => ['required', 'string', Rule::in($documentTypes)],
@@ -143,6 +150,17 @@ class OperationalPatientMutationController extends Controller
             $data['responsable_tipo_identificacion'],
             $data['responsable_numero_identidad']
         );
+
+        $number = (string) $data['numero_identidad'];
+        $sameDocument = $patient !== null
+            && $data['tipo_identificacion'] === (string) $patient->tipo_identificacion
+            && $number === (string) $patient->numero_identidad;
+
+        if ($data['tipo_identificacion'] === 'DNI' && !$sameDocument && !preg_match('/\A\d{8}\z/', $number)) {
+            throw ValidationException::withMessages([
+                'numero_identidad' => 'El DNI debe tener exactamente 8 dígitos numéricos.',
+            ]);
+        }
 
         if ($this->isMinor($data['fecha_nacimiento'] ?? null) && !$registerResponsible) {
             throw ValidationException::withMessages([

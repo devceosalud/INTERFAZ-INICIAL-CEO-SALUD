@@ -1250,6 +1250,24 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    function showStoredDraftType(tipo) {
+        Array.from(el.draftType.querySelectorAll('option[data-legacy-document]')).forEach(function (option) {
+            if (option.value !== tipo) {
+                option.remove();
+            }
+        });
+
+        if (!tipo || Array.from(el.draftType.options).some(function (option) { return option.value === tipo; })) {
+            return;
+        }
+
+        const option = document.createElement('option');
+        option.value = tipo;
+        option.textContent = tipo;
+        option.dataset.legacyDocument = '1';
+        el.draftType.appendChild(option);
+    }
+
     function paintDraft(draft) {
         state.draft = draft && draft.open ? draft : null;
         el.patientModal.hidden = !state.draft;
@@ -1264,6 +1282,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
+        showStoredDraftType(draft.tipo);
         el.draftType.value = draft.tipo;
         el.draftNumber.value = draft.numero;
         el.draftNombre.value = draft.nombre;
@@ -1400,6 +1419,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (state.draft.tipo === 'SIN DOCUMENTOS') {
             el.draftMessage.textContent = 'El identificador final para pacientes sin documentos sigue pendiente; no se guardó.';
+            return;
+        }
+
+        const dniError = draftModel.dniMessage(state.draft);
+        if (dniError) {
+            el.draftMessage.textContent = dniError;
             return;
         }
 

@@ -15,6 +15,80 @@ class OperationalPatientFormTest extends TestCase
     use BuildsBaselineData;
     use RefreshDatabase;
 
+    public function test_a_new_dni_must_contain_exactly_eight_digits(): void
+    {
+        $user = $this->createUserWithRole('ADMISION');
+
+        $this->actingAs($user)->postJson('/patients', $this->payload([
+            'numero_identidad' => '73378485',
+        ]))->assertCreated()
+            ->assertJsonPath('patient.numero_identidad', '73378485');
+
+        foreach (['7337848', '733784850', '7337848501', '7337848A'] as $number) {
+            $this->actingAs($user)->postJson('/patients', $this->payload([
+                'numero_identidad' => $number,
+            ]))->assertUnprocessable()
+                ->assertJsonPath('errors.numero_identidad.0', 'El DNI debe tener exactamente 8 dígitos numéricos.');
+        }
+
+        $this->actingAs($user)->postJson('/patients', $this->payload([
+            'tipo_identificacion' => 'PASAPORTE',
+            'numero_identidad' => 'P-123',
+        ]))->assertCreated()
+            ->assertJsonPath('patient.numero_identidad', 'P-123');
+    }
+
+    public function test_an_inherited_invalid_dni_is_kept_when_the_document_does_not_change(): void
+    {
+        $user = $this->createUserWithRole('ADMISION');
+        $patient = $this->createPatient($user, [
+            'tipo_identificacion' => 'DNI',
+            'numero_identidad' => '1234567890',
+            'nombre' => 'HEREDADO',
+        ]);
+
+        $this->actingAs($user)->putJson('/patients/'.$patient->id, $this->payload([
+            'numero_identidad' => '1234567890',
+            'nombre' => 'ACTUALIZADO',
+        ]))->assertOk()
+            ->assertJsonPath('patient.nombre', 'ACTUALIZADO')
+            ->assertJsonPath('patient.numero_identidad', '1234567890');
+
+        $this->assertSame('1234567890', $patient->fresh()->numero_identidad);
+
+        $this->actingAs($user)->putJson('/patients/'.$patient->id, $this->payload([
+            'numero_identidad' => '123456789',
+        ]))->assertUnprocessable()
+            ->assertJsonPath('errors.numero_identidad.0', 'El DNI debe tener exactamente 8 dígitos numéricos.');
+
+        $this->assertSame('1234567890', $patient->fresh()->numero_identidad);
+    }
+
+    public function test_an_inherited_tax_document_type_can_be_edited_but_not_chosen_for_a_new_patient(): void
+    {
+        $user = $this->createUserWithRole('ADMISION');
+        $patient = $this->createPatient($user, [
+            'tipo_identificacion' => 'DOC.TRIB.NO.DOM.SIN.RUC',
+            'numero_identidad' => 'TRIB-100',
+            'nombre' => 'TRIBUTARIO',
+        ]);
+
+        $this->actingAs($user)->postJson('/patients', $this->payload([
+            'tipo_identificacion' => 'DOC.TRIB.NO.DOM.SIN.RUC',
+            'numero_identidad' => 'TRIB-200',
+        ]))->assertUnprocessable()
+            ->assertJsonValidationErrors('tipo_identificacion');
+
+        $this->actingAs($user)->putJson('/patients/'.$patient->id, $this->payload([
+            'tipo_identificacion' => 'DOC.TRIB.NO.DOM.SIN.RUC',
+            'numero_identidad' => 'TRIB-100',
+            'nombre' => 'TRIBUTARIO EDITADO',
+        ]))->assertOk()
+            ->assertJsonPath('patient.tipo_identificacion', 'DOC.TRIB.NO.DOM.SIN.RUC')
+            ->assertJsonPath('patient.numero_identidad', 'TRIB-100')
+            ->assertJsonPath('patient.nombre', 'TRIBUTARIO EDITADO');
+    }
+
     public function test_email_is_optional_and_rejects_an_invalid_address(): void
     {
         $user = $this->createUserWithRole('ADMISION');

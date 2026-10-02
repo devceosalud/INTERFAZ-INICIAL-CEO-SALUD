@@ -45,6 +45,22 @@ test('registrar paciente solo aparece cuando el documento no existe', () => {
     assert.equal(draft.canOpen(identity('document_conflict')), false);
 });
 
+test('un DNI nuevo exige 8 dígitos y un heredado inválido se conserva', () => {
+    assert.equal(draft.dniMessage({ tipo: 'DNI', numero: '73378485', patientId: '' }), '');
+    assert.equal(draft.dniMessage({ tipo: 'DNI', numero: '7337848', patientId: '' }), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(draft.dniMessage({ tipo: 'DNI', numero: '733784850', patientId: '' }), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(draft.dniMessage({ tipo: 'DNI', numero: '1234567890', patientId: '' }), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(draft.dniMessage({ tipo: 'DNI', numero: 'AB123456', patientId: '' }), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(draft.dniMessage({
+        tipo: 'DNI',
+        numero: '1234567890',
+        patientId: '9',
+        stored_tipo: 'DNI',
+        stored_numero: '1234567890',
+    }), '');
+    assert.equal(draft.dniMessage({ tipo: 'PASAPORTE', numero: 'P-123', patientId: '' }), '');
+});
+
 test('un DNI no registrado abre el formulario y ofrece RENIEC', () => {
     const opened = draft.open(Object.assign(identity('not_found'), {
         tipo: 'DNI',

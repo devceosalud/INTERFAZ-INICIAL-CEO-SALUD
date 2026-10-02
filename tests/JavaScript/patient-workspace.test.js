@@ -90,6 +90,19 @@ test('el paciente recién creado queda primero y no duplica su fila', () => {
     assert.equal(rows[1].id, '4');
 });
 
+test('un DNI nuevo exige 8 dígitos y un heredado inválido se conserva', () => {
+    assert.equal(workspace.dniError('DNI', '73378485', null), '');
+    assert.equal(workspace.dniError('DNI', '7337848', null), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(workspace.dniError('DNI', '733784850', null), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(workspace.dniError('DNI', '7337848501', null), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(workspace.dniError('DNI', '7337848A', null), 'El DNI debe tener exactamente 8 dígitos numéricos.');
+    assert.equal(workspace.dniError('PASAPORTE', 'P-123', null), '');
+    assert.equal(workspace.dniError('DNI', '1234567890', {
+        tipo_identificacion: 'DNI',
+        numero_identidad: '1234567890',
+    }), '');
+});
+
 test('RENIEC is offered only for a new DNI record', () => {
     assert.equal(workspace.canConsultReniec('new', 'DNI'), true);
     assert.equal(workspace.canConsultReniec('existing', 'DNI'), false);

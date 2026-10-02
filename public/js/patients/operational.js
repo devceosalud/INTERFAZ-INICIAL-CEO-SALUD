@@ -140,6 +140,30 @@
         (contextRow ? contextOpen : contextAdd).focus();
     }
 
+    function clearLegacyDocumentOptions() {
+        Array.from(documentType.options).forEach(function (option) {
+            if (option.dataset.legacyDocument === '1') {
+                option.remove();
+            }
+        });
+    }
+
+    function showStoredDocumentType(tipo) {
+        var current = value(tipo);
+
+        if (current === '' || Array.from(documentType.options).some(function (option) {
+            return option.value === current;
+        })) {
+            return;
+        }
+
+        var option = document.createElement('option');
+        option.value = current;
+        option.textContent = current;
+        option.dataset.legacyDocument = '1';
+        documentType.appendChild(option);
+    }
+
     function ensureOption(select, optionValue) {
         var current = value(optionValue);
 
@@ -177,6 +201,8 @@
 
     function setFields(patient) {
         hydrating = true;
+        clearLegacyDocumentOptions();
+        showStoredDocumentType(patient.tipo_identificacion);
         documentType.value = value(patient.tipo_identificacion) || 'DNI';
         documentNumber.value = value(patient.numero_identidad);
         Object.keys(fields).forEach(function (field) {
@@ -379,6 +405,17 @@
 
         if (documentType.value === 'SIN DOCUMENTOS') {
             setNotice('El identificador final para pacientes sin documentos sigue pendiente de negocio; no se guardó.', true);
+            return;
+        }
+
+        var documentError = workspace.dniError(
+            documentType.value,
+            documentNumber.value,
+            state.mode === 'existing' ? state.patient : null
+        );
+        if (documentError) {
+            setNotice(documentError, true);
+            documentNumber.focus();
             return;
         }
 

@@ -83,6 +83,24 @@
         return mode === 'new' && text(documentType) === 'DNI';
     }
 
+    function dniError(documentType, documentNumber, existing) {
+        if (text(documentType) !== 'DNI') {
+            return '';
+        }
+
+        var number = text(documentNumber);
+
+        if (existing
+            && text(existing.tipo_identificacion) === 'DNI'
+            && text(existing.numero_identidad) === number) {
+            return '';
+        }
+
+        return /^\d{8}$/.test(number)
+            ? ''
+            : 'El DNI debe tener exactamente 8 dígitos numéricos.';
+    }
+
     function blankForm() {
         return {
             patientId: '',
@@ -153,6 +171,7 @@
         openExisting: openExisting,
         back: back,
         canConsultReniec: canConsultReniec,
+        dniError: dniError,
         blankForm: blankForm,
         afterCreate: afterCreate,
         placeCreated: placeCreated,
