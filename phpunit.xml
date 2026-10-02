@@ -41,11 +41,14 @@
         <env name="SCHEDULING_MVP_ENABLED" value="false" force="true"/>
         <env name="BROADCAST_DRIVER" value="null" force="true"/>
         <env name="FILESYSTEM_DISK" value="local" force="true"/>
+        <env name="RENIEC_PROVIDER" value="aqpfact" force="true"/>
         <env name="AQPFACT_URL_DNI" value="http://127.0.0.1:9/test-only/reniec" force="true"/>
         <env name="AQPFACT_URL_RUC" value="http://127.0.0.1:9/test-only/ruc" force="true"/>
         <env name="AQPFACT_TOKEN" value="test-only-disabled" force="true"/>
         <env name="APISPERU_URL" value="http://127.0.0.1:9/test-only/apisperu" force="true"/>
         <env name="APISPERU_RUC_TOKEN" value="test-only-disabled" force="true"/>
+        <env name="APISPERU_DNI_URL" value="http://127.0.0.1:9/test-only/apisperu-dni" force="true"/>
+        <env name="APISPERU_DNI_TOKEN" value="test-only-disabled" force="true"/>
         <env name="HTTSMS_URL" value="http://127.0.0.1:9/test-only/sms" force="true"/>
         <env name="HTTPSMS_API_KEY" value="test-only-disabled" force="true"/>
         <env name="HTTPSMS_FROM" value="test-only-disabled" force="true"/>

@@ -2,80 +2,61 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
+use App\Services\Reniec\ApisPeruReniecProvider;
+use App\Services\Reniec\AqpfactReniecProvider;
+use App\Services\Reniec\ReniecProviderInterface;
 
 class ReniecService
 {
-    protected $token;
-    protected $url;
-
-    public function __construct()
-    {
-        $this->token = config('apidatosperu.aqpfact.token');
-        $this->url = config('apidatosperu.aqpfact.url_dni');
-    }
-
     /**
      * The inherited caller keeps the previous behavior when no timeout is given.
      * Agenda passes a short timeout so a slow provider becomes a manual registration
      * instead of blocking the screen. A connection failure then returns null.
+     *
+     * @param mixed $dni
+     * @param int|null $timeoutSeconds
+     * @return array<string, mixed>|null
      */
     public function consultar($dni, $timeoutSeconds = null)
     {
-        if (!is_string($this->url) || trim($this->url) === '' || !is_string($this->token) || trim($this->token) === '') {
+        $provider = $this->provider($timeoutSeconds);
+
+        if ($provider === null) {
             return null;
         }
 
-        $pending = Http::withToken($this->token)->acceptJson();
+        $person = $provider->consultar(trim((string) $dni));
 
-        if ($timeoutSeconds !== null) {
-            $pending = $pending
-                ->connectTimeout((int) $timeoutSeconds)
-                ->timeout((int) $timeoutSeconds);
-        }
-
-        try {
-            $response = $pending->get("{$this->url}/{$dni}");
-        } catch (ConnectionException $exception) {
-            if ($timeoutSeconds === null) {
-                throw $exception;
-            }
-
+        if ($person === null) {
             return null;
         }
 
-        if (!$response->successful()) {
-            return null;
+        return $person->toLookupArray();
+    }
+
+    /**
+     * @param int|null $timeoutSeconds
+     */
+    private function provider($timeoutSeconds): ?ReniecProviderInterface
+    {
+        $selected = config('apidatosperu.reniec_provider');
+
+        if ($selected === 'aqpfact') {
+            return new AqpfactReniecProvider(
+                config('apidatosperu.aqpfact.url_dni'),
+                config('apidatosperu.aqpfact.token'),
+                $timeoutSeconds
+            );
         }
 
-        $json = $response->json();
-
-        if (!isset($json['success']) || $json['success'] === false) {
-            return null;
+        if ($selected === 'apisperu') {
+            return new ApisPeruReniecProvider(
+                config('apidatosperu.apisperu.dni_url'),
+                config('apidatosperu.apisperu.dni_token'),
+                $timeoutSeconds
+            );
         }
 
-        return [
-            'nombre' => $json['data']['nombres'],
-            'apellido_paterno' => $json['data']['apellido_paterno'],
-            'apellido_materno' => $json['data']['apellido_materno'],
-            'fecha_nacimiento' => Carbon::createFromFormat('d/m/Y', $json['data']['fecha_nacimiento'])->format('Y-m-d'),
-            'genero' => match ($json['data']['sexo']) {
-                'VARON' => 'HOMBRE',
-                'MUJER' => 'MUJER',
-                default => null,
-            },
-            'estado_civil' => $json['data']['estado_civil'],
-            'direccion' => $json['data']['direccion'],
-            'numero_identidad' => $json['data']['numero'],
-            'ocupacion' => null,
-            'grado_instruccion' => null,
-            'telefono' => null,
-            'email' => null,
-            'channel_id' => null,
-            'interaction_medium_id' => null,
-            'tipo_identificacion' => 'DNI',
-        ];
+        return null;
     }
 }

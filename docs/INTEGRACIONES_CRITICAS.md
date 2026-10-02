@@ -77,9 +77,21 @@ La misma ruta se invoca desde `public/js/admissionist/appointment/appointment.js
 - **PROPUESTA TO-BE:** no registrar respuestas completas ni datos personales innecesarios en logs o consola.
 - **PROPUESTA TO-BE:** mantener siempre ingreso manual controlado.
 
-### 2.3 Pendientes
+### 2.3 Selector configurable — estado del MVP
 
-- **PENDIENTE DE VALIDACIÓN PRODUCTIVA:** proveedor realmente utilizado, disponibilidad, formato vigente, límites, calidad de datos y funcionamiento con la configuración de producción.
+**CONFIRMADO EN CÓDIGO. El proveedor del MVP es AQPFACT. La consulta real sigue pendiente.**
+
+- `ReniecService` solo elige el proveedor. El HTTP vive en `AqpfactReniecProvider` y `ApisPeruReniecProvider`, ambos detrás de `ReniecProviderInterface` y normalizados en `ReniecPersonData`.
+- **CONFIRMADO POR NEGOCIO:** CEO Salud usará AQPFACT en el MVP. `RENIEC_PROVIDER` vale `aqpfact` si no se define. Variables: `AQPFACT_URL_DNI` y `AQPFACT_TOKEN`.
+- APIS PERU está implementado con el contrato documentado (`GET {APISPERU_DNI_URL}?numero={dni}`, `Authorization: Bearer`). Solo mapea nombres, apellidos y documento. Fecha de nacimiento, sexo, estado civil y dirección quedan vacíos para el alta manual.
+- Una prueba local contra APIS PERU respondió HTTP 401. Esa credencial heredada no corresponde al proveedor configurado. No se guardó ningún secreto en el repositorio.
+- Los tests usan `Http::fake` y tokens ficticios. Cubren éxito, configuración ausente, error, timeout, JSON inesperado y el fallback manual. No reemplazan una llamada real.
+- Si falta configuración, el proveedor falla o el JSON no es el esperado, Agenda y Pacientes muestran «No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.» y no bloquean el alta.
+- **PENDIENTE DE VALIDACIÓN PRODUCTIVA:** aún no hay token AQPFACT autorizado. La integración no está confirmada en producción.
+
+### 2.4 Pendientes
+
+- **PENDIENTE DE VALIDACIÓN PRODUCTIVA:** proveedor realmente utilizado, disponibilidad, formato vigente, límites, calidad de datos y funcionamiento con la configuración de producción. Falta el token AQPFACT del MVP.
 - **PENDIENTE DE NEGOCIO:** política ante discrepancias entre dato existente, dato declarado y dato devuelto por el proveedor.
 - **PENDIENTE DE NEGOCIO:** qué campos externos pueden actualizar un paciente ya registrado.
 

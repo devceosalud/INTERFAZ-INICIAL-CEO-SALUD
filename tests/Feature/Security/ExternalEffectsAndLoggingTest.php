@@ -56,9 +56,16 @@ class ExternalEffectsAndLoggingTest extends TestCase
 
     public function test_historical_credential_literal_patterns_are_absent_from_current_service(): void
     {
-        $source = file_get_contents(app_path('Services/ReniecService.php'));
+        $files = array_merge(
+            [app_path('Services/ReniecService.php')],
+            glob(app_path('Services/Reniec/*.php')) ?: []
+        );
 
-        $this->assertDoesNotMatchRegularExpression('/apis-token-[A-Za-z0-9._-]+/', $source);
-        $this->assertDoesNotMatchRegularExpression('/sk_[A-Za-z0-9._-]{12,}/', $source);
+        foreach ($files as $file) {
+            $source = file_get_contents($file);
+
+            $this->assertDoesNotMatchRegularExpression('/apis-token-[A-Za-z0-9._-]+/', $source);
+            $this->assertDoesNotMatchRegularExpression('/sk_[A-Za-z0-9._-]{12,}/', $source);
+        }
     }
 }

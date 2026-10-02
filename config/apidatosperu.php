@@ -2,6 +2,8 @@
 
 return [
 
+    'reniec_provider' => env('RENIEC_PROVIDER', 'aqpfact'),
+
     'aqpfact' => [
         'url_dni' => env('AQPFACT_URL_DNI'),
         'url_ruc' => env('AQPFACT_URL_RUC'),
@@ -11,6 +13,8 @@ return [
     'apisperu' => [
         'url' => env('APISPERU_URL'),
         'token' => env('APISPERU_RUC_TOKEN'),
+        'dni_url' => env('APISPERU_DNI_URL'),
+        'dni_token' => env('APISPERU_DNI_TOKEN'),
     ],
 
 ];

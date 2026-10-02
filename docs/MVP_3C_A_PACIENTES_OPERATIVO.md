@@ -101,6 +101,9 @@ se transporta en memoria y se declara pendiente de persistencia.
   integración.
 - La consulta es explícita, no guarda y la lógica heredada de borrador evita reemplazar campos
   modificados manualmente.
+- El proveedor es configurable. El MVP prevé AQPFACT; APIS PERU existe como alternativa de código.
+- Los tests simulan ambos contratos. La consulta real de AQPFACT sigue pendiente de un token autorizado
+  y no está confirmada en producción. Sin proveedor, el alta manual sigue disponible.
 
 ## Pendientes fuera de alcance
 

@@ -102,6 +102,37 @@ test('RENIEC precarga la identidad y no pisa lo escrito a mano', () => {
     assert.match(filled.message, /Revise y complete/);
 });
 
+test('RENIEC parcial no borra fecha, sexo, estado civil ni dirección escritos', () => {
+    const opened = draft.open(Object.assign(identity('not_found'), {
+        tipo: 'DNI',
+        numero: '70000009',
+    }), schedule);
+    const edited = draft.edit(opened, 'fecha_nacimiento', '1985-05-05');
+    const withAddress = draft.edit(edited, 'direccion', 'Dirección escrita');
+    const partial = draft.applyReniec(withAddress, {
+        status: 'prefilled',
+        identity: {
+            nombre: 'ANA',
+            apellido_paterno: 'LOPEZ',
+            apellido_materno: 'DIAZ',
+            fecha_nacimiento: null,
+            genero: null,
+            estado_civil: null,
+            direccion: null,
+        },
+    });
+
+    assert.equal(partial.nombre, 'ANA');
+    assert.equal(partial.apellido_paterno, 'LOPEZ');
+    assert.equal(partial.apellido_materno, 'DIAZ');
+    assert.equal(partial.fecha_nacimiento, '1985-05-05');
+    assert.equal(partial.direccion, 'Dirección escrita');
+    assert.equal(partial.genero, '');
+    assert.equal(partial.estado_civil, '');
+    assert.equal(partial.numero, '70000009');
+    assert.equal(partial.doctor, schedule.doctor);
+});
+
 test('un fallo de RENIEC conserva el formulario y el horario', () => {
     const opened = draft.open(Object.assign(identity('not_found'), {
         tipo: 'DNI',
