@@ -15,6 +15,7 @@
                     <div class="schedule-form-error" id="schedule-form-error" role="alert" hidden></div>
                     <input type="hidden" id="schedule-id" name="doctor_schedule_id_edit">
                     <input type="hidden" id="schedule-recurrence">
+                    <input type="hidden" id="schedule-date" name="fecha_cita">
 
                     <div class="schedule-form-grid">
                         <label>
@@ -42,10 +43,12 @@
                                 @endforeach
                             </select>
                         </label>
-                        <label>
-                            <span>Fecha de referencia</span>
-                            <input type="date" id="schedule-date" name="fecha_cita" required>
-                        </label>
+                        <fieldset class="schedule-scope schedule-form-grid__scope" id="schedule-scope">
+                            <legend>Aplicar horario</legend>
+                            <label><input type="radio" name="scope" value="single" checked> Solo este día</label>
+                            <label><input type="radio" name="scope" value="selected"> Días seleccionados de esta semana</label>
+                            <label><input type="radio" name="scope" value="weekly"> Patrón semanal recurrente</label>
+                        </fieldset>
                         <section class="schedule-attention" aria-label="Horario de atención">
                             <p class="schedule-attention__title">Horario de atención</p>
                             <div class="schedule-attention__range">
@@ -130,18 +133,11 @@
                         </label>
                     </div>
 
-                    <div id="schedule-painted-dates" hidden>
+                    <div class="schedule-painted-dates" id="schedule-painted-dates" hidden>
                         <p id="schedule-preset-apply" hidden></p>
                         <p id="schedule-painted-count"></p>
                         <div id="schedule-painted-chips"></div>
                     </div>
-
-                    <fieldset class="schedule-scope" id="schedule-scope">
-                        <legend>Aplicar horario</legend>
-                        <label><input type="radio" name="scope" value="single" checked> Solo este día</label>
-                        <label><input type="radio" name="scope" value="selected"> Días seleccionados de esta semana</label>
-                        <label><input type="radio" name="scope" value="weekly"> Patrón semanal recurrente</label>
-                    </fieldset>
 
                     <div class="schedule-weekdays" id="schedule-weekdays" hidden>
                         <div class="schedule-weekdays__shortcuts">

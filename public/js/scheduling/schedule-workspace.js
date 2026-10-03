@@ -411,6 +411,19 @@
             };
         }
 
+        if (action.type === 'remove-weekday') {
+            const weekday = Number(action.weekday);
+            const next = dates.filter(date => weekdayFromIsoDate(date) !== weekday);
+            return {
+                painting: false,
+                dates: next,
+                opensModal: false,
+                writes: false,
+                preventMenu: false,
+                changed: next.length !== dates.length,
+            };
+        }
+
         if (action.type === 'clear') {
             return { painting: false, dates: [], opensModal: false, writes: false, preventMenu: false, changed: dates.length > 0 };
         }
@@ -440,6 +453,49 @@
 
     function paintedDateChips(dates) {
         return (dates || []).map(date => ({ date: date, label: paintedDateLabel(date) }));
+    }
+
+    const WEEKDAY_NAMES = {
+        1: { short: 'LUN', plural: 'lunes' },
+        2: { short: 'MAR', plural: 'martes' },
+        3: { short: 'MIE', plural: 'miércoles' },
+        4: { short: 'JUE', plural: 'jueves' },
+        5: { short: 'VIE', plural: 'viernes' },
+        6: { short: 'SAB', plural: 'sábados' },
+        7: { short: 'DOM', plural: 'domingos' },
+    };
+
+    function weekdayFromIsoDate(isoDate) {
+        const date = new Date(String(isoDate) + 'T12:00:00');
+        return Number.isNaN(date.getTime()) ? null : isoWeekday(date);
+    }
+
+    function paintedDateGroups(dates) {
+        const groups = new Map();
+
+        paintedDateChips(dates).forEach(chip => {
+            const weekday = weekdayFromIsoDate(chip.date);
+            const meta = WEEKDAY_NAMES[weekday];
+            if (!meta) return;
+
+            if (!groups.has(weekday)) {
+                groups.set(weekday, {
+                    weekday: weekday,
+                    label: meta.short,
+                    plural: meta.plural,
+                    dates: [],
+                });
+            }
+
+            groups.get(weekday).dates.push(chip);
+        });
+
+        return Array.from(groups.values())
+            .sort((left, right) => left.weekday - right.weekday)
+            .map(group => {
+                group.dates.sort((left, right) => left.date.localeCompare(right.date));
+                return group;
+            });
     }
 
     function paintedDateCountLabel(dates) {
@@ -942,18 +998,43 @@
 
             count.textContent = paintedDateCountLabel(paintedDates);
             chips.replaceChildren();
-            paintedDateChips(paintedDates).forEach(chip => {
-                const item = document.createElement('span');
-                item.className = 'schedule-painted-chip';
-                item.append(document.createTextNode(chip.label));
-                const remove = document.createElement('button');
-                remove.type = 'button';
-                remove.className = 'schedule-painted-chip__remove';
-                remove.setAttribute('aria-label', 'Quitar ' + chip.label);
-                remove.textContent = '×';
-                remove.addEventListener('click', () => removePaintedDate(chip.date));
-                item.append(remove);
-                chips.append(item);
+            paintedDateGroups(paintedDates).forEach(group => {
+                const section = document.createElement('section');
+                section.className = 'schedule-painted-weekday';
+
+                const header = document.createElement('div');
+                header.className = 'schedule-painted-weekday__header';
+
+                const title = document.createElement('strong');
+                title.className = 'schedule-painted-weekday__label';
+                title.textContent = group.label;
+
+                const clear = document.createElement('button');
+                clear.type = 'button';
+                clear.className = 'schedule-painted-weekday__clear';
+                clear.textContent = 'Quitar todos los ' + group.plural;
+                clear.addEventListener('click', () => removePaintedWeekday(group.weekday));
+
+                header.append(title, clear);
+                section.append(header);
+
+                const items = document.createElement('div');
+                items.className = 'schedule-painted-weekday__dates';
+                group.dates.forEach(chip => {
+                    const item = document.createElement('span');
+                    item.className = 'schedule-painted-chip';
+                    item.append(document.createTextNode(chip.label));
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'schedule-painted-chip__remove';
+                    remove.setAttribute('aria-label', 'Quitar ' + chip.label);
+                    remove.textContent = '×';
+                    remove.addEventListener('click', () => removePaintedDate(chip.date));
+                    item.append(remove);
+                    items.append(item);
+                });
+                section.append(items);
+                chips.append(section);
             });
             const scope = document.getElementById('schedule-scope');
             if (scope && !document.getElementById('schedule-id').value) {
@@ -968,7 +1049,19 @@
             if (Array.isArray(activePaintedDates)) activePaintedDates = next.dates.slice();
             renderPaintHighlights();
             renderPaintedPanel();
-            if (paintedDates[0]) document.getElementById('schedule-date').value = paintedDates[0];
+            renderSelectionBar();
+            document.getElementById('schedule-date').value = paintedDates[0] || '';
+        }
+
+        function removePaintedWeekday(weekday) {
+            const next = reduceMonthPaint(paintSnapshot(), { type: 'remove-weekday', weekday: weekday });
+            paintedDates = next.dates;
+            painting = false;
+            if (Array.isArray(activePaintedDates)) activePaintedDates = next.dates.slice();
+            renderPaintHighlights();
+            renderPaintedPanel();
+            renderSelectionBar();
+            document.getElementById('schedule-date').value = paintedDates[0] || '';
         }
 
         function clearPaintedSelection() {
@@ -1038,7 +1131,7 @@
             renderPaintHighlights();
             renderPaintedPanel();
             renderSelectionBar();
-            if (paintedDates[0]) document.getElementById('schedule-date').value = paintedDates[0];
+            document.getElementById('schedule-date').value = paintedDates[0] || '';
         });
 
         window.addEventListener('pointerup', function () {
@@ -1794,6 +1887,8 @@
         visibilityAfterAction,
         reduceMonthPaint,
         paintedDateChips,
+        weekdayFromIsoDate,
+        paintedDateGroups,
         paintedDateCountLabel,
         paintedSaveDecision,
         concreteDatesPayload,

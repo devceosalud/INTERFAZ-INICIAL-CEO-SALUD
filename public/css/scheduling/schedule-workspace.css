@@ -532,11 +532,51 @@
     font-weight: 700;
 }
 
+.schedule-painted-weekday {
+    padding: .38rem 0;
+    border-top: 1px solid var(--schedule-border);
+}
+
+.schedule-painted-weekday:first-child {
+    border-top: 0;
+}
+
+.schedule-painted-weekday__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .6rem;
+    margin-bottom: .25rem;
+}
+
+.schedule-painted-weekday__label {
+    color: var(--schedule-text);
+    font-size: .69rem;
+    letter-spacing: .045em;
+}
+
+.schedule-workspace .schedule-painted-weekday__clear {
+    min-height: 0;
+    padding: .1rem .25rem;
+    color: #0f5158;
+    background: transparent;
+    border: 0;
+    font-size: .66rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.schedule-painted-weekday__dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .28rem;
+}
+
 .schedule-painted-chip {
     display: inline-flex;
     align-items: center;
     gap: .2rem;
-    margin: 0 .28rem .28rem 0;
+    margin: 0;
     padding: .12rem .28rem .12rem .42rem;
     color: #0f5158;
     background: #e7f4f5;
@@ -721,6 +761,27 @@
     margin: .8rem 0 0;
     padding: .6rem .7rem;
     border: 1px solid var(--schedule-border);
+}
+
+.schedule-scope[hidden] {
+    display: none;
+}
+
+.schedule-form-grid__scope {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.schedule-form-grid .schedule-scope label {
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+}
+
+.schedule-form-grid .schedule-scope input[type="radio"] {
+    width: auto;
+    height: auto;
+    padding: 0;
 }
 
 .schedule-scope legend {

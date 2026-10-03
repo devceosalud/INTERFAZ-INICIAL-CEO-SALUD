@@ -69,6 +69,13 @@ test('el modal de horario tiene ids únicos', () => {
     assert.ok(ids.includes('schedule-duration'));
 });
 
+test('la fecha de referencia queda como ancla interna y Aplicar horario ocupa el bloque principal', () => {
+    assert.match(modal, /<input type="hidden" id="schedule-date" name="fecha_cita">/);
+    assert.equal(modal.includes('Fecha de referencia'), false);
+    assert.ok(modal.indexOf('id="schedule-scope"') > modal.indexOf('id="schedule-site"'));
+    assert.ok(modal.indexOf('id="schedule-scope"') < modal.indexOf('class="schedule-attention"'));
+});
+
 test('cada label del modal envuelve un solo control', () => {
     const labels = modal.match(/<label[\s\S]*?<\/label>/g) || [];
 
@@ -496,6 +503,41 @@ test('el modal recibe las fechas pintadas como chips removibles', () => {
     assert.deepEqual(workspace.paintedDateChips(released.dates).map(chip => chip.label), ['05/10', '06/10', '08/10', '12/10']);
     assert.deepEqual(withoutSixth.dates, ['2026-10-05', '2026-10-06', '2026-10-12']);
     assert.equal(workspace.paintedDateCountLabel(withoutSixth.dates), '3 fechas seleccionadas');
+});
+
+test('las fechas pintadas se agrupan por día de semana en orden operativo', () => {
+    const groups = workspace.paintedDateGroups([
+        '2026-10-13',
+        '2026-10-08',
+        '2026-10-06',
+        '2026-10-15',
+    ]);
+
+    assert.deepEqual(groups.map(group => group.label), ['MAR', 'JUE']);
+    assert.deepEqual(groups[0].dates.map(chip => chip.label), ['06/10', '13/10']);
+    assert.deepEqual(groups[1].dates.map(chip => chip.label), ['08/10', '15/10']);
+    assert.equal(groups[0].plural, 'martes');
+});
+
+test('quitar un weekday elimina todo ese grupo y conserva los demás', () => {
+    const selected = {
+        painting: false,
+        dates: ['2026-10-06', '2026-10-08', '2026-10-13', '2026-10-15'],
+    };
+    const removed = workspace.reduceMonthPaint(selected, { type: 'remove-weekday', weekday: 2 });
+
+    assert.equal(removed.changed, true);
+    assert.equal(removed.writes, false);
+    assert.deepEqual(removed.dates, ['2026-10-08', '2026-10-15']);
+    assert.deepEqual(workspace.paintedDateGroups(removed.dates).map(group => group.label), ['JUE']);
+});
+
+test('quitar un weekday inexistente no altera ninguna fecha', () => {
+    const dates = ['2026-10-06', '2026-10-08'];
+    const untouched = workspace.reduceMonthPaint({ painting: false, dates }, { type: 'remove-weekday', weekday: 1 });
+
+    assert.equal(untouched.changed, false);
+    assert.deepEqual(untouched.dates, dates);
 });
 
 test('el clic derecho quita solo una fecha ya seleccionada', () => {
