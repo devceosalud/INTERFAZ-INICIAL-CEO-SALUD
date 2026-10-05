@@ -62,6 +62,8 @@ class AgendaAppointmentWriteTest extends TestCase
             'user_id' => $responsible->id,
             'updated_by_user_id' => $responsible->id,
             'additional_rate_id' => 999999,
+            'estado_agenda' => 'PENDIENTE_CONFIRMACION',
+            'tipo_agendamiento' => 'ADICIONAL',
         ]);
 
         $response->assertCreated()
@@ -82,6 +84,8 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertEquals(100, (float) $appointment->saldo_pendiente);
         $this->assertSame('PENDIENTE', $appointment->estado_pagado);
         $this->assertSame('PROGRAMADO', $appointment->estado_cita);
+        $this->assertSame('LEGADO', $appointment->estado_agenda);
+        $this->assertNull($appointment->tipo_agendamiento);
         $this->assertFalse((bool) $appointment->es_exonerado);
         $this->assertNull($appointment->autorizado_por);
     }

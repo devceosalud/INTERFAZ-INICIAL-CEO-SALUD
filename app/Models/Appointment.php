@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\Scheduling\AppointmentAgendaLifecycle;
+use App\Support\Scheduling\AppointmentVisibility;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,9 +36,26 @@ class Appointment extends Model
         'estado_pagado',
         'numero_operacion',
         'estado_cita',
+        'estado_agenda',
+        'tipo_agendamiento',
         'observaciones',
         'fecha_registro',
     ];
+
+    /** Opt-in scope; it does not change existing readers automatically. */
+    public function scopeVisibleToAgendaUser(Builder $query, int $actorId): Builder
+    {
+        AppointmentVisibility::apply($query, $actorId, $query->getModel()->getTable());
+
+        return $query;
+    }
+
+    public function scopeConsumingRegularSlot(Builder $query): Builder
+    {
+        AppointmentAgendaLifecycle::applyRegularSlotOccupancy($query, $query->getModel()->getTable());
+
+        return $query;
+    }
 
     /**
      * Obtiene el usuario (personal del sistema) que registró la cita.
