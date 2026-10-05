@@ -270,6 +270,9 @@ class Sales extends Component
 
     public function agregarAlCarrito(array $resultado)
     {
+        if (in_array($resultado['tipo_origen'], ['cita', Appointment::class], true)) {
+            Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($resultado['id'])->firstOr(fn () => abort(404));
+        }
         //dd($resultado);
         $this->carrito[] = [
             'item_type' => $resultado['tipo_origen'],
@@ -290,6 +293,7 @@ class Sales extends Component
 
     public function getCalculoCarritoProperty()
     {
+        $this->assertCartAppointmentsVisible();
         $totalGravado = 0;
         $totalExonerado = 0;
         $totalInacfecto = 0;
@@ -366,16 +370,16 @@ class Sales extends Component
             return collect();
         }
 
-        return Voucher::where('patient_id', $this->atiendeId)
+        return Voucher::visibleToAgendaUser((int) auth()->id())->where('patient_id', $this->atiendeId)
             ->where('tipo_comprobante', 'TICKET')
-            ->whereDoesntHave('childVouchers')
+            ->whereDoesntHave('childVouchers', fn ($child) => $child->visibleToAgendaUser((int) auth()->id()))
             ->whereHas('items', fn($q) => $q->where('item_type', 'cita'))
             ->get();
     }
 
     public function liquidarTicket(int $ticketId)
     {
-        $ticket = Voucher::with('items')->findOrFail($ticketId);
+        $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->with('items')->whereKey($ticketId)->firstOr(fn () => abort(404));
 
         $this->ticketOrigenId = $ticket->id;
         $this->tipoComprobante = 'BOLETA'; //el cajero lo puede cambiar a FACTURA si hace falta
@@ -401,8 +405,8 @@ class Sales extends Component
     public function getMontoACobrarProperty(): float
     {
         if ($this->ticketOrigenId) {
-            $ticket = Voucher::find($this->ticketOrigenId);
-            return $ticket ? $ticket->saldo_pendiente : $this->calculoCarrito['total'];
+            $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->firstOr(fn () => abort(404));
+            return $ticket->saldo_pendiente;
         }
 
         return $this->calculoCarrito['total'];
@@ -418,6 +422,7 @@ class Sales extends Component
         }
 
         $this->resultadosCitas = Appointment::query()
+            ->visibleToAgendaUser((int) auth()->id())
             ->join('patients', 'patients.id', '=', 'appointments.patient_id')
             ->join('doctors', 'doctors.id', '=', 'appointments.doctor_id')
             ->join('services', 'services.id', '=', 'appointments.service_id')
@@ -449,12 +454,12 @@ class Sales extends Component
             ->get()
             ->map(function ($c) {
                 $precioTotal = (float) $c->precio_primera_consulta + (float) $c->tarifa_adicional;
-                $ticket = Voucher::where('tipo_comprobante', 'TICKET')
+                $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->where('tipo_comprobante', 'TICKET')
                     ->whereHas('items', fn($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
                     ->latest()
                     ->first();
 
-                if ($ticket && Voucher::where('parent_voucher_id', $ticket->id)->exists()) {
+                if ($ticket && Voucher::visibleToAgendaUser((int) auth()->id())->where('parent_voucher_id', $ticket->id)->exists()) {
                     return null;
                 }
 
@@ -476,9 +481,10 @@ class Sales extends Component
 
     public function agregarCitaAlCarrito(int $appointmentId, int $patientId, float $precio, ?int $doctorId)
     {
+        $appointment = Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($appointmentId)->firstOr(fn () => abort(404));
         if (!$this->atiendeId) {
-            $paciente = Patient::find($patientId);
-            $this->atiendeId = $patientId;
+            $paciente = $appointment->patient;
+            $this->atiendeId = $appointment->patient_id;
             $this->atiendeNombre = trim("{$paciente->nombre} {$paciente->apellido_paterno} {$paciente->apellido_materno}");
         }
 
@@ -522,7 +528,7 @@ class Sales extends Component
 
         $montoRequerido = $calculo['total'];
         if ($this->ticketOrigenId) {
-            $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
+            $montoRequerido = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->firstOr(fn () => abort(404))->saldo_pendiente;
         }
 
         if ($this->tipoComprobante === 'FACTURA' && (!$this->numeroDocCliente || !$this->razonSocialCliente)) {
@@ -537,7 +543,7 @@ class Sales extends Component
 
         $montoRequerido = $calculo['total'];
         if ($this->ticketOrigenId) {
-            $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
+            $montoRequerido = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->firstOr(fn () => abort(404))->saldo_pendiente;
         }
 
         if ($this->tipoComprobante !== 'TICKET' && $this->totalPagado < $montoRequerido) {
@@ -671,6 +677,19 @@ class Sales extends Component
     }
 
 
+
+    /** Public Livewire properties can be changed without going through add-to-cart. */
+    private function assertCartAppointmentsVisible(): void
+    {
+        $ids = collect($this->carrito)
+            ->filter(fn (array $line) => in_array($line['item_type'] ?? null, ['cita', Appointment::class], true))
+            ->pluck('item_id')->unique()->values();
+
+        if ($ids->isNotEmpty()) {
+            $visible = Appointment::visibleToAgendaUser((int) auth()->id())->whereIn('id', $ids)->count();
+            abort_unless($visible === $ids->count(), 404);
+        }
+    }
 
     public function render()
     {

@@ -28,7 +28,7 @@ class AppointmentController extends Controller
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
         //CITAS DE HOY
-        $appointments = Appointment::whereBetween('fecha_cita', [
+        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -39,7 +39,7 @@ class AppointmentController extends Controller
         //ASC : DE MENOR A MAYOR
 
         //REEVALUACION DE HOY
-        $reevaluaciones = Appointment::whereBetween('fecha_cita', [
+        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])

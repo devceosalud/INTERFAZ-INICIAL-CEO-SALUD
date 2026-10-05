@@ -29,6 +29,7 @@ class ScheduleController extends Controller
         $finRango = $request->end ? Carbon::parse($request->end) : Carbon::now()->addMonth()->endOfMonth();
 
         $appointment = Appointment::with(['patient', 'doctor', 'service.specialty'])
+            ->visibleToAgendaUser((int) $request->user()->id)
             // Compared as dates: binding datetimes against a date column silently dropped
             // every appointment falling on the first day of the requested range.
             ->whereBetween('fecha_cita', [$inicioRango->toDateString(), $finRango->toDateString()])
@@ -171,14 +172,8 @@ class ScheduleController extends Controller
             ]);
         }
 
-        $schedule = Appointment::find($request->appointment_id);
-
-        if (!$schedule) {
-            return response()->json([
-                'code' => 2,
-                'msg' => "Cita no encontrada"
-            ]);
-        }
+        $schedule = Appointment::visibleToAgendaUser((int) $request->user()->id)
+            ->whereKey($request->appointment_id)->firstOrFail();
 
         $doctorService = DoctorService::find($request->service_id_edit); //service_id_edit: es el Id de la tabla DoctorServices
         $service = Service::find($doctorService->service_id); //buscamos el servicio por id

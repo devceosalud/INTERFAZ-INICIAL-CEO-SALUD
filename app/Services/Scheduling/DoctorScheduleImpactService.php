@@ -14,11 +14,13 @@ class DoctorScheduleImpactService
     /**
      * Appointments currently covered by the block that a proposed change would leave out.
      * No appointment is modified here.
+     * This visible projection is not an integrity gate. Before A3, business must
+     * decide how schedule changes affect pending reservations that consume no slot.
      *
      * @param  array<string, mixed>  $proposal
      * @return Collection<int, array<string, mixed>>
      */
-    public function inspect(DoctorSchedule $block, array $proposal): Collection
+    public function inspect(DoctorSchedule $block, array $proposal, int $actorId): Collection
     {
         $dates = $this->occurrenceDates($block, $proposal);
 
@@ -27,6 +29,7 @@ class DoctorScheduleImpactService
         }
 
         $appointments = Appointment::query()
+            ->visibleToAgendaUser($actorId)
             ->where('doctor_id', $block->doctor_id)
             ->whereIn('fecha_cita', $dates->all())
             ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)

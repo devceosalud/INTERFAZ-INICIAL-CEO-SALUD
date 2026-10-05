@@ -39,7 +39,7 @@ class AppointmentController extends Controller
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
         //CITAS DE HOY
-        $appointments = Appointment::whereBetween('fecha_cita', [
+        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -50,7 +50,7 @@ class AppointmentController extends Controller
         //ASC : DE MENOR A MAYOR
 
         //REEVALUACION DE HOY
-        $reevaluaciones = Appointment::whereBetween('fecha_cita', [
+        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -76,7 +76,7 @@ class AppointmentController extends Controller
         //BUSCAMOS AL MISMO PACIENTE SI YA TIENE UNA CITA CREADA CON LA MISMA ESPECIALIDAD/SERVICIO/DOCTOR
         $paciente = Patient::find($request->patient_id);
         if ($paciente) {
-            $existe = Appointment::where('estado_cita', 'PROGRAMADO')
+            $existe = Appointment::visibleToAgendaUser((int) $request->user()->id)->where('estado_cita', 'PROGRAMADO')
                 ->where('doctor_id', $request->doctor_id)
                 ->where('fecha_cita', $request->fecha_cita)
                 ->where('patient_id', $request->patient_id)->first();
@@ -286,7 +286,8 @@ class AppointmentController extends Controller
     public function update(Request $request)
     {
         //dd($request->all());
-        $estadoCita = Appointment::find($request->appointment_id);
+        $estadoCita = Appointment::visibleToAgendaUser((int) $request->user()->id)
+            ->whereKey($request->appointment_id)->firstOrFail();
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita
         ]);

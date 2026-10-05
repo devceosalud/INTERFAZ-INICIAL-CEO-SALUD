@@ -40,7 +40,7 @@ class AgendaBoardPresenter
      * @param  Collection<int, Doctor>  $doctors
      * @return array<string, mixed>
      */
-    public function build(AgendaRange $range, Collection $doctors, ?int $siteId = null): array
+    public function build(AgendaRange $range, Collection $doctors, int $actorId, ?int $siteId = null): array
     {
         $agenda = new AgendaQuery(
             $doctors->pluck('id')->all(),
@@ -50,7 +50,7 @@ class AgendaBoardPresenter
         );
 
         $availability = $this->availability->forRange($agenda);
-        $appointments = $this->appointments->forRange($agenda);
+        $appointments = $this->appointments->forRange($agenda, $actorId);
         $compareProfessionals = $doctors->count() > 1;
 
         $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range) {

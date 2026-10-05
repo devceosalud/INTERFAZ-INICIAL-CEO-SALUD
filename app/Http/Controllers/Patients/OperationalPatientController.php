@@ -80,15 +80,16 @@ class OperationalPatientController extends Controller
             'vista' => null,
         ], $filters);
         $pendingView = ($filters['vista'] ?? null) === 'pendientes';
-        $pendingCount = PendingPatientChartQuery::apply(Patient::query())->count();
+        $actorId = (int) $request->user()->id;
+        $pendingCount = PendingPatientChartQuery::apply(Patient::query(), $actorId)->count();
 
         $patients = $this->filteredPatients(Patient::query(), $filters)
-            ->when($pendingView, function (Builder $query): void {
-                PendingPatientChartQuery::apply($query);
+            ->when($pendingView, function (Builder $query) use ($actorId): void {
+                PendingPatientChartQuery::apply($query, $actorId);
             })
             ->when(
                 $pendingView,
-                function (Builder $query): void {
+                function (Builder $query) use ($actorId): void {
                     $query->select([
                         'patients.id',
                         'patients.historia_clinica',
@@ -107,7 +108,7 @@ class OperationalPatientController extends Controller
                         'patients.grado_instruccion',
                         'patients.familiar_contacto',
                     ]);
-                    PendingPatientChartQuery::withRelevantAppointment($query);
+                    PendingPatientChartQuery::withRelevantAppointment($query, $actorId);
                     $query->withExists('responsibles');
                 },
                 function (Builder $query): void {
@@ -131,7 +132,7 @@ class OperationalPatientController extends Controller
             ->withQueryString();
 
         if ($pendingView) {
-            $this->hydratePendingRows($patients);
+            $this->hydratePendingRows($patients, $actorId);
         }
 
         $pendingDocument = $this->pendingDocumentNotice($filters, $pendingView);
@@ -298,7 +299,7 @@ class OperationalPatientController extends Controller
             });
     }
 
-    private function hydratePendingRows(\Illuminate\Contracts\Pagination\LengthAwarePaginator $patients): void
+    private function hydratePendingRows(\Illuminate\Contracts\Pagination\LengthAwarePaginator $patients, int $actorId): void
     {
         $ids = $patients->getCollection()
             ->pluck('relevant_appointment_id')
@@ -307,6 +308,7 @@ class OperationalPatientController extends Controller
             ->unique()
             ->values();
         $appointments = Appointment::query()
+            ->visibleToAgendaUser($actorId)
             ->with('doctor:id,nombre')
             ->whereIn('id', $ids)
             ->get()

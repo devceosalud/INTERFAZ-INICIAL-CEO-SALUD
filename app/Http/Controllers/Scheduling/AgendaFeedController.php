@@ -51,6 +51,7 @@ class AgendaFeedController extends Controller
         $payload = $presenter->build(
             $range,
             $shown,
+            (int) $request->user()->id,
             isset($data['site_id']) ? (int) $data['site_id'] : null
         );
 

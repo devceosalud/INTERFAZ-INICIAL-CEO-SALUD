@@ -3,9 +3,12 @@
 namespace App\Services\Patients;
 
 use App\Models\Appointment;
+use App\Support\Scheduling\AppointmentVisibility;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Derived operational queue for patients who still have a visit ahead of them.
@@ -36,13 +39,14 @@ class PendingPatientChartQuery
      * @param Builder<\App\Models\Patient> $query
      * @return Builder<\App\Models\Patient>
      */
-    public static function apply(Builder $query, ?CarbonInterface $now = null): Builder
+    public static function apply(Builder $query, int $actorId, ?CarbonInterface $now = null): Builder
     {
         $now = self::clock($now);
 
         return self::missingBlocking($query, $now)
-            ->whereExists(function ($appointments) use ($now): void {
-                self::futureRelevant($appointments, $now);
+            ->whereExists(function (QueryBuilder $appointments) use ($now, $actorId): void {
+                $appointments->selectRaw('1')->from('appointments');
+                self::futureRelevant($appointments, $now, $actorId);
             });
     }
 
@@ -81,23 +85,16 @@ class PendingPatientChartQuery
      * @param Builder<\App\Models\Patient> $query
      * @return Builder<\App\Models\Patient>
      */
-    public static function withRelevantAppointment(Builder $query, ?CarbonInterface $now = null): Builder
+    public static function withRelevantAppointment(Builder $query, int $actorId, ?CarbonInterface $now = null): Builder
     {
         $now = self::clock($now);
-        $day = $now->toDateString();
-        $time = $now->format('H:i:s');
+        $upcoming = DB::table('appointments as upcoming')->select('upcoming.id');
+        self::futureRelevant($upcoming, $now, $actorId, 'upcoming');
 
-        return $query->selectRaw(
-            '(SELECT upcoming.id FROM appointments AS upcoming
-                WHERE upcoming.patient_id = patients.id
-                  AND upcoming.estado_cita NOT IN (?, ?)
-                  AND (
-                    upcoming.fecha_cita > ?
-                    OR (upcoming.fecha_cita = ? AND upcoming.hora_cita > ?)
-                  )
-                ORDER BY upcoming.fecha_cita ASC, upcoming.hora_cita ASC, upcoming.id ASC
-                LIMIT 1) AS relevant_appointment_id',
-            ['CANCELADO', 'NO_ASISTIO', $day, $day, $time]
+        return $query->selectSub(
+            $upcoming->orderBy('upcoming.fecha_cita')->orderBy('upcoming.hora_cita')
+                ->orderBy('upcoming.id')->limit(1),
+            'relevant_appointment_id'
         );
     }
 
@@ -158,20 +155,19 @@ class PendingPatientChartQuery
         return 'Próxima '.$date.' '.$time;
     }
 
-    private static function futureRelevant(object $appointments, CarbonInterface $now): void
+    private static function futureRelevant(QueryBuilder $appointments, CarbonInterface $now, int $actorId, string $table = 'appointments'): void
     {
         $day = $now->toDateString();
         $time = $now->format('H:i:s');
 
-        $appointments->selectRaw('1')
-            ->from('appointments')
-            ->whereColumn('appointments.patient_id', 'patients.id')
-            ->whereNotIn('appointments.estado_cita', ['CANCELADO', 'NO_ASISTIO'])
-            ->where(function ($future) use ($day, $time): void {
-                $future->where('appointments.fecha_cita', '>', $day)
-                    ->orWhere(function ($laterToday) use ($day, $time): void {
-                        $laterToday->where('appointments.fecha_cita', $day)
-                            ->where('appointments.hora_cita', '>', $time);
+        AppointmentVisibility::apply($appointments, $actorId, $table)
+            ->whereColumn($table.'.patient_id', 'patients.id')
+            ->whereNotIn($table.'.estado_cita', ['CANCELADO', 'NO_ASISTIO'])
+            ->where(function (QueryBuilder $future) use ($day, $time, $table): void {
+                $future->where($table.'.fecha_cita', '>', $day)
+                    ->orWhere(function (QueryBuilder $laterToday) use ($day, $time, $table): void {
+                        $laterToday->where($table.'.fecha_cita', $day)
+                            ->where($table.'.hora_cita', '>', $time);
                     });
             });
     }

@@ -109,7 +109,7 @@ class DoctorScheduleWorkspaceController extends Controller
             'new_end' => 'nullable|date_format:H:i,H:i:s|after:new_start',
         ]);
 
-        $result = $impact->inspect($doctorSchedule, $data);
+        $result = $impact->inspect($doctorSchedule, $data, (int) $request->user()->id);
 
         return response()->json([
             'count' => $result->count(),

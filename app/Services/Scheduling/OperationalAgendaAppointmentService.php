@@ -21,13 +21,14 @@ class OperationalAgendaAppointmentService
     /**
      * @return Collection<int, Appointment>
      */
-    public function forRange(AgendaQuery $query): Collection
+    public function forRange(AgendaQuery $query, int $actorId): Collection
     {
         if ($query->doctorIds() === []) {
             return collect();
         }
 
         return Appointment::query()
+            ->visibleToAgendaUser($actorId)
             ->select([
                 'id',
                 'user_id',
