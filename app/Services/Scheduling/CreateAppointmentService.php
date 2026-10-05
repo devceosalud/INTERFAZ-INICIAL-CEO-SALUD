@@ -185,7 +185,7 @@ class CreateAppointmentService
         return Appointment::query()
             ->where('doctor_id', $data->doctorId)
             ->whereDate('fecha_cita', $data->date)
-            ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
+            ->consumingRegularSlot()
             ->get(['hora_cita', 'duracion_cita'])
             ->contains(function (Appointment $appointment) use ($candidate, $data) {
                 $existing = TimeRange::fromMinutes(

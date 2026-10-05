@@ -151,7 +151,7 @@ class DoctorAvailabilityService
                 $agenda->start()->toDateString(),
                 $agenda->end()->toDateString(),
             ])
-            ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
+            ->consumingRegularSlot()
             ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $agenda->siteId()))
             ->get(['doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita', 'estado_cita']);
     }
@@ -198,7 +198,7 @@ class DoctorAvailabilityService
         $appointments = Appointment::query()
             ->where('doctor_id', $query->doctorId())
             ->whereDate('fecha_cita', $query->dateString())
-            ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
+            ->consumingRegularSlot()
             ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query->siteId()))
             ->get(['hora_cita', 'duracion_cita', 'estado_cita']);
 
