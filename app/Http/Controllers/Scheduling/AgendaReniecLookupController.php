@@ -26,7 +26,7 @@ class AgendaReniecLookupController extends Controller
 
         $data = $request->validate([
             'tipo_identificacion' => ['required', 'in:DNI'],
-            'numero_identidad' => ['required', 'string', 'max:255'],
+            'numero_identidad' => ['required', 'string', 'regex:/\A[0-9]{8}\z/'],
         ]);
 
         try {

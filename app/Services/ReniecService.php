@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Reniec\ApisPeruReniecProvider;
 use App\Services\Reniec\AqpfactReniecProvider;
+use App\Services\Reniec\FactilizaReniecProvider;
 use App\Services\Reniec\ReniecProviderInterface;
 
 class ReniecService
@@ -40,6 +41,11 @@ class ReniecService
     private function provider($timeoutSeconds): ?ReniecProviderInterface
     {
         $selected = config('apidatosperu.reniec_provider');
+
+        if ($selected === 'factiliza') {
+            return new FactilizaReniecProvider(config('apidatosperu.factiliza.base_url'),
+                config('apidatosperu.factiliza.token'), $timeoutSeconds);
+        }
 
         if ($selected === 'aqpfact') {
             return new AqpfactReniecProvider(
