@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Scheduling;
 
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
-use App\Models\DoctorService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
+use Illuminate\Validation\ValidationException;
 use App\Models\Channel;
 use App\Models\InteractionMedium;
 use App\Models\Site;
@@ -30,21 +31,32 @@ class AgendaBoardController extends Controller
     {
         DemoChannelCatalog::ensure();
 
-        $doctorServices = DoctorService::query()
+        $resolver = app(ActiveDoctorServiceResolver::class);
+        $doctorServices = $resolver->query()
             ->with('service:id,nombre')
-            ->where('estado', 'ACTIVO')
-            ->whereHas('service', fn ($query) => $query->where('estado', 'ACTIVO'))
             ->orderBy('doctor_id')
             ->orderBy('service_id')
             ->get(['id', 'doctor_id', 'service_id', 'precio_primera_consulta'])
             ->groupBy('doctor_id')
-            ->map(fn ($rows) => $rows->map(fn (DoctorService $doctorService) => [
-                'service_id' => (int) $doctorService->service_id,
-                'nombre' => $doctorService->service ? $doctorService->service->nombre : 'Servicio sin nombre',
-                'precio' => $doctorService->precio_primera_consulta !== null
-                    ? (float) $doctorService->precio_primera_consulta
-                    : null,
-            ])->values()->all())
+            ->map(fn ($rows) => $rows->groupBy('service_id')->map(function ($assignments) use ($resolver) {
+                $doctorService = $assignments->first();
+                try {
+                    $doctorService = $resolver->uniqueAssignment($assignments);
+                    $available = (float) $doctorService->precio_primera_consulta > 0;
+                } catch (ValidationException $exception) {
+                    $available = false;
+                }
+
+                return [
+                    'service_id' => (int) $doctorService->service_id,
+                    'nombre' => $doctorService->service ? $doctorService->service->nombre : 'Servicio sin nombre',
+                    'precio' => $available ? (float) $doctorService->precio_primera_consulta : null,
+                    'disponible' => $available,
+                    'motivo' => $assignments->count() > 1
+                        ? 'Asignación duplicada: requiere revisión del catálogo'
+                        : ($available ? null : 'Sin precio normal válido'),
+                ];
+            })->values()->all())
             ->all();
 
         return view('scheduling.agenda.index', [
@@ -65,6 +77,8 @@ class AgendaBoardController extends Controller
                 ->get(['id', 'name']),
             'canWritePatients' => PatientWriteAccess::allows(auth()->user()),
             'canCreateAppointments' => auth()->user()->can(SchedulingCapability::CREATE),
+            'canRescheduleAppointments' => auth()->user()->can(SchedulingCapability::RESCHEDULE),
+            'canCreateAdditional' => auth()->user()->can(SchedulingCapability::CREATE_ADDITIONAL),
             'canAssignResponsible' => auth()->user()->can(SchedulingCapability::ASSIGN_RESPONSIBLE),
             'doctorServices' => $doctorServices,
             'legend' => AgendaLegend::ordered(),

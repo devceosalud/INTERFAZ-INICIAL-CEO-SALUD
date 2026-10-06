@@ -23,6 +23,11 @@
                     data-feed="{{ route('scheduling.mvp.agenda.feed') }}"
                     data-appointment-store="{{ route('scheduling.mvp.agenda.appointments.store') }}"
                     data-can-create-appointments="{{ $canCreateAppointments ? '1' : '0' }}"
+                    data-additional-store="{{ route('scheduling.mvp.agenda.appointments.additional') }}"
+                    data-reschedule-url="{{ url('/scheduling-mvp/agenda/appointments') }}"
+                    data-can-reschedule="{{ $canRescheduleAppointments ? '1' : '0' }}"
+                    data-can-additional="{{ $canCreateAdditional ? '1' : '0' }}"
+                    data-click-events="{{ route('scheduling.mvp.agenda.click-events') }}"
                     data-can-assign-responsible="{{ $canAssignResponsible ? '1' : '0' }}"
                     data-today="{{ $today }}"
                     data-grid-minutes="20">
@@ -44,6 +49,9 @@
                             <div class="agenda-center__head">
                                 <div>
                                     <h2 class="agenda-section-title" id="agenda-title">Agenda horaria</h2>
+                                    @can(\App\Support\Scheduling\SchedulingCapability::VIEW_AUDIT)
+                                        <a href="{{ route('scheduling.mvp.agenda.heatmap') }}">Mapa de clics</a>
+                                    @endcan
                                     <p class="agenda-range" id="agenda-range-label" aria-live="polite"></p>
                                 </div>
 
@@ -147,5 +155,7 @@
     <script src="{{ asset('js/scheduling/agenda-patient-lookup.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-click-telemetry.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

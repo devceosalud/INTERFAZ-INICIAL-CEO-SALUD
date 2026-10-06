@@ -11,6 +11,8 @@ use App\Models\Patient;
 use App\Models\Voucher;
 use App\Models\VoucherSerie;
 use App\Services\SunatService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Iterator;
@@ -223,6 +225,7 @@ class Sales extends Component
 
     public function updatedBusqueda()
     {
+        $this->resetValidation('catalog');
         if (strlen($this->busqueda) < 2) {
             $this->resultadosBusqueda = [];
             return;
@@ -244,34 +247,47 @@ class Sales extends Component
             ->where('estado', 'ACTIVO')
             ->where('nombre', 'like', "%{$this->busqueda}%");
 
-        $servicios = DB::table('services')
-            ->join('doctor_services', 'doctor_services.service_id', '=', 'services.id')
-            ->select(
-                'services.id',
-                'services.nombre',
-                DB::raw("'servicio' as tipo_origen"),
-                DB::raw("'CONSULTA MEDICA' as categoria"),
-                'doctor_services.precio_primera_consulta as precio',
-                DB::raw("0 as comision"),
-                DB::raw("'10' as afectacion_igv"),
-                DB::raw("NULL as codigo_sunat"),
-                DB::raw("'ZZ' as unidad_medida_sunat")
-            )
-            ->where('services.estado', 'ACTIVO')
-            ->where('services.nombre', 'like', "%{$this->busqueda}%");
-
-        $this->resultadosBusqueda = $items->unionAll($servicios)
-            ->limit(15)
-            ->get()
-            ->map(fn($r) => (array) $r)
-            ->toArray();
+        $results = $items->limit(15)->get()->map(fn ($row) => (array) $row);
+        if ($this->filtroDoctorId) {
+            $resolver = app(ActiveDoctorServiceResolver::class);
+            $assignments = $resolver->query()->with('service:id,nombre')
+                ->where('doctor_id', $this->filtroDoctorId)
+                ->whereHas('service', fn ($q) => $q->where('nombre', 'like', "%{$this->busqueda}%"))->get();
+            try {
+                $resolver->assertUniquePairs($assignments);
+                $results = $results->concat($assignments->map(fn ($row) => [
+                    'id' => (int) $row->service_id, 'nombre' => $row->service->nombre,
+                    'tipo_origen' => 'servicio', 'categoria' => 'CONSULTA MEDICA',
+                    'precio' => (float) $row->precio_primera_consulta, 'comision' => 0,
+                    'afectacion_igv' => '10', 'codigo_sunat' => null, 'unidad_medida_sunat' => 'ZZ',
+                ]));
+            } catch (ValidationException $exception) {
+                $this->addError('catalog', $exception->errors()['service_id'][0]);
+            }
+        }
+        $this->resultadosBusqueda = $results->take(15)->values()->all();
         //dd($this->resultadosBusqueda);
     }
 
     public function agregarAlCarrito(array $resultado)
     {
         if (in_array($resultado['tipo_origen'], ['cita', Appointment::class], true)) {
-            Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($resultado['id'])->firstOr(fn () => abort(404));
+            $appointment = Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($resultado['id'])->firstOr(fn () => abort(404));
+            $resultado['precio'] = (float) $appointment->precio_programado;
+        }
+        if ($resultado['tipo_origen'] === 'servicio') {
+            $this->resetValidation('catalog');
+            if (!$this->filtroDoctorId) {
+                $this->addError('catalog', 'Seleccione un médico antes de agregar un servicio.');
+                return;
+            }
+            try {
+                $assignment = app(ActiveDoctorServiceResolver::class)->resolve($this->filtroDoctorId, (int) $resultado['id']);
+                $resultado['precio'] = (float) $assignment->precio_primera_consulta;
+            } catch (ValidationException $exception) {
+                $this->addError('catalog', $exception->errors()['service_id'][0]);
+                return;
+            }
         }
         //dd($resultado);
         $this->carrito[] = [
@@ -289,6 +305,12 @@ class Sales extends Component
 
         $this->busqueda = '';
         $this->resultadosBusqueda = [];
+    }
+
+    public function updatedFiltroDoctorId()
+    {
+        $this->resultadosBusqueda = [];
+        $this->updatedBusqueda();
     }
 
     public function getCalculoCarritoProperty()
@@ -426,11 +448,6 @@ class Sales extends Component
             ->join('patients', 'patients.id', '=', 'appointments.patient_id')
             ->join('doctors', 'doctors.id', '=', 'appointments.doctor_id')
             ->join('services', 'services.id', '=', 'appointments.service_id')
-            ->join('doctor_services', function ($j) {
-                $j->on('doctor_services.doctor_id', '=', 'appointments.doctor_id')
-                    ->on('doctor_services.service_id', '=', 'appointments.service_id');
-            })
-            ->leftJoin('additional_rates', 'additional_rates.id', '=', 'appointments.additional_rate_id')
             ->where(function ($q) {
                 $q->whereRaw("CONCAT_WS(' ', patients.nombre, patients.apellido_paterno, patients.apellido_materno) LIKE ?", ["%{$this->buscarCita}%"])
                     ->orWhere('appointments.numero_cita', 'like', "%{$this->buscarCita}%");
@@ -447,13 +464,13 @@ class Sales extends Component
                 'doctors.id as doctor_id',
                 'doctors.nombre as doctor_nombre',
                 'services.nombre as servicio_nombre',
-                'doctor_services.precio_primera_consulta',
-                DB::raw('COALESCE(additional_rates.tarifa,0) as tarifa_adicional')
+                'appointments.precio_programado'
             )
             ->limit(10)
             ->get()
             ->map(function ($c) {
-                $precioTotal = (float) $c->precio_primera_consulta + (float) $c->tarifa_adicional;
+                // This appointment already has an economic snapshot; never reprice it from today's catalogue.
+                $precioTotal = (float) $c->precio_programado;
                 $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->where('tipo_comprobante', 'TICKET')
                     ->whereHas('items', fn($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
                     ->latest()
@@ -493,7 +510,7 @@ class Sales extends Component
             'item_type' => 'cita',
             'item_id' => $appointmentId,
             'descripcion' => 'Consulta médica',
-            'precio' => $precio,
+            'precio' => (float) $appointment->precio_programado,
             'cantidad' => 1,
             'afectacion_igv' => '10', // confirma con tu contador si las consultas son GRAVADA o EXONERADA
             'codigo_sunat' => null,

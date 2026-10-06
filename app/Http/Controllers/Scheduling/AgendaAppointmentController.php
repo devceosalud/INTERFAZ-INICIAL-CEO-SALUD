@@ -6,12 +6,50 @@ use App\Exceptions\Scheduling\AppointmentConfigurationException;
 use App\Exceptions\Scheduling\AppointmentSlotUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Scheduling\StoreAgendaAppointmentRequest;
+use App\Http\Requests\Scheduling\StoreAdditionalAppointmentRequest;
+use App\Http\Requests\Scheduling\RescheduleAgendaAppointmentRequest;
+use App\Services\Scheduling\RescheduleAppointmentService;
 use App\Services\Scheduling\CreateAppointmentService;
 use App\Support\Scheduling\CreateAppointmentData;
 use Illuminate\Http\JsonResponse;
 
 class AgendaAppointmentController extends Controller
 {
+    public function additional(StoreAdditionalAppointmentRequest $request, CreateAppointmentService $appointments): JsonResponse
+    {
+        try {
+            $appointment = $appointments->createAdditional(CreateAppointmentData::fromValidated($request->validated(), (int) $request->user()->id));
+        } catch (AppointmentSlotUnavailableException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        } catch (AppointmentConfigurationException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['message' => 'Cita adicional registrada', 'appointment' => [
+            'appointment_id' => (int) $appointment->id,
+            'estado_agenda' => $appointment->estado_agenda, 'tipo_agendamiento' => $appointment->tipo_agendamiento,
+        ]], 201);
+    }
+
+    public function reschedule(RescheduleAgendaAppointmentRequest $request, int $appointmentId, RescheduleAppointmentService $appointments): JsonResponse
+    {
+        try {
+            $data = $request->validated();
+            $appointment = $appointments->reschedule($appointmentId, (int) $request->user()->id,
+                $data['fecha_cita'], $data['hora_cita'], $data['expected_fecha_cita'], $data['expected_hora_cita']);
+        } catch (AppointmentSlotUnavailableException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        } catch (AppointmentConfigurationException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['message' => 'Cita reprogramada', 'appointment' => [
+            'appointment_id' => (int) $appointment->id,
+            'fecha' => substr((string) $appointment->fecha_cita, 0, 10),
+            'hora' => substr((string) $appointment->hora_cita, 0, 5),
+        ]]);
+    }
+
     public function store(
         StoreAgendaAppointmentRequest $request,
         CreateAppointmentService $appointments

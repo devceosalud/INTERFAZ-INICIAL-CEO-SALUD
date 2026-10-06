@@ -9,7 +9,7 @@ use App\Models\Appointment;
 use App\Models\CashierShift;
 use App\Models\Channel;
 use App\Models\DoctorSchedule;
-use App\Models\DoctorService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
 use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Service;
@@ -159,7 +159,7 @@ class AppointmentController extends Controller
 
 
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
-        $doctorService = DoctorService::find($request->service_id); //cargamos el id de la tabla DoctorServices
+        $doctorService = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $request->service_id, (int) $request->doctor_id);
         $service = Service::find($doctorService->service_id);       //buscamos el servicio por id
 
         $appointment = DB::transaction(function () use (

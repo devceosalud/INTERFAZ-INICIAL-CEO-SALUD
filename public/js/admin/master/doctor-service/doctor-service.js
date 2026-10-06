@@ -43,11 +43,12 @@ $("#formCreateDoctorService").on("submit", function (e) {
         },
 
         error: function (xhr) {
-            console.log(xhr.responseText);
+            const errors = (xhr.responseJSON && xhr.responseJSON.errors) || {};
+            const firstError = Object.values(errors).flat()[0];
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Ocurrió un error al guardar el paciente",
+                text: firstError || "Ocurrió un error al guardar la asignación del médico y servicio",
             });
         },
 

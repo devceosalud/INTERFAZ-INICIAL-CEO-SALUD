@@ -1990,3 +1990,7 @@ body.agenda-modal-open {
     .agenda-legend { gap: 3px 8px }
     .agenda-comparison { min-height: 500px }
 }
+
+.agenda-board .agenda-btn--additional { color: #6b21a8; border-color: #9333ea; background: #f3e8ff }
+.agenda-board .agenda-day-entry--available { color: #1b7f5a; background: #fff; border-left: 3px solid #1b7f5a }
+.agenda-board #agenda-reschedule-form { margin-top: 12px; padding: 10px; border: 1px solid var(--agenda-border); border-radius: 8px }

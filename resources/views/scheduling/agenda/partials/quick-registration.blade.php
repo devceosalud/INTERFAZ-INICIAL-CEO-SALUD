@@ -97,6 +97,18 @@
             Agendar cita
         </button>
 
+        @if ($canCreateAdditional)
+            <button type="button" class="agenda-btn agenda-btn--additional" id="agenda-additional-start" disabled>+ Cita adicional</button>
+        @endif
+        @if ($canRescheduleAppointments)
+            <form id="agenda-reschedule-form" hidden>
+                <p>Reprogramar la cita seleccionada, conservando paciente, servicio y precio.</p>
+                <label class="agenda-field"><span>Fecha destino</span><input id="agenda-reschedule-date" class="agenda-field__input" type="date" required></label>
+                <label class="agenda-field"><span>Hora destino</span><input id="agenda-reschedule-time" class="agenda-field__input" type="time" required></label>
+                <button type="submit" class="agenda-btn">Reprogramar cita</button>
+            </form>
+        @endif
+
         <button type="button" class="agenda-btn agenda-complete-registration"
             id="agenda-complete-registration" disabled hidden
             title="Abre la ficha maestra del paciente dentro de Agenda">

@@ -1,6 +1,9 @@
 <div class="">
     <div class="card">
         <div class="card-body">
+            @error('catalog')
+                <div class="alert alert-danger" role="alert">{{ $message }}</div>
+            @enderror
             @if (session('ok'))
                 <div class="alert alert-success"> {{ session('ok') }} </div>
             @endif
@@ -202,6 +205,7 @@
                 <div class="position-relative mb-3">
                     <input type="text" wire:model.live.debounce.300ms="busqueda"
                         placeholder="Buscar servicio, examen o producto..." class="form-control">
+                    <small>Seleccione un médico para buscar servicios; los productos no requieren médico.</small>
 
                     @if (count($resultadosBusqueda) > 0)
                         <div class="list-group position-absolute w-100 shadow bg-white" style="z-index:1000">

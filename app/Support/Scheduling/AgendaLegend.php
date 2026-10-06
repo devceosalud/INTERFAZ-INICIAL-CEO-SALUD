@@ -31,6 +31,8 @@ final class AgendaLegend
 
     public const OFF_HOURS = 'SIN_HORARIO';
 
+    public const ADDITIONAL = 'ADICIONAL';
+
     /**
      * @return array<string, array<string, string>>
      */
@@ -76,6 +78,11 @@ final class AgendaLegend
                 'color' => '#6b7280',
                 'fondo' => '#f4f5f7',
                 'descripcion' => 'El profesional no tiene horario configurado en ese momento.',
+            ],
+            self::ADDITIONAL => [
+                'clave' => self::ADDITIONAL, 'etiqueta' => 'ADICIONAL', 'glifo' => '+',
+                'color' => '#6b21a8', 'fondo' => '#f3e8ff',
+                'descripcion' => 'Cita adicional aceptada; no consume slot regular ni implica pago.',
             ],
         ];
     }

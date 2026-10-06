@@ -8,6 +8,7 @@ use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\AgendaRange;
 use App\Support\Scheduling\AppointmentOccupancy;
+use App\Support\Scheduling\AppointmentAgendaLifecycle;
 use App\Support\Scheduling\AvailabilitySlot;
 use App\Support\Scheduling\DayAvailability;
 use Carbon\Carbon;
@@ -256,11 +257,13 @@ class AgendaBoardPresenter
     protected function appointmentEvent(Appointment $appointment, array $professional): array
     {
         $state = (string) $appointment->estado_cita;
-        $legend = AgendaLegend::of(
+        $additional = $appointment->estado_agenda === AppointmentAgendaLifecycle::CONFIRMED
+            && $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::ADDITIONAL;
+        $legend = AgendaLegend::of($additional ? AgendaLegend::ADDITIONAL : (
             in_array($state, [AgendaLegend::SCHEDULED, AgendaLegend::CONFIRMED], true)
                 ? $state
                 : AgendaLegend::BUSY
-        );
+        ));
         $date = substr((string) $appointment->fecha_cita, 0, 10);
         $start = substr((string) $appointment->hora_cita, 0, 5);
         $minutes = $this->appointmentMinutes($appointment, $professional, $date, $start);
@@ -274,7 +277,7 @@ class AgendaBoardPresenter
 
         return [
             'id' => 'cita-'.$appointment->id,
-            'title' => $start.' | Sí | '.($paymentState !== '' ? $paymentState : '—').' | '
+            'title' => ($additional ? 'ADICIONAL | ' : '').$start.' | Sí | '.($paymentState !== '' ? $paymentState : '—').' | '
                 .($clinicalRecord !== '' ? $clinicalRecord : '—').' | '.$patientName,
             'start' => $date.'T'.$start.':00',
             'end' => $date.'T'.$end.':00',
@@ -294,6 +297,8 @@ class AgendaBoardPresenter
                 'minutos' => $minutes,
                 'estado' => AvailabilitySlot::STATUS_OCCUPIED,
                 'estado_cita' => $state,
+                'estado_agenda' => $appointment->estado_agenda,
+                'tipo_agendamiento' => $appointment->tipo_agendamiento,
                 'estado_pagado' => $paymentState !== '' ? $paymentState : null,
                 'historia_clinica' => $clinicalRecord !== '' ? $clinicalRecord : null,
                 'site_id' => $appointment->site_id ? (int) $appointment->site_id : null,

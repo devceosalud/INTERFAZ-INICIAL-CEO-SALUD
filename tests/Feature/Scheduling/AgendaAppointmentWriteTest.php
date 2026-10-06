@@ -11,6 +11,7 @@ use App\Models\Service;
 use App\Support\Scheduling\SchedulingCapability;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Tests\Concerns\BuildsBaselineData;
 use Tests\TestCase;
@@ -165,7 +166,8 @@ class AgendaAppointmentWriteTest extends TestCase
 
     public function test_duplicate_active_assignments_are_rejected_with_a_distinct_message(): void
     {
-        DoctorService::create([
+        // Simulate pre-existing legacy corruption, bypassing the new application write guard.
+        DB::table('doctor_services')->insert([
             'doctor_id' => $this->catalog['doctor']->id,
             'service_id' => $this->catalog['service']->id,
             'precio_primera_consulta' => 180,
@@ -181,6 +183,25 @@ class AgendaAppointmentWriteTest extends TestCase
                 'Este médico tiene más de una asignación activa para el servicio seleccionado. Deje solo una antes de agendar.'
             );
         $this->assertDatabaseCount('appointments', 0);
+    }
+
+    public function test_board_marks_ambiguous_services_unavailable_without_choosing_a_price(): void
+    {
+        DB::table('doctor_services')->insert([
+            'doctor_id' => $this->catalog['doctor']->id,
+            'service_id' => $this->catalog['service']->id,
+            'precio_primera_consulta' => 180,
+            'estado' => 'ACTIVO',
+        ]);
+
+        $this->actingAs($this->creator)->get(route('scheduling.mvp.agenda'))
+            ->assertOk()->assertViewHas('doctorServices', function ($catalog) {
+                $services = $catalog[$this->catalog['doctor']->id];
+
+                return count($services) === 1
+                    && $services[0]['disponible'] === false
+                    && str_contains($services[0]['motivo'], 'duplicada');
+            });
     }
 
     public function test_service_must_be_the_unique_active_assignment_of_the_selected_doctor(): void

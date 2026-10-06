@@ -6,10 +6,10 @@ use RuntimeException;
 
 class AppointmentSlotUnavailableException extends RuntimeException
 {
-    public function __construct()
+    public function __construct(?string $message = null)
     {
         parent::__construct(
-            'El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.'
+            $message ?? 'El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.'
         );
     }
 }

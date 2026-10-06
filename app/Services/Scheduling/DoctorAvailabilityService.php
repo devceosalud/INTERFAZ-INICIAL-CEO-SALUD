@@ -35,6 +35,12 @@ class DoctorAvailabilityService
         return $this->compose($query, $blocks, $this->occupiedIntervals($query, $blocks));
     }
 
+    /** Real operating slots, including occupied ones. Used only to validate writes. */
+    public function scheduledSlots(AvailabilityQuery $query): Collection
+    {
+        return $this->compose($query, $this->operatingBlocks($query), collect())->slots();
+    }
+
     /**
      * Availability for several professionals across a date range, in a fixed number of
      * queries: one for the operating blocks and one for the appointments, however many days

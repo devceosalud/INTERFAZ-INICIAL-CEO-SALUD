@@ -3,18 +3,16 @@
 namespace App\Services\Scheduling;
 
 use App\Exceptions\Scheduling\AppointmentConfigurationException;
-use App\Exceptions\Scheduling\AppointmentSlotUnavailableException;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorService;
 use App\Models\User;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
+use Illuminate\Validation\ValidationException;
 use App\Support\Scheduling\AppointmentNumberGenerator;
-use App\Support\Scheduling\AppointmentOccupancy;
-use App\Support\Scheduling\AvailabilityQuery;
+use App\Support\Scheduling\AppointmentAgendaLifecycle;
 use App\Support\Scheduling\CreateAppointmentData;
 use App\Support\Scheduling\StandardAdditionalRateResolver;
-use App\Support\Scheduling\TimeRange;
-use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -23,7 +21,7 @@ class CreateAppointmentService
 {
     public const NUMBER_ATTEMPTS = 3;
 
-    protected $availability;
+    protected $slots;
 
     protected $rates;
 
@@ -34,16 +32,26 @@ class CreateAppointmentService
         StandardAdditionalRateResolver $rates,
         AppointmentNumberGenerator $numbers
     ) {
-        $this->availability = $availability;
+        $this->slots = new AppointmentSlotValidator($availability);
         $this->rates = $rates;
         $this->numbers = $numbers;
     }
 
     public function create(CreateAppointmentData $data): Appointment
     {
+        return $this->createWithMode($data, false);
+    }
+
+    public function createAdditional(CreateAppointmentData $data): Appointment
+    {
+        return $this->createWithMode($data, true);
+    }
+
+    private function createWithMode(CreateAppointmentData $data, bool $additional): Appointment
+    {
         for ($attempt = 1; $attempt <= self::NUMBER_ATTEMPTS; $attempt++) {
             try {
-                return DB::transaction(function () use ($data, $attempt) {
+                return DB::transaction(function () use ($data, $attempt, $additional) {
                     $doctor = Doctor::query()->lockForUpdate()->find($data->doctorId);
 
                     if ($doctor === null || $doctor->estado !== 'ACTIVO') {
@@ -54,7 +62,8 @@ class CreateAppointmentService
                     $responsible = $this->resolveResponsible($data->responsibleUserId);
                     $rate = $this->resolveStandardRate($data->date);
 
-                    $this->assertSlotIsAvailable($data);
+                    $this->slots->assertValid($data->doctorId, $data->date, $data->time,
+                        $data->duration, $data->siteId, null, $additional);
 
                     $price = (float) $doctorService->precio_primera_consulta;
                     if ($price <= 0) {
@@ -87,6 +96,8 @@ class CreateAppointmentService
                         'estado_pagado' => 'PENDIENTE',
                         'numero_operacion' => null,
                         'estado_cita' => 'PROGRAMADO',
+                        'estado_agenda' => $additional ? AppointmentAgendaLifecycle::CONFIRMED : AppointmentAgendaLifecycle::LEGACY,
+                        'tipo_agendamiento' => $additional ? AppointmentAgendaLifecycle::ADDITIONAL : null,
                         'observaciones' => null,
                         'fecha_registro' => now()->toDateString(),
                     ]);
@@ -103,27 +114,11 @@ class CreateAppointmentService
 
     protected function resolveDoctorService(CreateAppointmentData $data): DoctorService
     {
-        $matches = DoctorService::query()
-            ->where('doctor_id', $data->doctorId)
-            ->where('service_id', $data->serviceId)
-            ->where('estado', 'ACTIVO')
-            ->whereHas('service', fn ($query) => $query->where('estado', 'ACTIVO'))
-            ->limit(2)
-            ->get();
-
-        if ($matches->isEmpty()) {
-            throw new AppointmentConfigurationException(
-                'El servicio seleccionado no tiene una asignación activa para este médico.'
-            );
+        try {
+            return app(ActiveDoctorServiceResolver::class)->resolve($data->doctorId, $data->serviceId);
+        } catch (ValidationException $exception) {
+            throw new AppointmentConfigurationException($exception->errors()['service_id'][0], 0, $exception);
         }
-
-        if ($matches->count() > 1) {
-            throw new AppointmentConfigurationException(
-                'Este médico tiene más de una asignación activa para el servicio seleccionado. Deje solo una antes de agendar.'
-            );
-        }
-
-        return $matches->first();
     }
 
     protected function resolveResponsible(?int $responsibleUserId): ?User
@@ -153,48 +148,6 @@ class CreateAppointmentService
         } catch (RuntimeException $exception) {
             throw new AppointmentConfigurationException($exception->getMessage(), 0, $exception);
         }
-    }
-
-    protected function assertSlotIsAvailable(CreateAppointmentData $data): void
-    {
-        $date = Carbon::createFromFormat('Y-m-d', $data->date)->startOfDay();
-        $availability = $this->availability->forDay(new AvailabilityQuery(
-            $data->doctorId,
-            $date,
-            $data->siteId
-        ));
-
-        $slot = $availability->availableSlots()->first(function ($slot) use ($data) {
-            return $slot->startsAt($data->time)
-                && $slot->range()->minutes() === $data->duration
-                && $slot->siteId() === $data->siteId;
-        });
-
-        if ($slot === null || $this->hasCrossSiteOverlap($data, $date)) {
-            throw new AppointmentSlotUnavailableException();
-        }
-    }
-
-    protected function hasCrossSiteOverlap(CreateAppointmentData $data, Carbon $date): bool
-    {
-        $candidate = TimeRange::fromMinutes(
-            Carbon::parse($data->date.' '.$data->time),
-            $data->duration
-        );
-
-        return Appointment::query()
-            ->where('doctor_id', $data->doctorId)
-            ->whereDate('fecha_cita', $data->date)
-            ->consumingRegularSlot()
-            ->get(['hora_cita', 'duracion_cita'])
-            ->contains(function (Appointment $appointment) use ($candidate, $data) {
-                $existing = TimeRange::fromMinutes(
-                    Carbon::parse($data->date.' '.substr((string) $appointment->hora_cita, 0, 8)),
-                    AppointmentOccupancy::minutesFor($appointment->duracion_cita)
-                );
-
-                return $candidate->overlaps($existing);
-            });
     }
 
     protected function isAppointmentNumberCollision(QueryException $exception): bool

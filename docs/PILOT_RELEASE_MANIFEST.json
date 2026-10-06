@@ -1,0 +1,1087 @@
+{
+  "status": "LOCAL_RELEASE_CANDIDATE_NOT_DEPLOYMENT_AUTHORIZATION",
+  "branch": "pilot/agenda-horarios-clientes",
+  "declared_production_baseline": "6552e52521ac59d9c1bf8bc3efd880533a87d11d",
+  "production_not_contacted": true,
+  "committed_base": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+  "pilot_commit": {
+    "resolve_with": "git log -1 --format=%H -- docs/PILOT_RELEASE_MANIFEST.json",
+    "note": "Manifest is committed atomically with this release candidate; the commit SHA is supplied by Git."
+  },
+  "protected_working_tree_files_excluded": [
+    "app/Http/Controllers/admin/master/doctor/DoctorController.php",
+    "app/Http/Controllers/admin/master/doctorService/DoctorServiceController.php",
+    "app/Http/Controllers/admin/master/user/UserController.php"
+  ],
+  "runtime_candidates": [
+    {
+      "path": "app/Exceptions/Scheduling/AppointmentConfigurationException.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "239b25dd67f2e218ad6c01d9fcc037ac526c512e",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Exceptions/Scheduling/AppointmentSlotUnavailableException.php",
+      "source": "release_candidate_content",
+      "sha256": "306e8a74cb3cd49658e7fa2b7d9b4abea4c67ca3510a0ca7bde453ead6dad7d4",
+      "git_blob": "5fedaa1ded2a6b251db8bb96afd8cc484057d326"
+    },
+    {
+      "path": "app/Http/Controllers/Api/appointment/AppointmentController.php",
+      "source": "release_candidate_content",
+      "sha256": "9a5cb2c63cc4463f9fd3b924997d86e584efa49c9542bf646e9aa5c19582968d",
+      "git_blob": "3a6168883ad3830f71dbc080a34973eb8c87487f"
+    },
+    {
+      "path": "app/Http/Controllers/Api/doctorSchedule/DoctorScheduleController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "3dadc8abe73250f1e50483b5dbf1cb89191f2d47",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "223a23da3f3a3d948a04baa7303547ac407ef4f3",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientMutationController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "4ffc1fe9bf78c9c9c04bf86548517787e3dbdbb7",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaAppointmentController.php",
+      "source": "release_candidate_content",
+      "sha256": "119570fb94e36c32c39a0dea27f8cba45b552443388c02744226ee1d49f8e1d7",
+      "git_blob": "becda1060692bc252333ebbc39495e5b2f3f40e7"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaBoardController.php",
+      "source": "release_candidate_content",
+      "sha256": "0708562f44cedc71d329501b1c5ed678f90950c364012bfdd8d787c5bf74423b",
+      "git_blob": "e6a790cef5bea98ed5c15aad16b796f2ca562ce5"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaFeedController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "1849f217cd749f8e988e0eda9c578cf4729e1887",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaHeatmapController.php",
+      "source": "release_candidate_content",
+      "sha256": "5b2aa53340a1714e099f7996848a7d6159ed2645daf557c11d4ab39d652bebb3",
+      "git_blob": "5857ce1dcb79e82c8d175b1d4e1b0a5c6187d7a7"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaPatientLookupController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9e59682e1856846e8bb2c0dbd7886204f8a50970",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaReniecLookupController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "6e9246848a067e17c668981d9e3e2e2c178b1732",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/DoctorAvailabilityController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "29bce379dd307d908a1c39105ace04d64b49e096",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/DoctorScheduleWorkspaceController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e3974124d97c8c500d82166052ef75bb2d958bfa",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/MvpAccessController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "aef87a59f53d8f379cb7674f34b1a0fc1b50db73",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/ScheduleOverlapWarningController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "bb04cc8417db752ff3722078e9aa7b732bdb0b27",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/admin/appointment/AppointmentController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "0cdc88abcdead49b015c80394d74aaf4d0b42360",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/admin/dashboard/DashboardController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d22f11770647824d28c6adc8ad022cdd4483f9d2",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/admin/master/doctor/DoctorController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "b22aeea2f919a2c838700ca9c1f864f6009cbe3d",
+      "protected_local_changes_excluded": true
+    },
+    {
+      "path": "app/Http/Controllers/admin/schedule/ScheduleController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "82df0c763c33123e9d1d8800da6854719e898a30",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/admissionist/appointment/AppointmentController.php",
+      "source": "release_candidate_content",
+      "sha256": "cd9d97c79d888e5820b98f76deeb7d0faa81b7828034512db9c7557d7d6350b6",
+      "git_blob": "ef42b8e4ec3032ada44f61c094ed48951c6c146c"
+    },
+    {
+      "path": "app/Http/Controllers/admissionist/patient/PatientController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "3b15ee166461312af6c820a4ea20f3f52a10b80d",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/admissionist/schedule/ScheduleController.php",
+      "source": "release_candidate_content",
+      "sha256": "fd01295a1b9670c5df28fd711eec5e9ff7341d2758bd932040cee9c18742dfcd",
+      "git_blob": "7b0144326706f2df241c5e4f82ec4a1caf022da3"
+    },
+    {
+      "path": "app/Http/Controllers/authenticator/auth/AuthController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "0b2e4dfd404f08b0f97bf3da9a9098caeee19328",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/message/MessageController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": null,
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/receptionist/appointment/AppointmentController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "ef48223340f893e67a7a5e4e0ff5b5851cf3a56a",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/receptionist/sale/SaleController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "3b1fe007e1b905fd2ae873c467ba60e1081537a2",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Controllers/receptionist/schedule/ScheduleController.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "cc816b6b30c887baa40b5fe807725ebe3ac40364",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Kernel.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "783b702bf2c3580499ac2b49fd136c32492ad318",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/CashMovements.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "0e57a15a20cc3fd23389fde4e6994baf73496e84",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/CashierShifts.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "928dbdf72a116302e126bccec3a4d1c73c099985",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/Concerns/RequiresCapability.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "13fa5f3f2297ecd0b7ad9d1a639641f424cca090",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/Concerns/RequiresRole.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "cc9668ebfdcb603ba32e9c72f496abce07b69a9a",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/Concerns/RequiresSchedulingMvpAccess.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "37e953303ccc668a8ee08ee6f70b3e7c9965b5d7",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Livewire/Sales.php",
+      "source": "release_candidate_content",
+      "sha256": "34addb4dc4c21971c8d464877e5414e0a71534acaeaa76c47b07749634813cdd",
+      "git_blob": "9c87677ac7368aa22f1c9fbe2e4272fd0a9ced6e"
+    },
+    {
+      "path": "app/Http/Middleware/EnsureSchedulingMvpEnabled.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d0eb79fff95fdaad8042118e39c644d34db53a01",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Requests/Scheduling/RescheduleAgendaAppointmentRequest.php",
+      "source": "release_candidate_content",
+      "sha256": "61b4237a4389aee9c2e8852ec9cff20dcd628b93a6521237a59c1924d297607a",
+      "git_blob": "05f3a3d205ab02ccf3e82ab3ddc63770fc889f10"
+    },
+    {
+      "path": "app/Http/Requests/Scheduling/StoreAdditionalAppointmentRequest.php",
+      "source": "release_candidate_content",
+      "sha256": "7437a28700420c7b8ba46217a72612ccc71e71291fadd84d7716bc80459917bc",
+      "git_blob": "1ea7e66185042eec9da706bd43af83c964cb17d9"
+    },
+    {
+      "path": "app/Http/Requests/Scheduling/StoreAgendaAppointmentRequest.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "48e17850da6b3c764200e468f511c15231dd0d25",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Http/Requests/Scheduling/StoreAgendaClickEventsRequest.php",
+      "source": "release_candidate_content",
+      "sha256": "3b98d62515aac82aed6156bacee1aae06709eeedf80ed37fa55a3641450c2c71",
+      "git_blob": "8c8acd87f1262db995767c9eb52d53b3595a0ea8"
+    },
+    {
+      "path": "app/Models/Appointment.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "0b8ac0e6edeb0a4ebef3b55104242385d43e05a5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Models/DoctorSchedule.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "bd808e98dc8d889a83fe1859e508ffeee9fade2f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Models/DoctorService.php",
+      "source": "release_candidate_content",
+      "sha256": "850bd65badf95182c6a9a77d905cafbf5756db84c1c0537fbe3222472100a101",
+      "git_blob": "0b8633b5dc926cc4f6b691673a1a9472c8664b63"
+    },
+    {
+      "path": "app/Models/Site.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "18ff4a7db368f096e1ed2e824b9ba0c113466c0f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Models/User.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "a27f732799c0f90d7be0cda306fd8d33a8867a6c",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Models/Voucher.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "fc774d83787b2ed875408ac8e0707dd8e7083fdf",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Providers/RouteServiceProvider.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "1304f581d689972a00d5ae1992c07f773c8b60cb",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Catalog/ActiveDoctorServiceResolver.php",
+      "source": "release_candidate_content",
+      "sha256": "15c144a607de17d712c3c6d7d3eec4f802c5bd3aba6cfd7ec1bc53a246f1d00b",
+      "git_blob": "c5ee196854986c5d991fcbf5ca560a0146178f59"
+    },
+    {
+      "path": "app/Services/Patients/PendingPatientChartQuery.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d07b5ebafa460998d9fe7c16db9580c54d048208",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Reniec/ApisPeruReniecProvider.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "2dd8560d143e659dd63b580dfb76aedd0f688069",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Reniec/AqpfactReniecProvider.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "6f90d4afecadd2fb96c61301a7d4c3501541b63b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Reniec/ReniecPersonData.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "1c5ab5ac584f28eb6405049d0d20f14bb1a4d02c",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Reniec/ReniecProviderInterface.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "460e2c94fb470a588bdf3caf2491a2f04026fcce",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/ReniecService.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "7157856d08f3316f67d8ca72ba910ecab3c8fd3b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Scheduling/AgendaBoardPresenter.php",
+      "source": "release_candidate_content",
+      "sha256": "3aad8079bbeb60e1f8f6f2cc02f07f3b7a44b14645a2c42ef7d81f9e831bbd23",
+      "git_blob": "86751ddfe6005707e8a386fab43624de50ae1225"
+    },
+    {
+      "path": "app/Services/Scheduling/AppointmentSlotValidator.php",
+      "source": "release_candidate_content",
+      "sha256": "bf673611d4a9f970f2b1c7dfa71939168c4d7277a86d950c809a2b4f2776a26e",
+      "git_blob": "eed5881d9c995169b4773186b7d9b9bb29cdf4a2"
+    },
+    {
+      "path": "app/Services/Scheduling/ConcreteScheduleConflict.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "da9cc5d1bda2ef8ef15478ee4e1b6c515e17ed37",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Scheduling/CreateAppointmentService.php",
+      "source": "release_candidate_content",
+      "sha256": "2e282b35e3958e0504a4d15fa84ca796adda0e200413843e0b31c1065b1df8af",
+      "git_blob": "14652ec1f2ab78ce68d6c4e450dc195002905d4f"
+    },
+    {
+      "path": "app/Services/Scheduling/DoctorAvailabilityService.php",
+      "source": "release_candidate_content",
+      "sha256": "8690cbf2979d9d1e391f0cca26079ac57b6636ddc451112d2509e4c40827d3ed",
+      "git_blob": "486cd034e9dd696428d0c1fdcc2abbd0b4e4263e"
+    },
+    {
+      "path": "app/Services/Scheduling/DoctorScheduleImpactService.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "7aefc506a4c9882efde0d243d8b10d4d4096e8a3",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Services/Scheduling/OperationalAgendaAppointmentService.php",
+      "source": "release_candidate_content",
+      "sha256": "4d5d264137684975f943cef64205b00b4cae402059fb341a247e9c69f41e4b06",
+      "git_blob": "c4639df26651d1431ea1ee84d3a6c8b135f1d214"
+    },
+    {
+      "path": "app/Services/Scheduling/RescheduleAppointmentService.php",
+      "source": "release_candidate_content",
+      "sha256": "8efbb3cda1fb17b6dd058cfbe379c1e1a4124da006de982bb35250068f28599a",
+      "git_blob": "66faeb1626ff431cb5cf41b6c2b0093dc9a87171"
+    },
+    {
+      "path": "app/Services/Scheduling/ScheduleOverlapDetector.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "5d84c5372d1f3971fa414bc227b8df450a49b0a6",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Patients/DemoChannelCatalog.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "c0ff6f7702d8d56c0d25d644f603cae59850a3c6",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Patients/PatientClinicalHistoryNumber.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e1589062c7c809296bfe65ed23f88e552589d622",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Patients/PatientPhone.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9ac2129f5b6c28035cc4c65d5d37a6b2dbe9ac4c",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Patients/PatientWriteAccess.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "ca6cb046af19dc91f0ef47e75760a27e367b6ca8",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AgendaClickTelemetry.php",
+      "source": "release_candidate_content",
+      "sha256": "07db2f7e31cdbfd22e4252f9e38a7cb1db06b1ff36e048023123e8877d05afe0",
+      "git_blob": "e39887ee46683274a4d18e79b116c854ea430dd3"
+    },
+    {
+      "path": "app/Support/Scheduling/AgendaLegend.php",
+      "source": "release_candidate_content",
+      "sha256": "4d09bdb19556f5aa4219bfc96ece784a5a3fb67ef93de920d8a8be855eea48e0",
+      "git_blob": "36dc60057161b93152abc378cf9f6e7fabe4cc0a"
+    },
+    {
+      "path": "app/Support/Scheduling/AgendaQuery.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "b983de9800f13cef3340c8a029f151c574180b97",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AgendaRange.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "b8c9eb9cbd9e0c1cdbcfba330a543a547207a460",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AppointmentAgendaLifecycle.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "405f7dd3387c9793b5bdb1531fa514eb3199377a",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AppointmentNumberGenerator.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "14dfcf6ab096e2a1e14b194ab6502a1571d93fc5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AppointmentOccupancy.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "c25dffeb6418fcc21804382d8a70ba6ed1198d17",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AppointmentVisibility.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "2349f59796dfec3db9143964963b31f92efc14e1",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AvailabilityQuery.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e70607f84650c6e9613b4801a9d75d114bbfb2d1",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/AvailabilitySlot.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9f1e7723333dc25af540a565f1aede197f17ae6f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/CreateAppointmentData.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "3868b74f9c8f508fe25a95896de0256fb0cfdb36",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/DayAvailability.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "50593499dc58a515455f0cfd5342848e674d34d4",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/OccupiedInterval.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "593eb330c10437d35efd7c7a96dce59b697efd14",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/SchedulingCapability.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "ae5fc6a204af81e2bc1abe3b37bfc1739138fc54",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/StandardAdditionalRateResolver.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "54a6227d6f5098f1a4650c1ff19a426a0be8a8cf",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "app/Support/Scheduling/TimeRange.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "337184d5547a4c72e991421f1034be0d9b3e2c2f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "config/apidatosperu.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "4209bee3c885ec9179e22b38136334dc275bc608",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "config/scheduling.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d866cd2d4c29a5ff79c18aa079412ae4cfddd649",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "database/migrations/2026_10_05_120000_create_agenda_click_events_table.php",
+      "source": "release_candidate_content",
+      "sha256": "7cc197108670a4b2a97af3468be2fc5d04275f6270f71ab0c7e0422b53ce5108",
+      "git_blob": "8f471209b3adc0007ab43f8e1fd905073105b356"
+    },
+    {
+      "path": "public/css/erp-shell.css",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "33e74f29bd785735654e01be9ce74e0408306eba",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/css/patients/operational.css",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "4ea66cccb89ada1667c9d08deaddb7549026d9e5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/css/scheduling/agenda.css",
+      "source": "release_candidate_content",
+      "sha256": "c7f60845d075af63ac751bf3a13107b8b2aa08a91f810abbc780a64a811e995a",
+      "git_blob": "1fb5602597e695447fbde2eefdb54c3528a04ff8"
+    },
+    {
+      "path": "public/css/scheduling/schedule-workspace.css",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e51bcf6194a5d4285603bd10ea7446e272f673e3",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/admin/master/doctor-service/doctor-service.js",
+      "source": "release_candidate_content",
+      "sha256": "dcdd072b860708a95199fa2b50b887a2dfcb6fa161d0c1bc77ed04d38ecb40e9",
+      "git_blob": "f039665b8806a941a389de8163ccfb0127b26c14"
+    },
+    {
+      "path": "public/js/admissionist/appointment/appointment.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "4a03f891dfe6371f9243a8120452abf33debd9dd",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/admissionist/appointment/editar-cita.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9ad316dfaa550eebff3c839c80ff579ce5b3824f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/admissionist/available-schedule/available-schedule.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "124d87b09941a113b7652dda9c1cbc9e5dd670ea",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/erp-shell.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "7fc89a9ab3d25d46475de41889dab9bd5437cb64",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/patients/operational.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e34551ecfbd07947ce208ef138a32b55be1dfec8",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/patients/patient-phone.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9aaf601641294f80dd8881fd7b48855b140fee99",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/patients/patient-workspace.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "c88384aaf593811f7c9c395ccde9ab6a8cd830d5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-appointment-actions.js",
+      "source": "release_candidate_content",
+      "sha256": "58ced4e5888177e75706395487908f3bc45ed83ea57476e8997b9379c659d13a",
+      "git_blob": "bf931cd04d829b8c60d1cd381ca6ff4f34cc7dfe"
+    },
+    {
+      "path": "public/js/scheduling/agenda-appointment-create.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "96efb304b1bc319327637d95762b8dcfe30c25e5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-click-telemetry.js",
+      "source": "release_candidate_content",
+      "sha256": "cda4a30ff6cce94758d895a110185727f60ed9f5dba8ca9d17e21026073674c7",
+      "git_blob": "a9e16ea714c106c39d9803555cffbd701f080e3f"
+    },
+    {
+      "path": "public/js/scheduling/agenda-day-grid.js",
+      "source": "release_candidate_content",
+      "sha256": "dc5b55c400821b2cc8c7debb65b58d01dc05397bd63029acc2bd23b591f09401",
+      "git_blob": "1435f9bf54aab89a17011356dba5b89b1bab75c0"
+    },
+    {
+      "path": "public/js/scheduling/agenda-heatmap.js",
+      "source": "release_candidate_content",
+      "sha256": "0961d1b80e9869fdef8c37ddd178831605cce26710b7e89aae51d57dafd66201",
+      "git_blob": "8da6e2c3b2eaa7a9191f1e631ca88f05c5b031f6"
+    },
+    {
+      "path": "public/js/scheduling/agenda-patient-draft.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d258cab664e23fa69ea8e01b29ad0d7b76baae87",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-patient-lookup.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "34ce72936e81a1717bc37cda67e7017e11252033",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-selection.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "083bbe4d1644a986936d0f6da52e0566d6c0c9b7",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-week-background.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "26e706cf17db2f2ba2feac204625071230e701f9",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-week-event.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "170c605052b744bd3c89b6dde36ca20c407e66a2",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda-week-slots.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "2b44fb536a1f713ca7c57b28e7904fd320033c01",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/agenda.js",
+      "source": "release_candidate_content",
+      "sha256": "c6c21affb0034c19dbafd0813b5a0d53f79e0a0c728be4eaec1d63c45cc8cced",
+      "git_blob": "fd0b6faf6a247ac5d849b597c9a4843c45705bd4"
+    },
+    {
+      "path": "public/js/scheduling/schedule-assist.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "5fa26801694635966e6d51d1f3a0aa7b8c9c10f7",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/schedule-time.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "84d9cd06937cf6ca89ea14f0563de8ce3b2de905",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "public/js/scheduling/schedule-workspace.js",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d312d78661795f91a55d1d40aedf9c92b2e86f59",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/admissionist/schedule/crud/create.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "0f1034b40af29d95b2bb510c292aac8c2bb34526",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/admissionist/schedule/crud/edit.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "542201cf7f2e1db51e4d644656dd06c039b4a298",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/admissionist/schedule/index.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "012d7a58d47a02c9456ffa8cad367e341fc57e27",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/admissionist/schedule/workspace-modal.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "aa665bc66b67c55647c56f37903f40f17385b8b5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/components/utils/schedules.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "e7ab9c5047cb8019c141569901ec0db40ecec526",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/layouts/app.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "dc04eb98c686afbe43b995df5e735ba5aa39bff2",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/livewire/sales.blade.php",
+      "source": "release_candidate_content",
+      "sha256": "4792c4f5af82d3559c129c6ae1a716c39a9b32c03a9f67dc00965f27af81b178",
+      "git_blob": "e199033408adf8e596dfd81dd07fd975181e701a"
+    },
+    {
+      "path": "resources/views/patients/operational.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "32aa31f6e7818b671b522edc870c86a91da68694",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/scheduling/agenda/heatmap.blade.php",
+      "source": "release_candidate_content",
+      "sha256": "27c532ba58d9427c8ff00171074e4007dfbcbb33050c70bd2bf42e72fcff7a92",
+      "git_blob": "ca4f004ca28aa9f9dcb38c53d5faafadd0baa5f7"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/index.blade.php",
+      "source": "release_candidate_content",
+      "sha256": "3f505479156d146b5021aa020c25be8d00433e00cae1ae0b74160d38634c8877",
+      "git_blob": "9106b4b06beb4776dbc413cd1e3de5117341a91b"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/context.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "d320926f162b48fe3851d702740453e76efbc537",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/mini-calendar.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "f0974bdad5d0e1941586f31b2b92983d3d1376ba",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/patient-modal.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "cd307144930359ad7b236559f60225aa402f1425",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/professionals.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "78ca8a0b7788c6f2fb7a364a9dfe97b0f98065d6",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/quick-registration.blade.php",
+      "source": "release_candidate_content",
+      "sha256": "02fadc663e68e88535c6a49b017dc1ee9447dc01df6cc6deab0f6fc80678057b",
+      "git_blob": "1a22bfd9d95629ca500f3b5d75a3de6986ce1f95"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/toolbar.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "caf006dd6e0ab82816b85e00d9446ed3f1e429d5",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/header.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "291049ae695cc6012ed917f98b06d48e7c03165b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav-header.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "462ccea03e8dbb2a9dbdd78777ff5c75260590a4",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav/administrador.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "ad35df2815efab37f5ad598efb2c8a597f7b5d1c",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav/admision.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "3e5125b6a77ff82c62fc5196061db570b2672eaa",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav/comercial.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "4f4a7335ed595729ddb8f1409f3158623ceb1e9f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav/module.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "965fc3a9a55270b25ec9a4f41cde49301bc4554b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/nav/recepcion.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "9cd2605b47f2eaa63969c8d2144378189555038b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "resources/views/templates/sidebar.blade.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "bcda5a0c4f0f759cdf2f6d12390d9bc76870e93f",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/administrador.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "eb66350fc711254e40619ef238123044c380585c",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/admision.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "ef5d41b221ea1ba1686d24be03b5c03f8ca67f3b",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/api.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "256d3a94b80cb2f3a9bed2ee8f2e2edb80652880",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/patients.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "c6ca7d27f0cdc5ab772c036599d37ac81c537c26",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/recepcion.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "bbd5d8ca803f59464238587f613d4188385773b8",
+      "protected_local_changes_excluded": false
+    },
+    {
+      "path": "routes/scheduling.php",
+      "source": "release_candidate_content",
+      "sha256": "b65740ac942731a156cfb99f49829082840edf709ecde18293992c31d17e9690",
+      "git_blob": "eb13f224011d82a06baeb205cbe23919f237513e"
+    },
+    {
+      "path": "routes/web.php",
+      "source": "committed_head_only",
+      "revision": "1bf9785a5d11560bd8b39190f014ee7bb61dda00",
+      "git_blob": "07a4cd4e515f9ed8df7e2fe3420abef372964ef5",
+      "protected_local_changes_excluded": false
+    }
+  ],
+  "ordered_incremental_migrations": [
+    "database/migrations/2026_09_29_120000_create_sites_table.php",
+    "database/migrations/2026_09_29_120100_add_scheduling_foundation_to_appointments_table.php",
+    "database/migrations/2026_09_29_120200_add_site_to_doctor_schedules_table.php",
+    "database/migrations/2026_10_02_000000_reconcile_appointment_status_enum.php",
+    "database/migrations/2026_10_05_000000_add_agenda_lifecycle_to_appointments_table.php",
+    "database/migrations/2026_10_05_120000_create_agenda_click_events_table.php"
+  ],
+  "historical_bootstrap_only_do_not_rerun": [
+    "database/migrations/2026_06_11_164132_create_appointments_table.php",
+    "database/migrations/2026_09_01_042349_create_payments_table.php"
+  ],
+  "excluded_from_runtime": [
+    ".env",
+    ".env.testing",
+    "tests/",
+    "docs/",
+    "local_fixtures",
+    "inherited_dirty_content"
+  ],
+  "new_env_variables": [],
+  "asset_build_required": false,
+  "commit_dependency_plan": "docs/PILOT_LOCAL_RELEASE_CANDIDATE.md",
+  "must_compare_to_actual_deployed_commit_and_ddl": true,
+  "local_smoke_verification": {
+    "date": "2026-10-05",
+    "environment": "local",
+    "host": "127.0.0.1",
+    "port": 3308,
+    "database_case_insensitive": "erpceosalud",
+    "heatmap_migration": "Ran batch 8",
+    "only_user_permission_grants": {
+      "user_id": 10,
+      "names": [
+        "appointment.reschedule",
+        "appointment.additional.create",
+        "appointment.audit.view"
+      ]
+    },
+    "fixture_patient_ids": [
+      4816,
+      4817
+    ],
+    "fixture_appointment_ids": [
+      23,
+      25,
+      26,
+      27,
+      28
+    ],
+    "fixture_schedule_ids": [
+      19,
+      20
+    ],
+    "no_push_or_production": true
+  },
+  "catalogue_correction": {
+    "date": "2026-10-06",
+    "scope": "LOCAL_ONLY",
+    "doctor_id": 1,
+    "service_id": 1,
+    "inactive_id": 5,
+    "active_id": 7,
+    "prices_preserved": true,
+    "appointments_and_vouchers_unchanged": true,
+    "production_replay_required": true,
+    "production_ids_must_be_verified": true,
+    "normal_trauma_smoke": {
+      "http_status": 201,
+      "appointment_id": 30,
+      "patient_id": 4816,
+      "snapshot": 150,
+      "selectively_deleted": true
+    }
+  },
+  "final_tests": {
+    "Scheduling": {
+      "passed": 277,
+      "skipped": 1
+    },
+    "Patients": 65,
+    "Security": 45,
+    "CashierSmoke": 1,
+    "PatientAppointmentSmoke": 2,
+    "Catalog": 8,
+    "Sales": 12,
+    "A2Privacy": 20,
+    "Lifecycle": 6,
+    "JavaScript": 144,
+    "failed": 0
+  },
+  "hash_policy": {
+    "git_blob": "Canonical Git content identity for deployment artifact verification; resolves LF/CRLF checkout differences.",
+    "sha256": "Raw working-tree bytes captured when assembling the local RC, before checkout line-ending conversion."
+  }
+}

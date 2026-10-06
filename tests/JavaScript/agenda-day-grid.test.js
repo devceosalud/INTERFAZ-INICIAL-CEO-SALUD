@@ -9,6 +9,17 @@ const selection = require('../../public/js/scheduling/agenda-selection.js');
 
 const date = '2026-09-29';
 
+test('una adicional visible no oculta el slot regular disponible en Día', () => {
+    const extra = appointment(9, '10:00', '10:20', 'PROGRAMADO');
+    extra.extendedProps.tipo_agendamiento = 'ADICIONAL';
+    const model = grid.build({ date, professional: professional([free('10:00', '10:20', 20)]), events: [extra] });
+    const row = model.rows.find((row) => row.start === '10:00');
+    assert.equal(row.items[0].context.appointment_id, 9);
+    assert.equal(row.availableContext.tipo_contexto, 'slot_libre');
+    assert.equal(row.availableContext.seleccionable, true);
+    assert.equal(row.availableContext.appointment_id, null);
+});
+
 function professional(slots) {
     return {
         id: 4,

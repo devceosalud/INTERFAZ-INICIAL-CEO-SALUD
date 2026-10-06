@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
-use App\Models\DoctorService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\Specialty;
@@ -175,7 +175,7 @@ class ScheduleController extends Controller
         $schedule = Appointment::visibleToAgendaUser((int) $request->user()->id)
             ->whereKey($request->appointment_id)->firstOrFail();
 
-        $doctorService = DoctorService::find($request->service_id_edit); //service_id_edit: es el Id de la tabla DoctorServices
+        $doctorService = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $request->service_id_edit, (int) $request->doctor_id_edit);
         $service = Service::find($doctorService->service_id); //buscamos el servicio por id
         //dd($service);
         $exito = $schedule->update([

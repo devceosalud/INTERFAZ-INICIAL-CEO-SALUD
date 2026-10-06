@@ -194,6 +194,7 @@
                 kind: items.length > 0 ? (starting.length > 0 ? 'appointment' : 'continuation')
                     : (available ? 'available' : 'off-hours'),
                 context: context,
+                availableContext: available ? baseContext(options, rowStart, rowEnd, slot) : null,
                 items: items,
             });
             rowStart = rowEnd;

@@ -42,6 +42,8 @@ class OperationalAgendaAppointmentService
                 'duracion_cita',
                 'precio_programado',
                 'estado_cita',
+                'estado_agenda',
+                'tipo_agendamiento',
                 'estado_pagado',
             ])
             ->with([

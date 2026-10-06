@@ -312,6 +312,23 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->assertSame('PROGRAMADO', $appointment->fresh()->estado_cita);
     }
 
+    public function test_a_pending_reservation_survives_schedule_changes_and_inactivation_without_automatic_cancellation(): void
+    {
+        $block = $this->block($this->monday);
+        $appointment = $this->appointment('09:20:00');
+        $appointment->update(['estado_agenda' => 'PENDIENTE_CONFIRMACION', 'tipo_agendamiento' => 'REGULAR']);
+        $before = $appointment->fresh()->getAttributes();
+        $this->actingAs($this->admission)->putJson(self::UPDATE, [
+            'doctor_schedule_id_edit' => $block->id, 'doctor_id_edit' => $this->catalog['doctor']->id,
+            'fecha_cita_edit' => $this->monday->toDateString(), 'hora_inicio_edit' => '10:00',
+            'hora_fin_edit' => '13:00', 'duracion_edit_cita' => 20,
+        ])->assertOk()->assertJsonPath('code', 1);
+        $this->assertSame($before, $appointment->fresh()->getAttributes());
+        $this->postJson('/admissionist/doctor-schedule/delete', ['id' => $block->id])->assertOk()->assertJsonPath('code', 1);
+        $this->assertSame('INACTIVO', $block->fresh()->estado);
+        $this->assertSame($before, $appointment->fresh()->getAttributes());
+    }
+
     public function test_two_concrete_dates_create_two_schedules(): void
     {
         $this->actingAs($this->admission)
