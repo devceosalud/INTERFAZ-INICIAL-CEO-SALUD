@@ -1,4 +1,4 @@
-<section class="agenda-operations__section agenda-quick" id="agenda-quick-registration"
+<section data-ui-zone="booking" class="agenda-operations__section agenda-quick" id="agenda-quick-registration"
     aria-labelledby="agenda-quick-title">
     <div class="agenda-pane-head">
         <div>
@@ -70,8 +70,8 @@
 
         <div class="agenda-quick__booking-fields">
             <label class="agenda-field">
-                <span class="agenda-field__label">Servicio</span>
-                <select class="agenda-field__input" id="agenda-service-select" disabled>
+                <span class="agenda-field__label"><span>Servicio <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
+                <select class="agenda-field__input" id="agenda-service-select" aria-required="true" aria-describedby="agenda-service-error" disabled>
                     <option value="">Seleccione un intervalo</option>
                 </select>
             </label>
@@ -89,6 +89,8 @@
             </label>
         </div>
 
+        <p id="agenda-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</p>
+
         <p class="agenda-quick__message" id="agenda-quick-message">
             Seleccione médico, fecha, intervalo disponible, paciente y servicio.
         </p>
@@ -97,6 +99,9 @@
             Agendar cita
         </button>
 
+        @if ($canCreateAppointments)
+            <button type="button" class="agenda-btn agenda-btn--off-hours" id="agenda-off-hours-start" hidden>Agendar fuera de horario</button>
+        @endif
         @if ($canCreateAdditional)
             <button type="button" class="agenda-btn agenda-btn--additional" id="agenda-additional-start" disabled>+ Cita adicional</button>
         @endif
@@ -104,7 +109,13 @@
             <form id="agenda-reschedule-form" hidden>
                 <p>Reprogramar la cita seleccionada, conservando paciente, servicio y precio.</p>
                 <label class="agenda-field"><span>Fecha destino</span><input id="agenda-reschedule-date" class="agenda-field__input" type="date" required></label>
-                <label class="agenda-field"><span>Hora destino</span><input id="agenda-reschedule-time" class="agenda-field__input" type="time" required></label>
+                <label class="agenda-field"><span>Hora destino</span><input id="agenda-reschedule-time" class="agenda-field__input" type="text" inputmode="numeric" placeholder="HH:MM" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" aria-describedby="agenda-reschedule-time-help" required></label>
+                <div class="agenda-minute-shortcuts" aria-label="Minutos rápidos">
+                    <button type="button" class="agenda-btn" data-quick-minute="00">00</button>
+                    <button type="button" class="agenda-btn" data-quick-minute="20">20</button>
+                    <button type="button" class="agenda-btn" data-quick-minute="40">40</button>
+                </div>
+                <small id="agenda-reschedule-time-help">Hora de 24 horas: HH:MM. Puedes escribir cualquier minuto.</small>
                 <button type="submit" class="agenda-btn">Reprogramar cita</button>
             </form>
         @endif

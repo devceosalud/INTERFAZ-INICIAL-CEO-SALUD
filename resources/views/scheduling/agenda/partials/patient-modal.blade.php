@@ -1,6 +1,6 @@
 <div class="agenda-patient-modal" id="agenda-patient-modal" hidden aria-hidden="true">
     <div class="agenda-patient-modal__backdrop" data-modal-close></div>
-    <section class="agenda-patient-dialog" role="dialog" aria-modal="true" aria-labelledby="agenda-patient-modal-title">
+    <section class="agenda-patient-dialog" data-ui-screen="agenda" data-ui-zone="dialog" role="dialog" aria-modal="true" aria-labelledby="agenda-patient-modal-title">
         <header class="agenda-patient-dialog__head">
             <div>
                 <p class="agenda-patient-dialog__eyebrow">Agenda / Paciente</p>
@@ -35,6 +35,22 @@
                     RUC se registra manualmente, no utiliza RENIEC y todavía no tiene una regla HCE aprobada.
                 </p>
 
+                <div class="agenda-patient-form-grid agenda-modal-booking">
+                    <label class="agenda-field"><span class="agenda-field__label"><span>Servicio <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
+                        <select class="agenda-field__input" id="agenda-draft-service" aria-required="true" aria-describedby="agenda-draft-service-error"></select>
+                        <small id="agenda-draft-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</small>
+                    </label>
+                        <label class="agenda-field">
+                            <span class="agenda-field__label">Comercial dueño</span>
+                            <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>
+                                <option value="">Sin asignar</option>
+                                @foreach ($commercialUsers as $commercial)
+                                    <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
+                                @endforeach
+                            </select>
+                            <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
+                        </label>
+                </div>
                 <section class="agenda-patient-tabpanel" data-patient-panel="essential">
                     <div class="agenda-patient-form-grid">
                         <label class="agenda-field">
@@ -147,16 +163,7 @@
                                 @endforeach
                             </select>
                         </label>
-                        <label class="agenda-field">
-                            <span class="agenda-field__label">Atribución comercial</span>
-                            <select class="agenda-field__input" id="agenda-draft-commercial-owner">
-                                <option value="">Sin asignar</option>
-                                @foreach ($commercialUsers as $commercial)
-                                    <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
-                                @endforeach
-                            </select>
-                            <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
-                        </label>
+
                         <div class="agenda-field agenda-patient-form-grid__wide">
                             <label class="agenda-check">
                                 <input type="checkbox" id="agenda-draft-register-responsible">

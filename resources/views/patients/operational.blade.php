@@ -17,7 +17,7 @@
 
         <div class="content-body patients-page">
             <div class="container-fluid patients-page__container">
-                <main class="patients-workspace" id="patients-workspace"
+                <main class="patients-workspace" id="patients-workspace" data-ui-screen="pacientes"
                     data-detail-template="{{ url('/patients/__PATIENT__') }}"
                     data-store-url="{{ route('patients.operational.store') }}"
                     data-update-template="{{ url('/patients/__PATIENT__') }}"
@@ -26,7 +26,7 @@
                     data-can-write="{{ $canWritePatients ? '1' : '0' }}"
                     data-today="{{ $filters['fecha'] }}">
 
-                    <section class="patients-list-surface" id="patients-list-surface" aria-labelledby="patients-list-title">
+                    <section class="patients-list-surface" id="patients-list-surface" data-ui-zone="list" aria-labelledby="patients-list-title">
                         <header class="patients-titlebar">
                             <div>
                                 <p class="patients-eyebrow">Gestión asistencial</p>
@@ -51,7 +51,7 @@
                             </a>
                         </nav>
 
-                        <form class="patients-filterbar" method="GET" action="{{ url()->current() }}" id="patients-filter-form">
+                        <form class="patients-filterbar" method="GET" action="{{ url()->current() }}" id="patients-filter-form" data-ui-zone="toolbar">
                             @if ($pendingView)
                                 <input type="hidden" name="vista" value="pendientes">
                             @endif
@@ -212,7 +212,7 @@
                         </footer>
                     </section>
 
-                    <section class="patients-record-surface" id="patients-record-surface" aria-labelledby="patient-record-title" hidden>
+                    <section class="patients-record-surface" id="patients-record-surface" data-ui-zone="record" aria-labelledby="patient-record-title" hidden>
                         <header class="patients-record-head">
                             <div class="patients-record-head__title">
                                 <p class="patients-eyebrow">Pacientes / Ficha</p>
@@ -455,6 +455,7 @@
 @endsection
 
 @section('script_data')
+    @include('telemetry.collector')
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>

@@ -41,6 +41,13 @@ class DoctorAvailabilityService
         return $this->compose($query, $this->operatingBlocks($query), collect())->slots();
     }
 
+    public function overlapsOperatingHours(int $doctorId, string $date, TimeRange $candidate): bool
+    {
+        $query = new AvailabilityQuery($doctorId, Carbon::parse($date));
+        return $this->operatingBlocks($query)->contains(fn (DoctorSchedule $block) =>
+            $candidate->overlaps(new TimeRange($this->instant($query, $block->hora_inicio), $this->instant($query, $block->hora_fin))));
+    }
+
     /**
      * Availability for several professionals across a date range, in a fixed number of
      * queries: one for the operating blocks and one for the appointments, however many days
@@ -157,7 +164,7 @@ class DoctorAvailabilityService
                 $agenda->start()->toDateString(),
                 $agenda->end()->toDateString(),
             ])
-            ->consumingRegularSlot()
+            ->occupyingInterval()
             ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $agenda->siteId()))
             ->get(['doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita', 'estado_cita']);
     }
@@ -204,7 +211,7 @@ class DoctorAvailabilityService
         $appointments = Appointment::query()
             ->where('doctor_id', $query->doctorId())
             ->whereDate('fecha_cita', $query->dateString())
-            ->consumingRegularSlot()
+            ->occupyingInterval()
             ->tap(fn (Builder $builder) => $this->applySiteScope($builder, $query->siteId()))
             ->get(['hora_cita', 'duracion_cita', 'estado_cita']);
 

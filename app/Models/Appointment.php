@@ -57,6 +57,12 @@ class Appointment extends Model
         return $query;
     }
 
+    public function scopeOccupyingInterval(Builder $query): Builder
+    {
+        AppointmentAgendaLifecycle::applyIntervalOccupancy($query, $query->getModel()->getTable());
+        return $query;
+    }
+
     /**
      * Obtiene el usuario (personal del sistema) que registró la cita.
      */

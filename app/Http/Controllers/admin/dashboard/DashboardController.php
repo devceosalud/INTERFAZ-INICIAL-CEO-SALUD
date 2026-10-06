@@ -39,7 +39,7 @@ class DashboardController extends Controller
             ->whereIn('estado_cita', ['REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
 
-        $ocupadas = Appointment::consumingRegularSlot()->whereDate('fecha_cita', Date('Y-m-d')) // Horas ya ocupadas del dia del hoy
+        $ocupadas = Appointment::occupyingInterval()->whereDate('fecha_cita', Date('Y-m-d')) // Horas ya ocupadas del dia del hoy
             ->get();
 
 

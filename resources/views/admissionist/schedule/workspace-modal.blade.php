@@ -1,4 +1,4 @@
-<div class="modal fade schedule-modal" id="schedule-editor" tabindex="-1" data-bs-backdrop="static"
+<div class="modal fade schedule-modal" id="schedule-editor" data-ui-screen="horarios" data-ui-zone="dialog" tabindex="-1" data-bs-backdrop="static"
     aria-labelledby="schedule-editor-title" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">

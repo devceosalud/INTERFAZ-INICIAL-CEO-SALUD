@@ -43,3 +43,23 @@ test('409/422 o red fallida revierten el evento sin refresco exitoso', async () 
         assert.equal(reverted, 1);
     }
 });
+
+test('conversión requiere segundo envío con el tipo aceptado; cancelar revierte', async () => {
+    for (const accepted of [false, true]) {
+        let requests = [], confirms = 0, reverted = 0, refreshed = 0;
+        await actions.reschedule(context, '2026-10-10', '06:00', {
+            confirm: () => ++confirms === 1 || accepted, revert: () => reverted++, refresh: () => refreshed++,
+            send: async (id, payload) => { requests.push(payload); return requests.length === 1
+                ? { confirmation_required: true, target_booking_type: 'FUERA_HORARIO', message: 'Confirmar conversión' } : {}; },
+        });
+        assert.equal(requests.length, accepted ? 2 : 1);
+        assert.equal(reverted, accepted ? 0 : 1); assert.equal(refreshed, accepted ? 1 : 0);
+        if (accepted) { assert.equal(requests[1].confirmed_booking_type, 'FUERA_HORARIO'); }
+    }
+});
+test('atajos 00/20/40 conservan hora y permiten introducir minutos distintos manualmente', () => {
+    for (const minute of ['00','20','40']) { assert.equal(actions.quickMinute('10:17', minute), '10:' + minute); }
+    assert.equal(actions.quickMinute('10', '20'), '10:20');
+    assert.equal(actions.quickMinute('25:00', '20'), null);
+    assert.equal(actions.quickMinute('', '00'), null);
+});

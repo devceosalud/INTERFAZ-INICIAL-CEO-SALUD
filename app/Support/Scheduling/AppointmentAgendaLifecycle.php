@@ -21,6 +21,8 @@ final class AppointmentAgendaLifecycle
 
     public const ADDITIONAL = 'ADICIONAL';
 
+    public const OFF_HOURS = 'FUERA_HORARIO';
+
     public static function usesNewLifecycle(string $agendaState): bool
     {
         return in_array($agendaState, [self::PENDING_CONFIRMATION, self::CONFIRMED], true);
@@ -31,6 +33,14 @@ final class AppointmentAgendaLifecycle
         ?string $bookingType,
         ?string $careState
     ): bool {
+        if ($bookingType === self::OFF_HOURS) {
+            return false;
+        }
+        return self::occupiesInterval($agendaState, $bookingType, $careState);
+    }
+
+    public static function occupiesInterval(string $agendaState, ?string $bookingType, ?string $careState): bool
+    {
         if ($agendaState === self::PENDING_CONFIRMATION
             || ($agendaState === self::CONFIRMED && $bookingType === self::ADDITIONAL)) {
             return false;
@@ -49,6 +59,13 @@ final class AppointmentAgendaLifecycle
         EloquentBuilder|QueryBuilder $query,
         string $table = 'appointments'
     ): EloquentBuilder|QueryBuilder {
+        return self::applyIntervalOccupancy($query, $table)->where(function ($types) use ($table): void {
+            $types->whereNull($table.'.tipo_agendamiento')->orWhere($table.'.tipo_agendamiento', '<>', self::OFF_HOURS);
+        });
+    }
+
+    public static function applyIntervalOccupancy(EloquentBuilder|QueryBuilder $query, string $table = 'appointments'): EloquentBuilder|QueryBuilder
+    {
         return $query
             ->whereNotIn($table.'.estado_cita', AppointmentOccupancy::RELEASING_STATES)
             ->where($table.'.estado_agenda', '<>', self::PENDING_CONFIRMATION)

@@ -19,7 +19,9 @@
 
         <div class="content-body agenda-page">
             <div class="container-fluid agenda-page__container">
-                <main class="agenda-board agenda-board--day" id="agenda-board"
+                <main class="agenda-board agenda-board--day" id="agenda-board" data-ui-screen="agenda"
+                    data-capacity-url="{{ route('scheduling.mvp.agenda.regular-capacity') }}"
+                    data-off-hours-store="{{ route('scheduling.mvp.agenda.appointments.off-hours') }}"
                     data-feed="{{ route('scheduling.mvp.agenda.feed') }}"
                     data-appointment-store="{{ route('scheduling.mvp.agenda.appointments.store') }}"
                     data-can-create-appointments="{{ $canCreateAppointments ? '1' : '0' }}"
@@ -27,7 +29,6 @@
                     data-reschedule-url="{{ url('/scheduling-mvp/agenda/appointments') }}"
                     data-can-reschedule="{{ $canRescheduleAppointments ? '1' : '0' }}"
                     data-can-additional="{{ $canCreateAdditional ? '1' : '0' }}"
-                    data-click-events="{{ route('scheduling.mvp.agenda.click-events') }}"
                     data-can-assign-responsible="{{ $canAssignResponsible ? '1' : '0' }}"
                     data-today="{{ $today }}"
                     data-grid-minutes="20">
@@ -45,13 +46,13 @@
                             @include('scheduling.agenda.partials.quick-registration')
                         </aside>
 
-                        <section class="agenda-center" aria-labelledby="agenda-title">
+                        <section data-ui-zone="grid" class="agenda-center" aria-labelledby="agenda-title">
                             <div class="agenda-center__head">
                                 <div>
                                     <h2 class="agenda-section-title" id="agenda-title">Agenda horaria</h2>
-                                    @can(\App\Support\Scheduling\SchedulingCapability::VIEW_AUDIT)
+                                    @if(auth()->user()->hasRole('ADMINISTRADOR'))
                                         <a href="{{ route('scheduling.mvp.agenda.heatmap') }}">Mapa de clics</a>
-                                    @endcan
+                                    @endif
                                     <p class="agenda-range" id="agenda-range-label" aria-live="polite"></p>
                                 </div>
 
@@ -68,6 +69,7 @@
                                         <dt>Min. libres</dt>
                                         <dd id="agenda-total-minutes">—</dd>
                                     </div>
+                                    <div><dt>Especiales</dt><dd id="agenda-total-special">—</dd></div>
                                 </dl>
                             </div>
 
@@ -156,6 +158,6 @@
     <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-click-telemetry.js') }}"></script>
+    @include('telemetry.collector')
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

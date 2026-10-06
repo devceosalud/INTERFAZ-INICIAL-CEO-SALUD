@@ -1,4 +1,4 @@
-<header class="agenda-commandbar">
+<header class="agenda-commandbar" data-ui-zone="toolbar">
     <div class="agenda-commandbar__identity">
         <span class="agenda-commandbar__eyebrow">Agendamiento</span>
         <h1>Agenda operativa</h1>

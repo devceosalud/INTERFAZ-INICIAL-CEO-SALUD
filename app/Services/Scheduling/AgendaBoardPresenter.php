@@ -54,8 +54,17 @@ class AgendaBoardPresenter
         $appointments = $this->appointments->forRange($agenda, $actorId);
         $compareProfessionals = $doctors->count() > 1;
 
-        $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range) {
-            return $this->professional($doctor, $agenda, $availability, $range);
+        $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range, $appointments) {
+            $professional = $this->professional($doctor, $agenda, $availability, $range);
+            foreach ($professional['dias'] as &$day) {
+                $visible = $appointments->filter(fn ($a) => (int) $a->doctor_id === (int) $doctor->id && substr((string) $a->fecha_cita, 0, 10) === $day['fecha']);
+                $day['especiales'] = [
+                    'adicionales' => $visible->where('estado_agenda', AppointmentAgendaLifecycle::CONFIRMED)->where('tipo_agendamiento', AppointmentAgendaLifecycle::ADDITIONAL)->count(),
+                    'fuera_horario' => $visible->where('tipo_agendamiento', AppointmentAgendaLifecycle::OFF_HOURS)->count(),
+                ];
+            }
+            unset($day);
+            return $professional;
         })->values();
 
         return [
@@ -71,6 +80,8 @@ class AgendaBoardPresenter
             ),
             'leyenda' => AgendaLegend::ordered(),
             'resumen' => $this->totals($professionals->pluck('resumen')),
+            'especiales' => ['adicionales' => $professionals->flatMap(fn ($p) => $p['dias'])->sum('especiales.adicionales'),
+                'fuera_horario' => $professionals->flatMap(fn ($p) => $p['dias'])->sum('especiales.fuera_horario')],
         ];
     }
 
@@ -169,7 +180,7 @@ class AgendaBoardPresenter
 
         foreach ($professionals as $professional) {
             foreach ($professional['dias'] as $day) {
-                if (! $day['con_horario']) {
+                if (! $day['con_horario'] && array_sum($day['especiales']) === 0) {
                     continue;
                 }
 
@@ -259,11 +270,12 @@ class AgendaBoardPresenter
         $state = (string) $appointment->estado_cita;
         $additional = $appointment->estado_agenda === AppointmentAgendaLifecycle::CONFIRMED
             && $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::ADDITIONAL;
-        $legend = AgendaLegend::of($additional ? AgendaLegend::ADDITIONAL : (
+        $offHours = $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::OFF_HOURS;
+        $legend = AgendaLegend::of($offHours ? AgendaLegend::OFF_HOURS_APPOINTMENT : ($additional ? AgendaLegend::ADDITIONAL : (
             in_array($state, [AgendaLegend::SCHEDULED, AgendaLegend::CONFIRMED], true)
                 ? $state
                 : AgendaLegend::BUSY
-        ));
+        )));
         $date = substr((string) $appointment->fecha_cita, 0, 10);
         $start = substr((string) $appointment->hora_cita, 0, 5);
         $minutes = $this->appointmentMinutes($appointment, $professional, $date, $start);
@@ -277,7 +289,7 @@ class AgendaBoardPresenter
 
         return [
             'id' => 'cita-'.$appointment->id,
-            'title' => ($additional ? 'ADICIONAL | ' : '').$start.' | Sí | '.($paymentState !== '' ? $paymentState : '—').' | '
+            'title' => ($offHours ? 'FUERA DE HORARIO | ' : ($additional ? 'ADICIONAL | ' : '')).$start.' | Sí | '.($paymentState !== '' ? $paymentState : '—').' | '
                 .($clinicalRecord !== '' ? $clinicalRecord : '—').' | '.$patientName,
             'start' => $date.'T'.$start.':00',
             'end' => $date.'T'.$end.':00',
@@ -371,7 +383,9 @@ class AgendaBoardPresenter
 
         return [
             'id' => 'carga-'.$professional['id'].'-'.$day['fecha'],
-            'title' => $prefix.$summary['libres'].' libres / '.$summary['ocupadas'].' ocupadas',
+            'title' => $prefix.$summary['libres'].' libres / '.$summary['ocupadas'].' ocupadas'
+                .($day['especiales']['adicionales'] ? ' · '.$day['especiales']['adicionales'].' ADICIONAL' : '')
+                .($day['especiales']['fuera_horario'] ? ' · '.$day['especiales']['fuera_horario'].' FH' : ''),
             'start' => $day['fecha'],
             'allDay' => true,
             'backgroundColor' => $legend['fondo'],
@@ -385,6 +399,7 @@ class AgendaBoardPresenter
                 'doctor' => $professional['nombre'],
                 'especialidad' => $professional['especialidad'],
                 'fecha' => $day['fecha'],
+                'especiales' => $day['especiales'],
                 'libres' => $summary['libres'],
                 'ocupadas' => $summary['ocupadas'],
                 'seleccionable' => false,

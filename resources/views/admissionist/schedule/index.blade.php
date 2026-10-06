@@ -18,7 +18,7 @@
 
         <div class="content-body schedule-page">
             <div class="container-fluid schedule-page__container">
-                <main class="schedule-workspace" id="schedule-workspace"
+                <main class="schedule-workspace" id="schedule-workspace" data-ui-screen="horarios"
                     data-feed="{{ route('admissionit.doctor.schedule.calendar') }}"
                     data-store="{{ route('admissionit.doctor.schedule.store') }}"
                     data-update="{{ route('admissionit.doctor.schedule.update') }}"
@@ -28,7 +28,7 @@
                     data-can-manage="{{ $canManageSchedules ? 'true' : 'false' }}"
                     data-today="{{ $today }}">
 
-                    <header class="schedule-toolbar" aria-label="Filtros de horarios médicos">
+                    <header class="schedule-toolbar" data-ui-zone="toolbar" aria-label="Filtros de horarios médicos">
                         <div class="schedule-toolbar__filters">
                             <label>
                                 <span>Sede</span>
@@ -74,7 +74,7 @@
                         </div>
                     </header>
 
-                    <section class="schedule-heading">
+                    <section class="schedule-heading" data-ui-zone="toolbar">
                         <div>
                             <p class="schedule-heading__eyebrow">Configuración operativa</p>
                             <h1>Horarios médicos</h1>
@@ -97,12 +97,12 @@
                     @endunless
 
                     <div class="schedule-main">
-                        <section class="schedule-calendar-panel" aria-label="Calendario de horarios médicos">
+                        <section class="schedule-calendar-panel" data-ui-zone="calendar" aria-label="Calendario de horarios médicos">
                             <div id="schedule-load-state" class="schedule-load-state" hidden></div>
                             <div id="schedule-calendar"></div>
                         </section>
 
-                        <aside class="schedule-side" aria-label="Leyenda y detalle de horario">
+                        <aside class="schedule-side" data-ui-zone="sidebar" aria-label="Leyenda y detalle de horario">
                             <section class="schedule-side__section" id="schedule-compare">
                                 <h2 id="schedule-compare-title">Comparar médicos</h2>
                                 <p id="schedule-compare-summary"></p>
@@ -147,6 +147,7 @@
 @endsection
 
 @section('script_data')
+    @include('telemetry.collector')
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>

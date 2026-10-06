@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Scheduling;
 
 use App\Exceptions\Scheduling\AppointmentConfigurationException;
 use App\Exceptions\Scheduling\AppointmentSlotUnavailableException;
+use App\Exceptions\Scheduling\AppointmentClassificationConfirmationRequired;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Scheduling\StoreAgendaAppointmentRequest;
 use App\Http\Requests\Scheduling\StoreAdditionalAppointmentRequest;
@@ -15,6 +16,21 @@ use Illuminate\Http\JsonResponse;
 
 class AgendaAppointmentController extends Controller
 {
+    public function offHours(StoreAgendaAppointmentRequest $request, CreateAppointmentService $appointments): JsonResponse
+    {
+        try {
+            $appointment = $appointments->createOffHours(CreateAppointmentData::fromValidated($request->validated(), (int) $request->user()->id));
+        } catch (AppointmentSlotUnavailableException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        } catch (AppointmentConfigurationException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+        return response()->json(['message' => 'Cita FUERA DE HORARIO registrada', 'appointment' => [
+            'appointment_id' => (int) $appointment->id, 'estado_agenda' => $appointment->estado_agenda,
+            'tipo_agendamiento' => $appointment->tipo_agendamiento,
+        ]], 201);
+    }
+
     public function additional(StoreAdditionalAppointmentRequest $request, CreateAppointmentService $appointments): JsonResponse
     {
         try {
@@ -36,7 +52,10 @@ class AgendaAppointmentController extends Controller
         try {
             $data = $request->validated();
             $appointment = $appointments->reschedule($appointmentId, (int) $request->user()->id,
-                $data['fecha_cita'], $data['hora_cita'], $data['expected_fecha_cita'], $data['expected_hora_cita']);
+                $data['fecha_cita'], $data['hora_cita'], $data['expected_fecha_cita'], $data['expected_hora_cita'], $data['confirmed_booking_type'] ?? null);
+        } catch (AppointmentClassificationConfirmationRequired $exception) {
+            return response()->json(['message' => $exception->getMessage(), 'confirmation_required' => true,
+                'target_booking_type' => $exception->targetType], 409);
         } catch (AppointmentSlotUnavailableException $exception) {
             return response()->json(['message' => $exception->getMessage()], 409);
         } catch (AppointmentConfigurationException $exception) {
@@ -47,6 +66,7 @@ class AgendaAppointmentController extends Controller
             'appointment_id' => (int) $appointment->id,
             'fecha' => substr((string) $appointment->fecha_cita, 0, 10),
             'hora' => substr((string) $appointment->hora_cita, 0, 5),
+            'tipo_agendamiento' => $appointment->tipo_agendamiento,
         ]]);
     }
 

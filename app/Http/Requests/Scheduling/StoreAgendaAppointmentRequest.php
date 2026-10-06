@@ -20,6 +20,11 @@ class StoreAgendaAppointmentRequest extends FormRequest
             || $user->can(SchedulingCapability::ASSIGN_RESPONSIBLE);
     }
 
+    public function messages(): array
+    {
+        return ['service_id.required' => 'Selecciona un servicio para agendar la cita.'];
+    }
+
     /**
      * @return array<string, mixed>
      */

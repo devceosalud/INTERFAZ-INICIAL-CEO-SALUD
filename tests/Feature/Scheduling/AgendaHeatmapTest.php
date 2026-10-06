@@ -66,7 +66,7 @@ class AgendaHeatmapTest extends TestCase
 
     public function test_auditor_gets_aggregated_cells_and_date_view_filters(): void
     {
-        $this->actor->givePermissionTo(Permission::findOrCreate(Capability::VIEW_AUDIT, 'web'));
+        $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR', 'web'));
         $this->actingAs($this->actor)->postJson($this->endpoint(), ['events' => [
             $this->event(), $this->event(), array_merge($this->event(), ['view_mode' => 'mes', 'x' => 1, 'y' => 1]),
         ]])->assertNoContent();
@@ -84,12 +84,14 @@ class AgendaHeatmapTest extends TestCase
         Schema::drop('agenda_click_events');
         $this->actingAs($this->actor)->postJson($this->endpoint(), ['events' => [$this->event()]])->assertStatus(503);
         $this->actingAs($this->actor)->get(route('scheduling.mvp.agenda'))->assertOk();
+        $this->get('/admissionist/doctor-schedule')->assertOk();
+        $this->get(route('admissionit.patient.index'))->assertOk();
     }
 
     public function test_date_filters_use_the_operational_day_when_utc_has_already_changed_date(): void
     {
         $this->travelTo(\Carbon\Carbon::parse('2026-10-06 03:00:00', 'UTC'));
-        $this->actor->givePermissionTo(Permission::findOrCreate(Capability::VIEW_AUDIT, 'web'));
+        $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR', 'web'));
         $this->actingAs($this->actor)->postJson($this->endpoint(), ['events' => [$this->event()]])->assertNoContent();
         $this->getJson(route('scheduling.mvp.agenda.heatmap.data', ['from' => '2026-10-05', 'to' => '2026-10-05']))
             ->assertOk()->assertJsonPath('total', 1);
@@ -121,11 +123,58 @@ class AgendaHeatmapTest extends TestCase
         $this->assertSame('drop table if exists `agenda_click_events`', $rollback[0]['query']);
     }
 
-    private function endpoint(): string { return route('scheduling.mvp.agenda.click-events'); }
+    private function endpoint(): string { return route('ui.telemetry.click-events'); }
+
+    public function test_non_admin_with_audit_capability_still_cannot_read_viewer_or_data(): void
+    {
+        $this->actor->givePermissionTo(Permission::findOrCreate(Capability::VIEW_AUDIT, 'web'));
+        $this->actingAs($this->actor)->get(route('scheduling.mvp.agenda.heatmap'))->assertForbidden();
+        $this->getJson($this->dataUrl())->assertForbidden();
+    }
+
+    public function test_three_modules_share_v2_endpoint_and_viewer_filters_do_not_mix_modules_or_v1(): void
+    {
+        $this->actingAs($this->actor);
+        foreach (['agenda' => ['dia', 'grid'], 'horarios' => ['horarios', 'calendar'], 'pacientes' => ['ficha', 'record']] as $screen => [$view, $zone]) {
+            $this->postJson($this->endpoint(), ['events' => [array_merge($this->event(), [
+                'screen' => $screen, 'view_mode' => $view, 'zone' => $zone,
+                'element' => $screen === 'agenda' ? 'agenda.other' : $screen.'.control',
+            ])]])->assertNoContent();
+        }
+        $old = $this->event(); unset($old['zone'], $old['layout_version']);
+        $this->postJson($this->endpoint(), ['events' => [$old]])->assertUnprocessable();
+        // Historical data is retained as v1; a new v2 writer never emits this format.
+        DB::table('agenda_click_events')->insert($old + ['actor_role' => 'ADMISION', 'recorded_at' => now('UTC')]);
+        $admin = $this->createUserWithRole('ADMINISTRADOR');
+        $this->actingAs($admin);
+        foreach (['agenda', 'horarios', 'pacientes'] as $screen) {
+            $this->getJson($this->dataUrl().'&screen='.$screen)->assertOk()->assertJsonPath('total', 1)->assertJsonPath('layout_version', 2);
+        }
+        foreach (['agenda' => ['dia', 'grid'], 'horarios' => ['horarios', 'calendar'], 'pacientes' => ['ficha', 'record']] as $screen => [$view, $zone]) {
+            $this->getJson($this->dataUrl().'&screen='.$screen.'&view_mode='.$view.'&zone='.$zone)
+                ->assertOk()->assertJsonPath('total', 1)->assertJsonPath('points.0.zone', $zone);
+        }
+        $this->getJson($this->dataUrl().'&screen=pacientes&zone=toolbar')->assertOk()->assertJsonPath('total', 0);
+        $this->get(route('scheduling.mvp.agenda.heatmap'))->assertOk()->assertSee('heatmap-module')->assertSee('heatmap-zone')->assertSee('Preview sanitizado');
+        $this->assertDatabaseCount('agenda_click_events', 4);
+        $this->postJson('/scheduling-mvp/agenda/click-events', ['events' => [$this->event()]])->assertNotFound();
+    }
+
+    public function test_v2_rejects_missing_zone_wrong_module_zone_and_all_patient_fields(): void
+    {
+        $this->actingAs($this->actor);
+        foreach (['dni', 'hce', 'nombre', 'apellido', 'telefono', 'patient_id', 'appointment_id', 'user_id', 'input_value', 'medical_info'] as $key) {
+            $this->postJson($this->endpoint(), ['events' => [$this->event() + [$key => 'FORBIDDEN']]])->assertUnprocessable();
+        }
+        $event = $this->event(); unset($event['zone']);
+        $this->postJson($this->endpoint(), ['events' => [$event]])->assertUnprocessable();
+        $this->postJson($this->endpoint(), ['events' => [array_merge($this->event(), ['zone' => 'record'])]])->assertUnprocessable();
+        $this->assertDatabaseCount('agenda_click_events', 0);
+    }
     private function dataUrl(): string { return route('scheduling.mvp.agenda.heatmap.data', ['from' => now('America/Lima')->toDateString(), 'to' => now('America/Lima')->toDateString()]); }
     private function event(): array
     {
         return ['event_uuid' => (string) Str::uuid(), 'screen' => 'agenda', 'view_mode' => 'dia', 'element' => 'agenda.slot',
-            'x' => 0.5, 'y' => 0.25, 'viewport_width' => 1280, 'viewport_height' => 800];
+            'layout_version' => 2, 'zone' => 'grid', 'x' => 0.5, 'y' => 0.25, 'viewport_width' => 1280, 'viewport_height' => 800];
     }
 }

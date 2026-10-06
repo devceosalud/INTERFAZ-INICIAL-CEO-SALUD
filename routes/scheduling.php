@@ -21,6 +21,8 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        Route::get('/scheduling-mvp/agenda/regular-capacity', \App\Http\Controllers\Scheduling\RegularCapacityController::class)
+            ->name('scheduling.mvp.agenda.regular-capacity');
         Route::get('/scheduling-mvp/availability', DoctorAvailabilityController::class)
             ->name('scheduling.mvp.availability');
 
@@ -44,6 +46,10 @@ Route::middleware([
         ->middleware('permission:'.SchedulingCapability::CREATE)
         ->name('scheduling.mvp.agenda.appointments.store');
 
+    Route::post('/scheduling-mvp/agenda/off-hours-appointments', [AgendaAppointmentController::class, 'offHours'])
+        ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])
+        ->name('scheduling.mvp.agenda.appointments.off-hours');
+
     Route::post('/scheduling-mvp/agenda/additional-appointments', [AgendaAppointmentController::class, 'additional'])
         ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE_ADDITIONAL])
         ->name('scheduling.mvp.agenda.appointments.additional');
@@ -53,14 +59,12 @@ Route::middleware([
         ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::RESCHEDULE])
         ->name('scheduling.mvp.agenda.appointments.reschedule');
 
-    Route::post('/scheduling-mvp/agenda/click-events', [AgendaHeatmapController::class, 'store'])
-        ->middleware(['permission:'.SchedulingCapability::VIEW, 'throttle:60,1'])
-        ->name('scheduling.mvp.agenda.click-events');
 
-    Route::middleware('permission:'.SchedulingCapability::VIEW_AUDIT)->group(function () {
-        Route::get('/scheduling-mvp/agenda/heatmap', [AgendaHeatmapController::class, 'index'])
-            ->name('scheduling.mvp.agenda.heatmap');
-        Route::get('/scheduling-mvp/agenda/heatmap/data', [AgendaHeatmapController::class, 'data'])
-            ->name('scheduling.mvp.agenda.heatmap.data');
-    });
+});
+
+Route::middleware(['scheduling-mvp', 'auth', 'throttle:60,1'])->post('/ui-telemetry/click-events', [AgendaHeatmapController::class, 'store'])
+    ->name('ui.telemetry.click-events');
+Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR'])->group(function () {
+    Route::get('/scheduling-mvp/agenda/heatmap', [AgendaHeatmapController::class, 'index'])->name('scheduling.mvp.agenda.heatmap');
+    Route::get('/scheduling-mvp/agenda/heatmap/data', [AgendaHeatmapController::class, 'data'])->name('scheduling.mvp.agenda.heatmap.data');
 });

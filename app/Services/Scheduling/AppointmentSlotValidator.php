@@ -5,6 +5,7 @@ namespace App\Services\Scheduling;
 use App\Exceptions\Scheduling\AppointmentSlotUnavailableException;
 use App\Models\Appointment;
 use App\Support\Scheduling\AppointmentOccupancy;
+use App\Support\Scheduling\AppointmentAgendaLifecycle as Lifecycle;
 use App\Support\Scheduling\AvailabilityQuery;
 use App\Support\Scheduling\TimeRange;
 use Carbon\Carbon;
@@ -33,11 +34,34 @@ class AppointmentSlotValidator
             return;
         }
 
+        $this->assertUnoccupied($doctorId, $date, $time, $duration, $excludeAppointmentId);
+    }
+
+    public function destinationType(int $doctorId, string $date, string $time, int $duration, ?int $siteId): string
+    {
+        $slots = $this->availability->scheduledSlots(new AvailabilityQuery($doctorId, Carbon::parse($date), $siteId, $duration));
+        if ($slots->contains(fn ($slot) => $slot->startsAt($time) && $slot->siteId() === $siteId && $slot->range()->minutes() === $duration)) {
+            return Lifecycle::REGULAR;
+        }
+        $this->assertOutsideHours($doctorId, $date, $time, $duration);
+        return Lifecycle::OFF_HOURS;
+    }
+
+    public function assertOutsideHours(int $doctorId, string $date, string $time, int $duration): void
+    {
+        $candidate = TimeRange::fromMinutes(Carbon::parse($date.' '.$time), $duration);
+        if ($candidate->end()->toDateString() !== $date || $this->availability->overlapsOperatingHours($doctorId, $date, $candidate)) {
+            throw new AppointmentSlotUnavailableException('El intervalo debe estar completamente fuera del horario médico y dentro del mismo día. Dentro del horario, seleccione un intervalo regular válido.');
+        }
+    }
+
+    public function assertUnoccupied(int $doctorId, string $date, string $time, int $duration, ?int $excludeAppointmentId = null): void
+    {
         $candidate = TimeRange::fromMinutes(Carbon::parse($date.' '.$time), $duration);
         // Occupancy is global across sites and users; privacy never changes availability.
         $globalSlots = $this->availability->scheduledSlots(new AvailabilityQuery($doctorId, Carbon::parse($date)));
         $occupied = Appointment::query()->where('doctor_id', $doctorId)->whereDate('fecha_cita', $date)
-            ->consumingRegularSlot()->when($excludeAppointmentId !== null, fn ($q) => $q->where('id', '<>', $excludeAppointmentId))
+            ->occupyingInterval()->when($excludeAppointmentId !== null, fn ($q) => $q->where('id', '<>', $excludeAppointmentId))
             ->get(['hora_cita', 'duracion_cita']);
         foreach ($occupied as $appointment) {
             $start = substr((string) $appointment->hora_cita, 0, 5);

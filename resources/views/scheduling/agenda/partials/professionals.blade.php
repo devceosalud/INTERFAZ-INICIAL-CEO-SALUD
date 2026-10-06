@@ -1,4 +1,4 @@
-<section class="agenda-operations__section agenda-doctors" aria-labelledby="agenda-doctors-title">
+<section data-ui-zone="doctors" class="agenda-operations__section agenda-doctors" aria-labelledby="agenda-doctors-title">
     <div class="agenda-pane-head">
         <div>
             <h2 class="agenda-section-title" id="agenda-doctors-title">Médicos</h2>

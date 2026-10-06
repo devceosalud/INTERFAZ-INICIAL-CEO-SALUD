@@ -4,46 +4,72 @@
     root.AgendaClickTelemetry = api;
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
     'use strict';
-    const zones = {
-        'agenda-patient-lookup': 'agenda.patient_search', 'agenda-patient-register': 'agenda.patient_register',
-        'agenda-next': 'agenda.next_day', 'agenda-prev': 'agenda.previous_day', 'agenda-today': 'agenda.today',
-        'agenda-date': 'agenda.date', 'agenda-doctor-filter': 'agenda.doctor', 'agenda-site': 'agenda.site',
-        'agenda-service-select': 'agenda.service', 'agenda-appointment-submit': 'agenda.book',
-        'agenda-additional-start': 'agenda.additional', 'agenda-reschedule-form': 'agenda.reschedule',
-        'agenda-complete-registration': 'agenda.complete_patient', 'agenda-calendar': 'agenda.calendar',
+    // Versioned, sanitized module geometry. No DOM text, values, IDs or screenshots.
+    const modules = {
+        agenda: { label: 'Agenda Operativa', views: ['dia', 'semana', 'mes'], zones: {
+            toolbar: [0.02, 0.02, 0.96, 0.10, 'Filtros · Médico · Fecha · Vista'],
+            doctors: [0.02, 0.15, 0.20, 0.24, 'Médicos'], mini: [0.24, 0.15, 0.20, 0.24, 'Mini calendario'],
+            booking: [0.02, 0.42, 0.42, 0.55, 'Registro rápido · Servicio · Agendar'],
+            grid: [0.46, 0.15, 0.52, 0.47, 'Agenda · Grilla horaria'],
+            dialog: [0.46, 0.66, 0.52, 0.31, 'Modal · Registrar / editar paciente'] } },
+        horarios: { label: 'Horarios Médicos', views: ['horarios'], zones: {
+            toolbar: [0.02, 0.02, 0.96, 0.12, 'Médico · Sede · Navegación · Nuevo horario'],
+            calendar: [0.02, 0.18, 0.64, 0.79, 'Calendario de horarios'],
+            sidebar: [0.69, 0.18, 0.29, 0.32, 'Selección · Grupos · Horarios'],
+            dialog: [0.69, 0.54, 0.29, 0.43, 'Formulario de horario'] } },
+        pacientes: { label: 'Pacientes', views: ['lista', 'ficha'], zones: {
+            toolbar: [0.02, 0.02, 0.96, 0.15, 'Búsqueda · Filtros · Agregar'],
+            list: [0.02, 0.21, 0.53, 0.76, 'Listado de pacientes'],
+            record: [0.58, 0.21, 0.40, 0.76, 'Ficha · Datos · Guardar / Volver'] } },
     };
-    function semantic(target) {
-        const path = [];
-        for (let node = target; node; node = node.parentElement) {
-            if (node.dataset && node.dataset.appointmentId) { return 'agenda.appointment'; }
-            if (node.classList && node.classList.contains('agenda-calendar-event--appointment')) { return 'agenda.appointment'; }
-            if (node.dataset && node.dataset.contextType === 'slot_libre') { return 'agenda.slot'; }
-            if (node.classList && node.classList.contains('agenda-slot-hit')) { return 'agenda.slot'; }
-            if (node.classList && node.classList.contains('agenda-btn--view')) { return 'agenda.view'; }
-            path.push(node.id);
-        }
-        return path.map((id) => zones[id]).find(Boolean) || 'agenda.other';
-    }
-    function event(click, width, height, view, uuid) {
-        if (width < 240 || height < 240 || !['dia', 'semana', 'mes'].includes(view)) { return null; }
-        return {
-            event_uuid: uuid, screen: 'agenda', view_mode: view, element: semantic(click.target),
-            x: Math.max(0, Math.min(1, click.clientX / width)), y: Math.max(0, Math.min(1, click.clientY / height)),
-            viewport_width: Math.min(10000, width), viewport_height: Math.min(10000, height),
-        };
+    function event(click, width, height, screen, view, zone, rect, uuid) {
+        const module = modules[screen];
+        if (!module || !module.views.includes(view) || !module.zones[zone]
+            || width < 240 || height < 240 || !rect || rect.width <= 0 || rect.height <= 0) { return null; }
+        if (click.target && /^(INPUT|TEXTAREA)$/.test(click.target.tagName || '')) { return null; }
+        if (click.target && click.target.isContentEditable) { return null; }
+        return { event_uuid: uuid, screen: screen, layout_version: 2, zone: zone, view_mode: view,
+            element: screen === 'agenda' ? 'agenda.other' : screen + '.control',
+            x: Math.max(0, Math.min(1, (click.clientX - rect.left) / rect.width)),
+            y: Math.max(0, Math.min(1, (click.clientY - rect.top) / rect.height)),
+            viewport_width: Math.min(10000, width), viewport_height: Math.min(10000, height) };
     }
     function queue(send) {
         let pending = [], busy = false;
-        return {
-            add: (item) => { if (item && pending.length < 100) { pending.push(item); } },
+        return { add: (item) => { if (item && pending.length < 100) { pending.push(item); } },
             flush: async function () {
                 if (busy || !pending.length) { return; }
                 busy = true;
                 const batch = pending.splice(0, 20);
-                try { await send({ events: batch }); } catch (_) { /* Telemetry never controls Agenda. */ }
+                try { await send({ events: batch }); } catch (_) { /* Best effort; never block the module. */ }
                 finally { busy = false; }
-            },
-        };
+            } };
     }
-    return { event: event, queue: queue };
+    return { event: event, queue: queue, modules: modules };
 }));
+
+if (typeof document !== 'undefined') { document.addEventListener('DOMContentLoaded', function () {
+    const config = document.getElementById('ui-telemetry-config');
+    if (!config) { return; }
+    const api = window.AgendaClickTelemetry;
+    const buffer = api.queue(async function (batch) {
+        await fetch(config.dataset.endpoint, { method: 'POST', credentials: 'same-origin', keepalive: true,
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify(batch) });
+    });
+    document.addEventListener('click', function (click) {
+        try {
+            const target = click.target.closest('[data-ui-zone]');
+            const surface = target && target.closest('[data-ui-screen]');
+            if (!surface || !api.modules[surface.dataset.uiScreen]) { return; }
+            const screen = surface.dataset.uiScreen;
+            let view = surface.dataset.telemetryView || (screen === 'agenda' ? 'dia' : screen === 'horarios' ? 'horarios' : 'lista');
+            if (screen === 'pacientes') { view = document.getElementById('patients-record-surface').hidden ? 'lista' : 'ficha'; }
+            if (screen === 'agenda') { view = document.getElementById('agenda-board').dataset.telemetryView || 'dia'; }
+            buffer.add(api.event(click, window.innerWidth, window.innerHeight, screen, view,
+                target.dataset.uiZone, target.getBoundingClientRect(), window.crypto.randomUUID()));
+        } catch (_) { /* Telemetry must never change the original action. */ }
+    }, true);
+    window.setInterval(() => buffer.flush(), 5000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { buffer.flush(); } });
+}); }

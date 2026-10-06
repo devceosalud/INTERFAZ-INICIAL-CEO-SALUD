@@ -33,6 +33,8 @@ final class AgendaLegend
 
     public const ADDITIONAL = 'ADICIONAL';
 
+    public const OFF_HOURS_APPOINTMENT = 'FUERA_HORARIO';
+
     /**
      * @return array<string, array<string, string>>
      */
@@ -73,7 +75,7 @@ final class AgendaLegend
             ],
             self::OFF_HOURS => [
                 'clave' => self::OFF_HOURS,
-                'etiqueta' => 'Fuera de horario',
+                'etiqueta' => 'Sin horario de atención',
                 'glifo' => '—',
                 'color' => '#6b7280',
                 'fondo' => '#f4f5f7',
@@ -83,6 +85,11 @@ final class AgendaLegend
                 'clave' => self::ADDITIONAL, 'etiqueta' => 'ADICIONAL', 'glifo' => '+',
                 'color' => '#6b21a8', 'fondo' => '#f3e8ff',
                 'descripcion' => 'Cita adicional aceptada; no consume slot regular ni implica pago.',
+            ],
+            self::OFF_HOURS_APPOINTMENT => [
+                'clave' => self::OFF_HOURS_APPOINTMENT, 'etiqueta' => 'FUERA DE HORARIO', 'glifo' => 'FH',
+                'color' => '#b45309', 'fondo' => '#ffedd5',
+                'descripcion' => 'Cita especial fuera del horario configurado; bloquea su intervalo exacto.',
             ],
         ];
     }

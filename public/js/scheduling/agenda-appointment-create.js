@@ -23,7 +23,7 @@
             throw new Error('Seleccione o registre un paciente.');
         }
         if (!text(serviceId)) {
-            throw new Error('Seleccione el servicio de la cita.');
+            throw new Error('Selecciona un servicio para agendar la cita.');
         }
 
         return {

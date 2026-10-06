@@ -39,19 +39,24 @@ class CreateAppointmentService
 
     public function create(CreateAppointmentData $data): Appointment
     {
-        return $this->createWithMode($data, false);
+        return $this->createWithMode($data, null);
     }
 
     public function createAdditional(CreateAppointmentData $data): Appointment
     {
-        return $this->createWithMode($data, true);
+        return $this->createWithMode($data, AppointmentAgendaLifecycle::ADDITIONAL);
     }
 
-    private function createWithMode(CreateAppointmentData $data, bool $additional): Appointment
+    public function createOffHours(CreateAppointmentData $data): Appointment
+    {
+        return $this->createWithMode($data, AppointmentAgendaLifecycle::OFF_HOURS);
+    }
+
+    private function createWithMode(CreateAppointmentData $data, ?string $bookingType): Appointment
     {
         for ($attempt = 1; $attempt <= self::NUMBER_ATTEMPTS; $attempt++) {
             try {
-                return DB::transaction(function () use ($data, $attempt, $additional) {
+                return DB::transaction(function () use ($data, $attempt, $bookingType) {
                     $doctor = Doctor::query()->lockForUpdate()->find($data->doctorId);
 
                     if ($doctor === null || $doctor->estado !== 'ACTIVO') {
@@ -62,8 +67,13 @@ class CreateAppointmentService
                     $responsible = $this->resolveResponsible($data->responsibleUserId);
                     $rate = $this->resolveStandardRate($data->date);
 
-                    $this->slots->assertValid($data->doctorId, $data->date, $data->time,
-                        $data->duration, $data->siteId, null, $additional);
+                    if ($bookingType === AppointmentAgendaLifecycle::OFF_HOURS) {
+                        $this->slots->assertOutsideHours($data->doctorId, $data->date, $data->time, $data->duration);
+                        $this->slots->assertUnoccupied($data->doctorId, $data->date, $data->time, $data->duration);
+                    } else {
+                        $this->slots->assertValid($data->doctorId, $data->date, $data->time,
+                            $data->duration, $data->siteId, null, $bookingType === AppointmentAgendaLifecycle::ADDITIONAL);
+                    }
 
                     $price = (float) $doctorService->precio_primera_consulta;
                     if ($price <= 0) {
@@ -96,8 +106,8 @@ class CreateAppointmentService
                         'estado_pagado' => 'PENDIENTE',
                         'numero_operacion' => null,
                         'estado_cita' => 'PROGRAMADO',
-                        'estado_agenda' => $additional ? AppointmentAgendaLifecycle::CONFIRMED : AppointmentAgendaLifecycle::LEGACY,
-                        'tipo_agendamiento' => $additional ? AppointmentAgendaLifecycle::ADDITIONAL : null,
+                        'estado_agenda' => $bookingType !== null ? AppointmentAgendaLifecycle::CONFIRMED : AppointmentAgendaLifecycle::LEGACY,
+                        'tipo_agendamiento' => $bookingType,
                         'observaciones' => null,
                         'fecha_registro' => now()->toDateString(),
                     ]);

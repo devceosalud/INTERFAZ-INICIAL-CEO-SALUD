@@ -13,9 +13,18 @@
             io.revert();
             return { cancelled: true };
         }
-        try { await io.send(context.appointment_id, {
+        const payload = {
             fecha_cita: date, hora_cita: time, expected_fecha_cita: context.fecha, expected_hora_cita: context.hora_inicio,
-        }); }
+        };
+        try {
+            let result = await io.send(context.appointment_id, payload);
+            if (result && result.confirmation_required) {
+                if (!['REGULAR', 'FUERA_HORARIO'].includes(result.target_booking_type)) { throw new Error('Clasificación de destino inválida.'); }
+                if (!io.confirm(result.message)) { io.revert(); return { cancelled: true }; }
+                result = await io.send(context.appointment_id, Object.assign({}, payload, { confirmed_booking_type: result.target_booking_type }));
+                if (result && result.confirmation_required) { throw new Error('El destino cambió. Revisa el horario e inténtalo nuevamente.'); }
+            }
+        }
         catch (error) { io.revert(); throw error; }
         await io.refresh();
         return { cancelled: false };
@@ -32,5 +41,9 @@
             appointment_id: null, patient_id: null, paciente: null, responsable: null,
         };
     }
-    return { reschedule: reschedule, additionalContext: additionalContext };
+    function quickMinute(value, minute) {
+        const match = /^([01]?\d|2[0-3])(?::[0-5]\d)?$/.exec(String(value).trim());
+        return match && ['00', '20', '40'].includes(minute) ? match[1].padStart(2, '0') + ':' + minute : null;
+    }
+    return { reschedule: reschedule, additionalContext: additionalContext, quickMinute: quickMinute };
 }));

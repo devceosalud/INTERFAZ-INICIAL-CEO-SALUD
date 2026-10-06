@@ -90,7 +90,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('Comparar')
             ->assertSee('Sede Central')
             ->assertSee($this->catalog['doctor']->nombre)
-            ->assertSee('Fuera de horario')
+            ->assertSee('Sin horario de atención')
             ->assertSee('Disponible');
     }
 
@@ -155,7 +155,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('data-store-endpoint="'.route('patients.operational.store').'"', false)
             ->assertSee('data-can-write="0"', false)
             ->assertSee('id="agenda-draft-save" disabled', false)
-            ->assertSee('Atribución comercial')
+            ->assertSee('Comercial dueño')
             ->assertSee('separado del usuario creador');
     }
 

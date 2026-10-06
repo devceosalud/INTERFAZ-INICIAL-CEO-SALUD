@@ -18,6 +18,7 @@ class RescheduleAgendaAppointmentRequest extends FormRequest
             'fecha_cita' => ['required', 'date_format:Y-m-d'], 'hora_cita' => ['required', 'date_format:H:i'],
             'expected_fecha_cita' => ['required', 'date_format:Y-m-d'],
             'expected_hora_cita' => ['required', 'date_format:H:i'],
+            'confirmed_booking_type' => ['nullable', 'in:REGULAR,FUERA_HORARIO'],
         ];
     }
 }
