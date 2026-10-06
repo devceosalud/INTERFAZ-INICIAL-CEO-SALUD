@@ -137,7 +137,6 @@ class OperationalPatientController extends Controller
 
         $pendingDocument = $this->pendingDocumentNotice($filters, $pendingView);
 
-        DemoChannelCatalog::ensure();
 
         return view('patients.operational', [
             'documentTypes' => self::DOCUMENT_TYPES,
@@ -214,6 +213,7 @@ class OperationalPatientController extends Controller
             'familiar_contacto' => $patient->familiar_contacto,
             'channel_id' => $patient->channel_id,
             'interaction_medium_id' => $patient->interaction_medium_id,
+            'telefono_secundario' => $patient->telefono_secundario,
             'estado' => $patient->estado,
             'responsable' => self::responsiblePayload($patient),
         ];

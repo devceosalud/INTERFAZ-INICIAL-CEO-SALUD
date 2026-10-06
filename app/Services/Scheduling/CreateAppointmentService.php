@@ -47,16 +47,21 @@ class CreateAppointmentService
         return $this->createWithMode($data, AppointmentAgendaLifecycle::ADDITIONAL);
     }
 
+    public function createPending(CreateAppointmentData $data): Appointment
+    {
+        return $this->createWithMode($data, AppointmentAgendaLifecycle::REGULAR, true);
+    }
+
     public function createOffHours(CreateAppointmentData $data): Appointment
     {
         return $this->createWithMode($data, AppointmentAgendaLifecycle::OFF_HOURS);
     }
 
-    private function createWithMode(CreateAppointmentData $data, ?string $bookingType): Appointment
+    private function createWithMode(CreateAppointmentData $data, ?string $bookingType, bool $pending = false): Appointment
     {
         for ($attempt = 1; $attempt <= self::NUMBER_ATTEMPTS; $attempt++) {
             try {
-                return DB::transaction(function () use ($data, $attempt, $bookingType) {
+                return DB::transaction(function () use ($data, $attempt, $bookingType, $pending) {
                     $doctor = Doctor::query()->lockForUpdate()->find($data->doctorId);
 
                     if ($doctor === null || $doctor->estado !== 'ACTIVO') {
@@ -64,7 +69,10 @@ class CreateAppointmentService
                     }
 
                     $doctorService = $this->resolveDoctorService($data);
-                    $responsible = $this->resolveResponsible($data->responsibleUserId);
+                    $actor = User::findOrFail($data->creatorUserId);
+                    $automaticOwner = !$actor->hasRole('ADMINISTRADOR') && $actor->hasAnyRole(['COMERCIAL', 'ADMISION']);
+                    abort_if($automaticOwner && $data->responsibleUserId !== null && $data->responsibleUserId !== (int) $actor->id, 403);
+                    $responsible = $this->resolveResponsible($automaticOwner ? $actor->id : $data->responsibleUserId, $automaticOwner);
                     $rate = $this->resolveStandardRate($data->date);
 
                     if ($bookingType === AppointmentAgendaLifecycle::OFF_HOURS) {
@@ -72,7 +80,7 @@ class CreateAppointmentService
                         $this->slots->assertUnoccupied($data->doctorId, $data->date, $data->time, $data->duration);
                     } else {
                         $this->slots->assertValid($data->doctorId, $data->date, $data->time,
-                            $data->duration, $data->siteId, null, $bookingType === AppointmentAgendaLifecycle::ADDITIONAL);
+                            $data->duration, $data->siteId, null, $pending || $bookingType === AppointmentAgendaLifecycle::ADDITIONAL);
                     }
 
                     $price = (float) $doctorService->precio_primera_consulta;
@@ -96,19 +104,20 @@ class CreateAppointmentService
                         'hora_cita' => $data->time,
                         'duracion_cita' => $data->duration,
                         'turno_cita' => 0,
-                        'motivo_consulta' => null,
+                        'motivo_consulta' => $data->operational['motivo_consulta'] ?? null,
                         'precio_programado' => $price,
                         'total_pagado' => 0,
                         'saldo_pendiente' => $price,
                         'metodo_pago' => null,
-                        'es_exonerado' => false,
-                        'autorizado_por' => null,
+                        'es_exonerado' => $data->operational['es_exonerado'] ?? false,
+                        'autorizado_por' => $data->operational['autorizado_por'] ?? null,
                         'estado_pagado' => 'PENDIENTE',
                         'numero_operacion' => null,
                         'estado_cita' => 'PROGRAMADO',
-                        'estado_agenda' => $bookingType !== null ? AppointmentAgendaLifecycle::CONFIRMED : AppointmentAgendaLifecycle::LEGACY,
+                        'estado_agenda' => $pending ? AppointmentAgendaLifecycle::PENDING_CONFIRMATION : ($bookingType !== null ? AppointmentAgendaLifecycle::CONFIRMED : AppointmentAgendaLifecycle::LEGACY),
                         'tipo_agendamiento' => $bookingType,
-                        'observaciones' => null,
+                        'observaciones' => $data->operational['observaciones'] ?? null,
+                        'economic_source' => $data->operational['economic_source'] ?? 'LEGACY',
                         'fecha_registro' => now()->toDateString(),
                     ]);
                 }, 3);
@@ -131,7 +140,7 @@ class CreateAppointmentService
         }
     }
 
-    protected function resolveResponsible(?int $responsibleUserId): ?User
+    protected function resolveResponsible(?int $responsibleUserId, bool $automaticOwner = false): ?User
     {
         if ($responsibleUserId === null) {
             return null;
@@ -139,7 +148,7 @@ class CreateAppointmentService
 
         $responsible = User::query()
             ->whereKey($responsibleUserId)
-            ->whereHas('roles', fn ($query) => $query->where('name', 'COMERCIAL'))
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', $automaticOwner ? ['COMERCIAL', 'ADMISION'] : ['COMERCIAL']))
             ->first();
 
         if ($responsible === null) {

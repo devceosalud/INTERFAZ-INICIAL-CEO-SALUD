@@ -29,7 +29,6 @@ class AgendaBoardController extends Controller
 {
     public function __invoke(): View
     {
-        DemoChannelCatalog::ensure();
 
         $resolver = app(ActiveDoctorServiceResolver::class);
         $doctorServices = $resolver->query()
@@ -79,7 +78,11 @@ class AgendaBoardController extends Controller
             'canCreateAppointments' => auth()->user()->can(SchedulingCapability::CREATE),
             'canRescheduleAppointments' => auth()->user()->can(SchedulingCapability::RESCHEDULE),
             'canCreateAdditional' => auth()->user()->can(SchedulingCapability::CREATE_ADDITIONAL),
-            'canAssignResponsible' => auth()->user()->can(SchedulingCapability::ASSIGN_RESPONSIBLE),
+            'canAssignResponsible' => auth()->user()->hasRole('ADMINISTRADOR') && auth()->user()->can(SchedulingCapability::ASSIGN_RESPONSIBLE),
+            'autoOwner' => !auth()->user()->hasRole('ADMINISTRADOR') && auth()->user()->hasAnyRole(['COMERCIAL', 'ADMISION']),
+            'canSubmitPayment' => auth()->user()->can(SchedulingCapability::SUBMIT_PAYMENT),
+            'canAuthorize' => auth()->user()->can(SchedulingCapability::OVERRIDE_DOWN_PAYMENT) || auth()->user()->can(SchedulingCapability::APPROVE_ZERO_COST),
+            'canWaive' => auth()->user()->can(SchedulingCapability::APPROVE_ZERO_COST),
             'doctorServices' => $doctorServices,
             'legend' => AgendaLegend::ordered(),
             'views' => AgendaRange::views(),

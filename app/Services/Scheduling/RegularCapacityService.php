@@ -20,9 +20,11 @@ class RegularCapacityService
             ->whereBetween('fecha_cita', [$query->start()->toDateString(), $query->end()->toDateString()])
             ->consumingRegularSlot()
             ->where(fn ($q) => $q->whereNull('tipo_agendamiento')->orWhere('tipo_agendamiento', 'REGULAR'))
-            ->where('precio_programado', '>', 0)->whereRaw('total_pagado * 2 >= precio_programado')
+            ->where('precio_programado', '>', 0)
             ->when($query->siteId() !== null, fn ($q) => $q->where(fn ($s) => $s->where('site_id', $query->siteId())->orWhereNull('site_id')))
-            ->get(['doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita']);
+            ->get(['id', 'doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita', 'precio_programado', 'total_pagado', 'estado_agenda', 'economic_source']);
+        $positions = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointments($paid);
+        $paid = $paid->filter(fn ($a) => $positions[$a->id]['secured']);
 
         $result = [];
         foreach ($query->doctorIds() as $doctorId) {

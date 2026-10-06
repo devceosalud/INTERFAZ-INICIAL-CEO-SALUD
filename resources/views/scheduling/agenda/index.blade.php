@@ -21,6 +21,9 @@
             <div class="container-fluid agenda-page__container">
                 <main class="agenda-board agenda-board--day" id="agenda-board" data-ui-screen="agenda"
                     data-capacity-url="{{ route('scheduling.mvp.agenda.regular-capacity') }}"
+                    data-registration-store="{{ route('scheduling.mvp.agenda.registrations') }}"
+                    data-auto-owner="{{ $autoOwner ? auth()->id() : '' }}"
+                    data-auto-owner-name="{{ $autoOwner ? auth()->user()->name : '' }}"
                     data-off-hours-store="{{ route('scheduling.mvp.agenda.appointments.off-hours') }}"
                     data-feed="{{ route('scheduling.mvp.agenda.feed') }}"
                     data-appointment-store="{{ route('scheduling.mvp.agenda.appointments.store') }}"
@@ -159,5 +162,7 @@
     <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
     @include('telemetry.collector')
+    <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

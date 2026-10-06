@@ -66,4 +66,11 @@ class AppointmentAgendaLifecycleTest extends TestCase
 
         AppointmentVisibility::allows(Lifecycle::LEGACY, 10, 0);
     }
+
+    public function test_effective_private_owner_is_responsible_with_creator_fallback_and_no_admin_bypass(): void
+    {
+        $this->assertFalse(AppointmentVisibility::allows(Lifecycle::PENDING_CONFIRMATION, 10, 10, 20));
+        $this->assertTrue(AppointmentVisibility::allows(Lifecycle::PENDING_CONFIRMATION, 10, 20, 20));
+        $this->assertTrue(AppointmentVisibility::allows(Lifecycle::PENDING_CONFIRMATION, 10, 10, null));
+    }
 }

@@ -20,6 +20,7 @@ class Patient extends Model
         'tipo_identificacion',
         'numero_identidad',
         'telefono',
+        'telefono_secundario',
         'channel_id',
         'interaction_medium_id',
         'fecha_registro',

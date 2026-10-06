@@ -10,7 +10,10 @@ class StoreAdditionalAppointmentRequest extends StoreAgendaAppointmentRequest
     {
         $user = $this->user();
 
-        return $user && $user->can(SchedulingCapability::CREATE_ADDITIONAL)
-            && (!$this->filled('responsible_user_id') || $user->can(SchedulingCapability::ASSIGN_RESPONSIBLE));
+        if (!$user || !$user->can(SchedulingCapability::CREATE_ADDITIONAL)) { return false; }
+        if (!$user->hasRole('ADMINISTRADOR') && $user->hasAnyRole(['COMERCIAL', 'ADMISION'])) {
+            return !$this->filled('responsible_user_id') || (int) $this->input('responsible_user_id') === (int) $user->id;
+        }
+        return !$this->filled('responsible_user_id') || $user->can(SchedulingCapability::ASSIGN_RESPONSIBLE);
     }
 }

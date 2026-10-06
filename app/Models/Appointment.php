@@ -40,6 +40,7 @@ class Appointment extends Model
         'tipo_agendamiento',
         'observaciones',
         'fecha_registro',
+        'economic_source',
     ];
 
     /** Opt-in scope; it does not change existing readers automatically. */
@@ -86,6 +87,8 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
+
+    public function documents() { return $this->hasMany(AppointmentDocument::class); }
 
     /**
      * Obtiene el último usuario que modificó la cita, sin reemplazar al creador.

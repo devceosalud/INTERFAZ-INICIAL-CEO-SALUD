@@ -44,8 +44,32 @@
         reniecButton.disabled = true;
     }
 
+    const documentButton = document.getElementById('patient-appointment-documents-open');
+    if (documentButton) {
+        documentButton.addEventListener('click', async function () {
+            const id = recordId.value;
+            if (!id) { setNotice('Guarda primero el paciente.', true); return; }
+            const target = document.getElementById('patient-appointment-documents');
+            target.replaceChildren();
+            try {
+                const response = await fetch('/patients/' + encodeURIComponent(id) + '/appointment-documents', { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                if (!response.ok) { throw new Error('No se pudieron consultar los documentos autorizados.'); }
+                const data = await response.json();
+                for (const appointment of data.appointments) {
+                    const section = document.createElement('div'); section.textContent = 'Cita ' + appointment.appointment_id + ' · ' + appointment.fecha;
+                    for (const doc of appointment.documents) {
+                        const link = document.createElement('a'); link.textContent = ' · ' + doc.label; link.href = doc.url || doc.download_url;
+                        link.target = '_blank'; link.rel = 'noopener noreferrer'; section.appendChild(link);
+                    }
+                    target.appendChild(section);
+                }
+                if (!data.appointments.length) { target.textContent = 'Sin documentos de citas visibles para este usuario.'; }
+            } catch (e) { setNotice(e.message, true); }
+        });
+    }
     var fields = {
         nombre: document.getElementById('patient-name'),
+        telefono_secundario: document.getElementById('patient-phone-secondary'),
         apellido_paterno: document.getElementById('patient-paternal-name'),
         apellido_materno: document.getElementById('patient-maternal-name'),
         email: document.getElementById('patient-email'),

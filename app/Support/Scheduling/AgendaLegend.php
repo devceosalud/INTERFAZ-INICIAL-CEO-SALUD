@@ -41,6 +41,10 @@ final class AgendaLegend
     public static function entries(): array
     {
         return [
+            'PENDIENTE_CONFIRMACION' => [
+                'clave' => 'PENDIENTE_CONFIRMACION', 'etiqueta' => 'RESERVA PRIVADA', 'glifo' => 'R',
+                'color' => '#52525b', 'fondo' => '#fafafa', 'descripcion' => 'Sin agendar; visible solo para su dueño efectivo y no ocupa el slot regular.',
+            ],
             self::AVAILABLE => [
                 'clave' => self::AVAILABLE,
                 'etiqueta' => 'Disponible',

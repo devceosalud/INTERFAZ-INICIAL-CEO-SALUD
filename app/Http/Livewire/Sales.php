@@ -651,15 +651,9 @@ class Sales extends Component
                 ] as $metodo => $datos
             ) {
                 if ($datos['monto'] > 0) {
-                    $voucher->payments()->create([
-                        'metodo_pago' => $metodo,
-                        'monto' => $datos['monto'],
-                        'numero_operacion' => $datos['operacion'] ?: null,
-                        'entidad_origen' => $datos['origen'] ?: null,
-                        'entidad_destino' => $datos['destino'] ?: null,
-                        'user_id' => auth()->id(),
-                        'cashier_shift_id' => $this->turno->id,
-                    ]);
+                    app(\App\Services\Billing\VoucherPaymentRecorder::class)->record($voucher, $this->turno, (int) auth()->id(),
+                        \App\Support\Billing\Money::cents($datos['monto']), $metodo, $datos['operacion'] ?: null,
+                        $datos['origen'] ?: null, $datos['destino'] ?: null);
                 }
             }
 

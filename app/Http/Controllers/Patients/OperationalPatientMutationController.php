@@ -118,6 +118,7 @@ class OperationalPatientMutationController extends Controller
                 'integer',
                 Rule::exists('interaction_media', 'id')->where('estado', 'ACTIVO'),
             ],
+            'telefono_secundario' => ['nullable', 'string', 'max:32', 'regex:/\A\+?[0-9][0-9 -]{5,30}\z/'],
             'registrar_responsable' => ['sometimes', 'boolean'],
             'responsable_parentesco' => [
                 Rule::excludeIf(!$registerResponsible),

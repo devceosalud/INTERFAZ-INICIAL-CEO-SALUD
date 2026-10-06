@@ -12,7 +12,7 @@ use InvalidArgumentException;
  */
 final class AppointmentVisibility
 {
-    public static function allows(string $agendaState, int $creatorId, int $actorId): bool
+    public static function allows(string $agendaState, int $creatorId, int $actorId, ?int $responsibleId = null): bool
     {
         self::assertActor($actorId);
 
@@ -20,7 +20,7 @@ final class AppointmentVisibility
             AppointmentAgendaLifecycle::LEGACY,
             AppointmentAgendaLifecycle::CONFIRMED,
         ], true) || ($agendaState === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
-            && $creatorId === $actorId);
+            && ($responsibleId ?? $creatorId) === $actorId);
     }
 
     /**
@@ -40,7 +40,11 @@ final class AppointmentVisibility
                 AppointmentAgendaLifecycle::CONFIRMED,
             ])->orWhere(function ($private) use ($actorId, $table): void {
                 $private->where($table.'.estado_agenda', AppointmentAgendaLifecycle::PENDING_CONFIRMATION)
-                    ->where($table.'.user_id', $actorId);
+                    ->where(function ($owner) use ($actorId, $table): void {
+                        // Null-safe even when Voucher negates this predicate in a correlated subquery.
+                        $owner->where(fn ($assigned) => $assigned->whereNotNull($table.'.responsible_user_id')->where($table.'.responsible_user_id', $actorId))
+                            ->orWhere(fn ($fallback) => $fallback->whereNull($table.'.responsible_user_id')->where($table.'.user_id', $actorId));
+                    });
             });
         });
     }

@@ -40,7 +40,12 @@ class RescheduleAppointmentService
             $additional = $appointment->estado_agenda === AppointmentAgendaLifecycle::CONFIRMED
                 && $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::ADDITIONAL;
             $changes = ['fecha_cita' => $date, 'hora_cita' => $time, 'updated_by_user_id' => $actorId];
-            if ($additional) {
+            if ($appointment->estado_agenda === AppointmentAgendaLifecycle::PENDING_CONFIRMATION) {
+                if ($confirmedType === AppointmentAgendaLifecycle::OFF_HOURS) {
+                    throw new AppointmentSlotUnavailableException('La reserva privada se conserva como REGULAR; confirma primero el flujo de atención excepcional.');
+                }
+                $this->slots->assertValid((int) $doctor->id, $date, $time, (int) $appointment->duracion_cita, $siteId, $id, true, true);
+            } elseif ($additional) {
                 $this->slots->assertValid((int) $doctor->id, $date, $time, (int) $appointment->duracion_cita, $siteId, $id, true, true);
             } else {
                 $targetType = $this->slots->destinationType((int) $doctor->id, $date, $time, (int) $appointment->duracion_cita, $siteId);

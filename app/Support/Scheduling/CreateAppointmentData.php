@@ -31,7 +31,8 @@ class CreateAppointmentData
         string $time,
         int $duration,
         ?int $responsibleUserId,
-        int $creatorUserId
+        int $creatorUserId,
+        public array $operational = []
     ) {
         $this->patientId = $patientId;
         $this->doctorId = $doctorId;

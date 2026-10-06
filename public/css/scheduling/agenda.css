@@ -2027,3 +2027,11 @@ body.agenda-modal-open {
 .agenda-required-mark { color: #b91c1c; }
 .agenda-required-badge { padding: 1px 4px; border-radius: 3px; background: #fef2f2; color: #991b1b; font-size: 8px; line-height: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
 #agenda-appointment-submit { margin-top: 10px; min-height: 32px; }
+.agenda-operational-fields { margin-top: 8px; border-top: 1px solid var(--agenda-border-soft); }
+.agenda-operational-fields details { padding: 6px 0; border-bottom: 1px solid var(--agenda-border-soft); }
+.agenda-operational-fields summary { cursor: pointer; font-weight: 700; }
+.agenda-operational-fields .agenda-patient-form-grid { margin: 6px 0; gap: 7px; }
+.agenda-operational-fields textarea { height: auto; min-height: 44px; }
+.agenda-operational-fields small { display: block; margin-top: 4px; color: var(--agenda-muted); }
+.agenda-document-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 6px 0; }
+.agenda-document-row input { min-width: 100px; max-width: 100%; }

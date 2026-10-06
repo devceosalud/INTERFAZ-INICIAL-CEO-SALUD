@@ -79,8 +79,7 @@ class AppointmentVisibilityTest extends TestCase
             $appointments[$name] = Appointment::create([
                 'numero_cita' => 'VISIBILITY-'.count($appointments),
                 'user_id' => $creatorId,
-                // Assigning responsibility does not grant access to another creator's private row.
-                'responsible_user_id' => $actor->id,
+                'responsible_user_id' => null,
                 'patient_id' => $patient->id,
                 'doctor_id' => $catalog['doctor']->id,
                 'service_id' => $catalog['service']->id,

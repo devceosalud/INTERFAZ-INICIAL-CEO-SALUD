@@ -219,6 +219,10 @@
                                 <h1 id="patient-record-title">Ficha del paciente</h1>
                             </div>
                             <div class="patients-record-head__actions">
+                                @if(config('scheduling.enabled') && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS) && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
+                                    <button id="patient-appointment-documents-open" class="patients-btn" type="button">Documentos de citas</button>
+                                @endif
+
                                 <button class="patients-btn patients-btn--primary" type="submit" form="patient-record-form"
                                     id="patient-save" @disabled(!$canWritePatients)>
                                     Guardar cambios
@@ -253,6 +257,7 @@
                             @endif
                         </div>
 
+                        <div id="patient-appointment-documents" aria-live="polite"></div>
                         <form class="patients-record-form" id="patient-record-form" novalidate>
                             <input type="hidden" id="patient-record-id" value="">
 
@@ -319,6 +324,7 @@
                             <fieldset class="patients-block">
                                 <legend>Datos operativos</legend>
                                 <div class="patients-form-grid patients-form-grid--three">
+                                    <label class="patients-field"><span>Celular secundario · opcional</span><input id="patient-phone-secondary" type="tel" maxlength="32"></label>
                                     <label class="patients-field">
                                         <span>Canal de captación</span>
                                         <select id="patient-channel">
@@ -329,7 +335,7 @@
                                         </select>
                                     </label>
                                     <label class="patients-field">
-                                        <span>Medio de interacción</span>
+                                        <span>Medio de contacto</span>
                                         <select id="patient-interaction-medium">
                                             <option value="">Sin indicar</option>
                                             @foreach ($interactionMedia as $medium)

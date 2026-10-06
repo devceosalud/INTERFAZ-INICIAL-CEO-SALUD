@@ -78,18 +78,20 @@
             <label class="agenda-field">
                 <span class="agenda-field__label">Comercial dueño</span>
                 <select class="agenda-field__input" id="agenda-responsible-select" @disabled(!$canAssignResponsible)>
-                    <option value="">Sin asignar</option>
+                    <option value="">{{ $autoOwner ? 'Automático: '.auth()->user()->name : 'Sin asignar' }}</option>
                     @foreach ($commercialUsers as $commercial)
                         <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
                     @endforeach
                 </select>
                 @unless ($canAssignResponsible)
-                    <small>Requiere permiso para asignar responsable.</small>
+                    <small>{{ $autoOwner ? 'Se asigna automáticamente al usuario autenticado.' : 'Requiere permiso para asignar responsable.' }}</small>
                 @endunless
             </label>
         </div>
 
         <p id="agenda-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</p>
+
+        <div id="agenda-op-workspace-host">@include('scheduling.agenda.partials.operational-registration')</div>
 
         <p class="agenda-quick__message" id="agenda-quick-message">
             Seleccione médico, fecha, intervalo disponible, paciente y servicio.

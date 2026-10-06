@@ -16,6 +16,9 @@ Route::middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
         Route::get('/{patientId}', [OperationalPatientController::class, 'show'])
             ->whereNumber('patientId')
             ->name('show');
+        Route::get('/{patientId}/appointment-documents', [\App\Http\Controllers\Scheduling\AppointmentDocumentController::class, 'patientIndex'])
+            ->whereNumber('patientId')->middleware(['scheduling-mvp', 'permission:'.\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS,
+                'permission:'.\App\Support\Scheduling\SchedulingCapability::VIEW])->name('appointment-documents');
     });
 
 Route::middleware(['auth', PatientWriteAccess::middleware()])

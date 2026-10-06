@@ -21,6 +21,16 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
+        Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/documents')->whereNumber('appointmentId')->group(function () {
+            $controller = \App\Http\Controllers\Scheduling\AppointmentDocumentController::class;
+            Route::get('/', [$controller, 'index'])->name('scheduling.mvp.documents.index');
+            Route::post('/', [$controller, 'store'])->name('scheduling.mvp.documents.store');
+            Route::get('/{documentId}', [$controller, 'download'])->whereNumber('documentId')->name('scheduling.mvp.documents.download');
+            Route::put('/{documentId}', [$controller, 'update'])->whereNumber('documentId')->name('scheduling.mvp.documents.update');
+            Route::delete('/{documentId}', [$controller, 'destroy'])->whereNumber('documentId')->name('scheduling.mvp.documents.destroy');
+        });
         Route::get('/scheduling-mvp/agenda/regular-capacity', \App\Http\Controllers\Scheduling\RegularCapacityController::class)
             ->name('scheduling.mvp.agenda.regular-capacity');
         Route::get('/scheduling-mvp/availability', DoctorAvailabilityController::class)
@@ -45,6 +55,12 @@ Route::middleware([
     Route::post('/scheduling-mvp/agenda/appointments', [AgendaAppointmentController::class, 'store'])
         ->middleware('permission:'.SchedulingCapability::CREATE)
         ->name('scheduling.mvp.agenda.appointments.store');
+
+    Route::post('/scheduling-mvp/agenda/registrations', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'store'])
+        ->middleware('permission:'.SchedulingCapability::VIEW)->name('scheduling.mvp.agenda.registrations');
+    Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/payments', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'payment'])
+        ->whereNumber('appointmentId')->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])
+        ->name('scheduling.mvp.agenda.payments');
 
     Route::post('/scheduling-mvp/agenda/off-hours-appointments', [AgendaAppointmentController::class, 'offHours'])
         ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])

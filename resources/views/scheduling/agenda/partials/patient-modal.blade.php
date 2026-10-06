@@ -43,7 +43,7 @@
                         <label class="agenda-field">
                             <span class="agenda-field__label">Comercial dueño</span>
                             <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>
-                                <option value="">Sin asignar</option>
+                                <option value="">{{ $autoOwner ? 'Automático: '.auth()->user()->name : 'Sin asignar' }}</option>
                                 @foreach ($commercialUsers as $commercial)
                                     <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
                                 @endforeach
@@ -51,6 +51,8 @@
                             <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
                         </label>
                 </div>
+                <div id="agenda-op-modal-host"></div>
+                <label class="agenda-field"><span class="agenda-field__label">Celular secundario · opcional</span><input id="agenda-draft-phone-secondary" class="agenda-field__input" type="tel" maxlength="32" placeholder="+51…"></label>
                 <section class="agenda-patient-tabpanel" data-patient-panel="essential">
                     <div class="agenda-patient-form-grid">
                         <label class="agenda-field">
@@ -112,6 +114,15 @@
                                 @endforeach
                             </select>
                         </label>
+                        <label class="agenda-field">
+                            <span class="agenda-field__label">Medio de contacto</span>
+                            <select class="agenda-field__input" id="agenda-draft-interaction-medium">
+                                <option value="">Sin indicar</option>
+                                @foreach ($interactionMedia as $medium)
+                                    <option value="{{ $medium->id }}">{{ $medium->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                     </div>
                 </section>
 
@@ -154,15 +165,7 @@
                             <span class="agenda-field__label">Teléfono familiar</span>
                             <input class="agenda-field__input" type="text" disabled placeholder="Pendiente de persistencia">
                         </label>
-                        <label class="agenda-field">
-                            <span class="agenda-field__label">Medio de interacción</span>
-                            <select class="agenda-field__input" id="agenda-draft-interaction-medium">
-                                <option value="">Sin indicar</option>
-                                @foreach ($interactionMedia as $medium)
-                                    <option value="{{ $medium->id }}">{{ $medium->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </label>
+
 
                         <div class="agenda-field agenda-patient-form-grid__wide">
                             <label class="agenda-check">

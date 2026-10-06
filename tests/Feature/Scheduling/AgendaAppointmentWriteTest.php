@@ -55,6 +55,7 @@ class AgendaAppointmentWriteTest extends TestCase
 
     public function test_a_normal_available_appointment_is_created_with_server_owned_fields(): void
     {
+        $this->creator->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR', 'web'));
         $responsible = $this->createUserWithRole('COMERCIAL');
 
         $response = $this->postAppointment([
@@ -340,6 +341,7 @@ class AgendaAppointmentWriteTest extends TestCase
 
     public function test_responsible_requires_its_specific_capability_and_never_replaces_creator(): void
     {
+        $this->creator->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR', 'web'));
         $responsible = $this->createUserWithRole('COMERCIAL');
         $this->creator->revokePermissionTo(SchedulingCapability::ASSIGN_RESPONSIBLE);
 
