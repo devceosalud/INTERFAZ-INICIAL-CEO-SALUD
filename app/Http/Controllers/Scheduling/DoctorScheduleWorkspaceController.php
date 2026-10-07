@@ -35,7 +35,7 @@ class DoctorScheduleWorkspaceController extends Controller
                 ->orderBy('nombre')
                 ->get(['id', 'nombre']),
             'sites' => Site::activo()->orderBy('nombre')->get(['id', 'nombre']),
-            'canManageSchedules' => $request->user()->hasRole('ADMISION'),
+            'canManageSchedules' => $request->user()->hasAnyRole(['ADMISION', 'COMERCIAL']),
             'today' => Carbon::today()->toDateString(),
         ]);
     }

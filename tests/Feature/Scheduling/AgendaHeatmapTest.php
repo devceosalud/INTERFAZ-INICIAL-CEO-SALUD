@@ -125,6 +125,18 @@ class AgendaHeatmapTest extends TestCase
 
     private function endpoint(): string { return route('ui.telemetry.click-events'); }
 
+    public function test_commercial_cannot_open_the_heatmap_and_the_administrator_can(): void
+    {
+        $commercial = $this->createUserWithRole('COMERCIAL');
+        $commercial->givePermissionTo(Permission::findOrCreate(Capability::VIEW_AUDIT, 'web'));
+        $this->actingAs($commercial)->get(route('scheduling.mvp.agenda.heatmap'))->assertForbidden();
+        $this->getJson($this->dataUrl())->assertForbidden();
+
+        $this->actingAs($this->createUserWithRole('ADMINISTRADOR'))
+            ->get(route('scheduling.mvp.agenda.heatmap'))
+            ->assertOk();
+    }
+
     public function test_non_admin_with_audit_capability_still_cannot_read_viewer_or_data(): void
     {
         $this->actor->givePermissionTo(Permission::findOrCreate(Capability::VIEW_AUDIT, 'web'));

@@ -91,7 +91,7 @@
 
                     @unless ($canManageSchedules)
                         <div class="schedule-readonly" role="status">
-                            Solo consulta. Admisión administra los horarios.
+                            Solo consulta. Admisión y Comercial administran los horarios.
                         </div>
                     @endunless
 

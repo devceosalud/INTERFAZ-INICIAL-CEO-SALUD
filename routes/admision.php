@@ -26,7 +26,7 @@ Route::middleware(['auth', "role:{$operationalReaders}"])->group(function () {
     Route::get('/admissionist/available-schedule', [AvailableSchedule::class, 'index'])->name('admissionit.available.schedule.index');
 });
 
-Route::middleware(['auth', 'role:ADMISION'])->group(function () {
+Route::middleware(['auth', 'role:ADMISION|COMERCIAL'])->group(function () {
     Route::post('/admissionist/patient/store', [PatientController::class, 'store'])->name('admissionit.patient.store');
     Route::put('/admissionist/patient/udpate', [PatientController::class, 'update'])->name('admissionit.patient.update');
     Route::post('/admissionist/patient/delete', [PatientController::class, 'delete'])->name('admissionit.patient.delete');

@@ -59,6 +59,21 @@ class ShellNavigationTest extends TestCase
             ], false);
     }
 
+    public function test_commercial_navigation_shows_the_operational_modules_without_the_heatmap(): void
+    {
+        config()->set('scheduling.enabled', true);
+        $user = $this->createUserWithRole('COMERCIAL');
+        $user->givePermissionTo(Permission::findOrCreate(SchedulingCapability::MVP_ACCESS, 'web'));
+        $user->givePermissionTo(Permission::findOrCreate(SchedulingCapability::VIEW, 'web'));
+
+        $this->actingAs($user->fresh())
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSeeInOrder(['Pacientes', 'Responsables', 'Citas', 'Agenda operativa', 'Horarios', 'Horarios médicos'])
+            ->assertDontSee('Mapa de clics')
+            ->assertDontSee('Maestros');
+    }
+
     public function test_the_agenda_link_uses_the_existing_flag_and_capabilities(): void
     {
         config()->set('scheduling.enabled', true);

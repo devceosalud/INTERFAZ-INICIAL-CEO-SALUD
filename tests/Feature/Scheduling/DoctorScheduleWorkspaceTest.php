@@ -508,17 +508,39 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->assertSame(2, DoctorSchedule::query()->whereNull('site_id')->count());
     }
 
-    public function test_commercial_can_view_but_cannot_modify_the_workspace(): void
+    public function test_commercial_can_create_and_edit_schedules_and_admission_keeps_access(): void
     {
         $commercial = $this->createUserWithRole('COMERCIAL');
 
         $this->actingAs($commercial)
             ->get(self::PAGE)
             ->assertOk()
-            ->assertSee('Solo consulta. Admisión administra los horarios.')
-            ->assertSee('data-can-manage="false"', false);
+            ->assertSee('data-can-manage="true"', false)
+            ->assertDontSee('Solo consulta. Admisión y Comercial administran los horarios.');
 
         $this->actingAs($commercial)
+            ->postJson(self::STORE, $this->storePayload())
+            ->assertOk();
+
+        $block = DoctorSchedule::firstOrFail();
+        $this->actingAs($commercial)
+            ->putJson(self::UPDATE, [
+                'doctor_schedule_id_edit' => $block->id,
+                'doctor_id_edit' => $this->catalog['doctor']->id,
+                'fecha_cita_edit' => $this->monday->toDateString(),
+                'hora_inicio_edit' => '10:00',
+                'hora_fin_edit' => '12:00',
+                'duracion_edit_cita' => 20,
+            ])->assertOk();
+
+        $this->assertSame('10:00', (string) $block->fresh()->hora_inicio);
+
+        $this->actingAs($this->admission)
+            ->get(self::PAGE)
+            ->assertOk()
+            ->assertSee('data-can-manage="true"', false);
+
+        $this->actingAs($this->createUserWithRole('RECEPCION'))
             ->postJson(self::STORE, $this->storePayload())
             ->assertForbidden();
     }
