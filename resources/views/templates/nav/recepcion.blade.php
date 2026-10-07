@@ -1,52 +1,44 @@
- <li>
-     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-         <i class="flaticon-381-calculator"></i>
-         <span class="nav-text">Ventas</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('receptionist.cashier.shift') }}">Apertura</a></li>
-         <li><a href="{{ route('receptionist.sale.index') }}">Ventas</a></li>
-         <li><a href="{{ route('receptionist.cash.movement') }}">Movimientos</a></li>
-     </ul>
- </li>
+@php
+    $receptionAppointmentItems = [
+        ['label' => 'Registrar cita', 'route' => 'receptionist.appointment.index', 'patterns' => ['receptionist.appointment.*']],
+    ];
+    if (config('scheduling.enabled')
+        && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+        && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW)) {
+        array_unshift($receptionAppointmentItems, [
+            'label' => 'Agenda operativa',
+            'route' => 'scheduling.mvp.agenda',
+            'patterns' => ['scheduling.mvp.agenda'],
+        ]);
+    }
+@endphp
 
- <li>
-     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-         <i class="flaticon-381-user-7"></i>
-         <span class="nav-text">Pacientes</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('receptionist.patient.index') }}">Pacientes</a></li>
-     </ul>
- </li>
-
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-user"></i>
-         <span class="nav-text">Responsables</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('receptionist.responsible.index') }}">Responsables</a></li>
-     </ul>
- </li>
-
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-calendar"></i>
-         <span class="nav-text">Citas</span>
-     </a>
-     <ul aria-expanded="false">
-         {{-- <li><a href="{{ route('receptionist.available.schedule.index') }}">Disponibles</a></li> --}}
-         <li><a href="{{ route('receptionist.appointment.index') }}">Registrar Cita</a></li>
-     </ul>
- </li>
-
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-clock"></i>
-         <span class="nav-text">Horarios</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('receptionist.doctor.schedule.index') }}">Horarios médicos</a></li>
-     </ul>
- </li>
+@include('templates.nav.module', [
+    'key' => 'reception-sales', 'label' => 'Ventas',
+    'activePatterns' => ['receptionist.cashier.*', 'receptionist.sale.*', 'receptionist.cash.*'],
+    'items' => [
+        ['label' => 'Apertura de caja', 'route' => 'receptionist.cashier.shift', 'patterns' => ['receptionist.cashier.*']],
+        ['label' => 'Ventas', 'route' => 'receptionist.sale.index', 'patterns' => ['receptionist.sale.*']],
+        ['label' => 'Movimientos', 'route' => 'receptionist.cash.movement', 'patterns' => ['receptionist.cash.*']],
+    ],
+])
+@include('templates.nav.module', [
+    'key' => 'reception-patients', 'label' => 'Pacientes',
+    'activePatterns' => ['receptionist.patient.*'],
+    'items' => [['label' => 'Pacientes', 'route' => 'receptionist.patient.index', 'patterns' => ['receptionist.patient.*']]],
+])
+@include('templates.nav.module', [
+    'key' => 'reception-responsibles', 'label' => 'Responsables',
+    'activePatterns' => ['receptionist.responsible.*'],
+    'items' => [['label' => 'Responsables', 'route' => 'receptionist.responsible.index', 'patterns' => ['receptionist.responsible.*']]],
+])
+@include('templates.nav.module', [
+    'key' => 'reception-appointments', 'label' => 'Citas',
+    'activePatterns' => ['receptionist.appointment.*', 'scheduling.mvp.agenda'],
+    'items' => $receptionAppointmentItems,
+])
+@include('templates.nav.module', [
+    'key' => 'reception-schedules', 'label' => 'Horarios',
+    'activePatterns' => ['receptionist.doctor.schedule.*'],
+    'items' => [['label' => 'Horarios médicos', 'route' => 'receptionist.doctor.schedule.index', 'patterns' => ['receptionist.doctor.schedule.*']]],
+])

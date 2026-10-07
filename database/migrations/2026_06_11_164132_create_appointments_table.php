@@ -27,7 +27,6 @@ return new class extends Migration
             $table->time('hora_cita');
             $table->unsignedTinyInteger('duracion_cita')->nullable(); //DATO NUEVO
             $table->unsignedTinyInteger('turno_cita')->nullable(); //DATO NUEVO
-            $table->timestamp('hora_llamado')->nullable(); //DATO NUEVO 
             $table->text('motivo_consulta')->nullable();
 
             //DATOS PARA EL LLAMADOR DE PACIENTES

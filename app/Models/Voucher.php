@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\Scheduling\AppointmentVisibility;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class Voucher extends Model
 {
@@ -59,6 +62,31 @@ class Voucher extends Model
         'monto_detraccion' => 'decimal:2',
         'sunat_enviado_en' => 'datetime',
     ];
+
+    /**
+     * Hide the whole document when its stored lines (or its source ticket's lines)
+     * reference a hidden appointment. Partial lines would still disclose totals.
+     * This is opt-in and leaves standalone sales and orphaned legacy links intact.
+     */
+    public function scopeVisibleToAgendaUser(Builder $query, int $actorId): Builder
+    {
+        // Eloquent aliases this model's table in self-relation existence queries.
+        $voucherId = $query->getModel()->qualifyColumn('id');
+        $parentVoucherId = $query->getModel()->qualifyColumn('parent_voucher_id');
+
+        return $query->whereNotExists(function (QueryBuilder $links) use ($actorId, $voucherId, $parentVoucherId): void {
+            $links->selectRaw('1')->from('voucher_items as agenda_items')
+                ->join('appointments as agenda_appointments', 'agenda_appointments.id', '=', 'agenda_items.item_id')
+                ->whereIn('agenda_items.item_type', ['cita', Appointment::class])
+                ->where(function (QueryBuilder $source) use ($voucherId, $parentVoucherId): void {
+                    $source->whereColumn('agenda_items.voucher_id', $voucherId)
+                        ->orWhereColumn('agenda_items.voucher_id', $parentVoucherId);
+                })
+                ->whereNot(function (QueryBuilder $hidden) use ($actorId): void {
+                    AppointmentVisibility::apply($hidden, $actorId, 'agenda_appointments');
+                });
+        });
+    }
 
     public function paciente()
     {

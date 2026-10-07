@@ -1,6 +1,9 @@
 <div class="">
     <div class="card">
         <div class="card-body">
+            @error('catalog')
+                <div class="alert alert-danger" role="alert">{{ $message }}</div>
+            @enderror
             @if (session('ok'))
                 <div class="alert alert-success"> {{ session('ok') }} </div>
             @endif
@@ -77,7 +80,7 @@
                                         <button wire:click="liquidarTicket({{ $t->id }})"
                                             class="btn btn-sm btn-warning">Liquidar
                                             {{ $t->serie }}-{{ $t->correlativo }} (falta S/
-                                            {{ number_format($t->saldo_pendiente, 2) }})
+                                            {{ number_format($t->agenda_saldo ?? $t->saldo_pendiente, 2) }})
                                         </button>
                                     @endforeach
                                 </div>
@@ -202,6 +205,7 @@
                 <div class="position-relative mb-3">
                     <input type="text" wire:model.live.debounce.300ms="busqueda"
                         placeholder="Buscar servicio, examen o producto..." class="form-control">
+                    <small>Seleccione un médico para buscar servicios; los productos no requieren médico.</small>
 
                     @if (count($resultadosBusqueda) > 0)
                         <div class="list-group position-absolute w-100 shadow bg-white" style="z-index:1000">
@@ -293,6 +297,7 @@
 
                 {{-- TOTALES Y PAGOS --}}
                 @if (count($carrito) > 0)
+                    @error('payment.operation') <p class="text-danger" role="alert">{{ $message }}</p> @enderror
                     @php
                         $calculo = $this->calculoCarrito;
                     @endphp
@@ -314,6 +319,11 @@
                                         <input type="text" wire:model="numeroOperacionTarjeta"
                                             placeholder="N° operación" class="form-control form-control-sm"
                                             style="width:100px">
+                                        <label class="form-label small mb-1" for="sale-bank-origin">Banco / billetera *</label>
+                                        <input id="sale-bank-origin" type="text" wire:model="entidadOrigen" maxlength="255"
+                                            class="form-control form-control-sm" placeholder="Banco de la tarjeta">
+                                        @error('payment.origin') <small class="text-danger" role="alert">{{ $message }}</small> @enderror
+
                                     @endif
                                 </div>
 

@@ -20,8 +20,9 @@ class SaleController extends Controller
         return view('receptionist.sale.index');
     }
 
-    public function show(Voucher $voucher)
+    public function show(string $voucher)
     {
+        $voucher = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($voucher)->firstOrFail();
         $voucher->load(['items.doctor', 'payments', 'paciente', 'pagaPaciente']);
 
         $montoEnLetras = NumeroALetras::convertir((float) $voucher->total);

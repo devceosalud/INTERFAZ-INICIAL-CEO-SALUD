@@ -316,8 +316,9 @@ $('#formCreateAppointment').on('submit', function (e) {
         },
 
         error: function (xhr) {
-            console.log(xhr.responseText);
-            notificacion("error", "Error", xhr.responseText, 4000, false, false);
+            const message = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message : 'No se pudo registrar la cita o el pago. Revisa los datos e intenta nuevamente.';
+            notificacion("error", "Pago no registrado", message, 4000, false, false);
         },
 
         complete: function () {
@@ -347,91 +348,33 @@ async function cargarHorariosCita() {
             },
             body: JSON.stringify({
                 doctor_id: doctor_id,
-                fecha_cita: fecha_cita
+                fecha_cita: fecha_cita,
+                cita_doble: cita_doble
             }),
         });
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorariosCita(data.horarios, data.ocupadas, cita_doble);
+        generarHorariosCita(data.slots, cita_doble);
     } catch (error) {
         console.error(error);
     }
 }
 
-function generarHorariosCita(horarios, ocupadas, cita_doble) {
+// El backend ya resuelve la disponibilidad. Aqui solo se pintan los slots libres.
+function generarHorariosCita(slots, cita_doble) {
 
-    console.log('¿cita doble?', cita_doble);
     let select = document.querySelector("#appointmentModalCreate #hora_cita");
     select.innerHTML = '<option value="">Seleccione una hora</option>';
 
-    horarios.forEach(horario => {
-        let inicio = horario.hora_inicio.substring(0, 5);
-        let fin = horario.hora_fin.substring(0, 5);
-        let duracion = parseInt(horario.duracion_cita);
-        let actual = convertirMinutosCita(inicio);
-        let final = convertirMinutosCita(fin);
-
-        while (actual < final) {
-            let hora = convertirHoraCita(actual);
-
-            if (!cita_doble) { // CITA NORMAL
-                let hayCruce = existeCruceCita(hora, duracion, ocupadas);
-                if (!hayCruce) {
-                    const opcion = document.createElement('option');
-                    opcion.value = hora;
-                    opcion.textContent = hora;
-                    select.appendChild(opcion);
-                }
-            } else { // CITA DOBLE
-                let duracionDoble = duracion * 2;
-                let siguienteMinuto = actual + duracionDoble;
-                // NO SALIR DEL HORARIO DEL MEDICO
-                if (siguienteMinuto <= final) {
-                    let siguienteHora = convertirHoraCita(siguienteMinuto);
-                    let hayCruce = existeCruceCita(hora, duracionDoble, ocupadas);
-
-                    if (!hayCruce) {
-                        const opcion = document.createElement('option');
-                        opcion.value = hora;
-                        opcion.textContent = hora + ' - ' + siguienteHora;
-                        select.appendChild(opcion);
-                    }
-                }
-            }
-            actual += duracion;
-        }
+    (slots || []).forEach(slot => {
+        const opcion = document.createElement('option');
+        opcion.value = slot.inicio;
+        opcion.textContent = cita_doble ? `${slot.inicio} - ${slot.fin}` : slot.inicio;
+        select.appendChild(opcion);
     });
+
     initSelectCreate();
-}
-
-function existeCruceCita(horaInicioNueva, duracionNueva, ocupadas) {
-
-    let inicioNueva = convertirMinutosCita(horaInicioNueva);
-    let finNueva = inicioNueva + duracionNueva;
-    return ocupadas.some(cita => {
-        let inicioExistente = convertirMinutosCita(
-            cita.hora_cita.substring(0, 5)
-        );
-
-        let finExistente = inicioExistente + parseInt(cita.duracion_cita);
-        return (inicioNueva < finExistente && finNueva > inicioExistente);
-    });
-}
-
-function convertirMinutosCita(hora) {
-    let partes = hora.split(":");
-    console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
-    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
-}
-
-function convertirHoraCita(minutos) {
-    let h = Math.floor(minutos / 60);
-    let m = minutos % 60;
-    h = String(h).padStart(2, '0');
-    m = String(m).padStart(2, '0');
-    console.log('funcion hora: ', `${h}:${m}`);
-    return `${h}:${m}`;
 }
 
 

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\admin\dashboard\DashboardController;
 use App\Http\Controllers\authenticator\auth\AuthController;
-use App\Http\Controllers\message\MessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,11 +24,26 @@ Route::get('/', function () {
 /***************************************************************************
  * RUTAS AUTENTICACION                                                     *
  ***************************************************************************/
-Route::get('/', [AuthController::class, 'index'])->name('login');
-Route::post('/admin/SingIn', [AuthController::class, 'store'])->name('admin.login.store');
-Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/', [AuthController::class, 'index'])->name('login');
+    Route::post('/admin/SingIn', [AuthController::class, 'store'])
+        ->middleware('throttle:login')
+        ->name('admin.login.store');
+});
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
+Route::post('/admin/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('admin.logout');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
+    ->name('admin.dashboard.index');
+
+// Future scheduling module. Its own middleware keeps the legacy routes intact.
+require base_path('routes/scheduling.php');
+
+// Operational patient workspace; write endpoints apply their own stricter role middleware.
+require base_path('routes/patients.php');
 
 
 /***************************************************************************
@@ -55,6 +69,3 @@ require base_path('routes/recepcion.php');
  *MAESTRO : para las tablas independientes                                 *
  ***************************************************************************/
 require base_path('routes/administrador.php');
-
-
-Route::get('/sent', [MessageController::class, 'enviarSms'])->name('messages.sent');

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\appointment;
 use App\Http\Controllers\Controller;
 use App\Models\AdditionalRate;
 use App\Models\Appointment;
-use App\Models\DoctorService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
 use App\Models\Service;
 use App\Models\Specialty;
 use Illuminate\Http\Request;
@@ -35,10 +35,11 @@ class AppointmentController extends Controller
     public function serviceBydoctor(Request $request)
     {
         // 1. Buscamos los servicios asignados al médico que estén ACTIVOS
-        $doctorServices = DoctorService::where('doctor_id', $request->doctor_id)
+        $resolver = app(ActiveDoctorServiceResolver::class);
+        $doctorServices = $resolver->query()->where('doctor_id', $request->doctor_id)
             ->with(['service'])
-            ->where('estado', 'ACTIVO')
             ->get();
+        $resolver->assertUniquePairs($doctorServices);
 
         // 2. Validamos si el médico no tiene ningún servicio asignado (si la colección está vacía)
         if ($doctorServices->isEmpty()) {
@@ -74,7 +75,8 @@ class AppointmentController extends Controller
         $additional_rate_id = $request->additional_rate_id; //id de la tabla de tarifas
         $es_exonerado = $request->es_exonerado; //check de que si es exonero o no
 
-        $service = DoctorService::findOrFail($service_id);
+        $service = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $service_id,
+            $request->filled('doctor_id') ? (int) $request->doctor_id : null);
 
         if (!$service) {
             return response()->json([

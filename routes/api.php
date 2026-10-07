@@ -30,34 +30,28 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/patient/show', [PatientController::class, 'show'])->name('api.patient.show');
-Route::post('/patient/show/search', [PatientController::class, 'search'])->name('api.patient.search');
-Route::get('/patient/reniec-api/search', [PatientController::class , 'prueba'])->name('api');
+Route::middleware(['internal-api', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])->group(function () {
+    Route::post('/patient/show', [PatientController::class, 'show'])->name('api.patient.show');
+    Route::post('/patient/show/search', [PatientController::class, 'search'])->name('api.patient.search');
 
+    Route::post('/appointment/doctor/specialty', [AppointmentController::class, 'doctorBySpecialty'])->name('api.appointment.doctor.specialty');
+    Route::post('/appointment/service/doctor', [AppointmentController::class, 'serviceBydoctor'])->name('api.appointment.service.doctor');
+    Route::post('/appointment/calculated', [AppointmentController::class , 'calculatedPrice'])->name('api.appointment.calculated');
+    Route::post('/appointment/schedule/available-hours', [DoctorScheduleController::class , 'availableHours'])->name('api.appointment.schedule');
+    Route::post('/appointment/doctor-schedule/search', [DoctorScheduleController::class ,'search'])->name('api.appointment.doctor.schedule');
 
-Route::post('/appointment/doctor/specialty', [AppointmentController::class, 'doctorBySpecialty'])->name('api.appointment.doctor.specialty');
-Route::post('/appointment/service/doctor', [AppointmentController::class, 'serviceBydoctor'])->name('api.appointment.service.doctor');
-Route::post('/appointment/calculated', [AppointmentController::class , 'calculatedPrice'])->name('api.appointment.calculated');
+    Route::post('/admin/responsible/search', [responsibleController::class , 'search'])->name('api.admin.responsible.search');
+});
 
-Route::post('/appointment/schedule/available-hours', [DoctorScheduleController::class , 'availableHours'])->name('api.appointment.schedule');
-
-Route::post('/appointment/doctor-schedule/search', [DoctorScheduleController::class ,'search'])->name('api.appointment.doctor.schedule');
-
-Route::post('/admin/user/search', [UserController::class , 'search'])->name('api.admin.user.search');
-
-Route::post('/admin/channel/search', [ChannelController::class , 'search'])->name('api.admin.channel.search');
-
-Route::post('/admin/specialty/search', [SpecialtyController::class , 'search'])->name('api.admin.specialty.search');
-
-Route::post('/admin/interaction-media/search', [InteractionMediaController::class ,'search'])->name('api.admin.interactionMedia.search');
-
-Route::post('/admin/additonal-rate/search', [AdditionalRateController::class , 'search'])->name('api.admin.additionalRate.search');
-
-Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name('api.admin.doctor.search');
-
-Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.service.search');
-
-Route::post('/admin/responsible/search', [responsibleController::class , 'search'])->name('api.admin.responsible.search');
+Route::middleware(['internal-api', 'role:ADMINISTRADOR'])->group(function () {
+    Route::post('/admin/user/search', [UserController::class , 'search'])->name('api.admin.user.search');
+    Route::post('/admin/channel/search', [ChannelController::class , 'search'])->name('api.admin.channel.search');
+    Route::post('/admin/specialty/search', [SpecialtyController::class , 'search'])->name('api.admin.specialty.search');
+    Route::post('/admin/interaction-media/search', [InteractionMediaController::class ,'search'])->name('api.admin.interactionMedia.search');
+    Route::post('/admin/additonal-rate/search', [AdditionalRateController::class , 'search'])->name('api.admin.additionalRate.search');
+    Route::post('/admin/doctor/search', [DoctorController::class , 'search'])->name('api.admin.doctor.search');
+    Route::post('/admin/service/search', [ServiceController::class , 'search'])->name('api.admin.service.search');
+});
 
 
 //API PARA FILTAR  LOS DEPARTAMENTOS , ´PROVINCIA Y DISTRITO

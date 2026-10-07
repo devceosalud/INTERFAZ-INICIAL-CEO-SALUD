@@ -1,102 +1,154 @@
 @extends('layouts.app')
 
+@section('body_class', 'schedule-viewport')
 
 @section('css_data')
-    <!-- Datatable -->
-    <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-    <!-- Custom Stylesheet -->
-    <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <!-- STYLESHEETS CALENDAR-->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/skeleton.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/theme.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/palettes/purple.css' rel='stylesheet' />
+    <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/scheduling/schedule-workspace.css') }}" rel="stylesheet">
 @endsection
 
-
-
 @section('body')
-    <!--*******************Preloader start********************-->
     @include('templates.preloader')
-    <!--*******************Preloader end********************-->
 
-    <!--**********************************Main wrapper start***********************************-->
-    <div id="main-wrapper">
-
-        <!--**********************************Nav header start***********************************-->
+    <div id="main-wrapper" class="menu-toggle schedule-shell-compact">
         @include('templates.nav-header')
-        <!--**********************************Nav header end***********************************-->
-
-        <!--**********************************Chat box start***********************************-->
         @include('templates.chat-box')
-        <!--**********************************Chat box End***********************************-->
-
-        <!--**********************************Header start***********************************-->
         @include('templates.header')
-        <!--**********************************Header end ti-comment-alt***********************************-->
-
-        <!--**********************************Sidebar start***********************************-->
         @include('templates.sidebar')
-        <!--**********************************Sidebar end***********************************-->
 
+        <div class="content-body schedule-page">
+            <div class="container-fluid schedule-page__container">
+                <main class="schedule-workspace" id="schedule-workspace" data-ui-screen="horarios"
+                    data-feed="{{ route('admissionit.doctor.schedule.calendar') }}"
+                    data-store="{{ route('admissionit.doctor.schedule.store') }}"
+                    data-update="{{ route('admissionit.doctor.schedule.update') }}"
+                    data-delete="{{ route('admissionit.doctor.schedule.delete') }}"
+                    data-overlap="{{ route('admissionit.doctor.schedule.overlap') }}"
+                    data-impact-template="{{ route('admissionit.doctor.schedule.impact', ['doctorSchedule' => '__ID__']) }}"
+                    data-can-manage="{{ $canManageSchedules ? 'true' : 'false' }}"
+                    data-today="{{ $today }}">
 
-        <!--**********************************Content body start***********************************-->
+                    <header class="schedule-toolbar" data-ui-zone="toolbar" aria-label="Filtros de horarios médicos">
+                        <div class="schedule-toolbar__filters">
+                            <label>
+                                <span>Sede</span>
+                                <select id="schedule-filter-site">
+                                    <option value="">Todas</option>
+                                    @foreach ($sites as $site)
+                                        <option value="{{ $site->id }}">{{ $site->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label>
+                                <span>Especialidad</span>
+                                <select id="schedule-filter-specialty">
+                                    <option value="">Todas</option>
+                                    @foreach ($specialties as $specialty)
+                                        <option value="{{ $specialty->id }}">{{ $specialty->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label>
+                                <span>Médico</span>
+                                <select id="schedule-filter-doctor">
+                                    <option value="">Todos los médicos</option>
+                                    @foreach ($doctors as $doctor)
+                                        <option value="{{ $doctor->id }}" data-specialty-id="{{ $doctor->specialty_id }}">
+                                            {{ $doctor->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </label>
+                        </div>
 
-        <div class="content-body">
-            <div class="container-fluid">
-                <!-- row -->
+                        <div class="schedule-toolbar__navigation" aria-label="Navegación de fecha">
+                            <button type="button" class="schedule-btn" data-calendar-action="prev">Anterior</button>
+                            <button type="button" class="schedule-btn" data-calendar-action="today">Hoy</button>
+                            <button type="button" class="schedule-btn" data-calendar-action="next">Siguiente</button>
+                        </div>
 
-                <x-utils.schedules :doctors="$doctors" :specialties="$specialties" />
+                        <div class="schedule-toolbar__views" role="group" aria-label="Vista del calendario">
+                            <button type="button" class="schedule-view-btn" data-calendar-view="timeGridDay">Día</button>
+                            <button type="button" class="schedule-view-btn" data-calendar-view="timeGridWeek">Semana</button>
+                            <button type="button" class="schedule-view-btn is-active" data-calendar-view="dayGridMonth">Mes</button>
+                        </div>
+                    </header>
+
+                    <section class="schedule-heading" data-ui-zone="toolbar">
+                        <div>
+                            <p class="schedule-heading__eyebrow">Configuración operativa</p>
+                            <h1>Horarios médicos</h1>
+                            <p id="schedule-range-label" aria-live="polite"></p>
+                        </div>
+                        <div class="schedule-heading__actions">
+                            <button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Ausencia</button>
+                            <button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Horario excepcional</button>
+                            <p class="schedule-disabled-note">Todavía no se registran ausencias ni un horario excepcional aquí.</p>
+                            <button type="button" class="schedule-btn schedule-btn--primary" id="schedule-add"
+                                @disabled(! $canManageSchedules)>+ Horario</button>
+                        </div>
+                    </section>
+
+                    @unless ($canManageSchedules)
+                        <div class="schedule-readonly" role="status">
+                            Solo consulta. Admisión y Comercial administran los horarios.
+                        </div>
+                    @endunless
+
+                    <div class="schedule-main">
+                        <section class="schedule-calendar-panel" data-ui-zone="calendar" aria-label="Calendario de horarios médicos">
+                            <div id="schedule-load-state" class="schedule-load-state" hidden></div>
+                            <div id="schedule-calendar"></div>
+                        </section>
+
+                        <aside class="schedule-side" data-ui-zone="sidebar" aria-label="Leyenda y detalle de horario">
+                            <section class="schedule-side__section" id="schedule-compare">
+                                <h2 id="schedule-compare-title">Comparar médicos</h2>
+                                <p id="schedule-compare-summary"></p>
+                                <div id="schedule-doctor-legend" class="schedule-doctor-legend"></div>
+                            </section>
+
+                            <section class="schedule-side__section" id="schedule-selection" hidden>
+                                <p id="schedule-selection-count"></p>
+                                <div class="schedule-selection__actions">
+                                    <button type="button" class="schedule-btn schedule-btn--primary" id="schedule-selection-configure">Configurar selección</button>
+                                    <button type="button" class="schedule-btn" id="schedule-selection-clear">Limpiar selección</button>
+                                </div>
+                            </section>
+
+                            <section class="schedule-side__section" id="schedule-presets" hidden>
+                                <h2>Horarios frecuentes</h2>
+                                <p id="schedule-preset-hint" class="schedule-preset-hint" hidden></p>
+                                <div id="schedule-preset-list"></div>
+                            </section>
+
+                            <section class="schedule-side__section schedule-detail" id="schedule-detail">
+                                <h2>Detalle</h2>
+                                <p class="schedule-detail__empty">Seleccione un bloque para revisar su configuración.</p>
+                            </section>
+
+                            <section class="schedule-side__section schedule-rule-note">
+                                <h2>Disponibilidad</h2>
+                                <p>El horario activo define los turnos disponibles en Agenda. <abbr class="agenda-mini-help" tabindex="0" title="La duración programada es el intervalo de la agenda, no el tiempo clínico de la atención.">ⓘ</abbr></p>
+                            </section>
+                        </aside>
+                    </div>
+
+                    @include('admissionist.schedule.workspace-modal')
+                </main>
             </div>
-
-            @include('admissionist.schedule.crud.create')
-
-            @include('admissionist.schedule.crud.edit');
         </div>
-        <!--**********************************Content body end***********************************-->
 
+        @include('templates.footer')
+    </div>
+@endsection
 
-        <!--**********************************Scripts***********************************-->
-
-    @section('script_data')
-        <!-- Required vendors -->
-        <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-        <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
-
-        <script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
-
-        <!-- Datatable -->
-        <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
-        <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-        <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
-
-        <!-- STANDARD JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/all/global.js"></script>
-        <!-- THEME JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
-
-        <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
-        <script src="{{ asset('js/admissionist/calendario-medico/filtro-calendario-medico.js') }}"></script>
-        <script src="{{ asset('js/admissionist/calendario-medico/calendario-medico.js') }}"></script>
-    @endsection
-
-
-
-    <!--**********************************Footer start***********************************-->
-    @include('templates.footer')
-    <!--**********************************Footer end***********************************-->
-
-    <!--**********************************Support ticket button start***********************************-->
-
-    <!--**********************************Support ticket button end***********************************-->
-
-
-</div>
-<!--**********************************Main wrapper end***********************************-->
-
-
+@section('script_data')
+    @include('telemetry.collector')
+    <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+    <script src="{{ asset('assets/js/custom.min.js') }}"></script>
+    <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+    <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
+    <script src="{{ asset('js/scheduling/schedule-time.js') }}"></script>
+    <script src="{{ asset('js/scheduling/schedule-workspace.js') }}"></script>
 @endsection

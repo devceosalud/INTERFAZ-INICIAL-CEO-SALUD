@@ -53,6 +53,14 @@ class User extends Authenticatable
         return $this->hasMany(Appointment::class);
     }
 
+    /**
+     * Obtiene las citas de las que el usuario es responsable actual de gestión.
+     */
+    public function responsibleAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'responsible_user_id');
+    }
+
     //METODO PARA REDIRECCION DE RUTAS POR ROLES
     public function redirectToDashboard()
     {

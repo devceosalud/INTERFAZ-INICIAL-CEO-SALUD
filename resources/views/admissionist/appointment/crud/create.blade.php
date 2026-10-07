@@ -195,7 +195,12 @@
                         <div class="col-md-6">
                             <label class="form-label text-primary">N° Operación</label>
                             <input type="text" class="form-control" name="numero_operacion" id="numero_operacion"
-                                value="0">
+                                maxlength="120" placeholder="Número de operación">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-primary" for="entidad_origen">Banco / billetera</label>
+                            <input type="text" class="form-control" name="entidad_origen" id="entidad_origen" maxlength="255">
+                            <small>Obligatorio para pagos con tarjeta. En Yape/Plin puede indicar el banco de origen.</small>
                         </div>
                     </div>
 

@@ -2,12 +2,15 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Livewire\Concerns\RequiresRole;
 use App\Models\Cashier;
 use App\Models\CashierShift;
 use Livewire\Component;
 
 class CashierShifts extends Component
 {
+    use RequiresRole;
+
     public ?CashierShift $turno = null;
 
 
@@ -22,13 +25,15 @@ class CashierShifts extends Component
 
     public function mount()
     {
-        $this->turno = CashierShift::where('user_id', auth()->id())
+        $this->requireRole('RECEPCION');
+
+        $this->turno = CashierShift::manual()->where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
             ->first();
 
         if (!$this->turno) {
-            $this->cajas = Cashier::where('estado', 'ACTIVO')
+            $this->cajas = Cashier::manual()->where('estado', 'ACTIVO')
                 ->whereNotIn('id', function ($query) {
                     $query->select('cashier_id')
                         ->from('cashier_shifts')
@@ -38,6 +43,11 @@ class CashierShifts extends Component
                 ->get();
             //dd($this->cajas);
         }
+    }
+
+    public function hydrate()
+    {
+        $this->requireRole('RECEPCION');
     }
 
 
@@ -81,7 +91,8 @@ class CashierShifts extends Component
         }
 
 
-        $yaTieneAbierto = CashierShift::where('user_id', auth()->id())
+        abort_unless(Cashier::manual()->whereKey($this->cajaId)->exists(), 403);
+        $yaTieneAbierto = CashierShift::manual()->where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->exists();
         //exists() => ES MAS RAPIDO DE count() > 0, PORQUE MYSQL PUEDE PARAR EN CUANTO ENCUENTRA EL PRIMERO
@@ -91,7 +102,7 @@ class CashierShifts extends Component
             return;
         }
 
-        $cajaOcupada = CashierShift::where('cashier_id', $this->cajaId)
+        $cajaOcupada = CashierShift::manual()->where('cashier_id', $this->cajaId)
             ->where('estado', 'ABIERTO')
             ->exists();
 
@@ -118,6 +129,7 @@ class CashierShifts extends Component
             return; // POR SEGURIDAD: SI DE ALGUN MODO NO HAY TURNO, NO HACEMOS NADA
         }
 
+        abort_unless(CashierShift::manual()->whereKey($this->turno->id)->where('user_id', auth()->id())->exists(), 403);
         $montoSistema = $this->montoSistema; //CONGELAMOS EL VALOR CALCULADO, PARA NO RECALCULAR DOS VECES
 
         $this->turno->update([
@@ -130,7 +142,7 @@ class CashierShifts extends Component
         ]);
 
         $this->turno = null;
-        $this->cajas = Cashier::where('estado', 'activo')->orderBy('nombre')->get();
+        $this->cajas = Cashier::manual()->where('estado', 'activo')->orderBy('nombre')->get();
         $this->reset(['montoContado', 'observacionesCierre', 'cajaId', 'montoApertura']);
 
         session()->flash('ok', 'Turno cerrado correctamente');

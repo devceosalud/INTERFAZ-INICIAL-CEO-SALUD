@@ -23,15 +23,15 @@ class DashboardController extends Controller
          *                DATOS DEL DASHBOARD RECEPCION
          ***************************************************************/
         $day = Date('Y-m-d');
-        $appointments = Appointment::whereBetween('fecha_cita', [ //CITAS DE HOY
+        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [ //CITAS DE HOY
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
             ->where('fecha_cita', 'LIKE', '%' . $day . '%')
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'REEVALUACION'])
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'RETIRO', 'REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get(); //DESC : DE MAYOR A MENOR - ASC : DE MENOR A MAYOR
 
-        $reevaluaciones = Appointment::whereBetween('fecha_cita', [ //REEVALUACION DE HOY
+        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [ //REEVALUACION DE HOY
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -39,8 +39,7 @@ class DashboardController extends Controller
             ->whereIn('estado_cita', ['REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
 
-        $ocupadas = Appointment::whereDate('fecha_cita', Date('Y-m-d')) // Horas ya ocupadas del dia del hoy
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']) //['NO_ASISTIO', 'CANCELADO','ATENDIDO','REEVALUACION']
+        $ocupadas = Appointment::occupyingInterval()->whereDate('fecha_cita', Date('Y-m-d')) // Horas ya ocupadas del dia del hoy
             ->get();
 
 

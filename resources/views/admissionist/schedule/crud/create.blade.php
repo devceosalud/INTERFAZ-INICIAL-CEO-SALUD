@@ -84,7 +84,21 @@
                             <span class="text-danger error-text fecha_cita_error"></span>
                         </div>
 
+                        <div class="col-md-3">
+                            <label class="form-label text-primary">Sede</label>
+                            <select class="form-control" name="site_id" id="site_id">
+                                <option value="">Sin sede</option>
+                                @foreach ($sites as $site)
+                                    <option value="{{ $site->id }}">{{ $site->nombre }}</option>
+                                @endforeach
+                            </select>
+                            <span class="text-danger error-text site_id_error"></span>
+                        </div>
+
                     </div>
+
+                    {{-- Advertencia de cruce: informa, nunca impide guardar. --}}
+                    <p class="mt-3 mb-0 fw-bold schedule-overlap-warning" data-scope="create"></p>
                 </div>
 
                 <!-- FOOTER -->

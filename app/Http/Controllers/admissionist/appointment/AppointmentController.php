@@ -9,7 +9,7 @@ use App\Models\Appointment;
 use App\Models\CashierShift;
 use App\Models\Channel;
 use App\Models\DoctorSchedule;
-use App\Models\DoctorService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
 use App\Models\InteractionMedium;
 use App\Models\Patient;
 use App\Models\Service;
@@ -39,18 +39,18 @@ class AppointmentController extends Controller
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
         //CITAS DE HOY
-        $appointments = Appointment::whereBetween('fecha_cita', [
+        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
             ->where('fecha_cita', 'LIKE', '%' . $day . '%')
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'REEVALUACION'])
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'RETIRO', 'REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
         //DESC : DE MAYOR A MENOR
         //ASC : DE MENOR A MAYOR
 
         //REEVALUACION DE HOY
-        $reevaluaciones = Appointment::whereBetween('fecha_cita', [
+        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
             Carbon::now()->startOfMonth(),
             Carbon::now()->addMonth()->endOfMonth()
         ])
@@ -76,7 +76,7 @@ class AppointmentController extends Controller
         //BUSCAMOS AL MISMO PACIENTE SI YA TIENE UNA CITA CREADA CON LA MISMA ESPECIALIDAD/SERVICIO/DOCTOR
         $paciente = Patient::find($request->patient_id);
         if ($paciente) {
-            $existe = Appointment::where('estado_cita', 'PROGRAMADO')
+            $existe = Appointment::visibleToAgendaUser((int) $request->user()->id)->where('estado_cita', 'PROGRAMADO')
                 ->where('doctor_id', $request->doctor_id)
                 ->where('fecha_cita', $request->fecha_cita)
                 ->where('patient_id', $request->patient_id)->first();
@@ -119,7 +119,7 @@ class AppointmentController extends Controller
 
         $turno = null;
         if ($request->total_pagado > 0) {
-            $turno = CashierShift::where('user_id', auth()->id())
+            $turno = CashierShift::manual()->where('user_id', auth()->id())
                 ->where('estado', 'ABIERTO')
                 ->latest('abierto_en')
                 ->first();
@@ -159,7 +159,7 @@ class AppointmentController extends Controller
 
 
         //BUSCAMOS EL ID DEL SERVICIO Y GUARDAMOS LOS DATOS 
-        $doctorService = DoctorService::find($request->service_id); //cargamos el id de la tabla DoctorServices
+        $doctorService = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $request->service_id, (int) $request->doctor_id);
         $service = Service::find($doctorService->service_id);       //buscamos el servicio por id
 
         $appointment = DB::transaction(function () use (
@@ -255,6 +255,8 @@ class AppointmentController extends Controller
                     'metodo_pago' => $metodoPago,
                     'monto' => $request->total_pagado,
                     'numero_operacion' => $request->numero_operacion,
+                    'entidad_origen' => $request->entidad_origen,
+                    'entidad_destino' => $request->entidad_destino,
                     'user_id' => auth()->id(),
                     'cashier_shift_id' => $turno->id,
                 ]);
@@ -286,7 +288,8 @@ class AppointmentController extends Controller
     public function update(Request $request)
     {
         //dd($request->all());
-        $estadoCita = Appointment::find($request->appointment_id);
+        $estadoCita = Appointment::visibleToAgendaUser((int) $request->user()->id)
+            ->whereKey($request->appointment_id)->firstOrFail();
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita
         ]);

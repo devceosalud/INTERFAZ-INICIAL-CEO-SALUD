@@ -1,0 +1,87 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const actions = require('../../public/js/scheduling/agenda-appointment-actions');
+const context = { appointment_id: 7, fecha: '2026-10-09', hora_inicio: '10:00' };
+
+test('confirmación ERP muestra origen/destino y cancelación asíncrona no envía PATCH', async () => {
+    const copy = actions.confirmationText({fecha:'2026-12-01',hora_inicio:'10:20'},'2026-12-01','11:40');
+    assert.match(copy,/Actual:\n01\/12\/2026 · 10:20/); assert.match(copy,/Nueva fecha:\n01\/12\/2026 · 11:40/);
+    assert.match(copy,/Paciente, servicio y precio se conservarán/);
+    let sent=0,reverted=0;
+    const outcome = await actions.reschedule(context,'2026-10-10','11:00',{
+        confirm:async()=>false,revert:()=>reverted++,send:async()=>sent++,refresh:()=>assert.fail('cancelled refresh'),
+    });
+    assert.equal(outcome.cancelled,true);assert.equal(sent,0);assert.equal(reverted,1);
+    const source = require('node:fs').readFileSync(require('node:path').join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
+    assert.doesNotMatch(source,/window\.confirm\s*\(/);
+});
+
+test('cancelar conversión asíncrona no envía segundo PATCH',async()=>{
+    let confirmed=0,sent=0;
+    await actions.reschedule(context,'2026-10-10','06:00',{
+        confirm:async()=>++confirmed===1,revert(){},refresh:()=>assert.fail('cancelled'),
+        send:async()=>{sent++;return {confirmation_required:true,target_booking_type:'FUERA_HORARIO',message:'Se convertirá'};},
+    });
+    assert.equal(sent,1);
+});
+
+test('adicional usa el slot médico real y exige seleccionar nuevamente paciente/servicio', () => {
+    const selected = Object.assign({}, context, { doctor_id: 1, patient_id: 42, paciente: 'PREVIOUS',
+        service_id: 3, precio_programado: 150, total_pagado: 80, historia_clinica: 'SECRET' });
+    const extra = actions.additionalContext(selected, { inicio: '10:00', fin: '10:20', minutos: 20, site_id: null, estado: 'OCUPADO' });
+    assert.equal(extra.minutos, 20); assert.equal(extra.patient_id, null); assert.equal(extra.appointment_id, null);
+    assert.equal(extra.doctor_id, 1); assert.equal(extra.leyenda, 'ADICIONAL');
+    assert.equal(extra.seleccionable, true);
+    assert.doesNotMatch(JSON.stringify(extra), /PREVIOUS|SECRET|precio_programado|total_pagado|service_id/);
+    assert.throws(() => actions.additionalContext(selected, null), /intervalo real/);
+});
+
+test('cancelación revierte el drag y no envía ninguna petición', async () => {
+    let reverted = 0, sent = 0;
+    const result = await actions.reschedule(context, '2026-10-10', '11:00', {
+        confirm: () => false, revert: () => reverted++, send: () => sent++, refresh: () => {},
+    });
+    assert.equal(result.cancelled, true); assert.equal(reverted, 1); assert.equal(sent, 0);
+});
+test('confirma origen/destino y solo envía fecha/hora; refresca tras persistir', async () => {
+    let message, payload, id, refreshed = 0;
+    await actions.reschedule(context, '2026-10-10', '11:00', {
+        confirm: (text) => { message = text; return true; }, revert: () => assert.fail('no revert'),
+        send: async (key, data) => { id = key; payload = data; }, refresh: async () => refreshed++,
+    });
+    assert.match(message, /2026-10-09 10:00.*2026-10-10 11:00/);
+    assert.equal(id, 7); assert.deepEqual(payload, {
+        fecha_cita: '2026-10-10', hora_cita: '11:00', expected_fecha_cita: '2026-10-09', expected_hora_cita: '10:00',
+    });
+    assert.equal(refreshed, 1);
+});
+test('409/422 o red fallida revierten el evento sin refresco exitoso', async () => {
+    for (const status of [409, 422, 500]) {
+        let reverted = 0;
+        await assert.rejects(actions.reschedule(context, '2026-10-10', '11:00', {
+            confirm: () => true, revert: () => reverted++, send: async () => { throw new Error(String(status)); },
+            refresh: () => assert.fail('no success refresh'),
+        }), new RegExp(String(status)));
+        assert.equal(reverted, 1);
+    }
+});
+
+test('conversión requiere segundo envío con el tipo aceptado; cancelar revierte', async () => {
+    for (const accepted of [false, true]) {
+        let requests = [], confirms = 0, reverted = 0, refreshed = 0;
+        await actions.reschedule(context, '2026-10-10', '06:00', {
+            confirm: () => ++confirms === 1 || accepted, revert: () => reverted++, refresh: () => refreshed++,
+            send: async (id, payload) => { requests.push(payload); return requests.length === 1
+                ? { confirmation_required: true, target_booking_type: 'FUERA_HORARIO', message: 'Confirmar conversión' } : {}; },
+        });
+        assert.equal(requests.length, accepted ? 2 : 1);
+        assert.equal(reverted, accepted ? 0 : 1); assert.equal(refreshed, accepted ? 1 : 0);
+        if (accepted) { assert.equal(requests[1].confirmed_booking_type, 'FUERA_HORARIO'); }
+    }
+});
+test('atajos 00/20/40 conservan hora y permiten introducir minutos distintos manualmente', () => {
+    for (const minute of ['00','20','40']) { assert.equal(actions.quickMinute('10:17', minute), '10:' + minute); }
+    assert.equal(actions.quickMinute('10', '20'), '10:20');
+    assert.equal(actions.quickMinute('25:00', '20'), null);
+    assert.equal(actions.quickMinute('', '00'), null);
+});

@@ -1,52 +1,35 @@
- <li>
-     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-         <i class="flaticon-381-user-7"></i>
-         <span class="nav-text">Pacientes</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('admissionit.patient.index') }}">Pacientes</a></li>
-     </ul>
- </li>
+@php
+    $commercialAppointmentItems = [
+        ['label' => 'Registrar cita', 'route' => 'admissionit.appointment.index', 'patterns' => ['admissionit.appointment.*']],
+    ];
+    if (config('scheduling.enabled')
+        && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+        && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW)) {
+        array_unshift($commercialAppointmentItems, [
+            'label' => 'Agenda operativa',
+            'route' => 'scheduling.mvp.agenda',
+            'patterns' => ['scheduling.mvp.agenda'],
+        ]);
+    }
+@endphp
 
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-user"></i>
-         <span class="nav-text">Responsables</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('admissionit.responsible.index') }}">Responsables</a></li>
-     </ul>
- </li>
-
- <li>
-     <a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
-         <i class="flaticon-381-calculator"></i>
-         <span class="nav-text">Ventas</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('admissionit.cashier.shift') }}">Apertura</a></li>
-         {{-- <li><a href="{{ route('receptionist.sale.index') }}">Ventas</a></li> --}}
-         {{-- <li><a href="{{ route('receptionist.cash.movement') }}">Movimientos</a></li> --}}
-     </ul>
- </li>
-
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-calendar"></i>
-         <span class="nav-text">Citas</span>
-     </a>
-     <ul aria-expanded="false">
-         {{-- <li><a href="{{ route('admissionit.available.schedule.index') }}">Disponibles</a></li> --}}
-         <li><a href="{{ route('admissionit.appointment.index') }}">Registrar Cita</a></li>
-     </ul>
- </li>
-
- <li>
-     <a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-         <i class="flaticon-381-clock"></i>
-         <span class="nav-text">Horarios</span>
-     </a>
-     <ul aria-expanded="false">
-         <li><a href="{{ route('admissionit.doctor.schedule.index') }}">Horarios médicos</a></li>
-     </ul>
- </li>
+@include('templates.nav.module', [
+    'key' => 'commercial-patients', 'label' => 'Pacientes',
+    'activePatterns' => ['admissionit.patient.*'],
+    'items' => [['label' => 'Pacientes', 'route' => 'admissionit.patient.index', 'patterns' => ['admissionit.patient.*']]],
+])
+@include('templates.nav.module', [
+    'key' => 'commercial-responsibles', 'label' => 'Responsables',
+    'activePatterns' => ['admissionit.responsible.*'],
+    'items' => [['label' => 'Responsables', 'route' => 'admissionit.responsible.index', 'patterns' => ['admissionit.responsible.*']]],
+])
+@include('templates.nav.module', [
+    'key' => 'commercial-appointments', 'label' => 'Citas',
+    'activePatterns' => ['admissionit.appointment.*', 'scheduling.mvp.agenda'],
+    'items' => $commercialAppointmentItems,
+])
+@include('templates.nav.module', [
+    'key' => 'commercial-schedules', 'label' => 'Horarios',
+    'activePatterns' => ['admissionit.doctor.schedule.*'],
+    'items' => [['label' => 'Horarios médicos', 'route' => 'admissionit.doctor.schedule.index', 'patterns' => ['admissionit.doctor.schedule.*']]],
+])

@@ -191,91 +191,33 @@ async function cargarHorariosEditarCita() {
             },
             body: JSON.stringify({
                 doctor_id: doctor_id,
-                fecha_cita: fecha_cita
+                fecha_cita: fecha_cita,
+                cita_doble: cita_doble
             }),
         });
 
         const data = await res.json();
         console.log("DATOS HORARIOS DOCTOR:", data);
-        generarHorariosEditarCita(data.horarios, data.ocupadas, cita_doble);
+        generarHorariosEditarCita(data.slots, cita_doble);
     } catch (error) {
         console.error(error);
     }
 }
 
-function generarHorariosEditarCita(horarios, ocupadas, cita_doble) {
+// El backend ya resuelve la disponibilidad. Aqui solo se pintan los slots libres.
+function generarHorariosEditarCita(slots, cita_doble) {
 
-    console.log('¿cita doble?', cita_doble);
     let select = document.querySelector("#appointmentModalEdit #hora_cita_edit");
     select.innerHTML = '<option value="">Seleccione una hora</option>';
 
-    horarios.forEach(horario => {
-        let inicio = horario.hora_inicio.substring(0, 5);
-        let fin = horario.hora_fin.substring(0, 5);
-        let duracion = parseInt(horario.duracion_cita);
-        let actual = convertirMinutosEditarCita(inicio);
-        let final = convertirMinutosEditarCita(fin);
-
-        while (actual < final) {
-            let hora = convertirHoraEditarCita(actual);
-
-            if (!cita_doble) { // CITA NORMAL
-                let hayCruce = existeCruceEditarCita(hora, duracion, ocupadas);
-                if (!hayCruce) {
-                    const opcion = document.createElement('option');
-                    opcion.value = hora;
-                    opcion.textContent = hora;
-                    select.appendChild(opcion);
-                }
-            } else {  // CITA DOBLE
-                let duracionDoble = duracion * 2;
-                let siguienteMinuto = actual + duracionDoble;
-                // NO SALIR DEL HORARIO DEL MEDICO
-                if (siguienteMinuto <= final) {
-                    let siguienteHora = convertirHoraEditarCita(siguienteMinuto);
-                    let hayCruce = existeCruceEditarCita(hora, duracionDoble, ocupadas);
-
-                    if (!hayCruce) {
-                        const opcion = document.createElement('option');
-                        opcion.value = hora;
-                        opcion.textContent = hora + ' - ' + siguienteHora;
-                        select.appendChild(opcion);
-                    }
-                }
-            }
-            actual += duracion;
-        }
+    (slots || []).forEach(slot => {
+        const opcion = document.createElement('option');
+        opcion.value = slot.inicio;
+        opcion.textContent = cita_doble ? `${slot.inicio} - ${slot.fin}` : slot.inicio;
+        select.appendChild(opcion);
     });
+
     initSelectEditarCita();
-}
-
-function existeCruceEditarCita(horaInicioNueva, duracionNueva, ocupadas) {
-
-    let inicioNueva = convertirMinutosEditarCita(horaInicioNueva);
-    let finNueva = inicioNueva + duracionNueva;
-    return ocupadas.some(cita => {
-        let inicioExistente = convertirMinutosEditarCita(
-            cita.hora_cita.substring(0, 5)
-        );
-
-        let finExistente = inicioExistente + parseInt(cita.duracion_cita);
-        return (inicioNueva < finExistente && finNueva > inicioExistente);
-    });
-}
-
-function convertirMinutosEditarCita(hora) {
-    let partes = hora.split(":");
-    console.log('funcion minutos:', partes[0]) * 60 + parseInt(partes[1]);
-    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
-}
-
-function convertirHoraEditarCita(minutos) {
-    let h = Math.floor(minutos / 60);
-    let m = minutos % 60;
-    h = String(h).padStart(2, '0');
-    m = String(m).padStart(2, '0');
-    console.log('funcion hora: ', `${h}:${m}`);
-    return `${h}:${m}`;
 }
 
 //FUNCION ALERTA

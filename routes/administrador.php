@@ -11,12 +11,14 @@ use App\Http\Controllers\admin\master\role\RoleController;
 use App\Http\Controllers\admin\master\service\ServiceController;
 use App\Http\Controllers\admin\master\specialty\SpecialtyController;
 use App\Http\Controllers\admin\master\user\UserController;
-use App\Http\Controllers\admin\patient\PatientController;
+use App\Http\Controllers\Patients\OperationalPatientController;
 use App\Http\Controllers\admin\responsible\ResponsibleController;
 use App\Http\Controllers\admin\schedule\ScheduleController;
+use App\Http\Controllers\Scheduling\DoctorScheduleWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::middleware(['auth', 'role:ADMINISTRADOR'])->group(function () {
 Route::get('/master/admin/specialty', [SpecialtyController::class, 'index'])->name('master.specialty.index');
 Route::post('/master/admin/specialty/store', [SpecialtyController::class, 'store'])->name('master.specialty.store');
 Route::put('/master/admin/specialty/update', [SpecialtyController::class, 'update'])->name('master.specialty.update');
@@ -85,10 +87,11 @@ Route::put('/admin/user/update/{user}', [UserController::class, 'update'])->name
 
 
 Route::get('/admin/appointment', [AppointmentController::class, 'index'])->name('admin.appointment.index');
-Route::get('/admin/patient', [PatientController::class , 'index'])->name('admin.patient.index');
+Route::get('/admin/patient', [OperationalPatientController::class, 'index'])->name('admin.patient.index');
 
-Route::get('/admin/doctor-schedule', [ScheduleController::class, 'index'])->name('admin.doctor.schedule.index');
+Route::get('/admin/doctor-schedule', [DoctorScheduleWorkspaceController::class, 'index'])->name('admin.doctor.schedule.index');
 
 Route::get('/admin/responsible', [ResponsibleController::class, 'index'])->name('admin.responsible.index');
 
 Route::get('/admin/available-schedule', [AvailableSchedule::class, 'index'])->name('admin.available.schedule.index');
+});

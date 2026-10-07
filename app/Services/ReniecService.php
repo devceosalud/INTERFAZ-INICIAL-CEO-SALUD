@@ -2,112 +2,67 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
+use App\Services\Reniec\ApisPeruReniecProvider;
+use App\Services\Reniec\AqpfactReniecProvider;
+use App\Services\Reniec\FactilizaReniecProvider;
+use App\Services\Reniec\ReniecProviderInterface;
 
 class ReniecService
 {
-
-    protected $token;
-    protected $url;
-
-    public function __construct()
+    /**
+     * The inherited caller keeps the previous behavior when no timeout is given.
+     * Agenda passes a short timeout so a slow provider becomes a manual registration
+     * instead of blocking the screen. A connection failure then returns null.
+     *
+     * @param mixed $dni
+     * @param int|null $timeoutSeconds
+     * @return array<string, mixed>|null
+     */
+    public function consultar($dni, $timeoutSeconds = null)
     {
-        $this->token = config('apidatosperu.aqpfact.token');
-        $this->url = config('apidatosperu.aqpfact.url_dni');
+        $provider = $this->provider($timeoutSeconds);
+
+        if ($provider === null) {
+            return null;
+        }
+
+        $person = $provider->consultar(trim((string) $dni));
+
+        if ($person === null) {
+            return null;
+        }
+
+        return $person->toLookupArray();
     }
 
-    public function consultar($dni)
+    /**
+     * @param int|null $timeoutSeconds
+     */
+    private function provider($timeoutSeconds): ?ReniecProviderInterface
     {
-        $response = Http::withToken($this->token)
-            ->acceptJson()
-            ->get("{$this->url}/{$dni}");
+        $selected = config('apidatosperu.reniec_provider');
 
-        if (!$response->successful()) {
-            return null;
+        if ($selected === 'factiliza') {
+            return new FactilizaReniecProvider(config('apidatosperu.factiliza.base_url'),
+                config('apidatosperu.factiliza.token'), $timeoutSeconds);
         }
 
-        $json = $response->json();
-
-        Log::info('RESPUESTA RENIEC', $json);
-
-        if (!isset($json['success']) || $json['success'] === false) {
-            return null;
+        if ($selected === 'aqpfact') {
+            return new AqpfactReniecProvider(
+                config('apidatosperu.aqpfact.url_dni'),
+                config('apidatosperu.aqpfact.token'),
+                $timeoutSeconds
+            );
         }
 
-        return [
-            'nombre' => $json['data']['nombres'],
-            'apellido_paterno' => $json['data']['apellido_paterno'],
-            'apellido_materno' => $json['data']['apellido_materno'],
-            'fecha_nacimiento' => Carbon::createFromFormat('d/m/Y', $json['data']['fecha_nacimiento'])->format('Y-m-d'),
-            'genero' => match ($json['data']['sexo']) {
-                'VARON' => 'HOMBRE',
-                'MUJER' => 'MUJER',
-                default => null,
-            },
-            'estado_civil' => $json['data']['estado_civil'],
-            'direccion' => $json['data']['direccion'],
-            'numero_identidad' => $json['data']['numero'],
-            'ocupacion' => null,
-            'grado_instruccion' => null,
-            'telefono' => null,
-            'email' => null,
-            'channel_id' => null,
-            'interaction_medium_id' => null,
-            'tipo_identificacion' => 'DNI',
-        ];
+        if ($selected === 'apisperu') {
+            return new ApisPeruReniecProvider(
+                config('apidatosperu.apisperu.dni_url'),
+                config('apidatosperu.apisperu.dni_token'),
+                $timeoutSeconds
+            );
+        }
 
-        /*
-        $token = 'apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N';
-        $numero = '78954622';
-        $client = new Client(['base_uri' => 'https://api.apis.net.pe', 'verify' => true]);
-        $parameters = [
-            'http_errors' => true,
-            'connect_timeout' => 5,
-            'headers' => [
-                'Authorization' => 'Bearer ' . $token,
-                'Referer' => 'https://apis.net.pe/api-consulta-dni',
-                'User-Agent' => 'laravel/guzzle',
-                'Accept' => 'application/json',
-            ],
-            'query' => ['numero' => $numero]
-        ];
-        $res = $client->request('GET', '/v2/renec/dni', $parameters);
-        $response = json_decode($res->getBody()->getContents(), true);
-        var_dump($response);
-        */
-
-
-        /*
-        $token = 'sk_17382.aT6kSUYt4nk43Bd9izc3tTvwDMC1ipW8';
-        $dni = '45501816';
-
-        // Iniciar llamada a API
-        $curl = curl_init();
-
-        // Buscar dni
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.decolecta.com/v1/reniec/dni?numero=' . $dni,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 2,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => array(
-                'Referer: https://apis.net.pe/consulta-dni-api',
-                'Authorization: Bearer ' . $token
-            ),
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-        // Datos listos para usar
-        $persona = json_decode($response);
-        var_dump($persona);
-        */
+        return null;
     }
 }

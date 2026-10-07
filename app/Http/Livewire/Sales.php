@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Livewire\Concerns\RequiresRole;
 use App\Models\Appointment;
 use App\Models\CashierShift;
 use App\Models\Doctor;
@@ -10,6 +11,8 @@ use App\Models\Patient;
 use App\Models\Voucher;
 use App\Models\VoucherSerie;
 use App\Services\SunatService;
+use App\Services\Catalog\ActiveDoctorServiceResolver;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Iterator;
@@ -17,6 +20,8 @@ use Livewire\Component;
 
 class Sales extends Component
 {
+    use RequiresRole;
+
     public ?CashierShift $turno = null;
 
     /**
@@ -80,7 +85,9 @@ class Sales extends Component
 
     public function mount()
     {
-        $this->turno = CashierShift::where('user_id', auth()->id())
+        $this->requireRole('RECEPCION');
+
+        $this->turno = CashierShift::manual()->where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
             ->first();
@@ -88,9 +95,14 @@ class Sales extends Component
         $this->doctores = Doctor::where('estado', 'ACTIVO')->orderBy('nombre')->get();
     }
 
+    public function hydrate()
+    {
+        $this->requireRole('RECEPCION');
+    }
+
     public function getSeriePreviewProperty()
     {
-        $serie = VoucherSerie::where('tipo_comprobante', $this->tipoComprobante)
+        $serie = VoucherSerie::where('cashier_id', $this->turno?->cashier_id ?? 0)->where('tipo_comprobante', $this->tipoComprobante)
             ->where('estado', 'ACTIVO')
             ->first();
 
@@ -213,6 +225,7 @@ class Sales extends Component
 
     public function updatedBusqueda()
     {
+        $this->resetValidation('catalog');
         if (strlen($this->busqueda) < 2) {
             $this->resultadosBusqueda = [];
             return;
@@ -234,32 +247,49 @@ class Sales extends Component
             ->where('estado', 'ACTIVO')
             ->where('nombre', 'like', "%{$this->busqueda}%");
 
-        $servicios = DB::table('services')
-            ->join('doctor_services', 'doctor_services.service_id', '=', 'services.id')
-            ->select(
-                'services.id',
-                'services.nombre',
-                DB::raw("'servicio' as tipo_origen"),
-                DB::raw("'CONSULTA MEDICA' as categoria"),
-                'doctor_services.precio_primera_consulta as precio',
-                DB::raw("0 as comision"),
-                DB::raw("'10' as afectacion_igv"),
-                DB::raw("NULL as codigo_sunat"),
-                DB::raw("'ZZ' as unidad_medida_sunat")
-            )
-            ->where('services.estado', 'ACTIVO')
-            ->where('services.nombre', 'like', "%{$this->busqueda}%");
-
-        $this->resultadosBusqueda = $items->unionAll($servicios)
-            ->limit(15)
-            ->get()
-            ->map(fn($r) => (array) $r)
-            ->toArray();
+        $results = $items->limit(15)->get()->map(fn ($row) => (array) $row);
+        if ($this->filtroDoctorId) {
+            $resolver = app(ActiveDoctorServiceResolver::class);
+            $assignments = $resolver->query()->with('service:id,nombre')
+                ->where('doctor_id', $this->filtroDoctorId)
+                ->whereHas('service', fn ($q) => $q->where('nombre', 'like', "%{$this->busqueda}%"))->get();
+            try {
+                $resolver->assertUniquePairs($assignments);
+                $results = $results->concat($assignments->map(fn ($row) => [
+                    'id' => (int) $row->service_id, 'nombre' => $row->service->nombre,
+                    'tipo_origen' => 'servicio', 'categoria' => 'CONSULTA MEDICA',
+                    'precio' => (float) $row->precio_primera_consulta, 'comision' => 0,
+                    'afectacion_igv' => '10', 'codigo_sunat' => null, 'unidad_medida_sunat' => 'ZZ',
+                ]));
+            } catch (ValidationException $exception) {
+                $this->addError('catalog', $exception->errors()['service_id'][0]);
+            }
+        }
+        $this->resultadosBusqueda = $results->take(15)->values()->all();
         //dd($this->resultadosBusqueda);
     }
 
     public function agregarAlCarrito(array $resultado)
     {
+        if (in_array($resultado['tipo_origen'], ['cita', Appointment::class], true)) {
+            $appointment = Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($resultado['id'])->firstOr(fn () => abort(404));
+            $this->assertAppointmentBillable($appointment);
+            $resultado['precio'] = (float) $appointment->precio_programado;
+        }
+        if ($resultado['tipo_origen'] === 'servicio') {
+            $this->resetValidation('catalog');
+            if (!$this->filtroDoctorId) {
+                $this->addError('catalog', 'Seleccione un médico antes de agregar un servicio.');
+                return;
+            }
+            try {
+                $assignment = app(ActiveDoctorServiceResolver::class)->resolve($this->filtroDoctorId, (int) $resultado['id']);
+                $resultado['precio'] = (float) $assignment->precio_primera_consulta;
+            } catch (ValidationException $exception) {
+                $this->addError('catalog', $exception->errors()['service_id'][0]);
+                return;
+            }
+        }
         //dd($resultado);
         $this->carrito[] = [
             'item_type' => $resultado['tipo_origen'],
@@ -278,8 +308,15 @@ class Sales extends Component
         $this->resultadosBusqueda = [];
     }
 
+    public function updatedFiltroDoctorId()
+    {
+        $this->resultadosBusqueda = [];
+        $this->updatedBusqueda();
+    }
+
     public function getCalculoCarritoProperty()
     {
+        $this->assertCartAppointmentsVisible();
         $totalGravado = 0;
         $totalExonerado = 0;
         $totalInacfecto = 0;
@@ -356,16 +393,26 @@ class Sales extends Component
             return collect();
         }
 
-        return Voucher::where('patient_id', $this->atiendeId)
+        return Voucher::visibleToAgendaUser((int) auth()->id())->where('patient_id', $this->atiendeId)
             ->where('tipo_comprobante', 'TICKET')
-            ->whereDoesntHave('childVouchers')
+            ->whereDoesntHave('childVouchers', fn ($child) => $child->visibleToAgendaUser((int) auth()->id()))
             ->whereHas('items', fn($q) => $q->where('item_type', 'cita'))
-            ->get();
+            ->get()->filter(function ($voucher) {
+                $ids = $voucher->items()->whereIn('item_type', ['cita', Appointment::class])->pluck('item_id');
+                if (Appointment::whereIn('id', $ids)->where('estado_cita', 'RETIRO')->exists()) { return false; }
+                if ($voucher->items()->count() === 1) {
+                    $a = Appointment::whereKey($ids->first())->first();
+                    if ($a) { $p = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a);
+                        if (!$p['allocation_required']) { $voucher->agenda_saldo = $p['balance_cents'] / 100; return $p['balance_cents'] > 0; }
+                    }
+                }
+                return true;
+            });
     }
 
     public function liquidarTicket(int $ticketId)
     {
-        $ticket = Voucher::with('items')->findOrFail($ticketId);
+        $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->with('items')->whereKey($ticketId)->firstOr(fn () => abort(404));
 
         $this->ticketOrigenId = $ticket->id;
         $this->tipoComprobante = 'BOLETA'; //el cajero lo puede cambiar a FACTURA si hace falta
@@ -376,7 +423,7 @@ class Sales extends Component
             'descripcion' => $item->descripcion,
             'precio' => (float) $item->precio_unitario,
             'cantidad' => (float) $item->cantidad,
-            'afectacion_igv' => (float) $item->afectacion_igv,
+            'afectacion_igv' => (string) $item->afectacion_igv,
             'codigo_sunat' => $item->codigo_sunat,
             'unidad_medida_sunat' => $item->unidad_medida_sunat,
             'doctor_id' => $item->doctor_id,
@@ -390,9 +437,11 @@ class Sales extends Component
 
     public function getMontoACobrarProperty(): float
     {
+        $effective = $this->appointmentAmountDue();
+        if ($effective !== null) { return $effective; }
         if ($this->ticketOrigenId) {
-            $ticket = Voucher::find($this->ticketOrigenId);
-            return $ticket ? $ticket->saldo_pendiente : $this->calculoCarrito['total'];
+            $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->firstOr(fn () => abort(404));
+            return $ticket->saldo_pendiente;
         }
 
         return $this->calculoCarrito['total'];
@@ -408,19 +457,15 @@ class Sales extends Component
         }
 
         $this->resultadosCitas = Appointment::query()
+            ->visibleToAgendaUser((int) auth()->id())
             ->join('patients', 'patients.id', '=', 'appointments.patient_id')
             ->join('doctors', 'doctors.id', '=', 'appointments.doctor_id')
             ->join('services', 'services.id', '=', 'appointments.service_id')
-            ->join('doctor_services', function ($j) {
-                $j->on('doctor_services.doctor_id', '=', 'appointments.doctor_id')
-                    ->on('doctor_services.service_id', '=', 'appointments.service_id');
-            })
-            ->leftJoin('additional_rates', 'additional_rates.id', '=', 'appointments.additional_rate_id')
             ->where(function ($q) {
                 $q->whereRaw("CONCAT_WS(' ', patients.nombre, patients.apellido_paterno, patients.apellido_materno) LIKE ?", ["%{$this->buscarCita}%"])
                     ->orWhere('appointments.numero_cita', 'like', "%{$this->buscarCita}%");
             })
-            ->whereNotIn('appointments.estado_cita', ['CANCELADO', 'NO_ASISTIO'])
+            ->whereNotIn('appointments.estado_cita', ['CANCELADO', 'NO_ASISTIO', 'RETIRO'])
 
             ->select(
                 'appointments.id',
@@ -432,19 +477,20 @@ class Sales extends Component
                 'doctors.id as doctor_id',
                 'doctors.nombre as doctor_nombre',
                 'services.nombre as servicio_nombre',
-                'doctor_services.precio_primera_consulta',
-                DB::raw('COALESCE(additional_rates.tarifa,0) as tarifa_adicional')
+                'appointments.precio_programado', 'appointments.total_pagado', 'appointments.estado_agenda',
+                'appointments.economic_source', 'appointments.es_exonerado', 'appointments.autorizado_por'
             )
             ->limit(10)
             ->get()
             ->map(function ($c) {
-                $precioTotal = (float) $c->precio_primera_consulta + (float) $c->tarifa_adicional;
-                $ticket = Voucher::where('tipo_comprobante', 'TICKET')
+                // This appointment already has an economic snapshot; never reprice it from today's catalogue.
+                $precioTotal = (float) $c->precio_programado;
+                $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->where('tipo_comprobante', 'TICKET')
                     ->whereHas('items', fn($q) => $q->where('item_type', 'cita')->where('item_id', $c->id))
                     ->latest()
                     ->first();
 
-                if ($ticket && Voucher::where('parent_voucher_id', $ticket->id)->exists()) {
+                if ($ticket && Voucher::visibleToAgendaUser((int) auth()->id())->where('parent_voucher_id', $ticket->id)->exists()) {
                     return null;
                 }
 
@@ -455,7 +501,7 @@ class Sales extends Component
                     'texto' => "{$c->servicio_nombre} — Dr. {$c->doctor_nombre} — " . Carbon::parse($c->fecha_cita)->format('d/m') . " {$c->hora_cita} [{$c->estado_cita}]",
                     'precio_total' => $precioTotal,
                     'ticket_pendiente_id' => $ticket?->id,
-                    'saldo_pendiente' => $ticket?->saldo_pendiente ?? $precioTotal,
+                    'saldo_pendiente' => app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($c)['balance_cents'] / 100,
                 ];
             })
             ->filter() // quita los null (citas ya formalizadas del todo)
@@ -466,9 +512,11 @@ class Sales extends Component
 
     public function agregarCitaAlCarrito(int $appointmentId, int $patientId, float $precio, ?int $doctorId)
     {
+        $appointment = Appointment::visibleToAgendaUser((int) auth()->id())->whereKey($appointmentId)->firstOr(fn () => abort(404));
+        $this->assertAppointmentBillable($appointment);
         if (!$this->atiendeId) {
-            $paciente = Patient::find($patientId);
-            $this->atiendeId = $patientId;
+            $paciente = $appointment->patient;
+            $this->atiendeId = $appointment->patient_id;
             $this->atiendeNombre = trim("{$paciente->nombre} {$paciente->apellido_paterno} {$paciente->apellido_materno}");
         }
 
@@ -477,12 +525,12 @@ class Sales extends Component
             'item_type' => 'cita',
             'item_id' => $appointmentId,
             'descripcion' => 'Consulta médica',
-            'precio' => $precio,
+            'precio' => (float) $appointment->precio_programado,
             'cantidad' => 1,
             'afectacion_igv' => '10', // confirma con tu contador si las consultas son GRAVADA o EXONERADA
             'codigo_sunat' => null,
             'unidad_medida_sunat' => 'ZZ',
-            'doctor_id' => $doctorId,
+            'doctor_id' => $appointment->doctor_id,
             'comision_porcentaje' => 0,
         ];
 
@@ -493,6 +541,7 @@ class Sales extends Component
 
     public function guardarVenta()
     {
+        $this->resetValidation();
         if (!$this->turno) {
             session()->flash('error', 'No tiene una caja abierta. Abre tu turno antes de vender');
             return;
@@ -509,11 +558,11 @@ class Sales extends Component
         }
 
         $calculo = $this->calculoCarrito;
-
-        $montoRequerido = $calculo['total'];
-        if ($this->ticketOrigenId) {
-            $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
+        foreach ([$this->pagoEfectivo, $this->pagoTarjeta, $this->pagoYape, $this->pagoPlin] as $amount) {
+            \App\Support\Billing\Money::cents($amount ?: 0);
         }
+
+        $montoRequerido = $this->montoACobrar;
 
         if ($this->tipoComprobante === 'FACTURA' && (!$this->numeroDocCliente || !$this->razonSocialCliente)) {
             session()->flash('error', 'Para FACTURA, el RUC y la razón social son obligatorios.');
@@ -525,10 +574,7 @@ class Sales extends Component
             return;
         }
 
-        $montoRequerido = $calculo['total'];
-        if ($this->ticketOrigenId) {
-            $montoRequerido = Voucher::findOrFail($this->ticketOrigenId)->saldo_pendiente;
-        }
+        $montoRequerido = $this->montoACobrar;
 
         if ($this->tipoComprobante !== 'TICKET' && $this->totalPagado < $montoRequerido) {
             session()->flash('error', 'El pago no cubre el saldo pendiente.');
@@ -537,14 +583,27 @@ class Sales extends Component
 
 
         $voucherId = DB::transaction(function () use ($calculo) {
-            $serie = VoucherSerie::where('tipo_comprobante', $this->tipoComprobante)
+            $this->lockAppointmentSale();
+            // Recheck under transaction locks; no duplicate ticket/child, no retired appointment.
+            $this->assertCartAppointmentsVisible();
+            $required = $this->montoACobrar;
+            if ($this->appointmentAmountDue() !== null && ($this->totalPagado > $required || $required <= 0)) {
+                throw ValidationException::withMessages(['payment' => 'El pago supera el saldo efectivo o la cita ya está cubierta.']);
+            }
+            if ($this->tipoComprobante !== 'TICKET' && $this->totalPagado < $required) {
+                throw ValidationException::withMessages(['payment' => 'El pago no cubre el saldo efectivo actualizado.']);
+            }
+            $series = VoucherSerie::where('tipo_comprobante', $this->tipoComprobante)
+                ->where('cashier_id', $this->turno->cashier_id)
                 ->where('estado', 'ACTIVO')
                 ->lockForUpdate()
-                ->firstOrFail(); // a diferencia de first(), lanza una excepcion si no encuentra nada, en vez de devolver null silenciosamente
+                ->get();
+            if ($series->count() !== 1) { throw ValidationException::withMessages(['payment' => 'Configura una única serie activa del comprobante para esta caja.']); }
+            $serie = $series->first();
 
             $correlativo = $serie->correlativo_actual + 1;
             $serie->update(['correlativo_actual' => $correlativo]);
-            $estado = $this->totalPagado >= $calculo['total'] ? 'PAGADO' : 'PARCIAL';
+            $estado = $this->totalPagado >= $required ? 'PAGADO' : 'PARCIAL';
 
             $voucher = Voucher::create([
                 'tipo_comprobante' => $this->tipoComprobante,
@@ -618,16 +677,17 @@ class Sales extends Component
                 ] as $metodo => $datos
             ) {
                 if ($datos['monto'] > 0) {
-                    $voucher->payments()->create([
-                        'metodo_pago' => $metodo,
-                        'monto' => $datos['monto'],
-                        'numero_operacion' => $datos['operacion'] ?: null,
-                        'entidad_origen' => $datos['origen'] ?: null,
-                        'entidad_destino' => $datos['destino'] ?: null,
-                        'user_id' => auth()->id(),
-                        'cashier_shift_id' => $this->turno->id,
-                    ]);
+                    app(\App\Services\Billing\VoucherPaymentRecorder::class)->record($voucher, $this->turno, (int) auth()->id(),
+                        \App\Support\Billing\Money::cents($datos['monto']), $metodo, $datos['operacion'] ?: null,
+                        $datos['origen'] ?: null, $datos['destino'] ?: null);
                 }
+            }
+
+            foreach ($this->appointmentCart() as $a) {
+                $p = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a);
+                $a->update(['economic_source' => 'VOUCHER', 'total_pagado' => \App\Support\Billing\Money::decimal($p['paid_cents']),
+                    'saldo_pendiente' => \App\Support\Billing\Money::decimal($p['balance_cents']),
+                    'estado_pagado' => $p['paid_cents'] === 0 ? 'PENDIENTE' : ($p['balance_cents'] === 0 ? 'PAGADO' : 'PARCIAL')]);
             }
 
             return $voucher->id;
@@ -661,6 +721,82 @@ class Sales extends Component
     }
 
 
+
+    /** Public Livewire properties can be changed without going through add-to-cart. */
+    private function assertCartAppointmentsVisible(): void
+    {
+        $ids = collect($this->carrito)
+            ->filter(fn (array $line) => in_array($line['item_type'] ?? null, ['cita', Appointment::class], true))
+            ->pluck('item_id')->unique()->values();
+
+        if ($ids->isNotEmpty()) {
+            $visible = Appointment::visibleToAgendaUser((int) auth()->id())->whereIn('id', $ids)->count();
+            abort_unless($visible === $ids->count(), 404);
+            foreach ($this->appointmentCart() as $a) { $this->assertAppointmentBillable($a); }
+        }
+    }
+
+    private function appointmentCart()
+    {
+        $ids = collect($this->carrito)->filter(fn ($l) => in_array($l['item_type'] ?? '', ['cita', Appointment::class], true))->pluck('item_id');
+        return Appointment::visibleToAgendaUser((int) auth()->id())->whereIn('id', $ids)->get();
+    }
+
+    private function assertAppointmentBillable(Appointment $a): void
+    {
+        if ($a->estado_cita === 'RETIRO') { throw ValidationException::withMessages(['appointment' => 'RETIRO no es una cita cobrable. Consulta su historial/crédito/devolución.']); }
+    }
+
+    private function appointmentAmountDue(): ?float
+    {
+        $appointments = $this->appointmentCart();
+        if ($appointments->isEmpty()) { return null; }
+        $positions = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointments($appointments);
+        $special = collect($positions)->contains(fn ($p) => $p['credit_cents'] > 0 || $p['outgoing_credit_cents'] > 0 || $p['refund_reserved_cents'] > 0);
+        if (count($this->carrito) !== 1 || $appointments->count() !== 1) {
+            if ($special) { throw ValidationException::withMessages(['carrito' => 'Liquida por separado la cita con crédito/devolución; no se prorratea dinero.']); }
+            return null;
+        }
+        $a = $appointments->first(); $this->assertAppointmentBillable($a); $p = $positions[$a->id];
+        if ($p['allocation_required']) { throw ValidationException::withMessages(['carrito' => 'Se requiere atribución del pago multilínea por Caja.']); }
+        return $p['balance_cents'] / 100;
+    }
+
+    private function lockAppointmentSale(): void
+    {
+        $actualShift = app(\App\Services\Billing\AppointmentTicketService::class)->openShift((int) auth()->id());
+        if (!$this->turno || (int) $actualShift->id !== (int) $this->turno->id) { throw ValidationException::withMessages(['payment' => 'El turno cambió; actualiza Caja.']); }
+        $this->turno = $actualShift;
+        $appointments = $this->appointmentCart();
+        \App\Models\Doctor::whereIn('id', $appointments->pluck('doctor_id'))->orderBy('id')->lockForUpdate()->get();
+        Appointment::whereIn('id', $appointments->pluck('id'))->orderBy('id')->lockForUpdate()->get();
+        if ($this->ticketOrigenId) {
+            $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->lockForUpdate()->firstOr(fn () => abort(404));
+            if ($ticket->childVouchers()->exists()) { throw ValidationException::withMessages(['ticket' => 'El ticket ya tiene un documento relacionado. Consulta Caja.']); }
+            $expected = $ticket->items()->whereIn('item_type', ['cita', Appointment::class])->pluck('item_id')->map(fn ($id) => (int) $id)->sort()->values()->all();
+            if ($expected !== $appointments->pluck('id')->sort()->values()->all()) { throw ValidationException::withMessages(['ticket' => 'El carrito no corresponde al ticket original.']); }
+        }
+        foreach ($this->carrito as $i => $line) {
+            if (!in_array($line['item_type'], ['cita', Appointment::class], true)) { continue; }
+            $a = $appointments->firstWhere('id', $line['item_id']);
+            abort_unless($a, 404); $this->assertAppointmentBillable($a);
+            if ((int) $a->patient_id !== (int) $this->atiendeId || (float) $line['cantidad'] !== 1.0
+                || (float) $line['precio'] !== (float) $a->precio_programado) {
+                throw ValidationException::withMessages(['carrito' => 'Paciente, cantidad y precio deben corresponder a la cita persistida.']);
+            }
+            $this->carrito[$i]['doctor_id'] = $a->doctor_id;
+            $position = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a);
+            if ($position['authority'] === 'LEGACY_SNAPSHOT' && $position['paid_cents'] > 0) {
+                throw ValidationException::withMessages(['payment' => 'Reconciliar primero el adelanto histórico sin comprobantes.']);
+            }
+            if (!$this->ticketOrigenId && \App\Models\VoucherItem::whereIn('item_type', ['cita', Appointment::class])->where('item_id', $a->id)->exists()) {
+                throw ValidationException::withMessages(['ticket' => 'La cita ya tiene un documento. Continúa desde el ticket existente.']);
+            }
+        }
+        if ($appointments->count() !== collect($this->carrito)->filter(fn ($l) => in_array($l['item_type'], ['cita', Appointment::class], true))->count()) {
+            throw ValidationException::withMessages(['carrito' => 'No repitas una cita en el carrito.']);
+        }
+    }
 
     public function render()
     {

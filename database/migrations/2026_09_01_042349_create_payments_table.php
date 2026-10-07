@@ -22,8 +22,10 @@ return new class extends Migration
             $table->string('numero_operacion')->nullable(); 
             $table->unsignedBigInteger('user_id'); 
             $table->unsignedBigInteger('cashier_shift_id'); 
-            $table->string('entidad_origen')->nullable()->after('numero_operacion');
-            $table->string('entidad_destino')->nullable()->after('entidad_origen');
+            // `after()` is valid for ALTER TABLE, but Laravel renders it literally
+            // inside CREATE TABLE here and MariaDB rejects the resulting SQL.
+            $table->string('entidad_origen')->nullable();
+            $table->string('entidad_destino')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

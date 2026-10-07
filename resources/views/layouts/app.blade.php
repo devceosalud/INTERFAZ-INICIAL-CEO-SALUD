@@ -17,7 +17,7 @@
     <meta name="keywords"
         content="sistema clinico erp, erp  administrativo, gestión de pacientes, gestión de  citas, gestión de usuarios.">
     <meta name="description"
-        content="Sistema responsivo y adaptable para todo tipo ded pantallas, con diferentes tecnologias involucradas.">
+        content="Sistema responsivo y adaptable para todo tipo de pantallas, con diferentes tecnologias involucradas.">
 
     <meta property="og:title" content="ERP Ceo Salud - Hospital administrativo multirol.">
     <meta property="og:description"
@@ -38,6 +38,7 @@
 
     <!-- Style Css -->
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/erp-shell.css') }}" rel="stylesheet">
 
     <!-- DATATABLES CSS
     <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.css') }}">
@@ -71,12 +72,42 @@
     @livewireStyles
 </head>
 
-<body>
+<body @hasSection('body_class') class="@yield('body_class')" @endif>
 
     @yield('body')
 
+    <script>
+        // Las APIs internas usan la misma sesión web y protección CSRF que Blade.
+        // Mantiene compatibles los fetch existentes sin enviar el token a otros orígenes.
+        (() => {
+            const originalFetch = window.fetch.bind(window);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+            window.fetch = (input, init = {}) => {
+                const requestUrl = typeof input === 'string' ? input : input.url;
+                const method = (init.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+                const url = new URL(requestUrl, window.location.origin);
+
+                if (csrfToken && url.origin === window.location.origin && !safeMethods.has(method)) {
+                    const headers = new Headers(input instanceof Request ? input.headers : undefined);
+                    new Headers(init.headers || {}).forEach((value, key) => headers.set(key, value));
+
+                    if (!headers.has('X-CSRF-TOKEN')) {
+                        headers.set('X-CSRF-TOKEN', csrfToken);
+                    }
+
+                    init = {...init, headers};
+                }
+
+                return originalFetch(input, init);
+            };
+        })();
+    </script>
 
     @yield('script_data')
+
+    <script src="{{ asset('js/erp-shell.js') }}"></script>
 
     <!--SCRIPT LIVEWIRE-->
     @livewireScripts
