@@ -7,6 +7,12 @@ const path = require('node:path');
 const lookup = require('../../public/js/scheduling/agenda-patient-lookup.js');
 const draft = require('../../public/js/scheduling/agenda-patient-draft.js');
 
+test('alta operativa nueva exige celular principal y no exige secundario', () => {
+    assert.equal(draft.requiredPhoneMessage({ patientId: '', telefono_numero: '' }), 'Ingresa el celular principal del paciente.');
+    assert.equal(draft.requiredPhoneMessage({ patientId: '', telefono_numero: '999000001' }), '');
+    assert.equal(draft.requiredPhoneMessage({ patientId: '42', telefono_numero: '' }), '');
+});
+
 const schedule = {
     doctor: 'Dr. Bruno Salas',
     specialty: 'Medicina General',

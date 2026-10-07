@@ -15,6 +15,17 @@
 
     const pad = value => String(value).padStart(2, '0');
 
+    function scheduleMoveText(props, proposal, impactMessage) {
+        const date = value => String(value || '').split('-').reverse().join('/');
+        return date(props.occurrence_date) + ' · ' + props.start_time + '–' + props.end_time
+            + ' → ' + date(proposal.date) + ' · ' + proposal.start + '–' + proposal.end + '. ' + impactMessage;
+    }
+
+    function refreshedSelection(selected, events) {
+        if (!selected) { return null; }
+        return events.find(event => String(event.id) === String(selected.id)) || null;
+    }
+
     function dateOnly(value) {
         if (typeof value === 'string') {
             return value.slice(0, 10);
@@ -808,6 +819,14 @@
             dayMaxEvents: 3,
             eventOverlap: true,
             events: loadEvents,
+            eventsSet: events => {
+                const fresh = refreshedSelection(selectedEvent, events);
+                if (fresh) { selectedEvent = fresh; paintDetail(fresh); }
+                else { selectedEvent = null; detail.innerHTML = '<h2>Detalle</h2><p class="schedule-detail__empty">Seleccione un bloque para revisar su configuración.</p>'; }
+            },
+            eventDidMount: info => {
+                if (selectedEvent && String(info.event.id) === String(selectedEvent.id)) { info.el.classList.add('is-selected-schedule'); }
+            },
             datesSet: onDatesSet,
             dateClick: onDateClick,
             select: onSelect,
@@ -1464,7 +1483,7 @@
             const impact = await fetchImpact(props.schedule_id, 'update', payload);
             const accepted = await confirmAction(
                 action === 'resize' ? 'Confirmar cambio de extensión' : 'Confirmar movimiento',
-                props.start_time + '–' + props.end_time + ' → ' + proposal.start + '–' + proposal.end + '. ' + impact.message
+                scheduleMoveText(props, proposal, impact.message)
             );
             if (accepted) await send(host.dataset.update, 'PUT', payload);
         }
@@ -1516,6 +1535,10 @@
             if (selectedEvent) selectedEvent.setProp('classNames', []);
             selectedEvent = event;
             event.setProp('classNames', ['is-selected-schedule']);
+            paintDetail(event);
+        }
+
+        function paintDetail(event) {
             const props = event.extendedProps;
             detail.innerHTML = '<h2>Detalle</h2><dl>'
                 + row('Médico', props.doctor_name)
@@ -1864,6 +1887,8 @@
     }
 
     return {
+        refreshedSelection,
+        scheduleMoveText,
         dateOnly,
         isoWeekday,
         selectedWeekDates,

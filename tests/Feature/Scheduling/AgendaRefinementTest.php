@@ -106,7 +106,8 @@ class AgendaRefinementTest extends TestCase
     public function test_additional_stays_additional_and_both_rows_and_month_counts_are_visible(): void
     {
         $regular = $this->postJson(route('scheduling.mvp.agenda.appointments.store'), $this->payload('08:00'))->assertCreated()->json('appointment.appointment_id');
-        $additional = $this->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->payload('08:00'))->assertCreated()->json('appointment.appointment_id');
+        $extraPatient = $this->createPatient($this->actor, ['numero_identidad' => '70000905', 'historia_clinica' => 'QA-5']);
+        $additional = $this->postJson(route('scheduling.mvp.agenda.appointments.additional'), array_replace($this->payload('08:00'), ['patient_id' => $extraPatient->id]))->assertCreated()->json('appointment.appointment_id');
         foreach (['dia', 'semana'] as $view) {
             $events = collect($this->feed($view)->assertOk()->json('eventos'))->pluck('extendedProps');
             $this->assertNotNull($events->firstWhere('appointment_id', $regular));

@@ -29,12 +29,12 @@
         <small>La autorización no registra dinero. Para confirmar hace falta un adelanto real de al menos 50%.</small>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
         @unless($canSubmitPayment)<p>No tienes permiso para registrar adelantos. Puedes guardar una reserva.</p>@endunless
-        <label class="agenda-field agenda-upload"><span>+ Subir comprobante · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-proof" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
         <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden>Confirmar agenda</button>
     </details>
     <details id="agenda-op-documents-panel">
         <summary>Comprobantes y documentos</summary>
+        <label class="agenda-field agenda-upload"><span>+ Subir comprobante · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-proof" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
         <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>

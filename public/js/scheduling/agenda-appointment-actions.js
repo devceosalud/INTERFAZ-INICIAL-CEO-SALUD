@@ -4,12 +4,18 @@
     root.AgendaAppointmentActions = api;
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
     'use strict';
+    function confirmationText(context, date, time, conversion) {
+        const formatted = value => String(value).split('-').reverse().join('/');
+        return 'Actual:\n' + formatted(context.fecha) + ' · ' + context.hora_inicio
+            + '\n\nNueva fecha:\n' + formatted(date) + ' · ' + time
+            + '\n\nPaciente, servicio y precio se conservarán.' + (conversion ? '\n\n' + conversion : '');
+    }
     async function reschedule(context, date, time, io) {
         if (!context || !context.appointment_id || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
             io.revert();
             throw new Error('Seleccione una cita, fecha y hora válidas.');
         }
-        if (!io.confirm('¿Deseas reprogramar esta cita de ' + context.fecha + ' ' + context.hora_inicio + ' a ' + date + ' ' + time + '?')) {
+        if (!await io.confirm('¿Deseas reprogramar esta cita de ' + context.fecha + ' ' + context.hora_inicio + ' a ' + date + ' ' + time + '?', confirmationText(context, date, time))) {
             io.revert();
             return { cancelled: true };
         }
@@ -20,7 +26,7 @@
             let result = await io.send(context.appointment_id, payload);
             if (result && result.confirmation_required) {
                 if (!['REGULAR', 'FUERA_HORARIO'].includes(result.target_booking_type)) { throw new Error('Clasificación de destino inválida.'); }
-                if (!io.confirm(result.message)) { io.revert(); return { cancelled: true }; }
+                if (!await io.confirm(result.message, confirmationText(context, date, time, result.message))) { io.revert(); return { cancelled: true }; }
                 result = await io.send(context.appointment_id, Object.assign({}, payload, { confirmed_booking_type: result.target_booking_type }));
                 if (result && result.confirmation_required) { throw new Error('El destino cambió. Revisa el horario e inténtalo nuevamente.'); }
             }
@@ -70,5 +76,5 @@
         const match = /^([01]?\d|2[0-3])(?::[0-5]\d)?$/.exec(String(value).trim());
         return match && ['00', '20', '40'].includes(minute) ? match[1].padStart(2, '0') + ':' + minute : null;
     }
-    return { reschedule: reschedule, additionalContext: additionalContext, quickMinute: quickMinute, reserveIntent: reserveIntent, showsDestination: showsDestination };
+    return { reschedule: reschedule, additionalContext: additionalContext, quickMinute: quickMinute, reserveIntent: reserveIntent, showsDestination: showsDestination, confirmationText: confirmationText };
 }));

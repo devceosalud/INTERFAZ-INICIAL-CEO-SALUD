@@ -156,7 +156,8 @@ class AppointmentWithdrawalTest extends TestCase
     public function test_occupied_rebooking_destination_rolls_back_credit_and_b_without_automatic_additional(): void
     {
         $a = $this->paid(); $v = Voucher::first(); $this->withdraw($a)->assertOk();
-        $this->lifecycleAppointment($this->actor, $this->catalog, ['fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:30'], $this->patient);
+        $occupiedPatient = $this->createPatient($this->actor, ['numero_identidad' => '70000906', 'historia_clinica' => 'QA-6']);
+        $this->lifecycleAppointment($this->actor, $this->catalog, ['fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:30'], $occupiedPatient);
         $this->postJson(route('scheduling.mvp.agenda.rebook-withdrawal', $a->id), $this->destination(['credits' => [['voucher_id' => $v->id, 'amount' => '50.00']]]))->assertStatus(409);
         $this->assertDatabaseCount('appointments', 2); $this->assertDatabaseCount('appointment_credit_applications', 0); $this->assertEquals(50, Payment::sum('monto'));
         $this->assertSame(0, $a->events()->where('event_type', 'REPROGRAMACION_RETIRO')->count());

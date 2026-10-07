@@ -52,6 +52,32 @@ class OperationalRegistrationTest extends TestCase
     private function create(array $p) { return $this->postJson(route('scheduling.mvp.agenda.registrations'), $p); }
     private function pay(int $id, array $data) { return $this->postJson(route('scheduling.mvp.agenda.payments', $id), $data); }
 
+    public function test_new_operational_patient_requires_main_phone_and_rolls_back_patient_and_reservation(): void
+    {
+        $new = ['tipo_identificacion' => 'DNI', 'numero_identidad' => '70000901', 'nombre' => 'QA',
+            'apellido_paterno' => 'LOCAL', 'apellido_materno' => 'FICTICIO', 'genero' => 'HOMBRE'];
+        $before = Patient::count();
+        $this->create($this->payload(['patient_id' => null, 'patient' => $new]))->assertUnprocessable()
+            ->assertJsonValidationErrors('patient.telefono_numero');
+        $this->assertSame($before, Patient::count()); $this->assertDatabaseCount('appointments', 0);
+        $new['telefono_numero'] = '999000001'; $new['telefono_prefijo'] = '+51';
+        $this->create($this->payload(['patient_id' => null, 'patient' => $new]))->assertCreated();
+    }
+
+    public function test_same_patient_active_interval_rejects_new_uuid_but_released_states_allow_another_reservation(): void
+    {
+        $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
+        Appointment::find($id)->update(['hora_cita' => '08:00:00']);
+        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'Este paciente ya tiene una cita o reserva en esta hora.');
+        $this->assertDatabaseCount('appointments', 1);
+        foreach (['RETIRO', 'CANCELADO', 'NO_ASISTIO'] as $released) {
+            // Isolated historical state fixture; withdrawal mutation itself is tested through its workflow.
+            \Illuminate\Support\Facades\DB::table('appointments')->where('id', $id)->update(['estado_cita' => $released]);
+            $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
+        }
+        $this->assertDatabaseCount('payments', 0);
+    }
+
     public function test_private_reservation_freezes_price_and_owner_without_consuming_slot_or_allowing_spoofing(): void
     {
         $p = $this->payload(); $id = $this->create($p)->assertCreated()->json('appointment.appointment_id');
@@ -65,7 +91,9 @@ class OperationalRegistrationTest extends TestCase
         $this->create($this->payload(['responsible_user_id' => $other->id]))->assertForbidden();
         $this->actingAs($other)->getJson(route('scheduling.mvp.agenda.economy', $id))->assertNotFound();
         $this->getJson(route('scheduling.mvp.agenda.economy', 999999))->assertNotFound();
-        $this->create($this->payload())->assertCreated(); $this->assertDatabaseCount('appointments', 2);
+        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'Este paciente ya tiene una cita o reserva en esta hora.');
+        $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000902', 'historia_clinica' => 'QA-2']);
+        $this->create($this->payload(['patient_id' => $otherPatient->id]))->assertCreated(); $this->assertDatabaseCount('appointments', 2);
     }
     public function test_delegated_private_owner_is_responsible_with_no_administrator_visibility_bypass(): void
     {
@@ -110,7 +138,8 @@ class OperationalRegistrationTest extends TestCase
         $this->shift($this->actor); $other = $this->actor('COMERCIAL'); $this->shift($other);
         $payment = ['amount' => '50.00', 'method' => 'EFECTIVO'];
         $one = $this->create($this->payload(['payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
-        $two = $this->actingAs($other)->create($this->payload(['payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
+        $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000903', 'historia_clinica' => 'QA-3']);
+        $two = $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
         $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid()])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
         $this->actingAs($other)->pay($two, ['request_key' => (string) Str::uuid()])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL');
         $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(100, Payment::sum('monto'));

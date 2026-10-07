@@ -83,6 +83,14 @@ class CreateAppointmentService
                             $data->duration, $data->siteId, null, $pending || $bookingType === AppointmentAgendaLifecycle::ADDITIONAL);
                     }
 
+                    // The doctor lock also serializes private reservations, which do not occupy a slot.
+                    if (Appointment::where('patient_id', $data->patientId)->where('doctor_id', $data->doctorId)
+                        ->whereDate('fecha_cita', $data->date)->whereRaw('substr(hora_cita, 1, 5) = ?', [substr($data->time, 0, 5)])
+                        ->whereNotIn('estado_cita', \App\Support\Scheduling\AppointmentOccupancy::RELEASING_STATES)
+                        ->lockForUpdate()->exists()) {
+                        throw ValidationException::withMessages(['patient_id' => 'Este paciente ya tiene una cita o reserva en esta hora.']);
+                    }
+
                     $price = (float) $doctorService->precio_primera_consulta;
                     if ($price <= 0) {
                         throw new AppointmentConfigurationException(

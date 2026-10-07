@@ -47,6 +47,9 @@ class OperationalRegistrationService
                 }
                 $patientId = $data['patient_id'] ?? null;
                 if (isset($data['patient'])) {
+                    if (!$patientId && trim((string) ($data['patient']['telefono_numero'] ?? $data['patient']['telefono'] ?? '')) === '') {
+                        throw ValidationException::withMessages(['patient.telefono_numero' => 'Ingresa el celular principal del paciente.']);
+                    }
                     abort_unless(PatientWriteAccess::allows($actor), 403);
                     $request = Request::create('/', 'POST', $data['patient']); $request->setUserResolver(fn () => $actor);
                     $writer = app(OperationalPatientMutationController::class);

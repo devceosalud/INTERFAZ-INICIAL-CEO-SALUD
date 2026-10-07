@@ -277,6 +277,9 @@
     }
 
     return {
+        requiredPhoneMessage: function (draft) {
+            return !draft.patientId && !text(draft.telefono_numero) ? 'Ingresa el celular principal del paciente.' : '';
+        },
         canOpen: canOpen,
         open: open,
         openExisting: openExisting,

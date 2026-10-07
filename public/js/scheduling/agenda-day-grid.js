@@ -204,6 +204,7 @@
     }
 
     return {
+        revealOffset: (rowTop, gridTop, headerHeight) => rowTop - gridTop - headerHeight - 1,
         AVAILABLE: AVAILABLE,
         OFF_HOURS: OFF_HOURS,
         build: build,

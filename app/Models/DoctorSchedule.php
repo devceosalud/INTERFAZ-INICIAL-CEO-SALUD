@@ -17,6 +17,7 @@ class DoctorSchedule extends Model
             $former = $this->exists ? static::whereKey($this->id)->lockForUpdate()->firstOrFail()->getAttributes() : null;
             if ($former && !in_array($former['doctor_id'], $lockedDoctors)) { throw new \RuntimeException('El horario cambió de médico. Actualiza antes de editar.'); }
             $changed = $this->isDirty(['doctor_id', 'site_id', 'fecha_cita', 'dia_semana', 'hora_inicio', 'hora_fin', 'duracion_cita', 'estado']);
+            if ($changed) { app(\App\Services\Scheduling\ScheduleCompatibilityValidator::class)->assertCompatible($this); }
             $saved = parent::save($options);
             if ($saved && $former && $changed) { app(\App\Services\Scheduling\PendingScheduleContingencyService::class)->inspect($former, auth()->id()); }
             return $saved;

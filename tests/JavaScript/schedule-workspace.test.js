@@ -6,6 +6,23 @@ const path = require('node:path');
 const test = require('node:test');
 const workspace = require('../../public/js/scheduling/schedule-workspace.js');
 
+test('mover un horario entre días muestra fecha de origen y destino aunque las horas sean iguales', () => {
+    const message = workspace.scheduleMoveText({ occurrence_date: '2026-12-04', start_time: '10:00', end_time: '11:00' },
+        { date: '2026-12-05', start: '10:00', end: '11:00' }, 'Las citas se conservarán.');
+    assert.equal(message, '04/12/2026 · 10:00–11:00 → 05/12/2026 · 10:00–11:00. Las citas se conservarán.');
+});
+
+test('detalle se reconcilia con eventos nuevos y se vacía si desapareció el seleccionado', () => {
+    const old = { id: '38-2026-12-01', extendedProps: { start_time: '10:00' } };
+    const fresh = { id: old.id, extendedProps: { start_time: '10:20' } };
+    assert.equal(workspace.refreshedSelection(old, [fresh]).extendedProps.start_time, '10:20');
+    assert.equal(workspace.refreshedSelection(old, []), null);
+    assert.equal(workspace.refreshedSelection(null, [fresh]), null);
+    const source = require('node:fs').readFileSync(require.resolve('../../public/js/scheduling/schedule-workspace.js'), 'utf8');
+    const hook = source.slice(source.indexOf('eventsSet: events =>'), source.indexOf('eventDidMount:'));
+    assert.doesNotMatch(hook, /selectEvent\(|setProp\(/, 'eventsSet must not mutate FullCalendar events and recurse');
+});
+
 const root = path.resolve(__dirname, '../..');
 const modal = fs.readFileSync(path.join(root, 'resources/views/admissionist/schedule/workspace-modal.blade.php'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'resources/views/admissionist/schedule/index.blade.php'), 'utf8');

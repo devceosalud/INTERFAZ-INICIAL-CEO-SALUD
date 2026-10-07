@@ -197,9 +197,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const operationalWorkspace = window.AgendaOperationalWorkspace({
         endpoint: board.dataset.registrationStore, base: board.dataset.rescheduleUrl,
         patientTemplate: el.patientDraft.dataset.detailTemplate, context: () => state.selection,
+        patientLoaded: (patient) => {
+            if (!state.selection?.appointment_id || String(state.selection.patient_id) !== String(patient.patient_id)
+                || String(el.quickPatientId.value) !== String(patient.patient_id)) { return; }
+            const identity = lookupModel.present({ status: 'found', patient: patient }, scheduleSnapshot());
+            el.documentType.value = identity.tipo;
+            el.documentNumber.value = identity.numero;
+            paintIdentity(identity);
+        },
         payload: appointmentCreateModel.payload, error: appointmentCreateModel.validationMessage, canCreate: canCreateAppointments,
         paymentUpdated: async (response) => { state.revealAppointmentId = String(response.appointment.appointment_id); await load(); },
-        refresh: load, notice: (message) => showActionNotice(message, false),
+        refresh: load, notice: showActionNotice,
         busy: (busy) => { state.appointmentBusy = busy; updateAppointmentAction(); el.draftSaveSchedule.disabled = busy || !canCreateAppointments; },
         registered: async (payload, options) => {
             state.identity = lookupModel.blank(); state.draft = null; el.documentNumber.value = '';
@@ -207,6 +215,9 @@ document.addEventListener('DOMContentLoaded', function () {
             el.responsibleSelect.value = ''; paintResponsible();
             state.revealAppointmentId = String(payload.appointment.appointment_id);
             await load();
+            window.clearTimeout(actionNoticeTimer);
+            const notice = document.getElementById('agenda-action-notice');
+            if (notice) { notice.hidden = true; notice.textContent = ''; notice.classList.remove('is-alert'); }
             const result = document.getElementById('agenda-registration-result');
             const pendingSaved = payload.appointment.estado_agenda === 'PENDIENTE_CONFIRMACION';
             const kind = options && options.bookingType;
@@ -221,13 +232,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.completeRegistrationHelp.hidden = false;
                 document.getElementById('agenda-open-payment').disabled = false;
             }
-            window.setTimeout(() => { result.hidden = true; }, 7000);
+            window.clearTimeout(registrationResultTimer);
+            registrationResultTimer = window.setTimeout(() => { result.hidden = true; }, 7000);
         },
     });
     const pendingStart = document.getElementById('agenda-pending-start');
     const withdrawalWorkspace = window.AgendaWithdrawal.start({ base: board.dataset.rescheduleUrl,
         inbox: '/scheduling-mvp/agenda/contingencies', canWorkflow: board.dataset.canWorkflow === '1',
-        error: appointmentCreateModel.validationMessage, notice: showNotice, refresh: load });
+        error: appointmentCreateModel.validationMessage, notice: showNotice, refresh: load,
+        rebooked: (result, destination) => {
+            showActionNotice(window.AgendaGuidance.rebooked(destination.fecha_cita.split('-').reverse().join('/'), destination.hora_cita), false);
+            const see = document.getElementById('agenda-see-destination');
+            if (see && !window.AgendaAppointmentActions.showsDestination(state.date, state.view, destination.fecha_cita)) {
+                see.hidden = false;
+                see.onclick = () => { see.hidden = true; state.revealAppointmentId = String(result.appointment_id); setDate(destination.fecha_cita); };
+            }
+        },
+    });
 
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
@@ -521,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let actionNoticeTimer = null;
+    let registrationResultTimer = null;
     function showActionNotice(message, isAlert) {
         const see = document.getElementById('agenda-see-destination');
         if (see) { see.hidden = true; }
@@ -531,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function () {
         notice.classList.toggle('is-alert', Boolean(isAlert));
         if (state.draft && el.draftMessage) { el.draftMessage.textContent = message; }
         window.clearTimeout(actionNoticeTimer);
-        actionNoticeTimer = window.setTimeout(() => { notice.hidden = true; }, 7000);
+        if (!isAlert) { actionNoticeTimer = window.setTimeout(() => { notice.hidden = true; }, 7000); }
     }
 
     function hideNotice() {
@@ -704,7 +726,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const delta = row.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+        const header = document.getElementById('agenda-row-head');
+        const delta = dayGridModel.revealOffset(row.getBoundingClientRect().top, scroller.getBoundingClientRect().top,
+            header ? header.getBoundingClientRect().height : 0);
         scroller.scrollTop += delta;
 
         if (exact) {
@@ -1103,6 +1127,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.offHoursMode = false;
         state.pendingMode = false;
         state.selection = context;
+        if (context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
         operationalWorkspace.selectionChanged(context);
         withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Otra reserva en esta hora' : 'Guardar reserva'; }
@@ -1176,7 +1201,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (context.tipo_contexto === 'cita_existente') {
-            state.identity = lookupModel.blank();
             state.draft = null;
             paintDraft(draftModel.discard(scheduleSnapshot()));
             el.lookupResult.textContent = '';
@@ -1596,6 +1620,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (attachToSchedule && !requireService(true)) { return; }
+        const phoneError = draftModel.requiredPhoneMessage(state.draft);
+        if (phoneError) { el.draftMessage.textContent = phoneError; el.draftTelefono.focus(); return; }
         const emailError = draftModel.emailMessage(state.draft.email);
         if (emailError) {
             el.draftMessage.textContent = emailError;
@@ -1907,6 +1933,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (pendingStart) {
         pendingStart.addEventListener('click', function () {
             const selected = state.selection;
+            if (!lookupModel.matchesDocument(state.identity, el.documentType.value, el.documentNumber.value)) {
+                paintIdentity(lookupModel.blank());
+                showActionNotice('Busca o selecciona el paciente de esta nueva reserva.', true);
+                el.documentNumber.focus();
+                return;
+            }
             const intent = window.AgendaAppointmentActions.reserveIntent(selected, el.quickPatientId.value, el.serviceSelect.value);
             if (!intent.post && intent.reason === 'hour') { return; }
             if (!intent.post && intent.reason === 'patient') {
@@ -1931,6 +1963,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 state.pendingMode = true;
                 state.additionalMode = false;
                 state.reserveOnOccupiedHour = true;
+                el.responsibleSelect.value = '';
             }
             createAppointment(true);
         });
@@ -1983,7 +2016,17 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAppointmentAction();
         try {
             const outcome = await window.AgendaAppointmentActions.reschedule(context, date, time, {
-                confirm: (message) => window.confirm(message), revert: revert, refresh: load,
+                confirm: async (message, detail) => {
+                    if (!window.Swal) { throw new Error('No se pudo abrir la confirmación. Actualiza la Agenda e inténtalo nuevamente.'); }
+                    const decision = await window.Swal.fire({ title: 'Reprogramar cita', text: detail || message,
+                        width: 410, customClass: { popup: 'agenda-reschedule-confirm' }, showCancelButton: true,
+                        confirmButtonText: 'Confirmar reprogramación', cancelButtonText: 'Cancelar', focusCancel: true,
+                        allowEscapeKey: true, allowOutsideClick: true });
+                    return decision.isConfirmed === true || decision.value === true;
+                }, revert: revert, refresh: async () => {
+                    state.revealAppointmentId = String(context.appointment_id);
+                    await load();
+                },
                 send: async function (id, payload) {
                     const response = await fetch(board.dataset.rescheduleUrl + '/' + id + '/reschedule', {
                         method: 'PATCH', credentials: 'same-origin',
@@ -2002,6 +2045,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
             });
             if (outcome && !outcome.cancelled) {
+                const box = document.getElementById('agenda-reschedule-error');
+                if (box) { box.hidden = true; box.textContent = ''; }
                 const label = String(date).split('-').reverse().join('/');
                 showActionNotice(window.AgendaGuidance.rescheduled(label, time), false);
                 const see = document.getElementById('agenda-see-destination');

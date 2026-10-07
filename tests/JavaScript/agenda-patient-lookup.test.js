@@ -11,6 +11,17 @@ const schedule = {
     time: '09:20 – 09:40',
 };
 
+test('identidad cargada desde cita coincide con documento y una edición la invalida', () => {
+    const current = lookup.present({ status: 'found', patient: { patient_id: 42, tipo_identificacion: 'PASAPORTE', numero_identidad: 'QA-42', nombre: 'QA LOCAL' } });
+    assert.equal(lookup.matchesDocument(current, 'PASAPORTE', 'QA-42'), true);
+    for (const [type, number] of [['PASAPORTE', ''], ['PASAPORTE', 'QA-43'], ['DNI', 'QA-42']]) {
+        const next = lookup.edited(current, type, number);
+        assert.equal(next.patientId, '');
+        assert.equal(lookup.matchesDocument(next, type, number), false);
+    }
+    assert.equal(lookup.matchesDocument(lookup.blank(), 'DNI', ''), false);
+});
+
 function foundPayload(id) {
     return {
         status: 'found',

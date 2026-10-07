@@ -52,6 +52,12 @@
             .join(' ');
     }
 
+    function matchesDocument(identity, tipo, numero) {
+        return Boolean(identity && identity.status === 'found' && identity.patientId && text(numero)
+            && identity.tipo === text(tipo) && identity.numero === text(numero));
+    }
+
+
     /**
      * Applies a local lookup without replacing the schedule already chosen.
      */
@@ -111,5 +117,6 @@
         blank: blank,
         edited: edited,
         present: present,
+        matchesDocument: matchesDocument,
     };
 }));

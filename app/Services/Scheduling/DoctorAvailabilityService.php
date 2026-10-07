@@ -98,6 +98,7 @@ class DoctorAvailabilityService
     {
         $slots = $blocks
             ->flatMap(fn (DoctorSchedule $block) => $this->slotsForBlock($query, $block, $occupied))
+            ->unique(fn (AvailabilitySlot $slot) => $slot->range()->start()->format('H:i:s').'|'.$slot->range()->end()->format('H:i:s').'|'.$slot->siteId())
             ->sortBy(fn (AvailabilitySlot $slot) => $slot->range()->start()->format('H:i:s'));
 
         return new DayAvailability($query, $slots);

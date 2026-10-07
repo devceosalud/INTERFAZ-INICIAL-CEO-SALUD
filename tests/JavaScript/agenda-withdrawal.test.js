@@ -18,7 +18,7 @@ test('operational withdrawal works without audit and sends a stable UUID instead
     const window = { crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000001' } };
     const context = { window, document, Intl, Date, fetch: async (url, options) => { calls.push({ url, options }); return { ok: true, json: async () => url.endsWith('/history') ? { estado_cita: 'PROGRAMADO', events: [], available_credit: [], refund_requests: [] } : {} }; } };
     vm.runInNewContext(fs.readFileSync(require.resolve('../../public/js/scheduling/agenda-withdrawal'), 'utf8'), context);
-    const workflow = window.AgendaWithdrawal.start({ base: '/appointments', canWorkflow: true, canAudit: false, refresh: async () => {}, notice: text => notices.push(text), error: () => 'error' });
+    const workflow = window.AgendaWithdrawal.start({ base: '/appointments', canWorkflow: true, canAudit: false, refresh: async () => { document.getElementById('agenda-withdrawal-date').value = ''; document.getElementById('agenda-withdrawal-time').value = ''; }, notice: text => notices.push(text), error: () => 'error' });
     await workflow.select(7); document.getElementById('agenda-withdrawal-reason').value = 'Retiro ficticio';
     document.getElementById('agenda-withdrawal-present').checked = true; document.getElementById('agenda-withdrawal-action').value = 'PENDIENTE';
     await document.getElementById('agenda-withdrawal-submit').handlers.click();
@@ -28,4 +28,9 @@ test('operational withdrawal works without audit and sends a stable UUID instead
     assert.equal(JSON.parse(mutation.options.body).was_present, true);
     assert.match(document.getElementById('agenda-withdrawal-status').textContent, /Retiro registrado/);
     assert.equal(notices.length, 0);
+
+    document.getElementById('agenda-withdrawal-date').value = '2026-12-03';
+    document.getElementById('agenda-withdrawal-time').value = '10:20';
+    await document.getElementById('agenda-withdrawal-rebook').handlers.click();
+    assert.match(document.getElementById('agenda-withdrawal-status').textContent, /03\/12\/2026 a las 10:20/);
 });

@@ -8,6 +8,7 @@
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel'].map(id => [id, byId(id)]));
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;
+        let capturePatient = null;
         const headers = () => ({ Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content });
         const base = config.base;
         async function request(url, options = {}) {
@@ -44,8 +45,12 @@
         }
         ['amount', 'method', 'waived'].forEach(id => ui[id].addEventListener('input', calculate));
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ui[id].addEventListener('change', () => { captureDirty = true; }));
-        async function patientChanged(id) {
-            if (String(id || '') === String(captureId || '')) { return; }
+        async function patientChanged(id, hydrateIdentity = false) {
+            if (String(id || '') === String(captureId || '')) {
+                if (hydrateIdentity && capturePatient && config.patientLoaded) { config.patientLoaded(capturePatient); }
+                return;
+            }
+            capturePatient = null;
             captureId = id || null; captureDirty = false; const version = ++captureVersion;
             ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => { ui[id].value = ''; });
             document.getElementById('agenda-patient-phone-summary').textContent = '—';
@@ -54,6 +59,8 @@
                 const data = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)));
                 if (version !== captureVersion || captureDirty) { return; }
                 const p = data.patient;
+                capturePatient = p;
+                if (config.patientLoaded) { config.patientLoaded(p); }
                 ui.phone.value = p.telefono || ''; document.getElementById('agenda-patient-phone-summary').textContent = p.telefono || 'Sin celular'; ui['phone-secondary'].value = p.telefono_secundario || '';
                 ui.channel.value = p.channel_id || ''; ui.medium.value = p.interaction_medium_id || '';
             } catch (e) { config.notice(e.message); }
@@ -117,7 +124,7 @@
             ui.documents.replaceChildren();
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
             if (!id) { ui.reason.value = ''; ui.note.value = ''; return; }
-            patientChanged(context.patient_id);
+            patientChanged(context.patient_id, true);
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
@@ -172,7 +179,7 @@
                 if (documentError) { documentError.hidden = false; documentError.textContent = placed.text; documentError.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
                 return;
             }
-            config.notice(placed.text);
+            config.notice(placed.text, true);
         }
         ui['submit-payment'].addEventListener('click', () => submitPayment(false));
         ui['confirm-reservation'].addEventListener('click', () => submitPayment(true));
@@ -198,6 +205,8 @@
                 await documents(id);
                 const saved = hasFile && pending.length ? root.AgendaGuidance.copy.fileSaved + ' ' + root.AgendaGuidance.copy.linkSaved : (hasFile ? root.AgendaGuidance.copy.fileSaved : root.AgendaGuidance.copy.linkSaved);
                 const status = document.getElementById('agenda-op-documents-status');
+                const errorBox = document.getElementById('agenda-op-documents-error');
+                if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
                 if (status) { status.hidden = false; status.textContent = saved; }
                 else { config.notice(saved); }
             } catch (e) { showPlaced(e, 'documents'); }

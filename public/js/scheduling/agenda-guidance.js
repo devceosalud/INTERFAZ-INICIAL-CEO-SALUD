@@ -74,6 +74,9 @@
     function place(message, status, context) {
         const text = String(message || '');
         if (denied(text, status)) {
+            if (Number(status) === 403 && text.trim() && !/unauthorized|right permissions|spatie|capability/i.test(text)) {
+                return { domain: context === 'withdraw' ? 'withdraw' : 'local', text: text, focus: false };
+            }
             const next = permission(text, context);
             const domain = next === copy.permissionWithdraw ? 'withdraw' : (next === copy.permissionPayment ? 'payment' : 'local');
             return { domain: domain, text: next, focus: false };

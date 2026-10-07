@@ -61,7 +61,7 @@
                             <input class="agenda-field__input" id="agenda-draft-apellido-materno" type="text" maxlength="255">
                         </label>
                         <div class="agenda-field">
-                            <span class="agenda-field__label">Celular</span>
+                            <span class="agenda-field__label">Celular principal <span class="agenda-required-mark">*</span></span>
                             <div class="agenda-phone">
                                 <select class="agenda-field__input" id="agenda-draft-phone-prefix" aria-label="Código país">
                                     @foreach ($phonePrefixes as $prefix => $country)

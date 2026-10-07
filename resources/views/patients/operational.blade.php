@@ -123,7 +123,7 @@
                             @if ($pendingView)
                                 <strong>Ficha pendiente de completar:</strong> todavía faltan datos del paciente.
                             @else
-                                Cada fila es la ficha del paciente. La fecha filtra el registro, no una atención.
+                                Cada fila es la ficha del paciente. La fecha todavía no filtra este listado.
                             @endif
                         </div>
 

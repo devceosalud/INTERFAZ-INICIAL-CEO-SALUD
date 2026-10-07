@@ -78,7 +78,7 @@ class OperationalPatientModuleTest extends TestCase
             ->assertSee('73378485')
             ->assertSee('PEREZ DEMO MARIA')
             ->assertDontSee('PASS-002')
-            ->assertSee('Fecha no filtra atenciones');
+            ->assertSee('La fecha todavía no filtra este listado.');
     }
 
     public function test_the_operational_columns_do_not_substitute_appointment_data_for_an_encounter(): void

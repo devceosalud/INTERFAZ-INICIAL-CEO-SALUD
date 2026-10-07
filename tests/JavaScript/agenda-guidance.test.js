@@ -8,6 +8,13 @@ const guidance = require('../../public/js/scheduling/agenda-guidance');
 const root = path.resolve(__dirname, '../..');
 function source(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }
 
+test('comprobante se puede seleccionar en Documentos sin abrir ni registrar adelanto', () => {
+    const view = source('resources/views/scheduling/agenda/partials/operational-registration.blade.php');
+    const documents = view.slice(view.indexOf('id="agenda-op-documents-panel"'));
+    assert.match(documents,/id="agenda-op-proof"[^>]*type="file"/);
+    assert.equal((view.match(/id="agenda-op-proof"/g)||[]).length,1);
+});
+
 test('el par reserva/agendar explica el siguiente paso sin decir que la reserva ocupa el horario', () => {
     const help = guidance.copy.reserveVsSchedule;
     assert.match(help, /Guardar reserva: guarda el seguimiento sin confirmar el horario/);
@@ -52,6 +59,8 @@ test('403 no muestra inglés ni el nombre de una capability', () => {
     assert.equal(guidance.place('This action is unauthorized.', 403, 'payment').text, guidance.copy.permissionPayment);
     assert.equal(guidance.place('This action is unauthorized.', 403, 'payment').domain, 'payment');
     assert.equal(guidance.place('This action is unauthorized.', 403, 'withdraw').text, guidance.copy.permissionWithdraw);
+    assert.equal(guidance.place('El dueño comercial se asigna al usuario autenticado.', 403, 'payment').text, 'El dueño comercial se asigna al usuario autenticado.');
+    assert.equal(guidance.place('El dueño comercial se asigna al usuario autenticado.', 403, 'payment').domain, 'local');
     const additional = guidance.place('This action is unauthorized.', 403, 'additional');
     assert.equal(additional.text, guidance.copy.permissionAdditional);
     assert.equal(additional.domain, 'local');
@@ -144,9 +153,11 @@ test('otra reserva con paciente y servicio pide RESERVE y no borra el documento'
         file.indexOf("pendingStart.addEventListener('click'"),
         file.indexOf("additionalStart.addEventListener('click'")
     );
+    assert.match(handler, /responsibleSelect\.value = ''/);
     assert.match(handler, /createAppointment\(true\)/);
     assert.match(handler, /needReservePatient/);
-    assert.doesNotMatch(handler, /lookupModel\.blank|documentNumber\.value = ''/);
+    assert.match(handler, /matchesDocument/);
+    assert.doesNotMatch(handler, /documentNumber\.value = ''/);
 });
 
 test('cita adicional no borra al paciente y el éxito no dice solo cita agendada', () => {
@@ -165,8 +176,20 @@ test('reprogramar a otra fecha nombra el destino y ofrece verlo si no está en e
     assert.equal(guidance.rescheduled('09/10/2026', '11:20'), 'Cita reprogramada para 09/10/2026 a las 11:20.');
     assert.equal(actions.showsDestination('2026-10-07', 'dia', '2026-10-07'), true);
     assert.equal(actions.showsDestination('2026-10-07', 'dia', '2026-10-08'), false);
-    assert.match(source('public/js/scheduling/agenda.js'), /agenda-see-destination/);
+    const agenda = source('public/js/scheduling/agenda.js');
+    assert.match(agenda, /agenda-see-destination/);
+    assert.match(agenda, /showsDestination\(state\.date, state\.view, date\)/);
+    assert.match(agenda, /showsDestination\(state\.date, state\.view, destination\.fecha_cita\)/);
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /Ver nueva fecha/);
+});
+
+test('un guardado exitoso retira el aviso de error anterior', () => {
+    const agenda = source('public/js/scheduling/agenda.js');
+    const registered = agenda.slice(agenda.indexOf('registered: async'), agenda.indexOf('const pendingStart'));
+    assert.match(registered, /agenda-action-notice/);
+    assert.match(registered, /notice\.hidden = true/);
+    assert.match(registered, /classList\.remove\('is-alert'\)/);
+    assert.match(agenda, /if \(outcome && !outcome\.cancelled\) \{\s*const box = document\.getElementById\('agenda-reschedule-error'\);\s*if \(box\) \{ box\.hidden = true; box\.textContent = ''; \}/);
 });
 
 test('documentos vacíos y adelanto cero no anuncian un guardado', async () => {
@@ -213,6 +236,10 @@ test('documentos vacíos y adelanto cero no anuncian un guardado', async () => {
     assert.equal(document.getElementById('agenda-op-payment-error').textContent, guidance.copy.needAmount);
     assert.equal(document.getElementById('agenda-op-documents-error').textContent, guidance.copy.needDocument);
     assert.equal(notices.some((message) => /registrado|guardados/i.test(message)), false);
+    document.getElementById('agenda-op-proof').files = [{ type: 'image/png', size: 100 }];
+    await document.getElementById('agenda-op-add-documents').listeners.click();
+    assert.equal(document.getElementById('agenda-op-documents-error').hidden, true);
+    assert.equal(document.getElementById('agenda-op-documents-status').textContent, guidance.copy.fileSaved);
 });
 
 test('un 403 de cita adicional no abre el pago', async () => {

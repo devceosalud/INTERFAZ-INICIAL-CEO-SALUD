@@ -2,6 +2,14 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { start } = require('../../public/js/scheduling/agenda-help');
 
+test('ayuda junto al borde inferior flota encima y queda dentro del viewport', () => {
+    const { position } = require('../../public/js/scheduling/agenda-help');
+    const p = position({ left: 1350, top: 947, bottom: 964 },260,80,1440,1000);
+    assert.ok(p.top + 80 <= 992); assert.ok(p.left + 260 <= 1432); assert.ok(p.top < 947);
+    const narrow = position({ left: 290, top: 40, bottom: 57 },260,100,320,600);
+    assert.ok(narrow.left >= 8); assert.ok(narrow.left + 260 <= 312);
+});
+
 function button(title, text) {
     const node = {
         attrs: { 'data-help-title': title, 'data-help-text': text },

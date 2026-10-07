@@ -60,13 +60,15 @@
                 const result = await request(config.base + '/' + original + '/' + action, 'POST', data); key = null;
                 await config.refresh(); await select(original); panel.open = true;
                 const guidance = root.AgendaGuidance;
-                const when = id('withdrawal-date').value.split('-').reverse().join('/') + ' a las ' + id('withdrawal-time').value;
+                const destinationDate = String(data.fecha_cita || '').split('-').reverse().join('/');
+                const when = destinationDate + ' a las ' + data.hora_cita;
                 const done = action === 'rebook-withdrawal'
-                    ? (guidance ? guidance.rebooked(id('withdrawal-date').value.split('-').reverse().join('/'), id('withdrawal-time').value) : 'Nueva cita creada para ' + when + '.')
+                    ? (guidance ? guidance.rebooked(destinationDate, data.hora_cita) : 'Nueva cita creada para ' + when + '.')
                     : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.' : (guidance ? guidance.copy.refundDone : 'Solicitud de devolución registrada.'));
                 const status = id('withdrawal-status'); const errorBox = id('withdrawal-error');
                 if (errorBox) { errorBox.hidden = true; }
                 if (status) { status.hidden = false; status.textContent = done; }
+                if (action === 'rebook-withdrawal' && config.rebooked) { config.rebooked(result, data); }
             } catch (e) {
                 const placed = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'withdraw') : { text: e.message };
                 const errorBox = id('withdrawal-error');

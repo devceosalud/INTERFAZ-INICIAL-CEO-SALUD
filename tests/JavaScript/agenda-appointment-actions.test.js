@@ -3,6 +3,28 @@ const assert = require('node:assert/strict');
 const actions = require('../../public/js/scheduling/agenda-appointment-actions');
 const context = { appointment_id: 7, fecha: '2026-10-09', hora_inicio: '10:00' };
 
+test('confirmación ERP muestra origen/destino y cancelación asíncrona no envía PATCH', async () => {
+    const copy = actions.confirmationText({fecha:'2026-12-01',hora_inicio:'10:20'},'2026-12-01','11:40');
+    assert.match(copy,/Actual:\n01\/12\/2026 · 10:20/); assert.match(copy,/Nueva fecha:\n01\/12\/2026 · 11:40/);
+    assert.match(copy,/Paciente, servicio y precio se conservarán/);
+    let sent=0,reverted=0;
+    const outcome = await actions.reschedule(context,'2026-10-10','11:00',{
+        confirm:async()=>false,revert:()=>reverted++,send:async()=>sent++,refresh:()=>assert.fail('cancelled refresh'),
+    });
+    assert.equal(outcome.cancelled,true);assert.equal(sent,0);assert.equal(reverted,1);
+    const source = require('node:fs').readFileSync(require('node:path').join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
+    assert.doesNotMatch(source,/window\.confirm\s*\(/);
+});
+
+test('cancelar conversión asíncrona no envía segundo PATCH',async()=>{
+    let confirmed=0,sent=0;
+    await actions.reschedule(context,'2026-10-10','06:00',{
+        confirm:async()=>++confirmed===1,revert(){},refresh:()=>assert.fail('cancelled'),
+        send:async()=>{sent++;return {confirmation_required:true,target_booking_type:'FUERA_HORARIO',message:'Se convertirá'};},
+    });
+    assert.equal(sent,1);
+});
+
 test('adicional usa el slot médico real y exige seleccionar nuevamente paciente/servicio', () => {
     const selected = Object.assign({}, context, { doctor_id: 1, patient_id: 42, paciente: 'PREVIOUS',
         service_id: 3, precio_programado: 150, total_pagado: 80, historia_clinica: 'SECRET' });

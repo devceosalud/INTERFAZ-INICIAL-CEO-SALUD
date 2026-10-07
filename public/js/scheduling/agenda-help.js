@@ -5,6 +5,14 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
     'use strict';
 
+    function position(rect, width, height, viewportWidth, viewportHeight) {
+        const left = Math.max(8, Math.min(rect.left, viewportWidth - width - 8));
+        const below = rect.bottom + 6;
+        const top = Math.max(8, Math.min(below + height <= viewportHeight - 8 ? below : rect.top - height - 6,
+            viewportHeight - height - 8));
+        return { left, top };
+    }
+
     function start(document) {
         const pop = document.createElement('div');
         pop.id = 'agenda-help-pop';
@@ -44,11 +52,13 @@
             button.setAttribute('aria-expanded', 'true');
             pop.hidden = false;
             const rect = button.getBoundingClientRect ? button.getBoundingClientRect() : { left: 8, bottom: 8, top: 8, width: 26 };
-            const width = 260;
+            const width = pop.getBoundingClientRect ? pop.getBoundingClientRect().width : 260;
+            const height = pop.getBoundingClientRect ? pop.getBoundingClientRect().height : 100;
             const view = typeof window !== 'undefined' ? window.innerWidth : 320;
-            const left = Math.max(8, Math.min(rect.left, (view || 320) - width - 8));
-            pop.style.left = left + 'px';
-            pop.style.top = (rect.bottom + 6) + 'px';
+            const viewHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+            const placed = position(rect, width, height, view || 320, viewHeight || 800);
+            pop.style.left = placed.left + 'px';
+            pop.style.top = placed.top + 'px';
             close.focus();
         }
 
@@ -78,5 +88,5 @@
         return { open: open, close: shut, pop: pop };
     }
 
-    return { start: start };
+    return { start: start, position: position };
 }));

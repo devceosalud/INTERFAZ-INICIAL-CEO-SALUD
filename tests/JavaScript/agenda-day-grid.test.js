@@ -9,6 +9,12 @@ const selection = require('../../public/js/scheduling/agenda-selection.js');
 
 const date = '2026-09-29';
 
+test('revelar adicional respeta encabezado fijo y no esconde la primera fila', () => {
+    const gridTop = 200, rowTop = 300, headerHeight = 25;
+    const delta = grid.revealOffset(rowTop, gridTop, headerHeight);
+    assert.equal(rowTop - delta, gridTop + headerHeight + 1);
+});
+
 test('una adicional visible no oculta el slot regular disponible en Día', () => {
     const extra = appointment(9, '10:00', '10:20', 'PROGRAMADO');
     extra.extendedProps.tipo_agendamiento = 'ADICIONAL';

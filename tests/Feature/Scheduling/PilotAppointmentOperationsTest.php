@@ -106,7 +106,8 @@ class PilotAppointmentOperationsTest extends TestCase
     public function test_additional_coexists_is_unpaid_visible_and_does_not_consume_regular_slots(): void
     {
         $regular = $this->normal();
-        $response = $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->payload());
+        $extraPatient = $this->createPatient($this->actor, ['numero_identidad' => '70000904', 'historia_clinica' => 'QA-4']);
+        $response = $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), array_replace($this->payload(), ['patient_id' => $extraPatient->id]));
         $id = $response->assertCreated()->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL')->json('appointment.appointment_id');
         $additional = Appointment::findOrFail($id);
         $this->assertSame('CONFIRMADA', $additional->estado_agenda);
@@ -114,7 +115,7 @@ class PilotAppointmentOperationsTest extends TestCase
         $this->assertSame('PENDIENTE', $additional->estado_pagado);
         $this->assertEquals(0, $additional->total_pagado);
         $this->assertEquals(100, $additional->saldo_pendiente);
-        $this->assertSame($this->patient->id, (int) $additional->patient_id);
+        $this->assertSame($extraPatient->id, (int) $additional->patient_id);
         $this->assertSame([$regular->id], Appointment::consumingRegularSlot()->pluck('id')->all());
         $reader = $this->createUserWithRole('ADMISION');
         $this->grant($reader, [Capability::MVP_ACCESS, Capability::VIEW]);
