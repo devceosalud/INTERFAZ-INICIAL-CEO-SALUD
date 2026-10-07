@@ -316,8 +316,9 @@ $('#formCreateAppointment').on('submit', function (e) {
         },
 
         error: function (xhr) {
-            console.log(xhr.responseText);
-            notificacion("error", "Error", xhr.responseText, 4000, false, false);
+            const message = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message : 'No se pudo registrar la cita o el pago. Revisa los datos e intenta nuevamente.';
+            notificacion("error", "Pago no registrado", message, 4000, false, false);
         },
 
         complete: function () {

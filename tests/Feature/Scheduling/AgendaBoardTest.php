@@ -684,11 +684,13 @@ class AgendaBoardTest extends TestCase
         $this->block($this->monday, '08:00:00', '09:00:00', 30);
         $appointment = $this->appointment($this->monday, '08:00:00', 30, 'CONFIRMADO');
 
+        $appointment->patient->update(['nombre' => 'NOMBRE_PRIVADO_QA_94721', 'apellido_paterno' => 'APELLIDO_PRIVADO_QA_94721']);
+
         $response = $this->feed('mes', $this->monday)->assertOk();
         $body = $response->getContent();
 
         $this->assertStringNotContainsString($appointment->patient->nombre, $body);
-        $this->assertStringNotContainsString('Baseline Test Paciente', $body);
+        $this->assertStringNotContainsString($appointment->patient->apellido_paterno, $body);
         $this->assertTrue(collect($response->json('eventos'))->every(
             fn (array $event) => ($event['allDay'] ?? false) === true
         ));

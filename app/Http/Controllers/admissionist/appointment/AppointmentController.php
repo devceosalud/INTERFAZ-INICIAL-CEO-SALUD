@@ -255,6 +255,8 @@ class AppointmentController extends Controller
                     'metodo_pago' => $metodoPago,
                     'monto' => $request->total_pagado,
                     'numero_operacion' => $request->numero_operacion,
+                    'entidad_origen' => $request->entidad_origen,
+                    'entidad_destino' => $request->entidad_destino,
                     'user_id' => auth()->id(),
                     'cashier_shift_id' => $turno->id,
                 ]);

@@ -297,6 +297,7 @@
 
                 {{-- TOTALES Y PAGOS --}}
                 @if (count($carrito) > 0)
+                    @error('payment.operation') <p class="text-danger" role="alert">{{ $message }}</p> @enderror
                     @php
                         $calculo = $this->calculoCarrito;
                     @endphp
@@ -318,6 +319,11 @@
                                         <input type="text" wire:model="numeroOperacionTarjeta"
                                             placeholder="N° operación" class="form-control form-control-sm"
                                             style="width:100px">
+                                        <label class="form-label small mb-1" for="sale-bank-origin">Banco / billetera *</label>
+                                        <input id="sale-bank-origin" type="text" wire:model="entidadOrigen" maxlength="255"
+                                            class="form-control form-control-sm" placeholder="Banco de la tarjeta">
+                                        @error('payment.origin') <small class="text-danger" role="alert">{{ $message }}</small> @enderror
+
                                     @endif
                                 </div>
 

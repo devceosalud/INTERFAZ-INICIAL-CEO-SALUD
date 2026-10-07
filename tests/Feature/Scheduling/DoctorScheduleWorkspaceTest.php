@@ -515,7 +515,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->actingAs($commercial)
             ->get(self::PAGE)
             ->assertOk()
-            ->assertSee('Vista de consulta')
+            ->assertSee('Solo consulta. Admisión administra los horarios.')
             ->assertSee('data-can-manage="false"', false);
 
         $this->actingAs($commercial)
