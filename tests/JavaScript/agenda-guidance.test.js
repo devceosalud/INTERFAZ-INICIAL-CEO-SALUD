@@ -30,10 +30,14 @@ test('un adelanto menor a 50% se explica en el pago y no abre un modal', () => {
 });
 
 test('guardar reserva nombra el siguiente paso y los botones apagados explican por qué', () => {
-    assert.equal(guidance.copy.reserveSaved, 'Reserva guardada · Pendiente de adelanto.');
+    assert.equal(guidance.copy.reserveSaved, 'Reserva guardada. Pendiente de adelanto.');
+    assert.equal(guidance.copy.reserveSavedHere, 'Reserva guardada para esta hora.');
+    assert.equal(guidance.copy.appointmentSaved, 'Cita confirmada.');
+    assert.equal(guidance.copy.additionalSaved, 'Cita adicional creada.');
     assert.equal(guidance.copy.needSelection, 'Selecciona paciente, servicio y horario.');
+    assert.equal(guidance.copy.needReservePatient, 'Selecciona el paciente de esta reserva.');
     assert.equal(guidance.copy.needAppointment, 'Primero guarda la reserva o selecciona una cita.');
-    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora del horario del médico.');
+    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora dentro del horario del médico.');
     assert.equal(guidance.copy.cashNoOperation, 'No se requiere número de operación para efectivo.');
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-pending-tip/);
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-payment-tip/);
@@ -46,7 +50,14 @@ test('403 no muestra inglés ni el nombre de una capability', () => {
         assert.doesNotMatch(generic.text, /unauthorized|spatie|capability/i);
     }
     assert.equal(guidance.place('This action is unauthorized.', 403, 'payment').text, guidance.copy.permissionPayment);
+    assert.equal(guidance.place('This action is unauthorized.', 403, 'payment').domain, 'payment');
     assert.equal(guidance.place('This action is unauthorized.', 403, 'withdraw').text, guidance.copy.permissionWithdraw);
+    const additional = guidance.place('This action is unauthorized.', 403, 'additional');
+    assert.equal(additional.text, guidance.copy.permissionAdditional);
+    assert.equal(additional.domain, 'local');
+    assert.equal(guidance.place('The motivo field is required.', 422, 'withdraw').text, guidance.copy.needWithdrawReason);
+    assert.doesNotMatch(guidance.place('The motivo field is required.', 422, 'withdraw').text, /required|The /);
+    assert.equal(guidance.place('Confirma que el paciente estuvo en la clínica. RETIRO no es NO ASISTIÓ.', 422, 'withdraw').text, guidance.copy.needPresence);
 });
 
 test('DNI, comprobante y link quedan en su propio bloque', () => {
@@ -116,4 +127,141 @@ test('un error de adelanto abre el bloque, enfoca el importe y no crea un modal'
     assert.equal(error.hidden, false);
     assert.equal(error.textContent, guidance.copy.insufficientAdvance);
     assert.equal(elements.has('agenda-guidance-modal'), false);
+});
+
+test('otra reserva con paciente y servicio pide RESERVE y no borra el documento', () => {
+    const actions = require('../../public/js/scheduling/agenda-appointment-actions');
+    const selected = { tipo_contexto: 'cita_existente', hora_inicio: '10:00', fecha: '2026-10-09', doctor_id: 4, site_id: 1 };
+    const intent = actions.reserveIntent(selected, '15', '3');
+    assert.equal(intent.post, true);
+    assert.equal(intent.pending, true);
+    assert.equal(intent.bookingType, 'REGULAR');
+    assert.equal(intent.occupiedHour, true);
+    assert.equal(actions.reserveIntent(selected, '', '3').post, false);
+    assert.equal(actions.reserveIntent(selected, '', '3').reason, 'patient');
+    const file = source('public/js/scheduling/agenda.js');
+    const handler = file.slice(
+        file.indexOf("pendingStart.addEventListener('click'"),
+        file.indexOf("additionalStart.addEventListener('click'")
+    );
+    assert.match(handler, /createAppointment\(true\)/);
+    assert.match(handler, /needReservePatient/);
+    assert.doesNotMatch(handler, /lookupModel\.blank|documentNumber\.value = ''/);
+});
+
+test('cita adicional no borra al paciente y el éxito no dice solo cita agendada', () => {
+    const handler = source('public/js/scheduling/agenda.js');
+    const start = handler.indexOf("additionalStart.addEventListener('click'");
+    const slice = handler.slice(start, handler.indexOf('async function moveAppointment'));
+    assert.doesNotMatch(slice, /lookupModel\.blank|documentNumber\.value = ''/);
+    assert.match(slice, /saved\.document/);
+    assert.match(slice, /additionalMode = true/);
+    assert.match(handler, /additionalSaved/);
+    assert.equal(guidance.copy.additionalSaved, 'Cita adicional creada.');
+});
+
+test('reprogramar a otra fecha nombra el destino y ofrece verlo si no está en el día', () => {
+    const actions = require('../../public/js/scheduling/agenda-appointment-actions');
+    assert.equal(guidance.rescheduled('09/10/2026', '11:20'), 'Cita reprogramada para 09/10/2026 a las 11:20.');
+    assert.equal(actions.showsDestination('2026-10-07', 'dia', '2026-10-07'), true);
+    assert.equal(actions.showsDestination('2026-10-07', 'dia', '2026-10-08'), false);
+    assert.match(source('public/js/scheduling/agenda.js'), /agenda-see-destination/);
+    assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /Ver nueva fecha/);
+});
+
+test('documentos vacíos y adelanto cero no anuncian un guardado', async () => {
+    const elements = new Map();
+    const notices = [];
+    const element = () => {
+        const node = {
+            hidden: true, value: '', checked: false, disabled: false, open: false, files: [], dataset: {}, textContent: '',
+            classList: { add() {}, remove() {} }, listeners: {},
+            addEventListener(name, fn) { node.listeners[name] = fn; },
+            focus() {}, scrollIntoView() {}, replaceChildren() {},
+        };
+        return node;
+    };
+    elements.set('agenda-op-method', Object.assign(element(), { value: 'EFECTIVO' }));
+    elements.set('agenda-op-amount', Object.assign(element(), { value: '0' }));
+    elements.set('agenda-op-links', Object.assign(element(), { value: '' }));
+    elements.set('agenda-op-proof', Object.assign(element(), { files: [] }));
+    const document = {
+        getElementById(id) { if (!elements.has(id)) { elements.set(id, element()); } return elements.get(id); },
+        querySelector() { return { content: 'csrf' }; },
+        createElement: element,
+    };
+    let requested = false;
+    const context = {
+        window: { AgendaGuidance: guidance, setTimeout, crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000010' } },
+        document, setTimeout, clearTimeout, FormData: class { append() {} },
+        fetch: async () => { requested = true; return { ok: true, status: 201, json: async () => ({}) }; },
+    };
+    context.window.document = document;
+    vm.runInNewContext(source('public/js/scheduling/agenda-operational-form.js'), context);
+    vm.runInNewContext(source('public/js/scheduling/agenda-operational-workspace.js'), context);
+    context.window.AgendaOperationalForm = context.AgendaOperationalForm;
+    context.window.AgendaOperationalWorkspace({
+        endpoint: '/registrations', base: '/appointments', patientTemplate: '/patients/__PATIENT__', canCreate: true,
+        context: () => ({ tipo_contexto: 'cita_existente', appointment_id: 9, estado_agenda: 'PENDIENTE_CONFIRMACION' }),
+        payload: () => ({ patient_id: 1 }),
+        error: (body) => (body && body.message) || 'sin-mensaje',
+        notice(message) { notices.push(message); }, busy() {}, registered() {}, paymentUpdated() {},
+    });
+    await document.getElementById('agenda-op-submit-payment').listeners.click();
+    await document.getElementById('agenda-op-add-documents').listeners.click();
+    assert.equal(requested, false);
+    assert.equal(document.getElementById('agenda-op-payment-error').textContent, guidance.copy.needAmount);
+    assert.equal(document.getElementById('agenda-op-documents-error').textContent, guidance.copy.needDocument);
+    assert.equal(notices.some((message) => /registrado|guardados/i.test(message)), false);
+});
+
+test('un 403 de cita adicional no abre el pago', async () => {
+    const elements = new Map();
+    const notices = [];
+    const element = () => ({
+        hidden: true, value: '', checked: false, disabled: false, open: false, files: [], dataset: {}, textContent: '',
+        classList: { add() {}, remove() {} },
+        addEventListener() {}, focus() {}, scrollIntoView() {}, replaceChildren() {},
+    });
+    const method = element(); method.value = 'EFECTIVO';
+    elements.set('agenda-op-method', method);
+    elements.set('agenda-op-amount', Object.assign(element(), { value: '0' }));
+    const document = {
+        getElementById(id) { if (!elements.has(id)) { elements.set(id, element()); } return elements.get(id); },
+        querySelector() { return { content: 'csrf' }; },
+        createElement: element,
+    };
+    const context = {
+        window: { AgendaGuidance: guidance, setTimeout, crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000011' } },
+        document, setTimeout, clearTimeout, FormData: class { append() {} },
+        fetch: async () => ({ ok: false, status: 403, json: async () => ({ message: 'This action is unauthorized.' }) }),
+    };
+    context.window.document = document;
+    vm.runInNewContext(source('public/js/scheduling/agenda-operational-form.js'), context);
+    vm.runInNewContext(source('public/js/scheduling/agenda-operational-workspace.js'), context);
+    context.window.AgendaOperationalForm = context.AgendaOperationalForm;
+    const workspace = context.window.AgendaOperationalWorkspace({
+        endpoint: '/registrations', base: '/appointments', patientTemplate: '/patients/__PATIENT__', canCreate: true,
+        context: () => ({ tipo_contexto: 'slot_libre', seleccionable: true, doctor_id: 1, fecha: '2026-10-09', hora_inicio: '10:00', minutos: 20, site_id: 1 }),
+        payload: () => ({ patient_id: 2, doctor_id: 1, service_id: 1, site_id: 1, fecha_cita: '2026-10-09', hora_cita: '10:00', duracion_cita: 20 }),
+        error: (body) => (body && body.message) || 'sin-mensaje',
+        notice(message) { notices.push(message); }, busy() {}, registered() {},
+    });
+    await workspace.register({ pending: false, patientId: 2, serviceId: 1, ownerId: '', bookingType: 'ADICIONAL' });
+    assert.equal(document.getElementById('agenda-op-payment-panel').open, false);
+    assert.equal(notices.at(-1), guidance.copy.permissionAdditional);
+});
+
+test('la ayuda clickeable reemplaza el símbolo de información en lo obvio', () => {
+    const legend = source('resources/views/scheduling/agenda/index.blade.php');
+    const calendar = source('resources/views/scheduling/agenda/partials/mini-calendar.blade.php');
+    const withdrawal = source('resources/views/scheduling/agenda/partials/withdrawal.blade.php');
+    assert.match(legend, /PENDIENTE_CONFIRMACION', 'ADICIONAL', 'FUERA_HORARIO'/);
+    assert.doesNotMatch(legend, /ⓘ/);
+    assert.doesNotMatch(calendar, /ⓘ/);
+    assert.doesNotMatch(withdrawal, /ⓘ/);
+    assert.match(legend, /Minutos todavía disponibles dentro del horario del médico/);
+    assert.match(legend, /Citas adicionales y atenciones fuera de horario/);
+    assert.match(calendar, /El color indica cuánto del horario regular ya está confirmado con adelantos/);
+    assert.match(withdrawal, /No asistió significa que nunca llegó/);
 });

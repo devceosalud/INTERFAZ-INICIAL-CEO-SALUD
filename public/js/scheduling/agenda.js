@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    if (window.AgendaHelp) { window.AgendaHelp.start(document); }
+
     const VIEW_TO_FULLCALENDAR = {
         dia: 'timeGridDay',
         semana: 'timeGridWeek',
@@ -199,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentUpdated: async (response) => { state.revealAppointmentId = String(response.appointment.appointment_id); await load(); },
         refresh: load, notice: (message) => showActionNotice(message, false),
         busy: (busy) => { state.appointmentBusy = busy; updateAppointmentAction(); el.draftSaveSchedule.disabled = busy || !canCreateAppointments; },
-        registered: async (payload) => {
+        registered: async (payload, options) => {
             state.identity = lookupModel.blank(); state.draft = null; el.documentNumber.value = '';
             paintIdentity(state.identity); paintDraft(draftModel.discard(scheduleSnapshot()));
             el.responsibleSelect.value = ''; paintResponsible();
@@ -207,8 +209,12 @@ document.addEventListener('DOMContentLoaded', function () {
             await load();
             const result = document.getElementById('agenda-registration-result');
             const pendingSaved = payload.appointment.estado_agenda === 'PENDIENTE_CONFIRMACION';
+            const kind = options && options.bookingType;
+            const copy = window.AgendaGuidance.copy;
             result.hidden = false;
-            result.textContent = pendingSaved ? window.AgendaGuidance.copy.reserveSaved : window.AgendaGuidance.copy.appointmentSaved;
+            result.textContent = pendingSaved
+                ? (options && options.occupiedHour ? copy.reserveSavedHere : copy.reserveSaved)
+                : (kind === 'ADICIONAL' ? copy.additionalSaved : (kind === 'FUERA_HORARIO' ? copy.offHoursSaved : copy.appointmentSaved));
             if (pendingSaved) {
                 el.completeRegistration.hidden = false;
                 el.completeRegistration.disabled = false;
@@ -516,6 +522,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let actionNoticeTimer = null;
     function showActionNotice(message, isAlert) {
+        const see = document.getElementById('agenda-see-destination');
+        if (see) { see.hidden = true; }
         const notice = document.getElementById('agenda-action-notice');
         if (!notice) { return; }
         notice.hidden = false;
@@ -524,21 +532,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (state.draft && el.draftMessage) { el.draftMessage.textContent = message; }
         window.clearTimeout(actionNoticeTimer);
         actionNoticeTimer = window.setTimeout(() => { notice.hidden = true; }, 7000);
-    }
-
-    function setTip(button, text) {
-        if (!button) { return; }
-        const wrap = button.closest('.agenda-tip') || button;
-        if (button.disabled && text) {
-            wrap.dataset.tip = text;
-            if (wrap !== button) { wrap.tabIndex = 0; }
-        } else if (text && !button.disabled) {
-            wrap.dataset.tip = text;
-            if (wrap !== button) { wrap.removeAttribute('tabindex'); }
-        } else {
-            delete wrap.dataset.tip;
-            if (wrap !== button) { wrap.removeAttribute('tabindex'); }
-        }
     }
 
     function hideNotice() {
@@ -1402,17 +1395,20 @@ document.addEventListener('DOMContentLoaded', function () {
             || !slot
             || !patient;
         const guidance = window.AgendaGuidance.copy;
-        setTip(pendingStart, pendingStart && pendingStart.disabled ? guidance.needSelection : '');
-        setTip(el.appointmentSubmit, el.appointmentSubmit.disabled ? guidance.needSelection : '');
         const paymentButton = document.getElementById('agenda-open-payment');
         if (paymentButton) {
             paymentButton.disabled = !state.selection || !state.selection.appointment_id;
-            setTip(paymentButton, paymentButton.disabled ? guidance.needAppointment : '');
         }
-        if (additionalStart) {
-            setTip(additionalStart, additionalStart.disabled ? guidance.needDoctorHour : guidance.additional);
+        const reason = document.getElementById('agenda-disabled-reason');
+        if (reason) {
+            let line = '';
+            if (pendingStart && pendingStart.disabled) { line = guidance.needSelection; }
+            else if (el.appointmentSubmit.disabled && state.selection && state.selection.tipo_contexto === 'slot_libre') { line = guidance.needSelection; }
+            else if (paymentButton && paymentButton.disabled && state.selection) { line = guidance.needAppointment; }
+            else if (additionalStart && additionalStart.disabled && state.selection && state.selection.hora_inicio) { line = guidance.needDoctorHour; }
+            reason.hidden = line === '';
+            reason.textContent = line;
         }
-        if (offHoursStart) { setTip(offHoursStart, guidance.offHours); }
     }
 
     function scheduleSnapshot() {
@@ -1700,18 +1696,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function createAppointment(pending = false, patient = null, patientId = null) {
-        if (state.appointmentBusy || !(state.additionalMode ? canAdditional : canCreateAppointments)) {
+        if (state.appointmentBusy) { return; }
+        if (!(state.additionalMode ? canAdditional : canCreateAppointments)) {
+            showActionNotice(state.additionalMode ? window.AgendaGuidance.copy.permissionAdditional : window.AgendaGuidance.copy.permissionGeneric, true);
             return;
         }
 
         if (!requireService(Boolean(state.draft))) { return; }
+        const occupiedHour = Boolean(state.reserveOnOccupiedHour);
+        state.reserveOnOccupiedHour = false;
         await operationalWorkspace.register({
             pending: pending || Boolean(state.pendingMode),
             patient: patient, patientId: patientId || (patient ? null : el.quickPatientId.value),
             serviceId: el.serviceSelect.value, ownerId: el.responsibleSelect.value,
             bookingType: state.offHoursMode ? 'FUERA_HORARIO' : state.additionalMode ? 'ADICIONAL' : 'REGULAR',
+            occupiedHour: occupiedHour,
         });
-        return;
     }
 
     function onDocumentEdited() {
@@ -1895,19 +1895,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('agenda-reschedule-time').value, function () {});
         });
     }
+    function sameSite(left, right) {
+        const empty = (value) => value === null || value === undefined || value === '';
+        return empty(left) || empty(right) ? empty(left) && empty(right) : String(left) === String(right);
+    }
+    function bookingSlot(selected) {
+        const professional = ((state.payload && state.payload.profesionales) || []).find((item) => String(item.id) === String(selected.doctor_id));
+        const day = professional && (professional.dias || []).find((item) => item.fecha === selected.fecha);
+        return day && (day.slots || []).find((slot) => slot.inicio === selected.hora_inicio && sameSite(slot.site_id, selected.site_id));
+    }
     if (pendingStart) {
         pendingStart.addEventListener('click', function () {
             const selected = state.selection;
-            if (!selected) { return; }
-            if (selected.tipo_contexto === 'slot_libre' && el.quickPatientId.value) { createAppointment(true); return; }
-            const professional = (state.payload.profesionales || []).find(p => p.id === selected.doctor_id);
-            const day = professional?.dias.find(d => d.fecha === selected.fecha);
-            const slot = day?.slots.find(s => s.inicio === selected.hora_inicio && s.site_id === selected.site_id);
-            if (!slot) { showActionNotice('Selecciona un intervalo regular para reservar.', true); return; }
-            state.identity = lookupModel.blank(); paintIdentity(state.identity); el.documentNumber.value = '';
-            selectInterval(window.AgendaAppointmentActions.additionalContext(selected, slot), null);
-            state.pendingMode = true; el.quickMode.textContent = 'RESERVA PRIVADA';
-            updateAppointmentAction();
+            const intent = window.AgendaAppointmentActions.reserveIntent(selected, el.quickPatientId.value, el.serviceSelect.value);
+            if (!intent.post && intent.reason === 'hour') { return; }
+            if (!intent.post && intent.reason === 'patient') {
+                el.quickMessage.classList.remove('is-ready');
+                el.quickMessage.textContent = window.AgendaGuidance.copy.needReservePatient;
+                showActionNotice(window.AgendaGuidance.copy.needReservePatient, true);
+                if (el.patientLookup && el.patientLookup.scrollIntoView) { el.patientLookup.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+                if (el.documentNumber) { el.documentNumber.focus(); }
+                return;
+            }
+            if (!intent.post) { requireService(false); return; }
+            if (intent.occupiedHour) {
+                const slot = bookingSlot(selected);
+                if (!slot) { showActionNotice('Selecciona un intervalo regular para reservar.', true); return; }
+                try {
+                    const booking = window.AgendaAppointmentActions.additionalContext(selected, slot);
+                    state.selection = Object.assign({}, booking, { leyenda: 'DISPONIBLE', etiqueta: 'Disponible' });
+                } catch (error) {
+                    showActionNotice(error.message, true);
+                    return;
+                }
+                state.pendingMode = true;
+                state.additionalMode = false;
+                state.reserveOnOccupiedHour = true;
+            }
+            createAppointment(true);
         });
     }
     if (offHoursStart) {
@@ -1926,18 +1951,26 @@ document.addEventListener('DOMContentLoaded', function () {
         additionalStart.addEventListener('click', function () {
             const selected = state.selection;
             if (!selected) { return; }
-            const professional = (state.payload.profesionales || []).find((p) => p.id === selected.doctor_id);
-            const day = professional && (professional.dias || []).find((d) => d.fecha === selected.fecha);
-            const slot = day && (day.slots || []).find((s) => s.inicio === selected.hora_inicio && s.site_id === selected.site_id);
+            const slot = bookingSlot(selected);
             if (!slot) { showActionNotice(window.AgendaGuidance.copy.needDoctorHour, true); return; }
-            state.identity = lookupModel.blank();
-            state.draft = null;
-            paintIdentity(state.identity);
-            el.documentNumber.value = '';
-            el.lookupResult.textContent = '';
-            el.responsibleSelect.value = '';
-            selectInterval(window.AgendaAppointmentActions.additionalContext(selected, slot), null);
+            const saved = {
+                identity: state.identity,
+                document: el.documentNumber.value,
+                service: el.serviceSelect.value,
+                patientId: el.quickPatientId.value,
+            };
+            let booking;
+            try { booking = window.AgendaAppointmentActions.additionalContext(selected, slot); }
+            catch (error) { showActionNotice(error.message, true); return; }
+            selectInterval(booking, null);
             state.additionalMode = true;
+            el.documentNumber.value = saved.document;
+            if (saved.identity && saved.identity.status) { paintIdentity(saved.identity); }
+            else if (saved.patientId) { el.quickPatientId.value = saved.patientId; }
+            if (saved.service && Array.from(el.serviceSelect.options).some((option) => option.value === saved.service && !option.disabled)) {
+                el.serviceSelect.value = saved.service;
+                paintSelectedService();
+            }
             el.quickMode.textContent = 'Cita ADICIONAL';
             showActionNotice(window.AgendaGuidance.copy.additional, false);
             updateAppointmentAction();
@@ -1949,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.appointmentBusy = true;
         updateAppointmentAction();
         try {
-            await window.AgendaAppointmentActions.reschedule(context, date, time, {
+            const outcome = await window.AgendaAppointmentActions.reschedule(context, date, time, {
                 confirm: (message) => window.confirm(message), revert: revert, refresh: load,
                 send: async function (id, payload) {
                     const response = await fetch(board.dataset.rescheduleUrl + '/' + id + '/reschedule', {
@@ -1960,10 +1993,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                     const result = await response.json().catch(() => ({}));
                     if (response.status === 409 && result.confirmation_required === true) { return result; }
-                    if (!response.ok) { throw new Error(appointmentCreateModel.validationMessage(result)); }
+                    if (!response.ok) {
+                        const error = new Error(appointmentCreateModel.validationMessage(result));
+                        error.status = response.status;
+                        throw error;
+                    }
                     return result;
                 },
             });
+            if (outcome && !outcome.cancelled) {
+                const label = String(date).split('-').reverse().join('/');
+                showActionNotice(window.AgendaGuidance.rescheduled(label, time), false);
+                const see = document.getElementById('agenda-see-destination');
+                if (see && !window.AgendaAppointmentActions.showsDestination(state.date, state.view, date)) {
+                    see.hidden = false;
+                    see.onclick = function () { see.hidden = true; setDate(date); };
+                }
+            }
         } catch (error) {
             const placed = window.AgendaGuidance.place(error.message, error.status, 'local');
             const box = document.getElementById('agenda-reschedule-error');

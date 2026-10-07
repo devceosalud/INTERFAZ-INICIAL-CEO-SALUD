@@ -88,12 +88,12 @@ final class AgendaLegend
             self::ADDITIONAL => [
                 'clave' => self::ADDITIONAL, 'etiqueta' => 'ADICIONAL', 'glifo' => '+',
                 'color' => '#6b21a8', 'fondo' => '#f3e8ff',
-                'descripcion' => 'Paciente extra en una hora con cita regular.',
+                'descripcion' => 'Paciente extra en una hora que ya tiene una cita regular.',
             ],
             self::OFF_HOURS_APPOINTMENT => [
                 'clave' => self::OFF_HOURS_APPOINTMENT, 'etiqueta' => 'FUERA DE HORARIO', 'glifo' => 'FH',
                 'color' => '#b45309', 'fondo' => '#ffedd5',
-                'descripcion' => 'Atención excepcional fuera del horario del médico.',
+                'descripcion' => 'Atención excepcional fuera del horario configurado del médico.',
             ],
         ];
     }

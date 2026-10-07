@@ -37,6 +37,7 @@
         <summary>Comprobantes y documentos</summary>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
+        <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-documents-error" class="agenda-field-error" role="alert" hidden></p>
         <div id="agenda-op-documents" aria-live="polite"></div>
     </details>

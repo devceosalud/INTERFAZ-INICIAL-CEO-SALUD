@@ -80,8 +80,8 @@
                 const response = await request(config.endpoint, { method: 'POST', body });
                 registrationKey = null; ui.amount.value = '0'; ui.proof.value = ''; ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
-                await config.registered(response);
-            } catch (e) { showPlaced(e, 'payment'); }
+                await config.registered(response, options);
+            } catch (e) { showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment'); }
             finally { working = false; config.busy(false); }
         }
         async function documents(id) {
@@ -128,6 +128,12 @@
         async function submitPayment(confirm) {
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
+            if (!confirm) {
+                let cents = 0;
+                try { cents = model.cents(ui.amount.value || '0'); }
+                catch (e) { showPlaced(e, 'payment'); return; }
+                if (cents < 1) { showPlaced({ message: root.AgendaGuidance.copy.needAmount }, 'payment'); return; }
+            }
             working = true; config.busy(true);
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
@@ -159,6 +165,8 @@
                 return;
             }
             if (placed.domain === 'documents') {
+                const saved = document.getElementById('agenda-op-documents-status');
+                if (saved) { saved.hidden = true; }
                 const panel = document.getElementById('agenda-op-documents-panel');
                 if (panel) { panel.open = true; }
                 if (documentError) { documentError.hidden = false; documentError.textContent = placed.text; documentError.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
@@ -172,18 +180,26 @@
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
             if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
+            let pending = [];
+            try { pending = model.links(ui.links.value); }
+            catch (e) { showPlaced(e, 'documents'); return; }
+            const hasFile = Boolean(ui.proof.files[0]);
+            if (!hasFile && pending.length === 0) { showPlaced({ message: root.AgendaGuidance.copy.needDocument }, 'documents'); return; }
             working = true;
             try {
-                if (ui.proof.files[0]) {
+                if (hasFile) {
                     const body = new FormData(); body.append('label', 'Comprobante de pago'); body.append('file', ui.proof.files[0]);
                     await request(base + '/' + id + '/documents', { method: 'POST', body }); ui.proof.value = '';
                 }
-                const pending = model.links(ui.links.value);
                 for (let i = 0; i < pending.length; i++) {
                     await request(base + '/' + id + '/documents', json('POST', pending[i]));
                     ui.links.value = pending.slice(i + 1).map(l => l.label + ' | ' + l.url).join('\n');
                 }
-                await documents(id); config.notice('Documentos guardados.');
+                await documents(id);
+                const saved = hasFile && pending.length ? root.AgendaGuidance.copy.fileSaved + ' ' + root.AgendaGuidance.copy.linkSaved : (hasFile ? root.AgendaGuidance.copy.fileSaved : root.AgendaGuidance.copy.linkSaved);
+                const status = document.getElementById('agenda-op-documents-status');
+                if (status) { status.hidden = false; status.textContent = saved; }
+                else { config.notice(saved); }
             } catch (e) { showPlaced(e, 'documents'); }
             finally { working = false; }
         });

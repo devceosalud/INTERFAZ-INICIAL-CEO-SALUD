@@ -50,7 +50,7 @@
                             </div>
                             @include('scheduling.agenda.partials.quick-registration')
                             @include('scheduling.agenda.partials.withdrawal')
-                            <details class="agenda-workflow"><summary>Reservas afectadas por cambios de horario <span id="agenda-contingency-badge"></span></summary><div id="agenda-contingency-list" aria-live="polite"></div></details>
+                            <details class="agenda-workflow"><summary>Reservas afectadas por cambios de horario <span id="agenda-contingency-badge"></span></summary><p id="agenda-contingency-status" class="agenda-action-notice" role="status" hidden></p><div id="agenda-contingency-list" aria-live="polite"></div></details>
                         </aside>
 
                         <section data-ui-zone="grid" class="agenda-center" aria-labelledby="agenda-title">
@@ -73,10 +73,10 @@
                                         <dd id="agenda-total-busy">—</dd>
                                     </div>
                                     <div>
-                                        <dt>Min. libres</dt>
+                                        <dt>Min. libres <button type="button" class="agenda-help" data-help-title="Min. libres" data-help-text="Minutos todavía disponibles dentro del horario del médico." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Min. libres">?</button></dt>
                                         <dd id="agenda-total-minutes">—</dd>
                                     </div>
-                                    <div><dt>Especiales</dt><dd id="agenda-total-special">—</dd></div>
+                                    <div><dt>Especiales <button type="button" class="agenda-help" data-help-title="Especiales" data-help-text="Citas adicionales y atenciones fuera de horario." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Especiales">?</button></dt><dd id="agenda-total-special">—</dd></div>
                                 </dl>
                             </div>
 
@@ -134,8 +134,8 @@
                                             style="--key-color: {{ $entry['color'] }}; --key-bg: {{ $entry['fondo'] }}"
                                             aria-hidden="true"></span>
                                         <strong>{{ $entry['etiqueta'] }}</strong>
-                                        @if (!empty($entry['descripcion']))
-                                            <abbr class="agenda-mini-help" tabindex="0" title="{{ $entry['descripcion'] }}">ⓘ</abbr>
+                                        @if (in_array($entry['clave'], ['PENDIENTE_CONFIRMACION', 'ADICIONAL', 'FUERA_HORARIO'], true))
+                                            <button type="button" class="agenda-help" data-help-title="{{ $entry['etiqueta'] }}" data-help-text="{{ $entry['descripcion'] }}" aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: {{ $entry['etiqueta'] }}">?</button>
                                         @endif
                                     </span>
                                 @endforeach
@@ -171,6 +171,7 @@
     <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
     @include('telemetry.collector')
     <script src="{{ asset('js/scheduling/agenda-guidance.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-help.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-navigation.js') }}"></script>

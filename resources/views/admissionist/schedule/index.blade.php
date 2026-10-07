@@ -81,8 +81,9 @@
                             <p id="schedule-range-label" aria-live="polite"></p>
                         </div>
                         <div class="schedule-heading__actions">
-                            <span class="agenda-tip" data-tip="Todavía no se registran ausencias aquí."><button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Ausencia</button></span>
-                            <span class="agenda-tip" data-tip="Todavía no se registra un horario excepcional aquí."><button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Horario excepcional</button></span>
+                            <button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Ausencia</button>
+                            <button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Horario excepcional</button>
+                            <p class="schedule-disabled-note">Todavía no se registran ausencias ni un horario excepcional aquí.</p>
                             <button type="button" class="schedule-btn schedule-btn--primary" id="schedule-add"
                                 @disabled(! $canManageSchedules)>+ Horario</button>
                         </div>

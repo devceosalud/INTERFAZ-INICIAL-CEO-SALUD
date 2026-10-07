@@ -1,5 +1,5 @@
 <details id="agenda-workflow-panel" class="agenda-workflow" hidden>
-    <summary>Retiro y seguimiento <abbr class="agenda-mini-help" tabindex="0" title="Retiro: el paciente llegó pero se va antes de atenderse. No asistió: el paciente nunca llegó.">ⓘ</abbr></summary>
+    <summary>Retiro y seguimiento <button type="button" class="agenda-help" data-help-title="Retiro" data-help-text="El paciente llegó pero se va antes de atenderse. No asistió significa que nunca llegó." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Retiro">?</button></summary>
     <p id="agenda-withdrawal-status" class="agenda-action-notice" role="status" hidden></p>
     <p id="agenda-withdrawal-error" class="agenda-field-error" role="alert" hidden></p>
     <p id="agenda-workflow-title"></p>
@@ -24,7 +24,7 @@
         <small>Mismo paciente, médico y servicio; precio del catálogo vigente. Si el crédito no asegura la cita, se guarda como reserva privada.</small>
         <div class="agenda-workflow-actions">
             <button id="agenda-withdrawal-rebook" class="agenda-btn" type="button" @disabled(!$canCreateAppointments || !$canRescheduleAppointments)>Crear nueva cita y aplicar crédito</button>
-            <span class="agenda-tip" data-tip="Solo se registra la solicitud. El dinero todavía no se devuelve."><button id="agenda-withdrawal-refund" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Solicitar devolución</button></span>
+            <button id="agenda-withdrawal-refund" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Solicitar devolución</button>
         </div>
         <div id="agenda-withdrawal-refunds"></div>
     </div>

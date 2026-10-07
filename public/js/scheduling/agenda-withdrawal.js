@@ -41,7 +41,11 @@
                     input.dataset.voucher = line.voucher_id; input.dataset.available = line.amount; label.append(text, input); credit.append(label);
                 });
                 id('withdrawal-refunds').textContent = data.refund_requests.map(r => 'Devolución #' + r.id + ' · S/ ' + r.amount + ' · ' + r.status).join(' | ');
-            } catch (e) { panel.hidden = true; config.notice(e.message); }
+            } catch (e) {
+                const placed = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'withdraw') : { text: e.message };
+                const errorBox = id('withdrawal-error');
+                if (errorBox) { errorBox.hidden = false; errorBox.textContent = placed.text; }
+            }
         }
         function lines() { return moneyLines(Array.from(credit.querySelectorAll('input')).map(input => ({ voucher_id: input.dataset.voucher, amount: input.value, available: input.dataset.available }))); }
         async function mutate(action) {
@@ -55,16 +59,18 @@
                 if (action === 'refund-requests') { data.refunds = lines(); }
                 const result = await request(config.base + '/' + original + '/' + action, 'POST', data); key = null;
                 await config.refresh(); await select(original); panel.open = true;
-                const done = action === 'rebook-withdrawal' ? 'Nueva cita #' + result.appointment_id + ' · Saldo S/ ' + result.economy.saldo : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.' : 'Solicitud registrada. El dinero todavía no se devuelve.');
+                const guidance = root.AgendaGuidance;
+                const when = id('withdrawal-date').value.split('-').reverse().join('/') + ' a las ' + id('withdrawal-time').value;
+                const done = action === 'rebook-withdrawal'
+                    ? (guidance ? guidance.rebooked(id('withdrawal-date').value.split('-').reverse().join('/'), id('withdrawal-time').value) : 'Nueva cita creada para ' + when + '.')
+                    : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.' : (guidance ? guidance.copy.refundDone : 'Solicitud de devolución registrada.'));
                 const status = id('withdrawal-status'); const errorBox = id('withdrawal-error');
                 if (errorBox) { errorBox.hidden = true; }
                 if (status) { status.hidden = false; status.textContent = done; }
-                config.notice(done);
             } catch (e) {
                 const placed = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'withdraw') : { text: e.message };
                 const errorBox = id('withdrawal-error');
                 if (errorBox) { errorBox.hidden = false; errorBox.textContent = placed.text; }
-                config.notice(placed.text);
             } finally { busy = false; }
         }
         const actionSelect = id('withdrawal-action');
@@ -91,10 +97,18 @@
                     const read = document.createElement('button'); read.type = 'button'; read.textContent = row.read_at ? 'Leído' : 'Marcar como leído'; read.disabled = Boolean(row.read_at);
                     const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Resolver';
                     [read, close].forEach(button => button.addEventListener('click', async () => { try { if (button === close && !note.value.trim()) { let err = entry.querySelector('.agenda-field-error'); if (!err) { err = document.createElement('p'); err.className = 'agenda-field-error'; entry.append(err); } err.textContent = root.AgendaGuidance.copy.resolveNote; return; }
-                        await request(config.inbox + '/' + row.id, 'PATCH', button === close ? { resolution: note.value } : {}); await feed(payload); } catch (e) { const err = document.createElement('p'); err.className = 'agenda-field-error'; err.textContent = root.AgendaGuidance.place(e.message, e.status, 'local').text; entry.append(err); } }));
+                        await request(config.inbox + '/' + row.id, 'PATCH', button === close ? { resolution: note.value } : {});
+                        if (button === close) { const done = id('contingency-status'); if (done) { done.hidden = false; done.textContent = root.AgendaGuidance.copy.resolved; } }
+                        await feed(payload); } catch (e) { const err = document.createElement('p'); err.className = 'agenda-field-error'; err.textContent = root.AgendaGuidance.place(e.message, e.status, 'local').text; entry.append(err); } }));
                     entry.append(notice, note, read, close); target.append(entry);
                 });
-            } catch (e) { config.notice('No se pudo cargar seguimiento: ' + e.message); }
+            } catch (e) {
+                const target = id('contingency-list');
+                const err = document.createElement('p');
+                err.className = 'agenda-field-error';
+                err.textContent = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'local').text : e.message;
+                target.append(err);
+            }
         }
         return { select, feed };
     }

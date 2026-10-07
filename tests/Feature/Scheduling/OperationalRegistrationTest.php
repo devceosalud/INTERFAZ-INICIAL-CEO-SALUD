@@ -225,4 +225,41 @@ class OperationalRegistrationTest extends TestCase
         } finally { \App\Models\AppointmentEvent::flushEventListeners(); unlink($path); }
     }
 
+    public function test_a_second_private_reservation_on_the_same_hour_keeps_the_new_patient_and_does_not_consume_the_slot(): void
+    {
+        $first = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
+        $other = $this->createPatient($this->actor, [
+            'historia_clinica' => 'HC-RESERVA-B',
+            'numero_identidad' => '70000111',
+            'email' => 'reserva-b@example.invalid',
+            'nombre' => 'Paciente',
+            'apellido_paterno' => 'Distinto',
+        ]);
+        $created = $this->create($this->payload(['patient_id' => $other->id]));
+        $created->assertCreated()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION')->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
+        $second = Appointment::findOrFail($created->json('appointment.appointment_id'));
+        $this->assertNotSame($first, $second->id);
+        $this->assertSame($other->id, (int) $second->patient_id);
+        $this->assertSame('70000111', $other->fresh()->numero_identidad);
+        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
+    }
+
+    public function test_an_additional_booking_stays_confirmed_without_consuming_the_regular_slot(): void
+    {
+        $this->create($this->payload())->assertCreated();
+        $other = $this->createPatient($this->actor, [
+            'historia_clinica' => 'HC-ADICIONAL-B',
+            'numero_identidad' => '70000222',
+            'email' => 'adicional-b@example.invalid',
+        ]);
+        $created = $this->create($this->payload([
+            'patient_id' => $other->id,
+            'mode' => 'CONFIRM',
+            'booking_type' => 'ADICIONAL',
+        ]));
+        $created->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA')->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL');
+        $this->assertSame($other->id, (int) Appointment::findOrFail($created->json('appointment.appointment_id'))->patient_id);
+        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
+    }
+
 }

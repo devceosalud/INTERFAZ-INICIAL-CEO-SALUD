@@ -27,7 +27,32 @@
         }
         catch (error) { io.revert(); throw error; }
         await io.refresh();
-        return { cancelled: false };
+        return { cancelled: false, fecha: date, hora: time };
+    }
+    function reserveIntent(selection, patientId, serviceId) {
+        if (!selection || !selection.hora_inicio || selection.tipo_contexto === 'fuera_horario') {
+            return { post: false, reason: 'hour' };
+        }
+        if (!String(patientId || '').trim()) {
+            return { post: false, reason: 'patient' };
+        }
+        if (!String(serviceId || '').trim()) {
+            return { post: false, reason: 'service' };
+        }
+        return { post: true, pending: true, bookingType: 'REGULAR', occupiedHour: selection.tipo_contexto === 'cita_existente' };
+    }
+    function mondayOf(iso) {
+        const parts = String(iso || '').split('-').map(Number);
+        const date = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
+        const day = date.getDay();
+        date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+    function showsDestination(anchor, view, destination) {
+        if (!anchor || !destination) { return false; }
+        if (view === 'dia') { return anchor === destination; }
+        if (view === 'mes') { return anchor.slice(0, 7) === destination.slice(0, 7); }
+        return mondayOf(anchor) === mondayOf(destination);
     }
     function additionalContext(context, slot) {
         if (!context || !slot || slot.inicio !== context.hora_inicio || !(Number(slot.minutos) > 0)) {
@@ -45,5 +70,5 @@
         const match = /^([01]?\d|2[0-3])(?::[0-5]\d)?$/.exec(String(value).trim());
         return match && ['00', '20', '40'].includes(minute) ? match[1].padStart(2, '0') + ':' + minute : null;
     }
-    return { reschedule: reschedule, additionalContext: additionalContext, quickMinute: quickMinute };
+    return { reschedule: reschedule, additionalContext: additionalContext, quickMinute: quickMinute, reserveIntent: reserveIntent, showsDestination: showsDestination };
 }));
