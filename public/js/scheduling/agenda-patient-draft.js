@@ -207,7 +207,7 @@
 
         return {
             value: number ? 'Se asignará al guardar' : '—',
-            message: number ? 'El backend devolverá la HCE real persistida.' : 'Complete el documento; la HCE se asignará al guardar.',
+            message: number ? 'La HCE se asigna automáticamente al guardar.' : 'Complete el documento; la HCE se asignará al guardar.',
             pending: true,
         };
     }

@@ -285,7 +285,7 @@
     async function openExisting(row) {
         selectRow(row);
         var previous = snapshotList();
-        var patientId = row.dataset.patientId;
+        var patientId = typeof row === 'string' ? row : row.dataset.patientId;
         var url = root.dataset.detailTemplate.replace('__PATIENT__', encodeURIComponent(patientId));
 
         setNotice('Cargando ficha…', false);
@@ -601,6 +601,7 @@
         }
     });
 
+    if (/^[1-9][0-9]*$/.test(root.dataset.initialPatientId || '')) { openExisting(root.dataset.initialPatientId); }
     addButton.addEventListener('click', openNew);
     backButton.addEventListener('click', showList);
     reniecButton.addEventListener('click', consultReniec);

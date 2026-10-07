@@ -3,7 +3,7 @@
     <div class="agenda-pane-head">
         <div>
             <h2 class="agenda-section-title" id="agenda-quick-title">Registro rápido</h2>
-            <p>Identificación, paciente y agendamiento normal en un solo flujo</p>
+            <p>Registra ahora. Completa la ficha o el adelanto después.</p>
         </div>
         <span class="agenda-quick__mode" id="agenda-quick-mode">Sin selección</span>
     </div>
@@ -43,6 +43,7 @@
                 <span>H.C.E.</span>
                 <strong id="agenda-lookup-clinical-record">—</strong>
             </p>
+            <p><span>Celular</span><strong id="agenda-patient-phone-summary">—</strong></p>
             <input type="hidden" id="agenda-quick-patient-id" value="">
         </div>
 
@@ -51,21 +52,21 @@
             Registrar paciente
         </button>
 
-        <dl class="agenda-quick__context">
-            <div><dt>ID paciente</dt><dd id="agenda-quick-patient-id-display">—</dd></div>
+        <dl class="agenda-quick__context agenda-fast-context">
+            <div class="agenda-context-secondary"><dt>ID paciente</dt><dd id="agenda-quick-patient-id-display">—</dd></div>
             <div><dt>Médico</dt><dd id="agenda-quick-doctor">—</dd></div>
-            <div><dt>Especialidad</dt><dd id="agenda-quick-specialty">—</dd></div>
+            <div class="agenda-context-secondary"><dt>Especialidad</dt><dd id="agenda-quick-specialty">—</dd></div>
             <div><dt>Fecha</dt><dd id="agenda-quick-date">—</dd></div>
             <div><dt>Hora</dt><dd id="agenda-quick-time">Seleccione un intervalo</dd></div>
-            <div><dt>Duración</dt><dd id="agenda-quick-duration">—</dd></div>
-            <div><dt>Sede</dt><dd id="agenda-quick-site">—</dd></div>
-            <div><dt>Servicio</dt><dd id="agenda-quick-service">Pendiente de selección</dd></div>
-            <div><dt>Precio normal</dt><dd id="agenda-quick-price">—</dd></div>
+            <div class="agenda-context-secondary"><dt>Duración</dt><dd id="agenda-quick-duration">—</dd></div>
+            <div class="agenda-context-secondary"><dt>Sede</dt><dd id="agenda-quick-site">—</dd></div>
+            <div class="agenda-context-secondary"><dt>Servicio</dt><dd id="agenda-quick-service">Pendiente de selección</dd></div>
+            <div class="agenda-context-secondary"><dt>Precio normal</dt><dd id="agenda-quick-price">—</dd></div>
             <div><dt>Estado</dt><dd id="agenda-quick-status">Sin cita</dd></div>
             <div><dt>Pago</dt><dd id="agenda-quick-payment">—</dd></div>
-            <div><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
-            <div><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ auth()->user()->name ?? 'Usuario autenticado' }}</dd></div>
-            <div><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Sin asignar</dd></div>
+            <div class="agenda-context-secondary"><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
+            <div class="agenda-context-secondary"><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ auth()->user()->name ?? 'Usuario autenticado' }}</dd></div>
+            <div class="agenda-context-secondary"><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Sin asignar</dd></div>
         </dl>
 
         <div class="agenda-quick__booking-fields">
@@ -91,16 +92,23 @@
 
         <p id="agenda-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</p>
 
-        <div id="agenda-op-workspace-host">@include('scheduling.agenda.partials.operational-registration')</div>
+        <p class="agenda-fast-success" id="agenda-registration-result" role="status" hidden></p>
 
         <p class="agenda-quick__message" id="agenda-quick-message">
             Seleccione médico, fecha, intervalo disponible, paciente y servicio.
         </p>
 
-        <button type="button" class="agenda-btn agenda-btn--primary" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
+        <div class="agenda-fast-actions">
+        @if($canCreateAppointments)<button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled>Guardar reserva</button>@endif
+        <button type="button" class="agenda-btn" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
             Agendar cita
         </button>
 
+        </div>
+        <div class="agenda-secondary-actions"><button id="agenda-open-payment" class="agenda-btn" type="button">Registrar adelanto</button>
+        <button type="button" class="agenda-btn agenda-complete-registration" id="agenda-complete-registration" disabled hidden>Completar ficha</button></div>
+        <p id="agenda-complete-registration-help" hidden>Completa los datos en Pacientes y vuelve a esta Agenda.</p>
+        <div id="agenda-op-workspace-host">@include('scheduling.agenda.partials.operational-registration')</div>
         @if ($canCreateAppointments)
             <button type="button" class="agenda-btn agenda-btn--off-hours" id="agenda-off-hours-start" hidden>Agendar fuera de horario</button>
         @endif
@@ -121,15 +129,6 @@
                 <button type="submit" class="agenda-btn">Reprogramar cita</button>
             </form>
         @endif
-
-        <button type="button" class="agenda-btn agenda-complete-registration"
-            id="agenda-complete-registration" disabled hidden
-            title="Abre la ficha maestra del paciente dentro de Agenda">
-            Completar registro
-        </button>
-        <p class="agenda-complete-registration__help" id="agenda-complete-registration-help" hidden>
-            Actualiza la ficha maestra sin salir de la Agenda.
-        </p>
 
         <details class="agenda-tools">
             <summary>Validar cruce de horario</summary>

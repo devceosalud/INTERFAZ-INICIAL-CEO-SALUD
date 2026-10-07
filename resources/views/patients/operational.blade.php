@@ -18,6 +18,7 @@
         <div class="content-body patients-page">
             <div class="container-fluid patients-page__container">
                 <main class="patients-workspace" id="patients-workspace" data-ui-screen="pacientes"
+                    data-initial-patient-id="{{ $initialPatientId ?? '' }}"
                     data-detail-template="{{ url('/patients/__PATIENT__') }}"
                     data-store-url="{{ route('patients.operational.store') }}"
                     data-update-template="{{ url('/patients/__PATIENT__') }}"
@@ -25,6 +26,10 @@
                     data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
                     data-can-write="{{ $canWritePatients ? '1' : '0' }}"
                     data-today="{{ $filters['fecha'] }}">
+
+                    @if($agendaReturnUrl ?? null)
+                        <a href="{{ $agendaReturnUrl }}" class="patients-views__tab" id="patient-return-agenda">← Volver a Agenda</a>
+                    @endif
 
                     <section class="patients-list-surface" id="patients-list-surface" data-ui-zone="list" aria-labelledby="patients-list-title">
                         <header class="patients-titlebar">

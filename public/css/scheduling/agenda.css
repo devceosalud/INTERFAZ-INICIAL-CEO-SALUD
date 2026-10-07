@@ -2039,3 +2039,48 @@ body.agenda-modal-open {
 .agenda-workflow summary { cursor: pointer; font-weight: 600; }
 .agenda-workflow p, .agenda-workflow small { font-size: 12px; }
 .agenda-workflow-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* Fast registration: essentials first, secondary work on demand. */
+.agenda-operations { overflow-y: auto; background: #fff; border-radius: 10px; }
+.agenda-quick { flex: 0 0 auto; min-height: 190px; overflow: visible; }
+.agenda-quick__body { flex: none; overflow: visible; }
+.agenda-context-secondary { display: none !important; }
+.agenda-fast-context { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px; background: #f5fafb; border-radius: 8px; }
+.agenda-quick__patient { padding: 10px 12px; border-radius: 8px; background: #eef7f7; }
+.agenda-quick__patient strong { overflow-wrap: anywhere; }
+.agenda-fast-actions, .agenda-secondary-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+.agenda-fast-actions .agenda-btn { flex: 1; min-height: 38px; }
+.agenda-secondary-actions .agenda-btn { padding: 5px 10px; color: #146579; border-color: #c9dde2; background: #fff; }
+.agenda-operational-fields > details { border: 0; margin: 6px 0; padding: 0; background: transparent; }
+.agenda-operational-fields > details > summary { padding: 9px 4px; font-weight: 600; color: #446777; }
+.agenda-operational-fields > details[open] { padding: 8px 12px; border: 1px solid #dfebee; border-radius: 9px; background: #fbfdfd; }
+.agenda-op-workspace-host { min-width: 0; }
+.agenda-document-row { display: flex; flex-wrap: wrap; align-items: start; gap: 6px; padding: 7px 0; }
+.agenda-document-row > a { flex: 1; overflow-wrap: anywhere; }
+.agenda-document-row details { max-width: 100%; }
+.agenda-document-row details input { max-width: 100%; }
+.agenda-fast-success { color: #196349; background: #edf8f1; border-radius: 8px; padding: 9px 12px; }
+.agenda-patient-more { padding: 10px 0; margin: 10px 0; color: #526274; }
+.agenda-patient-more summary { margin-bottom: 10px; cursor: pointer; }
+.agenda-patient-dialog__notice { border: 0; background: transparent; padding: 0; }
+.agenda-patient-dialog__hce small { max-width: 190px; }
+.agenda-modal-booking { margin-top: 14px; grid-template-columns: 1fr 1fr; padding: 12px; border-radius: 9px; background: #f0f8fa; }
+.agenda-patient-dialog__actions { flex-wrap: wrap; gap: 8px; }
+.agenda-patient-dialog__actions > span { display: none; }
+.agenda-field__input { min-width: 0; max-width: 100%; }
+.agenda-workflow-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 1100px) { .agenda-workspace { grid-template-columns: minmax(440px, 530px) minmax(0, 1fr); } }
+@media (max-width: 800px) {
+    body.agenda-viewport { position: static; height: auto; overflow: auto; }
+    .agenda-shell-compact .content-body.agenda-page { height: auto; overflow: visible; }
+    .agenda-shell-compact .content-body.agenda-page .agenda-page__container { display: block; height: auto; min-height: 0; }
+    .agenda-commandbar { grid-template-columns: 1fr; overflow: visible; }
+    .agenda-commandbar__filters { grid-template-columns: 1fr 1fr; }
+    .agenda-workspace { display: flex; flex-direction: column; height: auto; flex: none; }
+    .agenda-center { min-height: 620px; }
+    .agenda-operations { max-height: none; overflow: visible; }
+    .agenda-fast-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .agenda-quick__booking-fields, .agenda-modal-booking, .agenda-patient-form-grid { grid-template-columns: minmax(0, 1fr); }
+    .agenda-phone { grid-template-columns: 115px minmax(0, 1fr); }
+    .agenda-patient-dialog { width: calc(100vw - 16px); max-height: 94vh; }
+}

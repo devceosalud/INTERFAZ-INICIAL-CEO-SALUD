@@ -50,7 +50,7 @@
                             </div>
                             @include('scheduling.agenda.partials.quick-registration')
                             @include('scheduling.agenda.partials.withdrawal')
-                            <details class="agenda-workflow"><summary>Seguimiento de reservas <span id="agenda-contingency-badge"></span></summary><div id="agenda-contingency-list" aria-live="polite"></div></details>
+                            <details class="agenda-workflow"><summary>Reservas afectadas por cambios de horario <span id="agenda-contingency-badge"></span></summary><div id="agenda-contingency-list" aria-live="polite"></div></details>
                         </aside>
 
                         <section data-ui-zone="grid" class="agenda-center" aria-labelledby="agenda-title">
@@ -169,6 +169,7 @@
     @include('telemetry.collector')
     <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-withdrawal.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

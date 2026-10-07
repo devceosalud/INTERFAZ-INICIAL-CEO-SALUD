@@ -157,10 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     const hceSupportedTypes = JSON.parse(el.patientDraft.dataset.hceSupportedTypes || '[]');
 
+    const returnContext = window.AgendaPatientNavigation.agendaContext(window.location.search);
+    const initialDate = returnContext.fecha || board.dataset.today;
     const state = {
         view: 'dia',
-        date: board.dataset.today,
-        miniAnchor: firstOfMonth(board.dataset.today),
+        date: initialDate,
+        miniAnchor: firstOfMonth(initialDate),
         compare: false,
         comparisonDoctorId: null,
         legend: {},
@@ -173,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         draft: null,
         appointmentBusy: false,
         serviceDoctorId: null,
-        revealAppointmentId: null,
+        revealAppointmentId: returnContext.appointment_id || null,
         holdingResponsible: false,
         responsibleBeforeExisting: '',
     };
@@ -202,7 +204,10 @@ document.addEventListener('DOMContentLoaded', function () {
             paintIdentity(state.identity); paintDraft(draftModel.discard(scheduleSnapshot()));
             el.responsibleSelect.value = ''; paintResponsible();
             state.revealAppointmentId = String(payload.appointment.appointment_id);
-            await load(); showNotice(payload.message + ' · ' + payload.appointment.tipo_agendamiento);
+            await load();
+            const result = document.getElementById('agenda-registration-result');
+            result.hidden = false; result.textContent = payload.appointment.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'Reserva guardada. Puedes registrar el adelanto o completar la ficha después.' : 'Cita agendada.';
+            showNotice(result.textContent);
         },
     });
     const pendingStart = document.getElementById('agenda-pending-start');
@@ -675,7 +680,9 @@ document.addEventListener('DOMContentLoaded', function () {
         scroller.scrollTop += delta;
 
         if (exact) {
+            const event = state.visibleEvents.find(event => String(event.extendedProps?.appointment_id) === String(state.revealAppointmentId));
             state.revealAppointmentId = null;
+            if (event) { selectInterval(event.extendedProps, exact); }
         }
     }
 
@@ -1070,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.selection = context;
         operationalWorkspace.selectionChanged(context);
         withdrawalWorkspace.select(context.appointment_id, context);
-        if (pendingStart) { pendingStart.disabled = !context.hora_inicio || context.tipo_contexto === 'fuera_horario'; }
+        if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Otra reserva en esta hora' : 'Guardar reserva'; }
         if (offHoursStart) { offHoursStart.hidden = context.tipo_contexto !== 'fuera_horario'; }
         if (rescheduleForm) {
             rescheduleForm.hidden = context.tipo_contexto !== 'cita_existente';
@@ -1187,18 +1194,20 @@ document.addEventListener('DOMContentLoaded', function () {
         el.quickPatientId.value = quick.patientId;
         el.quickPatientIdDisplay.textContent = quick.patientId || '—';
         el.quickPatientState.textContent = quick.patient;
+        operationalWorkspace.patientChanged(quick.patientId);
         el.quickService.textContent = quick.service;
         el.quickPrice.textContent = quick.price || '—';
         el.quickStatus.textContent = quick.status;
         el.quickPayment.textContent = quick.payment;
         el.quickClinicalRecord.textContent = quick.clinicalRecord;
+        el.lookupClinicalRecord.textContent = quick.clinicalRecord || '—';
         el.commercialOwner.textContent = quick.commercial || 'Sin asignar';
         if (el.schedulerUser) {
             el.schedulerUser.textContent = quick.creator || authenticatedScheduler;
         }
         el.completeRegistration.disabled = !quick.showCompleteRegistration;
         el.completeRegistration.hidden = !quick.showCompleteRegistration;
-        el.completeRegistrationHelp.hidden = !quick.showCompleteRegistration;
+        el.completeRegistrationHelp.hidden = true;
         el.completeRegistration.classList.toggle('is-prepared', quick.showCompleteRegistration);
 
         if (quick.mode !== 'Cita existente' && state.identity && state.identity.status) {
@@ -1225,7 +1234,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.patientRegister.disabled = !identity.showRegister;
         el.completeRegistration.hidden = identity.status !== 'found';
         el.completeRegistration.disabled = identity.status !== 'found';
-        el.completeRegistrationHelp.hidden = identity.status !== 'found';
+        el.completeRegistrationHelp.hidden = true;
 
         if (identity.status !== 'not_found') {
             state.draft = null;
@@ -1349,7 +1358,8 @@ document.addEventListener('DOMContentLoaded', function () {
             && state.selection.tipo_contexto === 'slot_libre'
             && state.selection.seleccionable === true;
         const patient = Boolean(el.quickPatientId.value);
-        el.appointmentSubmit.textContent = state.pendingMode ? 'Guardar sin agendar' : state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Agendar cita');
+        if (pendingStart) { pendingStart.disabled = state.appointmentBusy || !state.selection?.hora_inicio || state.selection?.tipo_contexto === 'fuera_horario'; }
+        el.appointmentSubmit.textContent = state.pendingMode ? 'Guardar reserva' : state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Agendar cita');
         el.appointmentSubmit.disabled = !(state.additionalMode ? canAdditional : canCreateAppointments)
             || state.appointmentBusy
             || !slot
@@ -1389,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.patientModal.hidden = !state.draft;
         document.getElementById(state.draft ? 'agenda-op-modal-host' : 'agenda-op-workspace-host').prepend(document.getElementById('agenda-operational-fields'));
         document.getElementById('agenda-op-capture-panel').hidden = Boolean(state.draft);
+        if (state.draft) { document.getElementById('agenda-draft-more').open = false; }
         el.patientModal.setAttribute('aria-hidden', state.draft ? 'false' : 'true');
         document.body.classList.toggle('agenda-modal-open', Boolean(state.draft));
         el.draftRuc.hidden = !state.draft || state.draft.tipo !== 'RUC';
@@ -1400,7 +1411,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         syncModalBooking();
-        el.draftSave.textContent = state.selection?.tipo_contexto === 'cita_existente' ? 'Guardar ficha' : 'Guardar sin agendar';
+        el.draftSave.textContent = state.selection?.tipo_contexto === 'cita_existente' ? 'Guardar ficha' : 'Guardar reserva';
         el.draftSaveSchedule.hidden = state.selection?.tipo_contexto === 'cita_existente';
         el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
         showStoredDraftType(draft.tipo);
@@ -1934,7 +1945,12 @@ document.addEventListener('DOMContentLoaded', function () {
             el.draftCommercialOwner.value = el.responsibleSelect.value;
         }
     });
-    el.completeRegistration.addEventListener('click', openExistingPatient);
+    el.completeRegistration.addEventListener('click', function () {
+        try { window.location.assign(window.AgendaPatientNavigation.patientUrl(el.quickPatientId.value, {
+            appointment_id: state.selection?.appointment_id, doctor_id: state.selection?.doctor_id || effectiveProfessionals()[0]?.id, fecha: state.selection?.fecha || state.date })); }
+        catch (e) { showNotice(e.message); }
+    });
+    document.getElementById('agenda-open-payment').addEventListener('click', () => operationalWorkspace.openPayment());
     el.draftReniec.addEventListener('click', async function () {
         if (!state.draft || !state.draft.reniecOffered) {
             return;
@@ -2167,6 +2183,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    if (returnContext.doctor_id) { el.doctorChecks.forEach(check => { check.checked = check.value === returnContext.doctor_id; }); }
+    el.date.value = initialDate;
     applyDoctorVisibility();
     renderMiniCalendar();
     load();

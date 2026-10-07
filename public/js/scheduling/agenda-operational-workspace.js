@@ -39,12 +39,13 @@
             if (String(id || '') === String(captureId || '')) { return; }
             captureId = id || null; captureDirty = false; const version = ++captureVersion;
             ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => { ui[id].value = ''; });
+            document.getElementById('agenda-patient-phone-summary').textContent = '—';
             if (!id) { return; }
             try {
                 const data = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)));
                 if (version !== captureVersion || captureDirty) { return; }
                 const p = data.patient;
-                ui.phone.value = p.telefono || ''; ui['phone-secondary'].value = p.telefono_secundario || '';
+                ui.phone.value = p.telefono || ''; document.getElementById('agenda-patient-phone-summary').textContent = p.telefono || 'Sin celular'; ui['phone-secondary'].value = p.telefono_secundario || '';
                 ui.channel.value = p.channel_id || ''; ui.medium.value = p.interaction_medium_id || '';
             } catch (e) { config.notice(e.message); }
         }
@@ -70,7 +71,7 @@
                 registrationKey = null; ui.amount.value = '0'; ui.proof.value = ''; ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
                 await config.registered(response);
-            } catch (e) { ui['payment-panel'].open = true; config.notice(e.message, true); }
+            } catch (e) { if (String(e.message).match(/adelanto|pago|operación|saldo|dinero/i)) { ui['payment-panel'].open = true; } config.notice(e.message, true); }
             finally { working = false; config.busy(false); }
         }
         async function documents(id) {
@@ -93,19 +94,20 @@
                     try { await request(base + '/' + id + '/documents/' + d.id, { method: 'DELETE' }); await documents(id); }
                     catch (e) { config.notice(e.message, true); }
                 });
-                if (result.can_write) { row.appendChild(label); if (d.url) { row.appendChild(url); } row.append(save, remove); }
+                if (result.can_write) { const edit = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = 'Editar'; edit.append(summary, label); if (d.url) { edit.append(url); } edit.append(save, remove); row.append(edit); }
                 ui.documents.appendChild(row);
             });
         }
         async function selectionChanged(context) {
             const key = [context?.appointment_id || '', context?.doctor_id || '', context?.fecha || '', context?.hora_inicio || ''].join('|');
-            if (key !== selectedKey) { selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; }
+            if (key !== selectedKey) { selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
             ui['confirm-reservation'].hidden = !id || !config.canCreate || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
             ui.documents.replaceChildren();
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
-            if (!id) { return; }
+            if (!id) { ui.reason.value = ''; ui.note.value = ''; return; }
+            patientChanged(context.patient_id);
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
@@ -119,9 +121,11 @@
             working = true; config.busy(true);
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
-                const response = await request(base + '/' + id + '/payments', json('POST', { request_key: paymentKey, confirm,
-                    payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() }));
-                paymentKey = null; ui.amount.value = '0'; economy(response.economy);
+                const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
+                const body = new FormData(); body.append('payload', JSON.stringify(payload));
+                if (!confirm && ui.proof.files[0]) { body.append('proof', ui.proof.files[0]); }
+                const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
+                paymentKey = null; ui.amount.value = '0'; ui.proof.value = ''; economy(response.economy);
                 await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
             } catch (e) { config.notice(e.message, true); }
             finally { working = false; config.busy(false); }
@@ -146,6 +150,7 @@
             } catch (e) { config.notice(e.message, true); }
             finally { working = false; }
         });
-        return { register, quoteChanged, patientChanged, selectionChanged };
+        function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
+        return { register, quoteChanged, patientChanged, selectionChanged, openPayment };
     };
 }(typeof window !== 'undefined' ? window : globalThis));

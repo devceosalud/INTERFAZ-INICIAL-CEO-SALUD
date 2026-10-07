@@ -30,12 +30,16 @@ class OperationalRegistrationController extends Controller
     }
     public function payment(Request $request, int $appointmentId, \App\Services\Scheduling\ReservationPaymentService $service)
     {
-        $data = $request->validate(['request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
+        if ($request->has('payload')) {
+            $payload = json_decode((string) $request->input('payload'), true);
+            abort_unless(is_array($payload), 422); $request->merge($payload);
+        }
+        $data = $request->validate(['proof' => ['nullable', 'file', new \App\Rules\PrivateAppointmentFile(), 'max:8192'], 'request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
             'payment' => 'nullable|array:amount,method,operation,origin',
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', \Illuminate\Validation\Rule::in(\App\Services\Billing\VoucherPaymentRecorder::METHODS)],
             'payment.operation' => 'nullable|string|max:120', 'payment.origin' => 'nullable|string|max:120']);
-        try { $a = $service->submit($appointmentId, $request->user(), $data); }
+        try { $a = $service->submit($appointmentId, $request->user(), $data, $request->file('proof')); }
         catch (AppointmentSlotUnavailableException $e) { return response()->json(['message' => $e->getMessage()], 409); }
         return response()->json(['appointment' => ['appointment_id' => $a->id, 'estado_agenda' => $a->estado_agenda,
             'tipo_agendamiento' => $a->tipo_agendamiento], 'economy' => app(AppointmentEconomicPosition::class)->publicPosition($a)]);

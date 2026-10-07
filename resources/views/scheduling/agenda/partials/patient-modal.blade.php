@@ -22,37 +22,14 @@
             data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
             data-can-write="{{ $canWritePatients ? '1' : '0' }}"
             data-can-schedule="{{ $canCreateAppointments ? '1' : '0' }}">
-            <div class="agenda-patient-tabs" role="tablist" aria-label="Datos del paciente">
-                <button type="button" role="tab" aria-selected="true" class="is-active" data-patient-tab="essential">Datos esenciales</button>
-                <button type="button" role="tab" aria-selected="false" data-patient-tab="complete">Datos completos</button>
-            </div>
-
             <div class="agenda-patient-dialog__body">
                 <p class="agenda-patient-dialog__notice" id="agenda-draft-note">
-                    La HCE definitiva es asignada y devuelta por el backend al registrar al paciente.
+                    Registra los datos básicos. Puedes completar la ficha después.
                 </p>
                 <p class="agenda-patient-dialog__notice is-warning" id="agenda-draft-ruc" hidden>
                     RUC se registra manualmente, no utiliza RENIEC y todavía no tiene una regla HCE aprobada.
                 </p>
 
-                <div class="agenda-patient-form-grid agenda-modal-booking">
-                    <label class="agenda-field"><span class="agenda-field__label"><span>Servicio <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
-                        <select class="agenda-field__input" id="agenda-draft-service" aria-required="true" aria-describedby="agenda-draft-service-error"></select>
-                        <small id="agenda-draft-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</small>
-                    </label>
-                        <label class="agenda-field">
-                            <span class="agenda-field__label">Comercial dueño</span>
-                            <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>
-                                <option value="">{{ $autoOwner ? 'Automático: '.auth()->user()->name : 'Sin asignar' }}</option>
-                                @foreach ($commercialUsers as $commercial)
-                                    <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
-                                @endforeach
-                            </select>
-                            <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
-                        </label>
-                </div>
-                <div id="agenda-op-modal-host"></div>
-                <label class="agenda-field"><span class="agenda-field__label">Celular secundario · opcional</span><input id="agenda-draft-phone-secondary" class="agenda-field__input" type="tel" maxlength="32" placeholder="+51…"></label>
                 <section class="agenda-patient-tabpanel" data-patient-panel="essential">
                     <div class="agenda-patient-form-grid">
                         <label class="agenda-field">
@@ -68,7 +45,7 @@
                             <input class="agenda-field__input" id="agenda-draft-number" type="text" maxlength="255">
                         </label>
                         <div class="agenda-patient-reniec">
-                            <button type="button" class="agenda-btn" id="agenda-draft-reniec" hidden>Consultar RENIEC</button>
+                            <button type="button" class="agenda-btn" id="agenda-draft-reniec" hidden>Consultar DNI</button>
                         </div>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Nombre</span>
@@ -94,13 +71,35 @@
                             </div>
                         </div>
                         <label class="agenda-field">
-                            <span class="agenda-field__label">Género</span>
+                            <span class="agenda-field__label">Género * · requerido</span>
                             <select class="agenda-field__input" id="agenda-draft-genero">
                                 <option value="">Seleccionar</option>
                                 <option value="HOMBRE">HOMBRE</option>
                                 <option value="MUJER">MUJER</option>
                             </select>
                         </label>
+                    </div>
+                </section>
+
+                <div class="agenda-patient-form-grid agenda-modal-booking">
+                    <label class="agenda-field"><span class="agenda-field__label"><span>Servicio <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
+                        <select class="agenda-field__input" id="agenda-draft-service" aria-required="true" aria-describedby="agenda-draft-service-error"></select>
+                        <small id="agenda-draft-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</small>
+                    </label>
+                        <label class="agenda-field">
+                            <span class="agenda-field__label">Comercial dueño</span>
+                            <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>
+                                <option value="">{{ $autoOwner ? 'Automático: '.auth()->user()->name : 'Sin asignar' }}</option>
+                                @foreach ($commercialUsers as $commercial)
+                                    <option value="{{ $commercial->id }}">{{ $commercial->name }}</option>
+                                @endforeach
+                            </select>
+                            <small>Se registra como responsable comercial de la cita, separado del usuario creador.</small>
+                        </label>
+                </div>
+
+                <details class="agenda-patient-more" id="agenda-draft-more"><summary>Más datos del paciente · opcional</summary>
+                    <div class="agenda-patient-form-grid"><label class="agenda-field"><span class="agenda-field__label">Celular secundario · opcional</span><input id="agenda-draft-phone-secondary" class="agenda-field__input" type="tel" maxlength="32" placeholder="+51…"></label>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Fecha de nacimiento</span>
                             <input class="agenda-field__input" id="agenda-draft-fecha-nacimiento" type="date">
@@ -124,14 +123,8 @@
                             </select>
                         </label>
                     </div>
-                </section>
-
-                <section class="agenda-patient-tabpanel" data-patient-panel="complete" hidden>
+                <section class="agenda-patient-tabpanel" data-patient-panel="complete">
                     <div class="agenda-patient-form-grid">
-                        <label class="agenda-field agenda-field--pending">
-                            <span class="agenda-field__label">Celular alternativo</span>
-                            <input class="agenda-field__input" type="text" disabled placeholder="Pendiente de persistencia">
-                        </label>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Correo electrónico</span>
                             <input class="agenda-field__input" id="agenda-draft-email" type="email" maxlength="255">
@@ -161,13 +154,7 @@
                             <span class="agenda-field__label">Familiar de contacto</span>
                             <input class="agenda-field__input" id="agenda-draft-familiar-contacto" type="text" maxlength="255">
                         </label>
-                        <label class="agenda-field agenda-field--pending">
-                            <span class="agenda-field__label">Teléfono familiar</span>
-                            <input class="agenda-field__input" type="text" disabled placeholder="Pendiente de persistencia">
-                        </label>
-
-
-                        <div class="agenda-field agenda-patient-form-grid__wide">
+<div class="agenda-field agenda-patient-form-grid__wide">
                             <label class="agenda-check">
                                 <input type="checkbox" id="agenda-draft-register-responsible">
                                 <span>Registrar responsable o acompañante</span>
@@ -205,13 +192,11 @@
                                 </div>
                             </div>
                         </div>
-                        <label class="agenda-field agenda-field--pending agenda-patient-form-grid__wide">
-                            <span class="agenda-field__label">Observaciones clínicas opcionales</span>
-                            <textarea class="agenda-field__input" disabled placeholder="Pendiente del modelo clínico / HCE"></textarea>
-                        </label>
-                    </div>
+</div>
                 </section>
 
+                </details>
+                <div id="agenda-op-modal-host"></div>
                 <div class="agenda-patient-dialog__schedule">
                     <span>Médico: <strong id="agenda-draft-context-doctor">—</strong></span>
                     <span>Fecha: <strong id="agenda-draft-context-date">—</strong></span>
@@ -226,7 +211,7 @@
                     {{ $canWritePatients ? 'Guardado habilitado para Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Admisión, Recepción o Comercial.' }}
                 </span>
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
-                <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar sin agendar</button>
+                <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar reserva</button>
                 <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
                     Guardar y agendar
                 </button>

@@ -1083,5 +1083,25 @@
   "hash_policy": {
     "git_blob": "Canonical Git content identity for deployment artifact verification; resolves LF/CRLF checkout differences.",
     "sha256": "Raw working-tree bytes captured when assembling the local RC, before checkout line-ending conversion."
+  },
+  "operational_extension": {
+    "base": "07b73ea6917336446d4f50d38f9edc829eceaa00",
+    "withdrawal_commit": "4d297b5ac82ee83c277fda9f6d0ba50e9973cc7f",
+    "pilot_payment_commit": "22a49ad1aa0b378d4352d2a5421666d251f7aff2",
+    "ux_commit_resolve_with": "git log -1 --format=%H -- docs/OPERATIONAL_REGISTRATION_RELEASE.md",
+    "runtime_source": "Git committed HEAD including these phases supersedes the original pilot snapshot entries for overlapping paths",
+    "migrations": [
+      "2026_10_06_150000_add_operational_registration_and_documents",
+      "2026_10_06_160000_add_appointment_withdrawal_and_history",
+      "2026_10_07_120000_create_appointment_pilot_cash_contexts"
+    ],
+    "qa_report": "docs/OPERATIONAL_REGISTRATION_RELEASE.md",
+    "local_fixtures_cleaned": [
+      202,
+      203,
+      204,
+      220
+    ],
+    "production_contacted": false
   }
 }

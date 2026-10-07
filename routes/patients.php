@@ -10,6 +10,7 @@ Route::middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
     ->prefix('patients')
     ->name('patients.operational.')
     ->group(function () {
+        Route::get('/', [OperationalPatientController::class, 'index'])->name('index');
         Route::post('/reniec-lookup', AgendaReniecLookupController::class)
             ->name('reniec-lookup');
 

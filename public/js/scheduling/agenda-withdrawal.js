@@ -1,8 +1,8 @@
 (function (root, factory) {
-    const api = factory();
+    const api = factory(root);
     if (typeof module === 'object' && module.exports) { module.exports = api; }
     else { root.AgendaWithdrawal = api; }
-}(typeof window !== 'undefined' ? window : globalThis, function () {
+}(typeof window !== 'undefined' ? window : globalThis, function (root) {
     'use strict';
     function moneyLines(rows) {
         return rows.filter(r => Number(r.amount) > 0).map(r => {
@@ -32,7 +32,7 @@
                 id('withdrawal-date').value = context.fecha || context.fecha_cita || '';
                 id('withdrawal-reason').value = ''; id('withdrawal-present').checked = false;
                 id('workflow-events').replaceChildren(); credit.replaceChildren();
-                data.events.forEach(e => { const p = document.createElement('p'); p.textContent = e.type + ' · ' + e.occurred_at + (e.actor ? ' · ' + e.actor : '') + (e.motivo ? ' · ' + e.motivo : '') + (e.related_appointment_id ? ' · Cita #' + e.related_appointment_id : ''); id('workflow-events').append(p); });
+                data.events.forEach(e => { const p = document.createElement('p'); p.textContent = (e.type === 'RETIRO' ? 'Retiro registrado' : e.type === 'REPROGRAMACION_RETIRO' ? 'Nueva cita desde retiro' : e.type.replaceAll('_', ' ').toLowerCase()) + ' · ' + new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(e.occurred_at)) + (e.actor ? ' · ' + e.actor : '') + (e.motivo ? ' · ' + e.motivo : '') + (e.related_appointment_id ? ' · Cita #' + e.related_appointment_id : ''); id('workflow-events').append(p); });
                 data.available_credit.forEach(line => {
                     if (Number(line.amount) <= 0) { return; }
                     const label = document.createElement('label'); label.className = 'agenda-field';
@@ -71,9 +71,9 @@
                 const response = await request(config.inbox); const target = id('contingency-list'); target.replaceChildren();
                 const rows = response.contingencies || []; id('contingency-badge').textContent = rows.length ? '(' + rows.length + ' pendientes)' : '';
                 rows.forEach(row => { const entry = document.createElement('div'); entry.className = 'agenda-document-row';
-                    const notice = document.createElement('span'); notice.textContent = 'El horario cambió · reserva #' + row.appointment_id + ' conservada · ' + row.notified_at;
+                    const notice = document.createElement('span'); notice.textContent = 'Reserva #' + row.appointment_id + ' · ' + row.patient + ' · ' + row.fecha.split('-').reverse().join('/') + ' ' + row.hora + ' · Abierta · ' + row.cause + ' ' + row.pending_action;
                     const note = document.createElement('input'); note.placeholder = 'Resultado del seguimiento humano'; note.maxLength = 2000; note.setAttribute('aria-label', 'Resultado del seguimiento');
-                    const read = document.createElement('button'); read.type = 'button'; read.textContent = 'Marcar leído';
+                    const read = document.createElement('button'); read.type = 'button'; read.textContent = row.read_at ? 'Leído' : 'Marcar como leído'; read.disabled = Boolean(row.read_at);
                     const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Resolver';
                     [read, close].forEach(button => button.addEventListener('click', async () => { try { if (button === close && !note.value.trim()) { throw new Error('Indica el resultado del seguimiento.'); }
                         await request(config.inbox + '/' + row.id, 'PATCH', button === close ? { resolution: note.value } : {}); await feed(payload); } catch (e) { config.notice(e.message); } }));

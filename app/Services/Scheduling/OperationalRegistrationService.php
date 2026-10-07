@@ -87,12 +87,7 @@ class OperationalRegistrationService
                     $a->update(['estado_agenda' => 'CONFIRMADA']);
                 }
                 if ($proof) {
-                    $mime = \App\Rules\PrivateAppointmentFile::mime($proof);
-                    $extension = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'application/pdf' => 'pdf'][$mime];
-                    $storedPath = $proof->storeAs('appointment-documents', Str::uuid().'.'.$extension, 'local');
-                    if (!$storedPath) { throw new \RuntimeException('No se pudo almacenar el comprobante.'); }
-                    $a->documents()->create(['type' => 'PAYMENT_PROOF', 'label' => 'Comprobante de pago', 'private_path' => $storedPath,
-                        'mime' => $mime, 'size' => $proof->getSize(), 'actor_user_id' => $actor->id]);
+                    $storedPath = app(AppointmentProofStorage::class)->store($a, $actor->id, $proof)->private_path;
                 }
                 foreach ($data['links'] ?? [] as $link) { $a->documents()->create(['type' => 'EXTERNAL_LINK', 'label' => $link['label'], 'url' => $link['url'], 'actor_user_id' => $actor->id]); }
                 DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);

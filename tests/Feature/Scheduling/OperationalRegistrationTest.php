@@ -178,4 +178,51 @@ class OperationalRegistrationTest extends TestCase
         $this->pay($id, ['request_key' => (string) Str::uuid(), 'payment' => ['amount' => '1.00', 'method' => 'EFECTIVO']])->assertUnprocessable();
         $this->assertEquals(40, Payment::sum('monto'));
     }
+    public function test_payment_and_private_proof_are_atomic_and_idempotent_in_pilot_mode(): void
+    {
+        Storage::fake('local'); config(['scheduling.pilot_payment_without_manual_cash_shift' => true]);
+        $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
+        $path = tempnam(sys_get_temp_dir(), 'proof');
+        file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHYsAAAAASUVORK5CYII='));
+        try {
+            $payload = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'LOCAL-PROOF-50']];
+            $url = route('scheduling.mvp.agenda.payments', $id);
+            for ($i = 0; $i < 2; $i++) {
+                $this->post($url, ['payload' => json_encode($payload), 'proof' => new UploadedFile($path, 'untrusted.exe', null, null, true)], ['Accept' => 'application/json'])
+                    ->assertOk()->assertJsonPath('economy.pago_real', '50.00');
+            }
+            $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('appointment_documents', 1);
+            $document = \App\Models\AppointmentDocument::firstOrFail();
+            $this->assertSame($id, (int) $document->appointment_id); $this->assertSame('image/png', $document->mime);
+            Storage::disk('local')->assertExists($document->private_path);
+            $this->assertCount(1, Storage::disk('local')->allFiles('appointment-documents'));
+            $payload['request_key'] = (string) Str::uuid(); $payload['payment']['operation'] = 'LOCAL-BAD-PROOF';
+            $this->post($url, ['payload' => json_encode($payload), 'proof' => UploadedFile::fake()->createWithContent('bad.png', '<?php invalid')], ['Accept' => 'application/json'])->assertUnprocessable();
+            $this->assertEquals(50, Payment::sum('monto')); $this->assertDatabaseCount('appointment_documents', 1);
+        } finally { unlink($path); }
+    }
+
+    public function test_failure_after_proof_storage_rolls_back_money_context_and_private_file(): void
+    {
+        Storage::fake('local'); config(['scheduling.pilot_payment_without_manual_cash_shift' => true]);
+        $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
+        $path = tempnam(sys_get_temp_dir(), 'proof');
+        file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHYsAAAAASUVORK5CYII='));
+        \App\Models\AppointmentEvent::creating(function ($event) {
+            if ($event->event_type === 'PAGO_REGISTRADO') { throw new \RuntimeException('QA failure after storage'); }
+        });
+        try {
+            $this->withoutExceptionHandling();
+            try {
+                $this->post(route('scheduling.mvp.agenda.payments', $id), ['payload' => json_encode(['request_key' => (string) Str::uuid(), 'confirm' => false,
+                    'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]), 'proof' => new UploadedFile($path, 'proof.png', null, null, true)], ['Accept' => 'application/json']);
+                $this->fail('The simulated history failure must propagate.');
+            } catch (\RuntimeException $error) { $this->assertSame('QA failure after storage', $error->getMessage()); }
+            $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);
+            $this->assertDatabaseCount('appointment_pilot_cash_contexts', 0); $this->assertDatabaseCount('appointment_documents', 0);
+            $this->assertSame([], Storage::disk('local')->allFiles('appointment-documents'));
+            $this->assertEquals(0, Appointment::findOrFail($id)->total_pagado);
+        } finally { \App\Models\AppointmentEvent::flushEventListeners(); unlink($path); }
+    }
+
 }

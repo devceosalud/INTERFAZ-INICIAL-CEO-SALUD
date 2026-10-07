@@ -16,11 +16,12 @@ use Illuminate\Validation\ValidationException;
 
 class ReservationPaymentService
 {
-    public function submit(int $id, User $actor, array $data): Appointment
+    public function submit(int $id, User $actor, array $data, ?\Illuminate\Http\UploadedFile $proof = null): Appointment
     {
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
-        return DB::transaction(function () use ($original, $id, $actor, $data) {
-            $hash = hash('sha256', json_encode([$id, $data]));
+        unset($data['proof']); $storedPath = null;
+        try { return DB::transaction(function () use ($original, $id, $actor, $data, $proof, &$storedPath) {
+            $hash = hash('sha256', json_encode([$id, $data]).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
             DB::table('appointment_operations')->insertOrIgnore(['actor_user_id' => $actor->id, 'request_key' => $data['request_key'],
                 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
             $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
@@ -67,10 +68,17 @@ class ReservationPaymentService
                 catch (\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e) { $type = 'ADICIONAL'; }
                 $a->update(['estado_agenda' => 'CONFIRMADA', 'tipo_agendamiento' => $type]);
             }
+            if ($proof) {
+                abort_unless($amount > 0 && $actor->can(Capability::SUBMIT_PAYMENT), 403);
+                $storedPath = app(AppointmentProofStorage::class)->store($a, $actor->id, $proof)->private_path;
+            }
             DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
             app(AppointmentHistory::class)->record($a, $amount > 0 ? 'PAGO_REGISTRADO' : 'CONFIRMACION_AGENDA', $actor->id,
                 ['metadata' => ['operation_id' => $op->id, 'amount' => Money::decimal($amount), 'tipo_agendamiento' => $a->tipo_agendamiento]]);
             return $a;
-        }, 3);
+        }); } catch (\Throwable $error) {
+            if ($storedPath) { \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath); }
+            throw $error;
+        }
     }
 }

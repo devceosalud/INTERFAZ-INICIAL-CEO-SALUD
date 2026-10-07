@@ -7,7 +7,6 @@ use App\Models\AppointmentDocument;
 use App\Support\Scheduling\SchedulingCapability as Capability;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class AppointmentDocumentController extends Controller
 {
@@ -43,18 +42,12 @@ class AppointmentDocumentController extends Controller
         $data = $r->validate(['label' => 'required|string|max:120', 'url' => 'nullable|url|max:2048|starts_with:https://|required_without:file',
             'file' => ['nullable', 'file', new \App\Rules\PrivateAppointmentFile(), 'max:8192', 'required_without:url']]);
         abort_if($r->filled('url') && $r->hasFile('file'), 422, 'Adjunta un archivo o un link por documento.');
-        $path = null;
-        try {
-            $attributes = ['type' => 'EXTERNAL_LINK', 'label' => $data['label'], 'url' => $data['url'] ?? null, 'actor_user_id' => $r->user()->id];
-            if ($r->hasFile('file')) {
-                $file = $r->file('file'); $mime = \App\Rules\PrivateAppointmentFile::mime($file); $extension = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'application/pdf' => 'pdf'][$mime];
-                $path = $file->storeAs('appointment-documents', Str::uuid().'.'.$extension, 'local');
-                abort_unless($path, 503);
-                $attributes += ['private_path' => $path, 'mime' => $mime, 'size' => $file->getSize()]; $attributes['type'] = 'PAYMENT_PROOF';
-            }
-            return response()->json($this->payload($a->documents()->create($attributes)), 201);
-        } catch (\Throwable $e) { if ($path) { Storage::disk('local')->delete($path); } throw $e; }
+        $document = $r->hasFile('file')
+            ? app(\App\Services\Scheduling\AppointmentProofStorage::class)->store($a, $r->user()->id, $r->file('file'), $data['label'])
+            : $a->documents()->create(['type' => 'EXTERNAL_LINK', 'label' => $data['label'], 'url' => $data['url'], 'actor_user_id' => $r->user()->id]);
+        return response()->json($this->payload($document), 201);
     }
+
     public function update(Request $r, int $appointmentId, int $documentId)
     {
         $d = $this->appointment($r, $appointmentId, true)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));

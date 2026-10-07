@@ -69,7 +69,29 @@ class OperationalPatientController extends Controller
             // silently mapped to fecha_registro or fecha_cita.
             'fecha' => ['nullable', 'date_format:Y-m-d'],
             'vista' => ['nullable', 'string', Rule::in(['pendientes'])],
+            'patient_id' => ['nullable', 'integer', 'min:1'],
+            'appointment_id' => ['nullable', 'integer', 'min:1'],
+            'doctor_id' => ['nullable', 'integer', 'min:1'],
+            'agenda_date' => ['nullable', 'date_format:Y-m-d'],
+            'from_agenda' => ['nullable', 'boolean'],
         ]);
+
+        $initialPatientId = $filters['patient_id'] ?? null;
+        $agendaReturnUrl = null;
+        if ($filters['from_agenda'] ?? false) {
+            $cap = \App\Support\Scheduling\SchedulingCapability::class;
+            abort_unless(config('scheduling.enabled') && $request->user()->can($cap::MVP_ACCESS) && $request->user()->can($cap::VIEW), 403);
+            $context = ['doctor_id' => $filters['doctor_id'] ?? null, 'fecha' => $filters['agenda_date'] ?? null];
+            if (!empty($filters['appointment_id'])) {
+                $appointment = Appointment::visibleToAgendaUser($request->user()->id)->whereKey($filters['appointment_id'])
+                    ->where('patient_id', $initialPatientId)->firstOr(fn () => abort(404));
+                $context = ['doctor_id' => $appointment->doctor_id, 'fecha' => substr($appointment->fecha_cita, 0, 10), 'appointment_id' => $appointment->id];
+            }
+            $agendaReturnUrl = route('scheduling.mvp.agenda', array_filter($context));
+        } elseif (!empty($filters['appointment_id'])) {
+            abort(422, 'El contexto de cita requiere navegación desde Agenda.');
+        }
+        if ($initialPatientId) { Patient::findOrFail($initialPatientId); }
 
         $filters = array_merge([
             'tipo_documento' => null,
@@ -153,6 +175,8 @@ class OperationalPatientController extends Controller
             'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'canWritePatients' => PatientWriteAccess::allows($request->user()),
+            'initialPatientId' => $initialPatientId,
+            'agendaReturnUrl' => $agendaReturnUrl,
         ]);
     }
 
@@ -169,6 +193,7 @@ class OperationalPatientController extends Controller
             'apellido_paterno',
             'apellido_materno',
             'telefono',
+            'telefono_secundario',
             'email',
             'fecha_nacimiento',
             'genero',
