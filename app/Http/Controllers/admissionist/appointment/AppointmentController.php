@@ -119,7 +119,7 @@ class AppointmentController extends Controller
 
         $turno = null;
         if ($request->total_pagado > 0) {
-            $turno = CashierShift::where('user_id', auth()->id())
+            $turno = CashierShift::manual()->where('user_id', auth()->id())
                 ->where('estado', 'ABIERTO')
                 ->latest('abierto_en')
                 ->first();

@@ -71,7 +71,7 @@ class OperationalRegistrationService
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
                 if ($amount > 0) {
                     abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403);
-                    $tickets = app(AppointmentTicketService::class); $shift = $tickets->openShift($actor->id);
+                    $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                     $v = $tickets->create($a, $shift, $actor->id);
                     app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,
                         $data['payment']['method'] ?? '', $data['payment']['operation'] ?? null, $data['payment']['origin'] ?? null);

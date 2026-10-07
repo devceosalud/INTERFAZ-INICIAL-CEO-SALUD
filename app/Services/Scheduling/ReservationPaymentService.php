@@ -38,7 +38,7 @@ class ReservationPaymentService
                 if ($p['authority'] === 'LEGACY_SNAPSHOT' && $p['paid_cents'] > 0) {
                     throw ValidationException::withMessages(['payment' => 'Reconciliar primero el adelanto histórico sin vouchers. No se duplicará ese dinero.']);
                 }
-                $tickets = app(AppointmentTicketService::class); $shift = $tickets->openShift($actor->id);
+                $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                 $matches = Voucher::where('tipo_comprobante', 'TICKET')->where('estado', '<>', 'ANULADO')
                     ->whereHas('items', fn ($q) => $q->whereIn('item_type', ['cita', Appointment::class])->where('item_id', $a->id))->lockForUpdate()->get();
                 if ($matches->count() > 1 || ($matches->count() === 1 && ($matches->first()->items()->count() !== 1 || $matches->first()->childVouchers()->exists()))) {

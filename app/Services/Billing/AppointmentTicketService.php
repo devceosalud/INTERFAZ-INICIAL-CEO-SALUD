@@ -12,11 +12,16 @@ class AppointmentTicketService
 {
     public function openShift(int $actor): CashierShift
     {
-        $shifts = CashierShift::where('user_id', $actor)->where('estado', 'ABIERTO')->lockForUpdate()->get();
+        $shifts = CashierShift::manual()->where('user_id', $actor)->where('estado', 'ABIERTO')->lockForUpdate()->get();
         if ($shifts->count() !== 1) {
             throw ValidationException::withMessages(['payment' => 'Se requiere un único turno de caja propio abierto para registrar dinero.']);
         }
         return $shifts->first();
+    }
+    public function agendaShift(int $actor): CashierShift
+    {
+        return config('scheduling.pilot_payment_without_manual_cash_shift')
+            ? app(PilotAppointmentCashContext::class)->resolve($actor) : $this->openShift($actor);
     }
     public function create(Appointment $a, CashierShift $shift, int $actor): Voucher
     {

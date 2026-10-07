@@ -12,6 +12,8 @@ return [
     */
     'enabled' => (bool) env('SCHEDULING_MVP_ENABLED', false),
 
+    'pilot_payment_without_manual_cash_shift' => (bool) env('SCHEDULING_PILOT_PAYMENT_WITHOUT_MANUAL_CASH_SHIFT', false),
+
     /*
     |--------------------------------------------------------------------------
     | Operational timezone

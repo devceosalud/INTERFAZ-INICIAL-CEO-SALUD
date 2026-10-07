@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class CashierShift extends Model
 {
+    public function scopeManual($query)
+    {
+        if (\Illuminate\Support\Facades\Schema::hasTable('appointment_pilot_cash_contexts')) {
+            $query->whereNotIn('cashier_shifts.id', \Illuminate\Support\Facades\DB::table('appointment_pilot_cash_contexts')->select('cashier_shift_id'));
+        }
+        return $query;
+    }
     use HasFactory;
 
     // No necesita $table: "CashierShift" -> "cashier_shifts" calza solo.

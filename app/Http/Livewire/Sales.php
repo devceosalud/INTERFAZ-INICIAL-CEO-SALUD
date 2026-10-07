@@ -87,7 +87,7 @@ class Sales extends Component
     {
         $this->requireRole('RECEPCION');
 
-        $this->turno = CashierShift::where('user_id', auth()->id())
+        $this->turno = CashierShift::manual()->where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
             ->first();
@@ -102,7 +102,7 @@ class Sales extends Component
 
     public function getSeriePreviewProperty()
     {
-        $serie = VoucherSerie::where('tipo_comprobante', $this->tipoComprobante)
+        $serie = VoucherSerie::where('cashier_id', $this->turno?->cashier_id ?? 0)->where('tipo_comprobante', $this->tipoComprobante)
             ->where('estado', 'ACTIVO')
             ->first();
 

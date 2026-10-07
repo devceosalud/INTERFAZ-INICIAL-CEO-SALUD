@@ -27,7 +27,7 @@
         </div>
         <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Exoneración autorizada</label>
         <small>La autorización no registra dinero. Para asegurar una regular se necesita adelanto real ≥50%.</small>
-        @unless($canSubmitPayment)<p>Registro de dinero requiere permiso y turno de caja propio abierto. Puedes guardar una reserva privada.</p>@endunless
+        @unless($canSubmitPayment)<p>No tienes permiso para registrar adelantos. Puedes guardar una reserva.</p>@endunless
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
         <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden>Confirmar agenda</button>
     </details>

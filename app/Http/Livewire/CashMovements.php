@@ -42,7 +42,7 @@ class CashMovements extends Component
     {
         $this->requireRole('RECEPCION');
 
-        $this->turno = CashierShift::where('user_id', auth()->id())
+        $this->turno = CashierShift::manual()->where('user_id', auth()->id())
             ->where('estado', 'ABIERTO')
             ->latest('abierto_en')
             ->first();
@@ -73,6 +73,7 @@ class CashMovements extends Component
 
     public function guardar()
     {
+        if ($this->turno) { abort_unless(CashierShift::manual()->whereKey($this->turno->id)->where('user_id', auth()->id())->where('estado', 'ABIERTO')->exists(), 403); }
         if (!$this->turno) {
             session()->flash('error', 'No tienes un turno de caja abierto.');
             return;
@@ -111,6 +112,7 @@ class CashMovements extends Component
 
     public function editar(?int $id)
     {
+        if ($this->turno) { abort_unless(CashierShift::manual()->whereKey($this->turno->id)->where('user_id', auth()->id())->where('estado', 'ABIERTO')->exists(), 403); }
         if (!$this->turno) {
             return;
         }
@@ -131,6 +133,7 @@ class CashMovements extends Component
 
     public function eliminar(?int $id)
     {
+        if ($this->turno) { abort_unless(CashierShift::manual()->whereKey($this->turno->id)->where('user_id', auth()->id())->where('estado', 'ABIERTO')->exists(), 403); }
         if (!$this->turno) {
             return;
         }
