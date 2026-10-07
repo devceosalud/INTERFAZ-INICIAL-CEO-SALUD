@@ -20,7 +20,9 @@ class VoucherPaymentRecorder
             || (int) $shift->user_id !== $actor || $shift->estado !== 'ABIERTO') {
             throw ValidationException::withMessages(['payment' => 'Pago inválido: verifica método, operación y turno propio abierto.']);
         }
-        if ($method !== 'EFECTIVO' && $voucher->payments()->where('metodo_pago', $method)->where('numero_operacion', $operation)->exists()) {
+        $rootId = $voucher->parent_voucher_id ?: $voucher->id;
+        $family = Voucher::where('id', $rootId)->orWhere('parent_voucher_id', $rootId)->pluck('id');
+        if ($method !== 'EFECTIVO' && Payment::whereIn('voucher_id', $family)->where('metodo_pago', $method)->where('numero_operacion', $operation)->exists()) {
             throw ValidationException::withMessages(['payment.operation' => 'Esta operación ya está registrada en el ticket. No se duplicó el pago.']);
         }
         return $voucher->payments()->create(['metodo_pago' => $method, 'monto' => Money::decimal($cents),

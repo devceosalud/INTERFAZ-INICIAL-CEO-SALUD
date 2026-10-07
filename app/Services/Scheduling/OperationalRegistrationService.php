@@ -96,6 +96,8 @@ class OperationalRegistrationService
                 }
                 foreach ($data['links'] ?? [] as $link) { $a->documents()->create(['type' => 'EXTERNAL_LINK', 'label' => $link['label'], 'url' => $link['url'], 'actor_user_id' => $actor->id]); }
                 DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
+                app(AppointmentHistory::class)->record($a, 'REGISTRO_OPERATIVO', $actor->id,
+                    ['metadata' => ['mode' => $data['mode'], 'operation_id' => $op->id]]);
                 return $a;
             });
         } catch (\Throwable $e) {

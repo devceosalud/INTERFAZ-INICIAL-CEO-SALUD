@@ -109,7 +109,8 @@
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                economy(p); await documents(id);
+                economy(p); ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
+                ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado); await documents(id);
             } catch (e) { config.notice(e.message, true); }
         }
         async function submitPayment(confirm) {

@@ -206,6 +206,9 @@ document.addEventListener('DOMContentLoaded', function () {
         },
     });
     const pendingStart = document.getElementById('agenda-pending-start');
+    const withdrawalWorkspace = window.AgendaWithdrawal.start({ base: board.dataset.rescheduleUrl,
+        inbox: '/scheduling-mvp/agenda/contingencies', canWorkflow: board.dataset.canWorkflow === '1',
+        error: appointmentCreateModel.validationMessage, notice: showNotice, refresh: load });
 
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
@@ -470,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             state.payload = await response.json();
+            withdrawalWorkspace.feed(state.payload);
             state.legend = {};
             (state.payload.leyenda || []).forEach((entry) => {
                 state.legend[entry.clave] = entry;
@@ -1019,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (offHoursStart) { offHoursStart.hidden = true; }
         state.selection = null;
         operationalWorkspace.selectionChanged(null);
+        withdrawalWorkspace.select(null);
         configureServices(null);
         document.querySelectorAll('.agenda-calendar-event--appointment.is-selected, .agenda-day-row.is-selected, .agenda-day-entry.is-selected')
             .forEach((node) => node.classList.remove('is-selected'));
@@ -1064,6 +1069,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.pendingMode = false;
         state.selection = context;
         operationalWorkspace.selectionChanged(context);
+        withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.disabled = !context.hora_inicio || context.tipo_contexto === 'fuera_horario'; }
         if (offHoursStart) { offHoursStart.hidden = context.tipo_contexto !== 'fuera_horario'; }
         if (rescheduleForm) {

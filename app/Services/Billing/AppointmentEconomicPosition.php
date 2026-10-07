@@ -36,6 +36,7 @@ class AppointmentEconomicPosition
             foreach ($vouchers as $v) {
                 if (!$linked->contains($v->id) && !$linked->contains($v->parent_voucher_id)) { continue; }
                 if (!in_array($v->tipo_comprobante, ['TICKET', 'BOLETA', 'FACTURA'], true) || $v->estado === 'ANULADO') { continue; }
+                if ($v->parent_voucher_id && !$vouchers->has($v->parent_voucher_id)) { $ambiguous = true; }
                 $lines = $items->get($v->id, collect());
                 $only = $lines->count() === 1 && in_array($lines->first()->item_type, ['cita', Appointment::class], true)
                     && (int) $lines->first()->item_id === (int) $a->id;

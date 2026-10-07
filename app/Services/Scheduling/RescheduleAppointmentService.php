@@ -61,7 +61,10 @@ class RescheduleAppointmentService
                     throw new AppointmentSlotUnavailableException('El destino cambió de clasificación. Revisa el horario antes de continuar.');
                 }
             }
+            $former = $appointment->only(['fecha_cita', 'hora_cita', 'tipo_agendamiento']);
             $appointment->update($changes);
+            app(AppointmentHistory::class)->record($appointment, 'REPROGRAMADA', $actorId,
+                ['metadata' => ['from' => $former, 'to' => $changes]]);
 
             return $appointment;
         }, 3);

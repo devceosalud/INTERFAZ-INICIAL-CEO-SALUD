@@ -28,6 +28,8 @@
                     data-feed="{{ route('scheduling.mvp.agenda.feed') }}"
                     data-appointment-store="{{ route('scheduling.mvp.agenda.appointments.store') }}"
                     data-can-create-appointments="{{ $canCreateAppointments ? '1' : '0' }}"
+                    data-can-workflow="{{ $canWorkflow ? '1' : '0' }}"
+                    data-can-audit="{{ $canAudit ? '1' : '0' }}"
                     data-additional-store="{{ route('scheduling.mvp.agenda.appointments.additional') }}"
                     data-reschedule-url="{{ url('/scheduling-mvp/agenda/appointments') }}"
                     data-can-reschedule="{{ $canRescheduleAppointments ? '1' : '0' }}"
@@ -47,6 +49,8 @@
                                 @include('scheduling.agenda.partials.mini-calendar')
                             </div>
                             @include('scheduling.agenda.partials.quick-registration')
+                            @include('scheduling.agenda.partials.withdrawal')
+                            <details class="agenda-workflow"><summary>Seguimiento de reservas <span id="agenda-contingency-badge"></span></summary><div id="agenda-contingency-list" aria-live="polite"></div></details>
                         </aside>
 
                         <section data-ui-zone="grid" class="agenda-center" aria-labelledby="agenda-title">
@@ -134,6 +138,7 @@
                                 @endforeach
                             </div>
                             <p class="agenda-center__foot" id="agenda-detail-hint"></p>
+                            <details id="agenda-withdrawal-history" hidden><summary>Retiros previos · horario liberado <span id="agenda-withdrawal-count"></span></summary><div id="agenda-withdrawal-history-list"></div></details>
                         </section>
                     </div>
 
@@ -164,5 +169,6 @@
     @include('telemetry.collector')
     <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
+    <script src="{{ asset('js/scheduling/agenda-withdrawal.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
 @endsection

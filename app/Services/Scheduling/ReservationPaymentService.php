@@ -59,7 +59,7 @@ class ReservationPaymentService
                 'updated_by_user_id' => $actor->id]);
             if (($data['confirm'] ?? true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
-                if (!$p['secured'] && !$a->es_exonerado) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
+                if (!$p['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true);
                 $type = 'REGULAR';
@@ -68,6 +68,8 @@ class ReservationPaymentService
                 $a->update(['estado_agenda' => 'CONFIRMADA', 'tipo_agendamiento' => $type]);
             }
             DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
+            app(AppointmentHistory::class)->record($a, $amount > 0 ? 'PAGO_REGISTRADO' : 'CONFIRMACION_AGENDA', $actor->id,
+                ['metadata' => ['operation_id' => $op->id, 'amount' => Money::decimal($amount), 'tipo_agendamiento' => $a->tipo_agendamiento]]);
             return $a;
         }, 3);
     }

@@ -162,7 +162,7 @@ class PendingPatientChartQuery
 
         AppointmentVisibility::apply($appointments, $actorId, $table)
             ->whereColumn($table.'.patient_id', 'patients.id')
-            ->whereNotIn($table.'.estado_cita', ['CANCELADO', 'NO_ASISTIO'])
+            ->whereNotIn($table.'.estado_cita', ['CANCELADO', 'NO_ASISTIO', 'RETIRO'])
             ->where(function (QueryBuilder $future) use ($day, $time, $table): void {
                 $future->where($table.'.fecha_cita', '>', $day)
                     ->orWhere(function (QueryBuilder $laterToday) use ($day, $time, $table): void {

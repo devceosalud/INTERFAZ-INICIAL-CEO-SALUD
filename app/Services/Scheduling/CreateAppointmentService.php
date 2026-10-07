@@ -90,7 +90,7 @@ class CreateAppointmentService
                         );
                     }
 
-                    return Appointment::create([
+                    $appointment = Appointment::create([
                         'numero_cita' => $this->numbers->generate($attempt),
                         'site_id' => $data->siteId,
                         'user_id' => $data->creatorUserId,
@@ -120,6 +120,8 @@ class CreateAppointmentService
                         'economic_source' => $data->operational['economic_source'] ?? 'LEGACY',
                         'fecha_registro' => now()->toDateString(),
                     ]);
+                    app(AppointmentHistory::class)->record($appointment, $pending ? 'RESERVA_CREADA' : 'CITA_CREADA', $data->creatorUserId);
+                    return $appointment;
                 }, 3);
             } catch (QueryException $exception) {
                 if (! $this->isAppointmentNumberCollision($exception) || $attempt === self::NUMBER_ATTEMPTS) {

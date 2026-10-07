@@ -189,7 +189,7 @@ class SchedulingDataFoundationTest extends TestCase
             'appointment_holds',
             'appointment_authorizations',
             'appointment_payment_evidences',
-            'appointment_events',
+            // appointment_events belongs to the now implemented withdrawal increment.
             'appointment_responsibility_changes',
             'appointment_scheduling_details',
             'agenda_day_locks',

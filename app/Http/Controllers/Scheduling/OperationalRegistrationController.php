@@ -26,7 +26,7 @@ class OperationalRegistrationController extends Controller
     public function economy(Request $request, int $appointmentId, AppointmentEconomicPosition $position)
     {
         $a = Appointment::visibleToAgendaUser($request->user()->id)->whereKey($appointmentId)->firstOr(fn () => abort(404));
-        return response()->json($position->publicPosition($a));
+        return response()->json($position->publicPosition($a) + $a->only(['motivo_consulta', 'observaciones', 'es_exonerado', 'autorizado_por']));
     }
     public function payment(Request $request, int $appointmentId, \App\Services\Scheduling\ReservationPaymentService $service)
     {

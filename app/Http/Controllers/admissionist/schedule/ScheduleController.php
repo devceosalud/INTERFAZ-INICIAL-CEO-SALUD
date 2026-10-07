@@ -33,7 +33,7 @@ class ScheduleController extends Controller
             // Compared as dates: binding datetimes against a date column silently dropped
             // every appointment falling on the first day of the requested range.
             ->whereBetween('fecha_cita', [$inicioRango->toDateString(), $finRango->toDateString()])
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'ATENDIDO', 'REEVALUACION']);
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'RETIRO', 'ATENDIDO', 'REEVALUACION']);
 
         if ($request->specialty_id) {
             $appointment->whereHas('service', function ($query) use ($request) {

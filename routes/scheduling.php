@@ -21,6 +21,19 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/history', [$workflow, 'history'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.history');
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/withdraw', [$workflow, 'withdraw'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.withdraw');
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/rebook-withdrawal', [$workflow, 'rebook'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.rebook-withdrawal');
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/refund-requests', [$workflow, 'refund'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.refund-requests');
+        Route::get('/scheduling-mvp/agenda/contingencies', [\App\Http\Controllers\Scheduling\AppointmentContingencyController::class, 'index'])
+            ->name('scheduling.mvp.agenda.contingencies');
+        Route::patch('/scheduling-mvp/agenda/contingencies/{id}', [\App\Http\Controllers\Scheduling\AppointmentContingencyController::class, 'update'])
+            ->whereNumber('id')->name('scheduling.mvp.agenda.contingencies.update');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
         Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/documents')->whereNumber('appointmentId')->group(function () {

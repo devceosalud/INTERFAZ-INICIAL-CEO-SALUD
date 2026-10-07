@@ -72,6 +72,13 @@ class AgendaBoardPresenter
             'rango' => $range->toArray(),
             'site_id' => $siteId,
             'comparando' => $compareProfessionals,
+            // Historical withdrawals are separate from the current occupants and capacity.
+            'retiros' => Appointment::visibleToAgendaUser($actorId)->where('estado_cita', 'RETIRO')
+                ->whereIn('doctor_id', $agenda->doctorIds())->whereBetween('fecha_cita', [$range->start()->toDateString(), $range->end()->toDateString()])
+                ->when($siteId !== null, fn ($q) => $q->where(fn ($s) => $s->where('site_id', $siteId)->orWhereNull('site_id')))
+                ->with('patient:id,nombre,apellido_paterno,apellido_materno')->orderByDesc('fecha_cita')->orderBy('hora_cita')->limit(100)->get()
+                ->map(fn ($a) => ['appointment_id' => $a->id, 'fecha' => substr($a->fecha_cita, 0, 10), 'hora' => substr($a->hora_cita, 0, 5),
+                    'patient' => trim($a->patient->apellido_paterno.' '.$a->patient->apellido_materno.' '.$a->patient->nombre), 'duracion' => $a->duracion_cita])->all(),
             'profesionales' => $professionals->all(),
             'eventos' => $this->events(
                 $professionals,

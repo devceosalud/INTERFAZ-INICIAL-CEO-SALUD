@@ -80,7 +80,7 @@
                                         <button wire:click="liquidarTicket({{ $t->id }})"
                                             class="btn btn-sm btn-warning">Liquidar
                                             {{ $t->serie }}-{{ $t->correlativo }} (falta S/
-                                            {{ number_format($t->saldo_pendiente, 2) }})
+                                            {{ number_format($t->agenda_saldo ?? $t->saldo_pendiente, 2) }})
                                         </button>
                                     @endforeach
                                 </div>

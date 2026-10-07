@@ -2035,3 +2035,7 @@ body.agenda-modal-open {
 .agenda-operational-fields small { display: block; margin-top: 4px; color: var(--agenda-muted); }
 .agenda-document-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 6px 0; }
 .agenda-document-row input { min-width: 100px; max-width: 100%; }
+.agenda-workflow { margin-top: 10px; padding: 10px; border: 1px solid #d8e0e7; border-radius: 8px; background: #fff; }
+.agenda-workflow summary { cursor: pointer; font-weight: 600; }
+.agenda-workflow p, .agenda-workflow small { font-size: 12px; }
+.agenda-workflow-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }

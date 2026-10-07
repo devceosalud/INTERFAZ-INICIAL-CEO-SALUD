@@ -121,6 +121,7 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->postAppointment(['site_id' => $site->id])->assertCreated();
         $this->assertSame($site->id, (int) Appointment::sole()->site_id);
 
+        \App\Models\AppointmentEvent::query()->delete(); // Only isolated fixtures; runtime history remains immutable.
         Appointment::query()->delete();
         $this->catalog['schedule']->update(['site_id' => null]);
         $this->postAppointment(['site_id' => null])->assertCreated();

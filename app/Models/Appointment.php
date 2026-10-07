@@ -10,6 +10,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    public function events() { return $this->hasMany(AppointmentEvent::class); }
+    public function save(array $options = [])
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($options) {
+            if ($this->exists) {
+                $ids = array_filter([$this->getOriginal('doctor_id'), $this->doctor_id]);
+                Doctor::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get();
+                $current = static::whereKey($this->id)->lockForUpdate()->firstOrFail();
+                if (!in_array($current->doctor_id, $ids)) { throw new \RuntimeException('La cita cambió de médico; actualiza antes de modificar.'); }
+                if ($current->estado_cita === 'RETIRO' && $this->isDirty(['estado_cita', 'fecha_cita', 'hora_cita', 'patient_id', 'doctor_id',
+                    'service_id', 'responsible_user_id', 'user_id', 'precio_programado', 'total_pagado', 'tipo_agendamiento', 'estado_agenda'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['appointment' => 'RETIRO conserva la cita original. Usa el flujo de nueva cita/crédito/devolución.']);
+                }
+            }
+            return parent::save($options);
+        });
+    }
+    protected static function booted()
+    {
+        static::updating(function (Appointment $a) {
+            if ($a->isDirty('estado_cita') && $a->estado_cita === 'RETIRO' && !$a->events()->where('event_type', 'RETIRO')->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['appointment' => 'Registra RETIRO mediante el flujo con motivo, actor y presencia.']);
+            }
+        });
+    }
     use HasFactory;
 
     protected $fillable = [

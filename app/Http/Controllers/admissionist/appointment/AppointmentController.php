@@ -44,7 +44,7 @@ class AppointmentController extends Controller
             Carbon::now()->addMonth()->endOfMonth()
         ])
             ->where('fecha_cita', 'LIKE', '%' . $day . '%')
-            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'REEVALUACION'])
+            ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'RETIRO', 'REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
         //DESC : DE MAYOR A MENOR
         //ASC : DE MENOR A MAYOR

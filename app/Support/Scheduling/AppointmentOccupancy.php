@@ -12,12 +12,12 @@ namespace App\Support\Scheduling;
 class AppointmentOccupancy
 {
     /**
-     * States that release the slot. Only these two: the appointment either never happened
-     * because it was cancelled, or the patient did not come.
+     * Released care states. RETIRO retains historical arrival/withdrawal separately.
      */
     public const RELEASING_STATES = [
         'CANCELADO',
         'NO_ASISTIO',
+        'RETIRO',
     ];
 
     /**

@@ -217,6 +217,7 @@ class SchedulingMvpFoundationTest extends TestCase
             'appointment.view',
             'appointment.create',
             'appointment.update',
+            'appointment.withdraw',
             'appointment.reschedule',
             'appointment.responsible.assign',
             'appointment.hold.create',
