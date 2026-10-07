@@ -162,7 +162,7 @@ test('un fallo de RENIEC conserva el formulario y el horario', () => {
     assert.equal(failed.numero, '70000009');
     assert.equal(failed.time, schedule.time);
     assert.equal(failed.date, schedule.date);
-    assert.match(failed.message, /registro manual/);
+    assert.match(failed.message, /Completa los datos manualmente/);
 });
 
 test('cambiar el documento descarta el borrador y el patient_id', () => {

@@ -1,11 +1,14 @@
 <details id="agenda-workflow-panel" class="agenda-workflow" hidden>
-    <summary>Retiro y seguimiento</summary>
+    <summary>Retiro y seguimiento <abbr class="agenda-mini-help" tabindex="0" title="Retiro: el paciente llegó pero se va antes de atenderse. No asistió: el paciente nunca llegó.">ⓘ</abbr></summary>
+    <p id="agenda-withdrawal-status" class="agenda-action-notice" role="status" hidden></p>
+    <p id="agenda-withdrawal-error" class="agenda-field-error" role="alert" hidden></p>
     <p id="agenda-workflow-title"></p>
     <div id="agenda-workflow-events"></div>
     <label class="agenda-field"><span>Motivo operativo</span><textarea id="agenda-withdrawal-reason" class="agenda-field__input" maxlength="2000" rows="2"></textarea></label>
     <div id="agenda-withdrawal-current">
         <label><input id="agenda-withdrawal-present" type="checkbox"> El paciente estuvo en la clínica y se retira</label>
         <label class="agenda-field"><span>Acción solicitada</span><select id="agenda-withdrawal-action" class="agenda-field__input"><option value="PENDIENTE">Seguimiento pendiente</option><option value="REPROGRAMAR">Reprogramar en una nueva cita</option><option value="DEVOLUCION">Solicitar devolución</option></select></label>
+        <p id="agenda-withdrawal-refund-hint" class="agenda-guidance" hidden>Solo se registra la solicitud. El dinero todavía no se devuelve.</p>
         <button id="agenda-withdrawal-submit" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Registrar retiro</button>
         @unless($canWithdraw)<small>No tienes permiso para registrar el retiro.</small>@endunless
     </div>
@@ -21,7 +24,7 @@
         <small>Mismo paciente, médico y servicio; precio del catálogo vigente. Si el crédito no asegura la cita, se guarda como reserva privada.</small>
         <div class="agenda-workflow-actions">
             <button id="agenda-withdrawal-rebook" class="agenda-btn" type="button" @disabled(!$canCreateAppointments || !$canRescheduleAppointments)>Crear nueva cita y aplicar crédito</button>
-            <button id="agenda-withdrawal-refund" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Solicitar devolución · sin procesar pago</button>
+            <span class="agenda-tip" data-tip="Solo se registra la solicitud. El dinero todavía no se devuelve."><button id="agenda-withdrawal-refund" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Solicitar devolución</button></span>
         </div>
         <div id="agenda-withdrawal-refunds"></div>
     </div>

@@ -49,7 +49,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
             ->assertSee('data-calendar-view="timeGridWeek"', false)
             ->assertSee('data-calendar-view="dayGridMonth"', false)
             ->assertSee('Duración programada por cita')
-            ->assertSee('pendiente de Horarios MVP-B');
+            ->assertSee('El horario activo define los turnos disponibles en Agenda.');
     }
 
     public function test_site_specialty_and_doctor_filters_are_applied_to_the_feed(): void

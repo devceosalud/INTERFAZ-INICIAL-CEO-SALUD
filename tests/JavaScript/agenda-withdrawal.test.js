@@ -25,5 +25,5 @@ test('operational withdrawal works without audit and sends a stable UUID instead
     const mutation = calls.find(call => call.options.method === 'POST');
     assert.ok(mutation); assert.equal(mutation.url, '/appointments/7/withdraw');
     assert.equal(JSON.parse(mutation.options.body).request_key, '00000000-0000-4000-8000-000000000001');
-    assert.equal(JSON.parse(mutation.options.body).was_present, true); assert.match(notices.at(-1), /RETIRO registrado/);
+    assert.equal(JSON.parse(mutation.options.body).was_present, true); assert.match(notices.at(-1), /Retiro registrado/);
 });

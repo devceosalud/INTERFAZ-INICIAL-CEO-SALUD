@@ -1,7 +1,7 @@
 <section data-ui-zone="mini" class="agenda-operations__section agenda-mini" aria-labelledby="agenda-mini-title">
     <div class="agenda-pane-head agenda-mini__head">
         <button type="button" class="agenda-mini__nav" id="agenda-mini-prev" aria-label="Mes anterior">Anterior</button>
-        <h2 class="agenda-section-title" id="agenda-mini-title">Calendario <abbr class="agenda-mini-help" tabindex="0" title="Capacidad regular asegurada con pago/crédito real de al menos 50%. Para datos antiguos sin vouchers se conserva fallback controlado." aria-label="Capacidad regular asegurada con pago o crédito real de al menos 50%">ⓘ</abbr></h2>
+        <h2 class="agenda-section-title" id="agenda-mini-title">Calendario <abbr class="agenda-mini-help" tabindex="0" title="El color indica cuánto del horario regular ya está confirmado con adelantos." aria-label="El color indica cuánto del horario regular ya está confirmado con adelantos">ⓘ</abbr></h2>
         <button type="button" class="agenda-mini__nav" id="agenda-mini-next" aria-label="Mes siguiente">Siguiente</button>
     </div>
 

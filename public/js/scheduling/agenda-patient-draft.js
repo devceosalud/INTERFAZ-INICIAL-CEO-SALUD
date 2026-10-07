@@ -162,7 +162,7 @@
         next.manual = Object.assign({}, draft.manual || {});
 
         if (!response || response.status !== 'prefilled' || !response.identity) {
-            next.message = 'No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.';
+            next.message = 'No se encontró el DNI. Completa los datos manualmente.';
 
             return next;
         }

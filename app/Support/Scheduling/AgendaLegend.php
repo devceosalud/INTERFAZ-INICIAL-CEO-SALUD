@@ -43,7 +43,7 @@ final class AgendaLegend
         return [
             'PENDIENTE_CONFIRMACION' => [
                 'clave' => 'PENDIENTE_CONFIRMACION', 'etiqueta' => 'RESERVA PRIVADA', 'glifo' => 'R',
-                'color' => '#52525b', 'fondo' => '#fafafa', 'descripcion' => 'Sin agendar; visible solo para su dueño efectivo y no ocupa el slot regular.',
+                'color' => '#52525b', 'fondo' => '#fafafa', 'descripcion' => 'Solo la ve su responsable y no ocupa el horario.',
             ],
             self::AVAILABLE => [
                 'clave' => self::AVAILABLE,
@@ -88,12 +88,12 @@ final class AgendaLegend
             self::ADDITIONAL => [
                 'clave' => self::ADDITIONAL, 'etiqueta' => 'ADICIONAL', 'glifo' => '+',
                 'color' => '#6b21a8', 'fondo' => '#f3e8ff',
-                'descripcion' => 'Cita adicional aceptada; no consume slot regular ni implica pago.',
+                'descripcion' => 'Paciente extra en una hora con cita regular.',
             ],
             self::OFF_HOURS_APPOINTMENT => [
                 'clave' => self::OFF_HOURS_APPOINTMENT, 'etiqueta' => 'FUERA DE HORARIO', 'glifo' => 'FH',
                 'color' => '#b45309', 'fondo' => '#ffedd5',
-                'descripcion' => 'Cita especial fuera del horario configurado; bloquea su intervalo exacto.',
+                'descripcion' => 'Atención excepcional fuera del horario del médico.',
             ],
         ];
     }

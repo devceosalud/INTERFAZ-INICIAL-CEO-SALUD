@@ -42,8 +42,9 @@
                         </label>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Número de documento</span>
-                            <input class="agenda-field__input" id="agenda-draft-number" type="text" maxlength="255">
+                            <input class="agenda-field__input" id="agenda-draft-number" type="text" maxlength="255" aria-describedby="agenda-draft-identity-note">
                         </label>
+                        <p id="agenda-draft-identity-note" class="agenda-field-error" role="alert" hidden></p>
                         <div class="agenda-patient-reniec">
                             <button type="button" class="agenda-btn" id="agenda-draft-reniec" hidden>Consultar DNI</button>
                         </div>
@@ -206,6 +207,7 @@
                 <p class="agenda-draft__message" id="agenda-draft-message" role="status" aria-live="polite"></p>
             </div>
 
+            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Agendar cita: confirma el horario con al menos 50% de adelanto.</p>
             <footer class="agenda-patient-dialog__actions">
                 <span id="agenda-patient-write-policy">
                     {{ $canWritePatients ? 'Guardado habilitado para Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Admisión, Recepción o Comercial.' }}

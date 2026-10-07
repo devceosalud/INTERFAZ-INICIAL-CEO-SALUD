@@ -18,7 +18,7 @@
         async function request(url, method = 'GET', data) {
             const response = await fetch(url, { method, credentials: 'same-origin', headers: headers(), body: data ? JSON.stringify(data) : undefined });
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) { throw new Error(config.error(body)); } return body;
+            if (!response.ok) { const error = new Error(config.error(body, response.status)); error.status = response.status; throw error; } return body;
         }
         async function select(appointmentId, context = {}) {
             const seq = ++version; current = appointmentId || null; key = null; panel.hidden = !appointmentId || !config.canWorkflow;
@@ -55,8 +55,22 @@
                 if (action === 'refund-requests') { data.refunds = lines(); }
                 const result = await request(config.base + '/' + original + '/' + action, 'POST', data); key = null;
                 await config.refresh(); await select(original); panel.open = true;
-                config.notice(action === 'rebook-withdrawal' ? 'Nueva cita #' + result.appointment_id + ' · Saldo S/ ' + result.economy.saldo : (action === 'withdraw' ? 'RETIRO registrado. El horario está libre.' : 'Solicitud registrada; no se procesó devolución de dinero.'));
-            } catch (e) { config.notice(e.message); } finally { busy = false; }
+                const done = action === 'rebook-withdrawal' ? 'Nueva cita #' + result.appointment_id + ' · Saldo S/ ' + result.economy.saldo : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.' : 'Solicitud registrada. El dinero todavía no se devuelve.');
+                const status = id('withdrawal-status'); const errorBox = id('withdrawal-error');
+                if (errorBox) { errorBox.hidden = true; }
+                if (status) { status.hidden = false; status.textContent = done; }
+                config.notice(done);
+            } catch (e) {
+                const placed = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'withdraw') : { text: e.message };
+                const errorBox = id('withdrawal-error');
+                if (errorBox) { errorBox.hidden = false; errorBox.textContent = placed.text; }
+                config.notice(placed.text);
+            } finally { busy = false; }
+        }
+        const actionSelect = id('withdrawal-action');
+        const refundHint = id('withdrawal-refund-hint');
+        if (actionSelect && actionSelect.addEventListener) {
+            actionSelect.addEventListener('change', () => { if (refundHint) { refundHint.hidden = actionSelect.value !== 'DEVOLUCION'; } });
         }
         id('withdrawal-submit').addEventListener('click', () => mutate('withdraw'));
         id('withdrawal-rebook').addEventListener('click', () => mutate('rebook-withdrawal'));
@@ -71,12 +85,13 @@
                 const response = await request(config.inbox); const target = id('contingency-list'); target.replaceChildren();
                 const rows = response.contingencies || []; id('contingency-badge').textContent = rows.length ? '(' + rows.length + ' pendientes)' : '';
                 rows.forEach(row => { const entry = document.createElement('div'); entry.className = 'agenda-document-row';
-                    const notice = document.createElement('span'); notice.textContent = 'Reserva #' + row.appointment_id + ' · ' + row.patient + ' · ' + row.fecha.split('-').reverse().join('/') + ' ' + row.hora + ' · Abierta · ' + row.cause + ' ' + row.pending_action;
+                    const when = String(row.fecha || '').split('-').reverse().join('/') + ' ' + (row.hora || '');
+                    const notice = document.createElement('span'); notice.textContent = root.AgendaGuidance.contingency(row.patient, when.trim());
                     const note = document.createElement('input'); note.placeholder = 'Resultado del seguimiento humano'; note.maxLength = 2000; note.setAttribute('aria-label', 'Resultado del seguimiento');
                     const read = document.createElement('button'); read.type = 'button'; read.textContent = row.read_at ? 'Leído' : 'Marcar como leído'; read.disabled = Boolean(row.read_at);
                     const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Resolver';
-                    [read, close].forEach(button => button.addEventListener('click', async () => { try { if (button === close && !note.value.trim()) { throw new Error('Indica el resultado del seguimiento.'); }
-                        await request(config.inbox + '/' + row.id, 'PATCH', button === close ? { resolution: note.value } : {}); await feed(payload); } catch (e) { config.notice(e.message); } }));
+                    [read, close].forEach(button => button.addEventListener('click', async () => { try { if (button === close && !note.value.trim()) { let err = entry.querySelector('.agenda-field-error'); if (!err) { err = document.createElement('p'); err.className = 'agenda-field-error'; entry.append(err); } err.textContent = root.AgendaGuidance.copy.resolveNote; return; }
+                        await request(config.inbox + '/' + row.id, 'PATCH', button === close ? { resolution: note.value } : {}); await feed(payload); } catch (e) { const err = document.createElement('p'); err.className = 'agenda-field-error'; err.textContent = root.AgendaGuidance.place(e.message, e.status, 'local').text; entry.append(err); } }));
                     entry.append(notice, note, read, close); target.append(entry);
                 });
             } catch (e) { config.notice('No se pudo cargar seguimiento: ' + e.message); }

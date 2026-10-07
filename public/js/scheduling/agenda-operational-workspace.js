@@ -13,13 +13,22 @@
         async function request(url, options = {}) {
             const response = await fetch(url, Object.assign({ credentials: 'same-origin', headers: headers() }, options));
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) { throw new Error(config.error(body)); }
+            if (!response.ok) {
+                const error = new Error(config.error(body, response.status));
+                error.status = response.status;
+                throw error;
+            }
             return body;
         }
         function json(method, data) { return { method, headers: Object.assign(headers(), { 'Content-Type': 'application/json' }), body: JSON.stringify(data) }; }
         function payment() { return model.payment(ui.amount.value, ui.method.value, ui.operation.value, ui.origin.value); }
         function calculate() {
             ui.operation.disabled = ui.method.disabled || ui.method.value === 'EFECTIVO';
+            const operationTip = document.getElementById('agenda-op-operation-tip');
+            if (operationTip) {
+                if (ui.operation.disabled && ui.method.value === 'EFECTIVO') { operationTip.dataset.tip = root.AgendaGuidance.copy.cashNoOperation; }
+                else { delete operationTip.dataset.tip; }
+            }
             if (ui.method.value === 'EFECTIVO') { ui.operation.value = ''; }
             try { ui.balance.value = model.decimal(ui.waived.checked ? 0 : Math.max(0, balance - model.cents(ui.amount.value || '0'))); }
             catch (_) { ui.balance.value = 'Revisa el importe'; }
@@ -66,12 +75,13 @@
                         channel_id: ui.channel.value || null, interaction_medium_id: ui.medium.value || null };
                 }
                 const body = new FormData(); body.append('payload', JSON.stringify(payload));
+                if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
                 if (ui.proof.files[0]) { body.append('proof', ui.proof.files[0]); }
                 const response = await request(config.endpoint, { method: 'POST', body });
                 registrationKey = null; ui.amount.value = '0'; ui.proof.value = ''; ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
                 await config.registered(response);
-            } catch (e) { if (String(e.message).match(/adelanto|pago|operación|saldo|dinero/i)) { ui['payment-panel'].open = true; } config.notice(e.message, true); }
+            } catch (e) { showPlaced(e, 'payment'); }
             finally { working = false; config.busy(false); }
         }
         async function documents(id) {
@@ -87,12 +97,12 @@
                 const save = document.createElement('button'); save.type = 'button'; save.textContent = 'Guardar'; save.className = 'agenda-btn';
                 save.addEventListener('click', async () => {
                     try { await request(base + '/' + id + '/documents/' + d.id, json('PUT', d.url ? { label: label.value, url: url.value } : { label: label.value })); await documents(id); }
-                    catch (e) { config.notice(e.message, true); }
+                    catch (e) { showPlaced(e, 'documents'); }
                 });
                 const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Quitar'; remove.className = 'agenda-btn';
                 remove.addEventListener('click', async () => {
                     try { await request(base + '/' + id + '/documents/' + d.id, { method: 'DELETE' }); await documents(id); }
-                    catch (e) { config.notice(e.message, true); }
+                    catch (e) { showPlaced(e, 'documents'); }
                 });
                 if (result.can_write) { const edit = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = 'Editar'; edit.append(summary, label); if (d.url) { edit.append(url); } edit.append(save, remove); row.append(edit); }
                 ui.documents.appendChild(row);
@@ -123,18 +133,45 @@
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
                 const body = new FormData(); body.append('payload', JSON.stringify(payload));
+                if (!confirm && root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
                 if (!confirm && ui.proof.files[0]) { body.append('proof', ui.proof.files[0]); }
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
                 paymentKey = null; ui.amount.value = '0'; ui.proof.value = ''; economy(response.economy);
                 await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
-            } catch (e) { config.notice(e.message, true); }
+            } catch (e) { showPlaced(e, 'payment'); }
             finally { working = false; config.busy(false); }
+        }
+        function showPlaced(error, context) {
+            const placed = root.AgendaGuidance.place(error.message, error.status, context);
+            const paymentError = document.getElementById('agenda-op-payment-error');
+            const documentError = document.getElementById('agenda-op-documents-error');
+            if (paymentError) { paymentError.hidden = true; }
+            if (documentError) { documentError.hidden = true; }
+            if (placed.domain === 'payment') {
+                ui['payment-panel'].open = true;
+                if (paymentError) { paymentError.hidden = false; paymentError.textContent = placed.text; }
+                ui['payment-panel'].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                ui.amount.focus();
+                if (placed.focus) {
+                    ui.amount.classList.add('is-guidance-focus');
+                    root.setTimeout(() => ui.amount.classList.remove('is-guidance-focus'), 7000);
+                }
+                return;
+            }
+            if (placed.domain === 'documents') {
+                const panel = document.getElementById('agenda-op-documents-panel');
+                if (panel) { panel.open = true; }
+                if (documentError) { documentError.hidden = false; documentError.textContent = placed.text; documentError.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+                return;
+            }
+            config.notice(placed.text);
         }
         ui['submit-payment'].addEventListener('click', () => submitPayment(false));
         ui['confirm-reservation'].addEventListener('click', () => submitPayment(true));
         ui['add-documents'].addEventListener('click', async () => {
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
+            if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
             working = true;
             try {
                 if (ui.proof.files[0]) {
@@ -147,10 +184,11 @@
                     ui.links.value = pending.slice(i + 1).map(l => l.label + ' | ' + l.url).join('\n');
                 }
                 await documents(id); config.notice('Documentos guardados.');
-            } catch (e) { config.notice(e.message, true); }
+            } catch (e) { showPlaced(e, 'documents'); }
             finally { working = false; }
         });
         function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
+        calculate();
         return { register, quoteChanged, patientChanged, selectionChanged, openPayment };
     };
 }(typeof window !== 'undefined' ? window : globalThis));

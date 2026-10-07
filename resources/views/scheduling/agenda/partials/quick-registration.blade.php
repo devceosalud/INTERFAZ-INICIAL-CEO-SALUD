@@ -98,22 +98,24 @@
             Seleccione médico, fecha, intervalo disponible, paciente y servicio.
         </p>
 
+        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Agendar cita: confirma el horario con al menos 50% de adelanto.</p>
+        <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <div class="agenda-fast-actions">
-        @if($canCreateAppointments)<button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled>Guardar reserva</button>@endif
-        <button type="button" class="agenda-btn" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
+        @if($canCreateAppointments)<span class="agenda-tip" id="agenda-pending-tip"><button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled>Guardar reserva</button></span>@endif
+        <span class="agenda-tip" id="agenda-submit-tip"><button type="button" class="agenda-btn" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
             Agendar cita
-        </button>
+        </button></span>
 
         </div>
-        <div class="agenda-secondary-actions"><button id="agenda-open-payment" class="agenda-btn" type="button">Registrar adelanto</button>
+        <div class="agenda-secondary-actions"><span class="agenda-tip" id="agenda-payment-tip"><button id="agenda-open-payment" class="agenda-btn" type="button" disabled>Registrar adelanto</button></span>
         <button type="button" class="agenda-btn agenda-complete-registration" id="agenda-complete-registration" disabled hidden>Completar ficha</button></div>
-        <p id="agenda-complete-registration-help" hidden>Completa los datos en Pacientes y vuelve a esta Agenda.</p>
+        <p id="agenda-complete-registration-help" class="agenda-guidance" hidden>Completa los datos del paciente. Luego puedes volver a Agenda.</p>
         <div id="agenda-op-workspace-host">@include('scheduling.agenda.partials.operational-registration')</div>
         @if ($canCreateAppointments)
-            <button type="button" class="agenda-btn agenda-btn--off-hours" id="agenda-off-hours-start" hidden>Agendar fuera de horario</button>
+            <span class="agenda-tip" id="agenda-off-hours-tip"><button type="button" class="agenda-btn agenda-btn--off-hours" id="agenda-off-hours-start" hidden>Agendar fuera de horario</button></span>
         @endif
         @if ($canCreateAdditional)
-            <button type="button" class="agenda-btn agenda-btn--additional" id="agenda-additional-start" disabled>+ Cita adicional</button>
+            <span class="agenda-tip" id="agenda-additional-tip"><button type="button" class="agenda-btn agenda-btn--additional" id="agenda-additional-start" disabled>+ Cita adicional</button></span>
         @endif
         @if ($canRescheduleAppointments)
             <form id="agenda-reschedule-form" hidden>
@@ -126,6 +128,7 @@
                     <button type="button" class="agenda-btn" data-quick-minute="40">40</button>
                 </div>
                 <small id="agenda-reschedule-time-help">Hora de 24 horas: HH:MM. Puedes escribir cualquier minuto.</small>
+                <p id="agenda-reschedule-error" class="agenda-field-error" role="alert" hidden></p>
                 <button type="submit" class="agenda-btn">Reprogramar cita</button>
             </form>
         @endif

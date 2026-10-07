@@ -134,6 +134,9 @@
                                             style="--key-color: {{ $entry['color'] }}; --key-bg: {{ $entry['fondo'] }}"
                                             aria-hidden="true"></span>
                                         <strong>{{ $entry['etiqueta'] }}</strong>
+                                        @if (!empty($entry['descripcion']))
+                                            <abbr class="agenda-mini-help" tabindex="0" title="{{ $entry['descripcion'] }}">ⓘ</abbr>
+                                        @endif
                                     </span>
                                 @endforeach
                             </div>
@@ -167,6 +170,7 @@
     <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
     @include('telemetry.collector')
+    <script src="{{ asset('js/scheduling/agenda-guidance.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ asset('js/scheduling/agenda-patient-navigation.js') }}"></script>

@@ -377,7 +377,7 @@
             hydrating = false;
             setNotice(next.message, payload.status !== 'prefilled');
         } catch (error) {
-            setNotice('No se pudieron obtener datos de RENIEC. Puede continuar manualmente.', true);
+            setNotice('No se encontró el DNI. Completa los datos manualmente.', true);
         } finally {
             reniecButton.disabled = false;
         }

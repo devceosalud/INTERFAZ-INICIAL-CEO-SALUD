@@ -121,13 +121,9 @@
 
                         <div class="patients-source-note" id="patient-date-source-note" role="note">
                             @if ($pendingView)
-                                <strong>Ficha pendiente de completar:</strong> el paciente tiene una cita próxima, distinta de cancelada o no asistió,
-                                y todavía falta fecha de nacimiento, teléfono, dirección, estado civil, canal de captación, o el responsable
-                                cuando es menor de 18 años. El correo y otros datos recomendados no retienen la fila.
+                                <strong>Ficha pendiente de completar:</strong> todavía faltan datos del paciente.
                             @else
-                                <strong>Fuente actual:</strong> una fila representa la ficha maestra del paciente. No existe todavía
-                                una entidad persistida de atención ambulatoria; por ello Fecha no filtra atenciones y N.° Registro / Fecha
-                                de atención se mantienen pendientes, sin reutilizar datos de citas.
+                                Cada fila es la ficha del paciente. La fecha filtra el registro, no una atención.
                             @endif
                         </div>
 

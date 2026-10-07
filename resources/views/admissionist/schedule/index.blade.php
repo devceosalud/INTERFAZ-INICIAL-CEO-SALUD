@@ -81,10 +81,8 @@
                             <p id="schedule-range-label" aria-live="polite"></p>
                         </div>
                         <div class="schedule-heading__actions">
-                            <button type="button" class="schedule-btn schedule-btn--muted" disabled
-                                title="Requiere modelo de excepciones por fecha">+ Ausencia</button>
-                            <button type="button" class="schedule-btn schedule-btn--muted" disabled
-                                title="Requiere modelo de excepciones por fecha">+ Horario excepcional</button>
+                            <span class="agenda-tip" data-tip="Todavía no se registran ausencias aquí."><button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Ausencia</button></span>
+                            <span class="agenda-tip" data-tip="Todavía no se registra un horario excepcional aquí."><button type="button" class="schedule-btn schedule-btn--muted" disabled>+ Horario excepcional</button></span>
                             <button type="button" class="schedule-btn schedule-btn--primary" id="schedule-add"
                                 @disabled(! $canManageSchedules)>+ Horario</button>
                         </div>
@@ -92,7 +90,7 @@
 
                     @unless ($canManageSchedules)
                         <div class="schedule-readonly" role="status">
-                            Vista de consulta. La matriz provisional permite modificar horarios únicamente a Admisión.
+                            Solo consulta. Admisión administra los horarios.
                         </div>
                     @endunless
 
@@ -129,10 +127,8 @@
                             </section>
 
                             <section class="schedule-side__section schedule-rule-note">
-                                <h2>Disponibilidad efectiva</h2>
-                                <p><strong>Horario activo</strong> define el rango.</p>
-                                <p><strong>Duración programada por cita</strong> define la cadencia que consume Agenda.</p>
-                                <p class="schedule-rule-note__pending">Ausencias y excepciones por fecha: pendiente de Horarios MVP-B.</p>
+                                <h2>Disponibilidad</h2>
+                                <p>El horario activo define los turnos disponibles en Agenda. <abbr class="agenda-mini-help" tabindex="0" title="La duración programada es el intervalo de la agenda, no el tiempo clínico de la atención.">ⓘ</abbr></p>
                             </section>
                         </aside>
                     </div>
