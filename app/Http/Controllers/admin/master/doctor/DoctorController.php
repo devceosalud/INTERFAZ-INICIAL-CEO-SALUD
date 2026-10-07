@@ -129,7 +129,7 @@ class DoctorController extends Controller
             ]);
         } else {
             return response()->json([
-                'code' => 0,
+                'code' => 1,
                 'msg' => "Doctor no se inactivo"
             ]);
         }
