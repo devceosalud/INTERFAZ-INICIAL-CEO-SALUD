@@ -11,13 +11,14 @@ class UserController extends Controller
     //
     public function search(Request $request)
     {
-        $user = User::find($request->id);
+        $data = $request->validate(['id' => 'required|integer|min:1']);
+        $user = User::find($data['id']);
         if (!$user) {
             return response()->json(['message' => 'no encontrado'], 404);
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'user' => $user
+                'user' => $user->only(['id', 'name', 'email'])
             ], 200);
         }
     }
