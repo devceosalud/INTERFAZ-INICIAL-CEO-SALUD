@@ -62,6 +62,27 @@ class AgendaReniecLookupTest extends TestCase
         Log::shouldNotHaveReceived('error');
     }
 
+    public function test_factiliza_uses_server_credentials_and_allows_manual_entry_when_unavailable(): void
+    {
+        config(['apidatosperu.reniec_provider' => 'factiliza', 'apidatosperu.factiliza.base_url' => 'https://api.factiliza.com/v1',
+            'apidatosperu.factiliza.token' => 'fake-server-secret']);
+        Http::preventStrayRequests();
+        Http::fake(['https://api.factiliza.com/v1/dni/info/70000009' => Http::response(['success' => true, 'data' => [
+            'numero' => '70000009', 'nombres' => 'PRUEBA', 'apellido_paterno' => 'LOCAL', 'apellido_materno' => 'FICTICIA',
+        ]])]);
+        $response = $this->actingAs($this->reader())->postJson(self::URI, $this->dni())->assertOk()
+            ->assertJsonPath('status', 'prefilled')->assertJsonPath('identity.nombre', 'PRUEBA');
+        $this->assertStringNotContainsString('fake-server-secret', $response->getContent());
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer fake-server-secret'));
+        config(['apidatosperu.factiliza.token' => null]);
+        Http::fake();
+        $this->postJson(self::URI, $this->dni())->assertOk()->assertJsonPath('status', 'unavailable');
+        Http::assertNothingSent();
+        $this->assertDatabaseCount('patients', 0);
+        Log::shouldNotHaveReceived('info');
+        Log::shouldNotHaveReceived('error');
+    }
+
     public function test_an_unconfigured_provider_keeps_manual_registration_and_hides_the_transport_error(): void
     {
         Http::preventStrayRequests();
