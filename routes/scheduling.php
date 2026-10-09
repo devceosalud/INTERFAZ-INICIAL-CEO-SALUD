@@ -22,6 +22,8 @@ Route::middleware([
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::patch('/scheduling-mvp/agenda/appointments/{appointmentId}/notes', [\App\Http\Controllers\Scheduling\AgendaDetailsController::class, 'notes'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.notes');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/history', [$workflow, 'history'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.history');
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/withdraw', [$workflow, 'withdraw'])

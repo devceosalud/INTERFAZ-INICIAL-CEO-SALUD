@@ -10,6 +10,9 @@
         return Number(m[1]) * 100 + Number((m[2] || '').padEnd(2, '0'));
     }
     function decimal(value) { return (value / 100).toFixed(2); }
+    function nonBlank(data) {
+        return Object.fromEntries(Object.entries(data).filter(([, value]) => value != null && String(value).trim() !== ''));
+    }
     function payment(amount, method, operation, origin) {
         const value = cents(amount || '0');
         if (value && method !== 'EFECTIVO' && !String(operation).trim()) { throw new Error('Indica el número de operación de este pago.'); }
@@ -27,5 +30,5 @@
             return { label, url };
         });
     }
-    return { cents, decimal, payment, links };
+    return { cents, decimal, payment, links, nonBlank };
 }));
