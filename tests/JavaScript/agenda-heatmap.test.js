@@ -31,3 +31,14 @@ test('preview reconocible para cada módulo sin nombres ni información clínica
         assert.ok(labels.some(label => /Grilla|Calendario|Listado/.test(label)));
     }
 });
+
+test('overlay usa píxeles capturados; v2/v1 y geometría no coincidente se marcan aproximados', () => {
+    const centers = [], ctx = { clearRect() {}, fillRect() {}, createRadialGradient(x,y) { centers.push([x,y]); return { addColorStop() {} }; } };
+    const rect = { left: 550, top: 130, width: 800, height: 600 };
+    const point = { zone: 'grid', x: 950, y: 280, zone_rect: rect, clicks: 1 };
+    assert.deepEqual(heatmap.overlay(ctx,1366,768,{ layout_version:3,points:[point] },{grid:rect}), { precise:1,approximate:0,outside:0 });
+    assert.deepEqual(centers[0],[950,280]);
+    assert.deepEqual(heatmap.overlay(ctx,1366,768,{ layout_version:3,points:[point] },{grid:{...rect,top:200}}), { precise:0,approximate:1,outside:0 });
+    assert.deepEqual(heatmap.overlay(ctx,1366,768,{ layout_version:2,grid_size:40,points:[{zone:'grid',bucket_x:20,bucket_y:10,clicks:2}] },{grid:rect}), { precise:0,approximate:2,outside:0 });
+    assert.deepEqual(heatmap.overlay(ctx,1366,768,{ layout_version:3,points:[] },{}), { precise:0,approximate:0,outside:0 });
+});
