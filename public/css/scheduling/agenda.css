@@ -521,9 +521,7 @@
 }
 
 .agenda-quick .agenda-pane-head {
-    position: sticky;
-    top: 0;
-    z-index: 3;
+    position: static;
 }
 
 .agenda-tools input[type="time"] {
@@ -2089,6 +2087,13 @@ body.agenda-modal-open {
 .agenda-operational-fields > details > summary { padding: 9px 4px; font-weight: 600; color: #446777; }
 .agenda-operational-fields > details[open] { padding: 8px 12px; border: 1px solid #dfebee; border-radius: 9px; background: #fbfdfd; }
 .agenda-operational-fields .agenda-field { gap: 5px; margin-bottom: 10px; }
+.agenda-operational-fields .agenda-patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.agenda-operational-fields .agenda-field > span { display: flex; align-items: end; min-height: 28px; font-size: 11px; line-height: 14px; }
+.agenda-operational-fields textarea.agenda-field__input { height: auto; min-height: 64px; resize: vertical; }
+.agenda-op-save-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin: 8px 0; }
+.agenda-op-save-row small { line-height: 1.4; }
+.agenda-fast-actions > .agenda-tip { display: flex; flex: 1 1 150px; min-width: 0; }
+.agenda-fast-actions > .agenda-tip > .agenda-btn { width: 100%; }
 .agenda-operational-fields .agenda-field__input { min-height: 32px; padding: 6px 8px; }
 .agenda-operational-fields .agenda-btn { min-height: 32px; margin-block: 6px; }
 .agenda-doctor-list { min-height: 160px; max-height: 230px; scrollbar-gutter: stable; }
@@ -2131,4 +2136,5 @@ body.agenda-modal-open {
 }
 @media (max-width: 700px) {
     .agenda-operations__pair .agenda-doctors { max-height: none; }
+    .agenda-operational-fields .agenda-patient-form-grid { grid-template-columns: minmax(0, 1fr); }
 }

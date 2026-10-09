@@ -7,8 +7,10 @@
             <label class="agenda-field"><span>Canal · origen/captación</span><select id="agenda-op-channel" class="agenda-field__input" @disabled(!$canWritePatients)><option value="">Sin indicar</option>@foreach($channels as $channel)<option value="{{ $channel->id }}">{{ $channel->nombre }}</option>@endforeach</select></label>
             <label class="agenda-field"><span>Medio de contacto</span><select id="agenda-op-medium" class="agenda-field__input" @disabled(!$canWritePatients)><option value="">Sin indicar</option>@foreach($interactionMedia as $medium)<option value="{{ $medium->id }}">{{ $medium->nombre }}</option>@endforeach</select></label>
         </div>
-        <button id="agenda-op-save-patient" class="agenda-btn" type="button" disabled @if(!$canWritePatients) hidden @endif>Guardar datos del paciente</button>
-        <small>Los campos vacíos conservan el dato actual. Para corregir o quitar datos, usa Completar ficha.</small>
+        <div class="agenda-op-save-row">
+            <button id="agenda-op-save-patient" class="agenda-btn" type="button" disabled @if(!$canWritePatients) hidden @endif>Guardar datos del paciente</button>
+            <small>Los campos vacíos conservan el dato actual. Para corregir o quitar datos, usa Completar ficha.</small>
+        </div>
         <p id="agenda-op-patient-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-patient-error" class="agenda-field-error" role="alert" hidden></p>
     </details>
