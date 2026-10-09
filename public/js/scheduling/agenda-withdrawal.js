@@ -14,6 +14,19 @@
         const id = name => document.getElementById('agenda-' + name);
         const panel = id('workflow-panel'), credit = id('withdrawal-credit');
         let current = null, version = 0, busy = false, key = null;
+        let permitted = {};
+        function endingChanged() {
+            const kind = id('ending-kind').value || 'withdraw', withdrawal = kind === 'withdraw';
+            id('withdrawal-presence-field').hidden = !withdrawal;
+            id('withdrawal-action-field').hidden = !withdrawal;
+            id('ending-help').textContent = withdrawal ? 'RETIRO exige presencia. La cita original se conserva.'
+                : kind === 'no-show' ? 'Nunca llegó. Solo después de terminar el intervalo y sin dinero/documentos financieros vinculados.'
+                : 'Cancela esta cita sin borrarla. Con dinero o documentos financieros, requiere revisión.';
+            const button = id('withdrawal-submit');
+            button.textContent = withdrawal ? 'Registrar retiro' : kind === 'no-show' ? 'Registrar no asistió' : 'Cancelar cita';
+            button.disabled = !permitted[kind];
+            id('withdrawal-refund-hint').hidden = !withdrawal || id('withdrawal-action').value !== 'DEVOLUCION';
+        }
         function headers() { return { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }; }
         async function request(url, method = 'GET', data) {
             const response = await fetch(url, { method, credentials: 'same-origin', headers: headers(), body: data ? JSON.stringify(data) : undefined });
@@ -27,7 +40,11 @@
                 const data = await request(config.base + '/' + appointmentId + '/history');
                 if (seq !== version) { return; }
                 id('workflow-title').textContent = 'Cita #' + appointmentId + ' · ' + data.estado_cita;
-                id('withdrawal-current').hidden = data.estado_cita === 'RETIRO'; id('withdrawal-followup').hidden = data.estado_cita !== 'RETIRO';
+                permitted = { withdraw: data.can_withdraw, cancel: data.can_cancel, 'no-show': data.can_no_show };
+                id('ending-kind').value = Object.keys(permitted).find(k => permitted[k]) || 'withdraw';
+                endingChanged();
+                id('withdrawal-current').hidden = ['RETIRO', 'CANCELADO', 'NO_ASISTIO', 'ATENDIDO'].includes(data.estado_cita);
+                id('withdrawal-followup').hidden = data.estado_cita !== 'RETIRO';
                 id('withdrawal-duration').value = context.duracion || context.duracion_cita || 20;
                 id('withdrawal-date').value = context.fecha || context.fecha_cita || '';
                 id('withdrawal-reason').value = ''; id('withdrawal-present').checked = false;
@@ -64,7 +81,10 @@
                 const when = destinationDate + ' a las ' + data.hora_cita;
                 const done = action === 'rebook-withdrawal'
                     ? (guidance ? guidance.rebooked(destinationDate, data.hora_cita) : 'Nueva cita creada para ' + when + '.')
-                    : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.' : (guidance ? guidance.copy.refundDone : 'Solicitud de devolución registrada.'));
+                    : (action === 'withdraw' ? 'Retiro registrado. El horario quedó libre.'
+                        : action === 'cancel' ? 'Cita cancelada. El horario quedó libre.'
+                        : action === 'no-show' ? 'Inasistencia registrada. El horario quedó libre.'
+                        : (guidance ? guidance.copy.refundDone : 'Solicitud de devolución registrada.'));
                 const status = id('withdrawal-status'); const errorBox = id('withdrawal-error');
                 if (errorBox) { errorBox.hidden = true; }
                 if (status) { status.hidden = false; status.textContent = done; }
@@ -80,7 +100,11 @@
         if (actionSelect && actionSelect.addEventListener) {
             actionSelect.addEventListener('change', () => { if (refundHint) { refundHint.hidden = actionSelect.value !== 'DEVOLUCION'; } });
         }
-        id('withdrawal-submit').addEventListener('click', () => mutate('withdraw'));
+        id('ending-kind').addEventListener('change', endingChanged);
+        id('withdrawal-submit').addEventListener('click', () => {
+            const kind = id('ending-kind').value || 'withdraw';
+            if (permitted[kind]) { return mutate(kind); }
+        });
         id('withdrawal-rebook').addEventListener('click', () => mutate('rebook-withdrawal'));
         id('withdrawal-refund').addEventListener('click', () => mutate('refund-requests'));
         async function feed(payload) {

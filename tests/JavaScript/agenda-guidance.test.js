@@ -86,7 +86,7 @@ test('retiro, devolución, adicional y fuera de horario usan una línea operativ
     assert.match(guidance.copy.refundHint, /todavía no se devuelve/);
     assert.match(guidance.copy.additional, /paciente extra/);
     assert.match(guidance.copy.offHours, /fuera del horario configurado/);
-    assert.match(source('resources/views/scheduling/agenda/partials/withdrawal.blade.php'), /Retiro y seguimiento/);
+    assert.match(source('resources/views/scheduling/agenda/partials/withdrawal.blade.php'), /Estado de cita y seguimiento/);
     assert.match(source('resources/views/scheduling/agenda/partials/withdrawal.blade.php'), /agenda-withdrawal-refund-hint/);
 });
 
@@ -290,5 +290,5 @@ test('la ayuda clickeable reemplaza el símbolo de información en lo obvio', ()
     assert.match(legend, /Minutos todavía disponibles dentro del horario del médico/);
     assert.match(legend, /Citas adicionales y atenciones fuera de horario/);
     assert.match(calendar, /El color indica cuánto del horario regular ya está confirmado con adelantos/);
-    assert.match(withdrawal, /No asistió significa que nunca llegó/);
+    assert.match(withdrawal, /No asistió: nunca llegó/);
 });

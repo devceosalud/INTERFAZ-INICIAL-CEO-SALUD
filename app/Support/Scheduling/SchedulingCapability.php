@@ -14,6 +14,9 @@ final class SchedulingCapability
 
     public const WITHDRAW = 'appointment.withdraw';
 
+    public const CANCEL = 'appointment.cancel';
+    public const MARK_NO_SHOW = 'appointment.no_show';
+
     public const RESCHEDULE = 'appointment.reschedule';
 
     public const ASSIGN_RESPONSIBLE = 'appointment.responsible.assign';
@@ -49,6 +52,8 @@ final class SchedulingCapability
             self::CREATE,
             self::UPDATE,
             self::WITHDRAW,
+            self::CANCEL,
+            self::MARK_NO_SHOW,
             self::RESCHEDULE,
             self::ASSIGN_RESPONSIBLE,
             self::CREATE_HOLD,

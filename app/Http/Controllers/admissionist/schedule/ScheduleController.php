@@ -174,6 +174,7 @@ class ScheduleController extends Controller
 
         $schedule = Appointment::visibleToAgendaUser((int) $request->user()->id)
             ->whereKey($request->appointment_id)->firstOrFail();
+        \App\Support\Scheduling\AppointmentClosingGuard::assertLegacyUpdate($schedule, $request->estado_cita);
 
         $doctorService = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $request->service_id_edit, (int) $request->doctor_id_edit);
         $service = Service::find($doctorService->service_id); //buscamos el servicio por id

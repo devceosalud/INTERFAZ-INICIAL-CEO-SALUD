@@ -84,7 +84,10 @@ class AgendaBoardController extends Controller
             'canAuthorize' => auth()->user()->can(SchedulingCapability::OVERRIDE_DOWN_PAYMENT) || auth()->user()->can(SchedulingCapability::APPROVE_ZERO_COST),
             'canWaive' => auth()->user()->can(SchedulingCapability::APPROVE_ZERO_COST),
             'canWithdraw' => auth()->user()->can(SchedulingCapability::WITHDRAW),
+            'canCancel' => auth()->user()->can(SchedulingCapability::CANCEL),
+            'canNoShow' => auth()->user()->can(SchedulingCapability::MARK_NO_SHOW),
             'canWorkflow' => auth()->user()->can(SchedulingCapability::WITHDRAW) || auth()->user()->can(SchedulingCapability::VIEW_AUDIT)
+                || auth()->user()->can(SchedulingCapability::CANCEL) || auth()->user()->can(SchedulingCapability::MARK_NO_SHOW)
                 || (auth()->user()->can(SchedulingCapability::CREATE) && auth()->user()->can(SchedulingCapability::RESCHEDULE)),
             'canAudit' => auth()->user()->can(SchedulingCapability::VIEW_AUDIT),
             'doctorServices' => $doctorServices,
