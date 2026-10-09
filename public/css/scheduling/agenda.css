@@ -2049,7 +2049,8 @@ body.agenda-modal-open {
     white-space: normal;
     pointer-events: none;
 }
-@media (min-width: 801px) { .agenda-operations__pair { height: clamp(232px, 28vh, 272px); } }
+/* Both panels must contain a six-row calendar plus its legend without overlap. */
+@media (min-width: 801px) { .agenda-operations__pair { height: auto; min-height: 292px; align-items: stretch; } }
 .agenda-quick__booking-fields { gap: 10px; margin-top: 9px; align-items: start; }
 .agenda-quick__booking-fields .agenda-field,
 .agenda-modal-booking .agenda-field { gap: 5px; }
@@ -2087,6 +2088,14 @@ body.agenda-modal-open {
 .agenda-operational-fields > details { border: 0; margin: 6px 0; padding: 0; background: transparent; }
 .agenda-operational-fields > details > summary { padding: 9px 4px; font-weight: 600; color: #446777; }
 .agenda-operational-fields > details[open] { padding: 8px 12px; border: 1px solid #dfebee; border-radius: 9px; background: #fbfdfd; }
+.agenda-operational-fields .agenda-field { gap: 5px; margin-bottom: 10px; }
+.agenda-operational-fields .agenda-field__input { min-height: 32px; padding: 6px 8px; }
+.agenda-operational-fields .agenda-btn { min-height: 32px; margin-block: 6px; }
+.agenda-doctor-list { min-height: 160px; max-height: 230px; scrollbar-gutter: stable; }
+.agenda-doctors__footer, .agenda-mini__head, .agenda-mini-legend { flex-shrink: 0; }
+.agenda-mini { height: auto; min-height: 292px; }
+.agenda-mini__head .agenda-section-title { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.agenda-kpis .agenda-help { margin-left: 1px; }
 .agenda-op-workspace-host { min-width: 0; }
 .agenda-document-row { display: flex; flex-wrap: wrap; align-items: start; gap: 6px; padding: 7px 0; }
 .agenda-document-row > a { flex: 1; overflow-wrap: anywhere; }
@@ -2119,4 +2128,7 @@ body.agenda-modal-open {
     .agenda-quick__booking-fields, .agenda-modal-booking, .agenda-patient-form-grid { grid-template-columns: minmax(0, 1fr); }
     .agenda-phone { grid-template-columns: 115px minmax(0, 1fr); }
     .agenda-patient-dialog { width: calc(100vw - 16px); max-height: 94vh; }
+}
+@media (max-width: 700px) {
+    .agenda-operations__pair .agenda-doctors { max-height: none; }
 }
