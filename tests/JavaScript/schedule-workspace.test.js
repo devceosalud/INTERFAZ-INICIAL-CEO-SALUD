@@ -659,7 +659,7 @@ test('un guardado exitoso limpia la selección antes de refrescar el calendario'
         { type: 'up' },
     ]);
     const cleared = workspace.reduceMonthPaint(selected, { type: 'clear' });
-    const success = script.indexOf('clearPaintedSelection();\n                modal && modal.hide();\n                calendar.refetchEvents();');
+    const success = script.search(/clearPaintedSelection\(\);\s+modal && modal\.hide\(\);\s+calendar\.refetchEvents\(\);/);
 
     assert.deepEqual(selected.dates, ['2026-10-05', '2026-10-12']);
     assert.deepEqual(cleared.dates, []);

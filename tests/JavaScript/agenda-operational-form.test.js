@@ -1,6 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const form = require('../../public/js/scheduling/agenda-operational-form');
+test('edición parcial no borra por controles vacíos y conserva solo cambios explícitos', () => {
+    assert.deepEqual(form.nonBlank({ telefono: '', channel_id: null, observaciones: '   ', motivo_consulta: 'Control', interaction_medium_id: 7 }),
+        { motivo_consulta: 'Control', interaction_medium_id: 7 });
+});
 test('importe con centavos exactos y efectivo sin número inventado', () => {
     assert.equal(form.cents('0.10'), 10);
     assert.equal(form.cents('150.05'), 15005);

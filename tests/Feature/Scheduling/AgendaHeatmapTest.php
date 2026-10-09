@@ -40,7 +40,7 @@ class AgendaHeatmapTest extends TestCase
         $this->actingAs($this->actor)->postJson($this->endpoint(), ['events' => [$event]])->assertNoContent();
         $this->assertDatabaseCount('agenda_click_events', 1);
         $row = (array) DB::table('agenda_click_events')->first();
-        $this->assertEqualsCanonicalizing(array_merge(array_keys($event), ['id', 'actor_role', 'recorded_at']), array_keys($row));
+        $this->assertEqualsCanonicalizing(array_merge(array_keys($event), ['id', 'actor_role', 'recorded_at', 'geometry', 'geometry_key']), array_keys($row));
         $this->assertSame('ADMISION', $row['actor_role']);
         $this->assertFalse(Schema::hasColumn('agenda_click_events', 'user_id'));
         $this->assertFalse(Schema::hasColumn('agenda_click_events', 'patient_id'));

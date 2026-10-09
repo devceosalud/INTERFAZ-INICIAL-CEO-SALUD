@@ -14,6 +14,36 @@ use Illuminate\Validation\ValidationException;
 
 class AppointmentWithdrawalService
 {
+    public function endWithoutFinancialDisposition(int $id, User $actor, array $data, string $state): Appointment
+    {
+        abort_unless(in_array($state, ['CANCELADO', 'NO_ASISTIO'], true), 422);
+        abort_unless($actor->can($state === 'CANCELADO' ? C::CANCEL : C::MARK_NO_SHOW), 403);
+        return $this->execute($state, $id, $actor, $data, function ($a, $op) use ($state, $actor, $data) {
+            abort_unless(in_array($a->estado_cita, ['PROGRAMADO', 'CONFIRMADO', 'PACIENTE_LLEGO', 'EN_ESPERA', 'LLAMANDO'], true),
+                409, 'La cita ya está cerrada o en atención. Requiere revisión.');
+            // No approved disposition of financial documents/credits exists for these states.
+            $links = \App\Models\VoucherItem::whereIn('item_type', ['cita', Appointment::class])->where('item_id', $a->id)->exists();
+            $credits = DB::table('appointment_credit_applications')->where('source_appointment_id', $a->id)
+                ->orWhere('destination_appointment_id', $a->id)->exists();
+            $refunds = DB::table('appointment_refund_requests')->where('appointment_id', $a->id)->exists();
+            if ($links || $credits || $refunds || (float) $a->total_pagado > 0) {
+                throw ValidationException::withMessages(['appointment' => 'Esta cita tiene dinero o documentos financieros vinculados. Requiere revisión antes de cancelarla o marcar inasistencia.']);
+            }
+            if ($state === 'NO_ASISTIO') {
+                abort_if($a->hora_llegada || in_array($a->estado_cita, ['PACIENTE_LLEGO', 'EN_ESPERA', 'LLAMANDO'], true),
+                    409, 'Hay evidencia de llegada. NO ASISTIÓ corresponde a quien nunca llegó.');
+                abort_unless((int) $a->duracion_cita > 0, 409, 'No está definida la duración del intervalo. Requiere revisión.');
+                $timezone = config('scheduling.operational_timezone', 'America/Lima');
+                $end = \Carbon\Carbon::parse($a->fecha_cita.' '.$a->hora_cita, $timezone)->addMinutes((int) $a->duracion_cita);
+                abort_if(now($timezone)->lt($end), 409, 'Puedes registrar NO ASISTIÓ después de terminar el intervalo.');
+            }
+            app(AppointmentHistory::class)->record($a, $state, $actor->id, ['motivo' => $data['motivo'],
+                'metadata' => ['previous_state' => $a->estado_cita, 'operation_id' => $op->id, 'financial_disposition' => 'NONE']]);
+            $a->update(['estado_cita' => $state, 'updated_by_user_id' => $actor->id]);
+            return $a;
+        });
+    }
+
     public function withdraw(int $id, User $actor, array $data): Appointment
     {
         abort_unless($actor->can(C::WITHDRAW), 403);

@@ -13,7 +13,7 @@ class AppointmentWorkflowController extends Controller
 {
     public function history(Request $r, int $appointmentId)
     {
-        abort_unless($r->user()->can(C::VIEW_AUDIT) || $r->user()->can(C::WITHDRAW)
+        abort_unless($r->user()->can(C::VIEW_AUDIT) || $r->user()->can(C::WITHDRAW) || $r->user()->can(C::CANCEL) || $r->user()->can(C::MARK_NO_SHOW)
             || ($r->user()->can(C::CREATE) && $r->user()->can(C::RESCHEDULE)), 403);
         $a = Appointment::visibleToAgendaUser($r->user()->id)->whereKey($appointmentId)->firstOr(fn () => abort(404));
         $events = $a->events()->with('actor:id,name')->orderByDesc('id')->get();
@@ -27,13 +27,28 @@ class AppointmentWorkflowController extends Controller
                 'refund_request_status' => $e->refund_request_status]),
             'available_credit' => collect($p['available_by_voucher'])->map(fn ($amount, $id) => ['voucher_id' => (int) $id, 'amount' => Money::decimal($amount)])->values(),
             'refund_requests' => DB::table('appointment_refund_requests')->where('appointment_id', $a->id)->get(['id', 'voucher_id', 'amount', 'status', 'requested_at']),
-            'can_withdraw' => $r->user()->can(C::WITHDRAW), 'can_rebook' => $r->user()->can(C::CREATE) && $r->user()->can(C::RESCHEDULE)]);
+            'can_withdraw' => $r->user()->can(C::WITHDRAW), 'can_cancel' => $r->user()->can(C::CANCEL),
+            'can_no_show' => $r->user()->can(C::MARK_NO_SHOW),
+            'can_rebook' => $r->user()->can(C::CREATE) && $r->user()->can(C::RESCHEDULE)]);
     }
     public function withdraw(Request $r, int $appointmentId, AppointmentWithdrawalService $service)
     {
         $d = $r->validate(['request_key' => 'required|uuid', 'motivo' => 'required|string|max:2000',
             'requested_action' => 'required|in:REPROGRAMAR,DEVOLUCION,PENDIENTE', 'was_present' => 'sometimes|boolean']);
         return $this->result($service->withdraw($appointmentId, $r->user(), $d));
+    }
+    public function cancel(Request $r, int $appointmentId, AppointmentWithdrawalService $service)
+    {
+        return $this->endAppointment($r, $appointmentId, $service, 'CANCELADO');
+    }
+    public function noShow(Request $r, int $appointmentId, AppointmentWithdrawalService $service)
+    {
+        return $this->endAppointment($r, $appointmentId, $service, 'NO_ASISTIO');
+    }
+    private function endAppointment(Request $r, int $id, AppointmentWithdrawalService $service, string $state)
+    {
+        $data = $r->validate(['request_key' => 'required|uuid', 'motivo' => 'required|string|max:2000']);
+        return $this->result($service->endWithoutFinancialDisposition($id, $r->user(), $data, $state));
     }
     public function rebook(Request $r, int $appointmentId, AppointmentWithdrawalService $service)
     {

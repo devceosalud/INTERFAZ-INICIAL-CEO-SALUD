@@ -290,6 +290,7 @@ class AppointmentController extends Controller
         //dd($request->all());
         $estadoCita = Appointment::visibleToAgendaUser((int) $request->user()->id)
             ->whereKey($request->appointment_id)->firstOrFail();
+        \App\Support\Scheduling\AppointmentClosingGuard::assertLegacyUpdate($estadoCita, $request->estado_cita);
         $exito = $estadoCita->update([
             'estado_cita' => $request->estado_cita
         ]);

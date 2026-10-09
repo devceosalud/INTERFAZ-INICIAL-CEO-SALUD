@@ -59,7 +59,7 @@ class OperationalRegistrationService
                 }
                 if (!empty($data['patient_capture'])) {
                     abort_unless(PatientWriteAccess::allows($actor), 403);
-                    Patient::findOrFail($patientId)->update($data['patient_capture']);
+                    Patient::findOrFail($patientId)->update(array_filter($data['patient_capture'], fn ($value) => $value !== null && $value !== ''));
                 }
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,

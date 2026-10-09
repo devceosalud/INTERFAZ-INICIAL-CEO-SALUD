@@ -22,6 +22,14 @@ Route::middleware([
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::get('/scheduling-mvp/agenda/heatmap/preview', [\App\Http\Controllers\Scheduling\AgendaHeatmapController::class, 'preview'])
+            ->name('scheduling.mvp.agenda.heatmap.preview');
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/cancel', [$workflow, 'cancel'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.cancel');
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/no-show', [$workflow, 'noShow'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.no-show');
+        Route::patch('/scheduling-mvp/agenda/appointments/{appointmentId}/notes', [\App\Http\Controllers\Scheduling\AgendaDetailsController::class, 'notes'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.notes');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/history', [$workflow, 'history'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.history');
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/withdraw', [$workflow, 'withdraw'])

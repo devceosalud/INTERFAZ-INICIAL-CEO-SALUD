@@ -173,6 +173,20 @@ class OperationalRegistrationTest extends TestCase
         $this->create($this->payload(['patient_capture' => ['telefono_secundario' => '+51999111444', 'channel_id' => $channel->id, 'interaction_medium_id' => $medium->id]]))->assertCreated();
         $this->assertSame('+51999111444', $this->patient->fresh()->telefono_secundario);
     }
+    public function test_blank_capture_fields_do_not_erase_existing_patient_data_on_registration(): void
+    {
+        $channel = \App\Models\Channel::create(['nombre' => 'CEO TEST', 'estado' => 'ACTIVO']);
+        $this->patient->update(['telefono' => '+51999000001', 'telefono_secundario' => '+51999000002', 'channel_id' => $channel->id]);
+        $this->create($this->payload(['patient_capture' => [
+            'telefono' => '', 'telefono_secundario' => null, 'channel_id' => null,
+        ]]))->assertCreated();
+        $patient = $this->patient->fresh();
+        $this->assertSame('+51999000001', $patient->telefono);
+        $this->assertSame('+51999000002', $patient->telefono_secundario);
+        $this->assertEquals($channel->id, $patient->channel_id);
+        $this->assertDatabaseCount('patients', 1);
+        $this->assertDatabaseCount('appointments', 1);
+    }
     public function test_private_proof_download_and_external_links_reject_pii_exposure_and_unsafe_content(): void
     {
         Storage::fake('local');

@@ -22,17 +22,21 @@
             list: [0.02, 0.21, 0.53, 0.76, 'Listado de pacientes'],
             record: [0.58, 0.21, 0.40, 0.76, 'Ficha · Datos · Guardar / Volver'] } },
     };
-    function event(click, width, height, screen, view, zone, rect, uuid) {
+    function event(click, width, height, screen, view, zone, rect, uuid, geometry) {
         const module = modules[screen];
         if (!module || !module.views.includes(view) || !module.zones[zone]
             || width < 240 || height < 240 || !rect || rect.width <= 0 || rect.height <= 0) { return null; }
         if (click.target && /^(INPUT|TEXTAREA)$/.test(click.target.tagName || '')) { return null; }
         if (click.target && click.target.isContentEditable) { return null; }
-        return { event_uuid: uuid, screen: screen, layout_version: 2, zone: zone, view_mode: view,
+        if (geometry && (click.clientX < rect.left || click.clientX > rect.left + rect.width
+            || click.clientY < rect.top || click.clientY > rect.top + rect.height)) { return null; }
+        const result = { event_uuid: uuid, screen: screen, layout_version: geometry && screen === 'agenda' ? 3 : 2, zone: zone, view_mode: view,
             element: screen === 'agenda' ? 'agenda.other' : screen + '.control',
             x: Math.max(0, Math.min(1, (click.clientX - rect.left) / rect.width)),
             y: Math.max(0, Math.min(1, (click.clientY - rect.top) / rect.height)),
             viewport_width: Math.min(10000, width), viewport_height: Math.min(10000, height) };
+        if (geometry && screen === 'agenda') { result.geometry = geometry; }
+        return result;
     }
     function queue(send) {
         let pending = [], busy = false;
@@ -66,10 +70,24 @@ if (typeof document !== 'undefined') { document.addEventListener('DOMContentLoad
             let view = surface.dataset.telemetryView || (screen === 'agenda' ? 'dia' : screen === 'horarios' ? 'horarios' : 'lista');
             if (screen === 'pacientes') { view = document.getElementById('patients-record-surface').hidden ? 'lista' : 'ficha'; }
             if (screen === 'agenda') { view = document.getElementById('agenda-board').dataset.telemetryView || 'dia'; }
+            const rect = target.getBoundingClientRect();
+            let geometry;
+            if (screen === 'agenda') {
+                const panels = { capture: 'agenda-op-capture-panel', notes: 'agenda-op-notes-panel', payment: 'agenda-op-payment-panel',
+                    documents: 'agenda-op-documents-panel', workflow: 'agenda-workflow-panel' };
+                const scroll = selector => Math.round(document.querySelector(selector)?.scrollTop || 0);
+                geometry = { left: rect.left, top: rect.top, width: rect.width, height: rect.height,
+                    operations_scroll: scroll('.agenda-operations'), doctors_scroll: scroll('.agenda-doctor-list'),
+                    grid_scroll: scroll('#agenda-day-grid-body'), page_scroll: Math.round(window.scrollY),
+                    expanded: Object.entries(panels).filter(([, id]) => document.getElementById(id)?.open).map(([key]) => key),
+                    selected: Boolean(document.getElementById('agenda-reschedule-form') && !document.getElementById('agenda-reschedule-form').hidden),
+                    audit_link: Boolean(document.querySelector('.agenda-center__head a')), revision: 1 };
+            }
             buffer.add(api.event(click, window.innerWidth, window.innerHeight, screen, view,
-                target.dataset.uiZone, target.getBoundingClientRect(), window.crypto.randomUUID()));
+                target.dataset.uiZone, rect, window.crypto.randomUUID(), geometry));
         } catch (_) { /* Telemetry must never change the original action. */ }
     }, true);
     window.setInterval(() => buffer.flush(), 5000);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { buffer.flush(); } });
+    window.addEventListener('pagehide', () => buffer.flush());
 }); }

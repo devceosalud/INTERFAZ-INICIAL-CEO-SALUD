@@ -5,7 +5,7 @@
         const byId = id => document.getElementById('agenda-op-' + id);
         const ui = Object.fromEntries(['phone', 'phone-secondary', 'channel', 'medium', 'reason', 'note', 'price', 'paid',
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
-            'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel'].map(id => [id, byId(id)]));
+            'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;
         let capturePatient = null;
@@ -22,6 +22,45 @@
             return body;
         }
         function json(method, data) { return { method, headers: Object.assign(headers(), { 'Content-Type': 'application/json' }), body: JSON.stringify(data) }; }
+        function inlineStatus(domain, message, error = false) {
+            const status = byId(domain + '-status'), alert = byId(domain + '-error');
+            status.hidden = error || !message; alert.hidden = !error;
+            (error ? alert : status).textContent = message || '';
+        }
+        function captureValues() {
+            return model.nonBlank({ telefono: ui.phone.value, telefono_secundario: ui['phone-secondary'].value,
+                channel_id: ui.channel.value, interaction_medium_id: ui.medium.value });
+        }
+        ui['save-patient'].addEventListener('click', async () => {
+            const id = captureId, version = captureVersion;
+            if (!id || working || ui.phone.disabled) { return; }
+            const payload = captureValues();
+            if (config.context()?.appointment_id) { payload.appointment_id = config.context().appointment_id; }
+            working = true; ui['save-patient'].disabled = true;
+            inlineStatus('patient', '');
+            try {
+                const result = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)) + '/agenda-contact', json('PATCH', payload));
+                if (version !== captureVersion) { return; }
+                capturePatient = result.patient; captureDirty = false;
+                ui.phone.value = result.patient.telefono || ''; ui['phone-secondary'].value = result.patient.telefono_secundario || '';
+                ui.channel.value = result.patient.channel_id || ''; ui.medium.value = result.patient.interaction_medium_id || '';
+                document.getElementById('agenda-patient-phone-summary').textContent = result.patient.telefono || 'Sin celular';
+                inlineStatus('patient', result.message);
+            } catch (e) { if (version === captureVersion) { inlineStatus('patient', e.message, true); } }
+            finally { working = false; ui['save-patient'].disabled = !captureId || ui.phone.disabled; }
+        });
+        ui['save-notes'].addEventListener('click', async () => {
+            const id = config.context()?.appointment_id;
+            if (!id || working || ui.reason.disabled) { return; }
+            working = true; ui['save-notes'].disabled = true; inlineStatus('notes', '');
+            try {
+                const result = await request(base + '/' + id + '/notes', json('PATCH', model.nonBlank({ motivo_consulta: ui.reason.value, observaciones: ui.note.value })));
+                if (String(config.context()?.appointment_id) !== String(id)) { return; }
+                ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || '';
+                inlineStatus('notes', result.message);
+            } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
+            finally { working = false; ui['save-notes'].disabled = ui.reason.disabled; }
+        });
         function payment() { return model.payment(ui.amount.value, ui.method.value, ui.operation.value, ui.origin.value); }
         function calculate() {
             ui.operation.disabled = ui.method.disabled || ui.method.value === 'EFECTIVO';
@@ -52,6 +91,7 @@
             }
             capturePatient = null;
             captureId = id || null; captureDirty = false; const version = ++captureVersion;
+            ui['save-patient'].disabled = !id || ui.phone.disabled; inlineStatus('patient', '');
             ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => { ui[id].value = ''; });
             document.getElementById('agenda-patient-phone-summary').textContent = '—';
             if (!id) { return; }
@@ -78,8 +118,7 @@
                 payload.patient_id = options.patientId || null;
                 if (options.patient) { payload.patient = options.patient; }
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
-                    payload.patient_capture = { telefono: ui.phone.value || null, telefono_secundario: ui['phone-secondary'].value || null,
-                        channel_id: ui.channel.value || null, interaction_medium_id: ui.medium.value || null };
+                    payload.patient_capture = captureValues();
                 }
                 const body = new FormData(); body.append('payload', JSON.stringify(payload));
                 if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
@@ -122,13 +161,17 @@
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
             ui['confirm-reservation'].hidden = !id || !config.canCreate || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
             ui.documents.replaceChildren();
+            inlineStatus('notes', ''); ui['save-notes'].hidden = true;
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
-            if (!id) { ui.reason.value = ''; ui.note.value = ''; return; }
+            if (!id) { ui.reason.value = ''; ui.note.value = ''; byId('notes-tip').textContent = 'Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.'; return; }
             patientChanged(context.patient_id, true);
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
                 economy(p); ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
+                ui.reason.disabled = !p.can_edit_notes; ui.note.disabled = !p.can_edit_notes;
+                ui['save-notes'].hidden = !p.can_edit_notes; ui['save-notes'].disabled = !p.can_edit_notes;
+                byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : 'Esta cita está en consulta: no tienes permiso para modificar sus notas.';
                 ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado); await documents(id);
             } catch (e) { config.notice(e.message, true); }
         }

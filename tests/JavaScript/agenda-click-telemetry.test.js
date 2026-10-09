@@ -31,3 +31,13 @@ test('batch acotado y fallos del endpoint no bloquean las acciones de Agenda', a
     await assert.doesNotReject(queue.flush()); assert.equal(size, 20);
     await assert.doesNotReject(queue.flush()); assert.equal(size, 10); assert.equal(sends, 2);
 });
+
+test('v3 conserva solo geometría técnica sin leer contenido, IDs ni valores de inputs', () => {
+    const rect={left:550,top:130,width:800,height:600};
+    const geometry={...rect,operations_scroll:40,doctors_scroll:0,grid_scroll:0,page_scroll:0,expanded:['capture'],selected:false,revision:1};
+    const item=telemetry.event({clientX:950,clientY:280,target:target('SECRET')},1366,768,'agenda','dia','grid',rect,'uuid',geometry);
+    assert.equal(item.layout_version,3); assert.equal(item.x,0.5); assert.equal(item.y,0.25);
+    assert.deepEqual(item.geometry,geometry);
+    assert.equal(telemetry.event({clientX:0,clientY:0,target:target('SECRET')},1366,768,'agenda','dia','grid',rect,'uuid',geometry),null);
+    assert.doesNotMatch(JSON.stringify(item),/SECRET|patient_id|appointment_id|user_id|input_value|textContent/);
+});

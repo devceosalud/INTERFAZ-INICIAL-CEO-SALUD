@@ -1,6 +1,25 @@
-window.addEventListener("DOMContentLoaded", function () {
+(function (root) {
+    async function lookup(url, id, token, fetcher) {
+        const response = await fetcher(url, { method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': token },
+            body: JSON.stringify({ id }) });
+        if (response.redirected || [401, 419].includes(response.status)) {
+            throw new Error('La sesión venció. Inicia sesión nuevamente antes de editar usuarios.');
+        }
+        if (response.status === 403) { throw new Error('No tienes permiso para editar usuarios.'); }
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('No se pudo cargar el usuario. Recarga la página y vuelve a intentarlo.');
+        }
+        const body = await response.json();
+        if (!response.ok) { throw new Error(response.status === 404 ? 'El usuario ya no está disponible.' : 'No se pudo cargar el usuario.'); }
+        return body;
+    }
+    root.UserEditorApi = { lookup };
+    if (typeof module === 'object' && module.exports) { module.exports = root.UserEditorApi; }
+}(typeof window !== 'undefined' ? window : globalThis));
 
-    console.log('CARGANDO USUARIOS');
+if (typeof window !== 'undefined') window.addEventListener("DOMContentLoaded", function () {
+
 
 
     // GUARDAR DATOS DEL USUARIO
@@ -28,8 +47,6 @@ window.addEventListener("DOMContentLoaded", function () {
                 if (response.code == 0) {
                     $.each(response.error, function (prefix, val) {
                         $(form).find("span." + prefix + "_error").text(val[0]);
-                        console.log("span." + prefix + "_error");
-                        console.log(val[0]);
                     });
                 } else {
                     Swal.fire({
@@ -47,11 +64,10 @@ window.addEventListener("DOMContentLoaded", function () {
             },
 
             error: function (xhr) {
-                console.log(xhr.responseText);
                 Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: "Ocurrió un error al guardar el paciente",
+                    text: "No se pudo guardar el usuario. Comprueba la sesión y los datos.",
                 });
             },
 
@@ -68,20 +84,8 @@ window.addEventListener("DOMContentLoaded", function () {
         let userId = $(this).data("id");
 
         try {
-            const res = await fetch(
-                `${window.location.origin}/api/admin/user/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    id: userId,
-                }),
-            },
-            );
-
-            const data = await res.json();
-            console.log("DATOS PARA EDITAR:", data);
+            const data = await window.UserEditorApi.lookup(`${window.location.origin}/api/admin/user/search`, userId,
+                document.querySelector('meta[name="csrf-token"]').content, window.fetch.bind(window));
 
             if (data.message === "encontrado") {
                 let u = data.user;
@@ -89,12 +93,13 @@ window.addEventListener("DOMContentLoaded", function () {
                 $("#userModalEdit #usuario_id_edit").val(u.id);
                 $("#userModalEdit #nombre_usuario_edit").val(u.name);
                 $("#userModalEdit #email_edit").val(u.email);
+                $("#userModalEdit input[name=password]").val('');
 
                 //ABRIR MODAL
                 $("#userModalEdit").modal("show");
             }
         } catch (error) {
-            console.error(error);
+            Swal.fire({ icon: 'error', title: 'No se pudo abrir la edición', text: error.message });
         }
     });
 
@@ -124,8 +129,6 @@ window.addEventListener("DOMContentLoaded", function () {
                         $(form)
                             .find("span." + prefix + "_error")
                             .text(val[0]);
-                        console.log("span." + prefix + "_error");
-                        console.log(val[0]);
                     });
                 } else {
                     Swal.fire({
@@ -143,7 +146,6 @@ window.addEventListener("DOMContentLoaded", function () {
             },
 
             error: function (xhr) {
-                console.log(xhr.responseText);
                 Swal.fire({
                     icon: "error",
                     title: "Error",

@@ -87,6 +87,11 @@ class Kernel extends HttpKernel
     {
         parent::__construct($app, $router);
 
+        // Internal APIs combine api + session middleware. Explicitly prioritize our
+        // cookie subclass: otherwise sorting can start a session from the encrypted
+        // cookie before decryption and lose the browser's authenticated session.
+        $this->prependToMiddlewarePriority(\App\Http\Middleware\EncryptCookies::class);
+
         // Laravel hoists `auth` above SubstituteBindings from the `web` group, so it would
         // otherwise run before any route middleware and redirect anonymous visitors to the
         // login page, revealing that a disabled module's route exists.

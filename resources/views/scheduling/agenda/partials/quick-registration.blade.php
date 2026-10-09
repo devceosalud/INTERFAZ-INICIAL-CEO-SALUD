@@ -65,7 +65,7 @@
             <div><dt>Estado</dt><dd id="agenda-quick-status">Sin cita</dd></div>
             <div><dt>Pago</dt><dd id="agenda-quick-payment">—</dd></div>
             <div class="agenda-context-secondary"><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
-            <div class="agenda-context-secondary"><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ auth()->user()->name ?? 'Usuario autenticado' }}</dd></div>
+            <div class="agenda-context-secondary"><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ ($previewMode ?? false) ? 'Usuario de demostración' : (auth()->user()->name ?? 'Usuario autenticado') }}</dd></div>
             <div class="agenda-context-secondary"><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Sin asignar</dd></div>
         </dl>
 
