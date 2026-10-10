@@ -36,11 +36,13 @@
             <label class="agenda-field"><span>Autorizado por</span><input id="agenda-op-authorized" class="agenda-field__input" maxlength="255" @disabled(!$canAuthorize)></label>
         </div>
         <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
-        <small>La autorización no registra dinero. Para confirmar hace falta un adelanto real de al menos 50%.</small>
+        <small>La autorización no registra dinero. Confirmar una cita regular exige al menos 50% de adelanto real, salvo exoneración expresamente autorizada.</small>
+        <p>En una cita nueva, Guardar reserva guarda también el adelanto ingresado si tienes permiso, sin confirmar el horario. Confirmar cita registra el adelanto ingresado y valida el requisito financiero. En una reserva existente, primero registra el adelanto y luego confirma.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
-        @unless($canSubmitPayment)<p>No tienes permiso para registrar adelantos. Puedes guardar una reserva.</p>@endunless
+        @unless($canSubmitPayment)<p>No tienes permiso para registrar adelantos (appointment.payment.submit). Con appointment.create puedes guardar una reserva sin pago. Solicita revisión al administrador y a Caja.</p>@endunless
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
-        <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden>Confirmar agenda</button>
+        <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
+        <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
     </details>
     <details id="agenda-op-documents-panel">
         <summary>Comprobantes y documentos</summary>

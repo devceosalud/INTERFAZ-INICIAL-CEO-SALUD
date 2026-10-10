@@ -64,7 +64,7 @@ class AgendaRefinementTest extends TestCase
 
     public function test_both_conversions_require_confirmation_preserve_snapshot_and_reject_occupied_destination(): void
     {
-        $id = $this->postJson(route('scheduling.mvp.agenda.appointments.store'), $this->payload('08:00'))->assertCreated()->json('appointment.appointment_id');
+        $id = $this->legacyRegular('08:00')->id;
         $appointment = Appointment::findOrFail($id);
         $appointment->update(['total_pagado' => 50, 'saldo_pendiente' => 50, 'numero_operacion' => 'TEST-OP']);
         $before = $appointment->fresh()->getAttributes();
@@ -72,7 +72,7 @@ class AgendaRefinementTest extends TestCase
         $this->assertSame($before, $appointment->fresh()->getAttributes());
         $this->move($id, '08:00', '06:00', 'FUERA_HORARIO')->assertOk();
         $this->assertSame('FUERA_HORARIO', $appointment->fresh()->tipo_agendamiento);
-        $this->postJson(route('scheduling.mvp.agenda.appointments.store'), $this->payload('09:00'))->assertCreated();
+        $this->legacyRegular('09:00');
         $this->move($id, '06:00', '09:00', 'REGULAR')->assertConflict()->assertJsonMissing(['confirmation_required' => true]);
         $this->assertSame('06:00', substr($appointment->fresh()->hora_cita, 0, 5));
         $this->move($id, '06:00', '08:00')->assertConflict()->assertJsonPath('target_booking_type', 'REGULAR');
@@ -82,6 +82,12 @@ class AgendaRefinementTest extends TestCase
         }
         $this->assertSame('REGULAR', $appointment->fresh()->tipo_agendamiento);
         $this->assertSame(1, $this->capacity()['ocupacion_segura']);
+    }
+
+    private function legacyRegular(string $time): Appointment
+    {
+        return app(\App\Services\Scheduling\CreateAppointmentService::class)->create(
+            \App\Support\Scheduling\CreateAppointmentData::fromValidated($this->payload($time), $this->actor->id));
     }
 
     public function test_capacity_endpoint_is_authorized_bounded_and_independent_of_private_identity(): void
@@ -105,7 +111,7 @@ class AgendaRefinementTest extends TestCase
 
     public function test_additional_stays_additional_and_both_rows_and_month_counts_are_visible(): void
     {
-        $regular = $this->postJson(route('scheduling.mvp.agenda.appointments.store'), $this->payload('08:00'))->assertCreated()->json('appointment.appointment_id');
+        $regular = $this->legacyRegular('08:00')->id;
         $extraPatient = $this->createPatient($this->actor, ['numero_identidad' => '70000905', 'historia_clinica' => 'QA-5']);
         $additional = $this->postJson(route('scheduling.mvp.agenda.appointments.additional'), array_replace($this->payload('08:00'), ['patient_id' => $extraPatient->id]))->assertCreated()->json('appointment.appointment_id');
         foreach (['dia', 'semana'] as $view) {

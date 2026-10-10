@@ -16,6 +16,10 @@ class OperationalRegistrationRequest extends FormRequest
         }
     }
     public function authorize(): bool { return $this->user()?->can(Capability::CREATE) ?? false; }
+    protected function failedAuthorization()
+    {
+        throw new \Illuminate\Auth\Access\AuthorizationException('No tienes permiso para guardar reservas ni crear citas (appointment.create). Solicita revisión al administrador.');
+    }
     public function rules(): array
     {
         return [
@@ -38,10 +42,11 @@ class OperationalRegistrationRequest extends FormRequest
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', Rule::in(VoucherPaymentRecorder::METHODS)],
             'payment.operation' => 'nullable|string|max:120', 'payment.origin' => 'nullable|string|max:120',
+            'proofs' => 'prohibited',
             'proof' => ['nullable', 'file', new \App\Rules\PrivateAppointmentFile(), 'max:8192'],
             'links' => 'nullable|array|max:10', 'links.*' => 'array:label,url',
             'links.*.label' => 'required|string|max:120', 'links.*.url' => 'required|url|max:2048|starts_with:https://',
         ];
     }
-    public function messages(): array { return ['service_id.required' => 'Selecciona un servicio para agendar la cita.']; }
+    public function messages(): array { return ['proofs.prohibited' => 'Esta entrega permite un comprobante por operación. Selecciona un solo archivo.', 'service_id.required' => 'Selecciona un servicio para agendar la cita.']; }
 }

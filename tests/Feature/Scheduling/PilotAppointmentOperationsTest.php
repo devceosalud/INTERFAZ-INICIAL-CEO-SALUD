@@ -183,9 +183,9 @@ class PilotAppointmentOperationsTest extends TestCase
 
     private function normal(string $time = '08:00'): Appointment
     {
-        $id = $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.store'), $this->payload($time))
-            ->assertCreated()->json('appointment.appointment_id');
-        return Appointment::findOrFail($id);
+        // Isolated legacy fixture: preserves the historical contract without reopening the HTTP bypass.
+        return app(\App\Services\Scheduling\CreateAppointmentService::class)->create(
+            \App\Support\Scheduling\CreateAppointmentData::fromValidated($this->payload($time), $this->actor->id));
     }
 
     private function payload(string $time = '08:00'): array

@@ -74,7 +74,7 @@ Route::middleware([
     });
 
     Route::post('/scheduling-mvp/agenda/appointments', [AgendaAppointmentController::class, 'store'])
-        ->middleware('permission:'.SchedulingCapability::CREATE)
+        ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])
         ->name('scheduling.mvp.agenda.appointments.store');
 
     Route::post('/scheduling-mvp/agenda/registrations', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'store'])

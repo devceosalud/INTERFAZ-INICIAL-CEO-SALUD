@@ -6,7 +6,7 @@
     'use strict';
 
     const copy = {
-        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Agendar cita: confirma el horario con al menos 50% de adelanto.',
+        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada.',
         insufficientAdvance: 'Para confirmar registra al menos el 50%. Si aún no pagó, usa Guardar reserva.',
         reserveSaved: 'Reserva guardada. Pendiente de adelanto.',
         reserveSavedHere: 'Reserva guardada para esta hora.',

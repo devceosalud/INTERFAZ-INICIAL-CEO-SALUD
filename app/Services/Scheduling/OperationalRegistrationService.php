@@ -73,7 +73,7 @@ class OperationalRegistrationService
                 $amount = Money::cents($data['payment']['amount'] ?? 0);
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
                 if ($amount > 0) {
-                    abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403);
+                    abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                     $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                     $v = $tickets->create($a, $shift, $actor->id);
                     app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,

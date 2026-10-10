@@ -18,7 +18,7 @@ test('comprobante se puede seleccionar en Documentos sin abrir ni registrar adel
 test('el par reserva/agendar explica el siguiente paso sin decir que la reserva ocupa el horario', () => {
     const help = guidance.copy.reserveVsSchedule;
     assert.match(help, /Guardar reserva: guarda el seguimiento sin confirmar el horario/);
-    assert.match(help, /Agendar cita: confirma el horario con al menos 50% de adelanto/);
+    assert.match(help, /Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada/);
     assert.doesNotMatch(help, /bloquea|aparta el horario|ocupa el slot/i);
     for (const file of [
         'resources/views/scheduling/agenda/partials/quick-registration.blade.php',

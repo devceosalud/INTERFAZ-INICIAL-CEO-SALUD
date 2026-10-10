@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         payload: appointmentCreateModel.payload, error: appointmentCreateModel.validationMessage, canCreate: canCreateAppointments,
         paymentUpdated: async (response) => { state.revealAppointmentId = String(response.appointment.appointment_id); await load(); },
-        refresh: load, notice: showActionNotice,
+        refresh: load, notice: showActionNotice, changed: () => updateAppointmentAction(),
         busy: (busy) => { state.appointmentBusy = busy; updateAppointmentAction(); el.draftSaveSchedule.disabled = busy || !canCreateAppointments; },
         registered: async (payload, options) => {
             state.identity = lookupModel.blank(); state.draft = null; el.documentNumber.value = '';
@@ -1412,12 +1412,15 @@ document.addEventListener('DOMContentLoaded', function () {
             && state.selection.tipo_contexto === 'slot_libre'
             && state.selection.seleccionable === true;
         const patient = Boolean(el.quickPatientId.value);
-        if (pendingStart) { pendingStart.disabled = state.appointmentBusy || !state.selection?.hora_inicio || state.selection?.tipo_contexto === 'fuera_horario'; }
-        el.appointmentSubmit.textContent = state.pendingMode ? 'Guardar reserva' : state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Agendar cita');
-        el.appointmentSubmit.disabled = !(state.additionalMode ? canAdditional : canCreateAppointments)
-            || state.appointmentBusy
-            || !slot
-            || !patient;
+        if (pendingStart) { pendingStart.disabled = !canCreateAppointments || state.appointmentBusy || !state.selection?.hora_inicio || state.selection?.tipo_contexto === 'fuera_horario'; }
+        el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Confirmar cita');
+        const readiness = window.AgendaOperationalForm.bookingReadiness({
+            canCreate: state.additionalMode ? canAdditional : canCreateAppointments, busy: state.appointmentBusy,
+            slot, patient, service: Boolean(el.serviceSelect.value && !el.serviceSelect.selectedOptions[0]?.disabled),
+            exception: state.additionalMode || state.offHoursMode, ...operationalWorkspace.readiness(),
+        });
+        el.appointmentSubmit.disabled = !readiness.allowed;
+        el.appointmentSubmit.setAttribute('aria-describedby', 'agenda-disabled-reason');
         const guidance = window.AgendaGuidance.copy;
         const paymentButton = document.getElementById('agenda-open-payment');
         if (paymentButton) {
@@ -1425,11 +1428,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const reason = document.getElementById('agenda-disabled-reason');
         if (reason) {
-            let line = '';
-            if (pendingStart && pendingStart.disabled) { line = guidance.needSelection; }
-            else if (el.appointmentSubmit.disabled && state.selection && state.selection.tipo_contexto === 'slot_libre') { line = guidance.needSelection; }
-            else if (paymentButton && paymentButton.disabled && state.selection) { line = guidance.needAppointment; }
-            else if (additionalStart && additionalStart.disabled && state.selection && state.selection.hora_inicio) { line = guidance.needDoctorHour; }
+            const line = state.selection?.tipo_contexto === 'cita_existente' ? '' : readiness.reason;
             reason.hidden = line === '';
             reason.textContent = line;
         }
@@ -1530,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         el.draftSave.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
         el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.textContent = draft.patientId ? 'Guardar y continuar' : 'Guardar y agendar';
+        el.draftSaveSchedule.textContent = 'Guardar y confirmar cita';
         window.requestAnimationFrame(function () {
             el.draftNombre.focus();
         });
@@ -1732,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const occupiedHour = Boolean(state.reserveOnOccupiedHour);
         state.reserveOnOccupiedHour = false;
         await operationalWorkspace.register({
-            pending: pending || Boolean(state.pendingMode),
+            pending: Boolean(pending),
             patient: patient, patientId: patientId || (patient ? null : el.quickPatientId.value),
             serviceId: el.serviceSelect.value, ownerId: el.responsibleSelect.value,
             bookingType: state.offHoursMode ? 'FUERA_HORARIO' : state.additionalMode ? 'ADICIONAL' : 'REGULAR',

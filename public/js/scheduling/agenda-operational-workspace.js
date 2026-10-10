@@ -11,6 +11,40 @@
         let capturePatient = null;
         const headers = () => ({ Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content });
         const base = config.base;
+        let buttonsBeforeWork = [], lastPosition = null;
+        function setWorking(value) {
+            working = value;
+            if (value) {
+                buttonsBeforeWork = ['submit-payment', 'confirm-reservation', 'add-documents', 'save-patient', 'save-notes']
+                    .map(id => [ui[id], ui[id].disabled]);
+                buttonsBeforeWork.forEach(([button]) => { button.disabled = true; });
+            } else {
+                buttonsBeforeWork.forEach(([button, disabled]) => { button.disabled = disabled; });
+                buttonsBeforeWork = [];
+            }
+            if (config.busy) { config.busy(value); }
+            if (!value && lastPosition) { confirmation(lastPosition); }
+        }
+        function rejected(error, kind) {
+            // Preserve UUID on uncertain outcomes (network/5xx/409); changing data cannot double-charge.
+            if (![400, 403, 404, 413, 422, 429].includes(error.status)) { return; }
+            if (kind === 'registration') { registrationKey = null; }
+            if (kind === 'payment') { paymentKey = null; }
+        }
+        function readiness() {
+            return { price: ui.price.value, amount: ui.amount.value, canPay: !ui.amount.disabled,
+                waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
+        }
+        function confirmation(position) {
+            const reason = byId('confirmation-reason');
+            const allowed = config.canCreate && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
+            ui['confirm-reservation'].disabled = working || !allowed;
+            if (reason) {
+                reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
+                    !allowed ? 'Para confirmar se requiere al menos 50% de pago real o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
+                    'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el médico.';
+            }
+        }
         async function request(url, options = {}) {
             const response = await fetch(url, Object.assign({ credentials: 'same-origin', headers: headers() }, options));
             const body = await response.json().catch(() => ({}));
@@ -36,7 +70,7 @@
             if (!id || working || ui.phone.disabled) { return; }
             const payload = captureValues();
             if (config.context()?.appointment_id) { payload.appointment_id = config.context().appointment_id; }
-            working = true; ui['save-patient'].disabled = true;
+            setWorking(true);
             inlineStatus('patient', '');
             try {
                 const result = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)) + '/agenda-contact', json('PATCH', payload));
@@ -47,19 +81,19 @@
                 document.getElementById('agenda-patient-phone-summary').textContent = result.patient.telefono || 'Sin celular';
                 inlineStatus('patient', result.message);
             } catch (e) { if (version === captureVersion) { inlineStatus('patient', e.message, true); } }
-            finally { working = false; ui['save-patient'].disabled = !captureId || ui.phone.disabled; }
+            finally { setWorking(false); ui['save-patient'].disabled = !captureId || ui.phone.disabled; }
         });
         ui['save-notes'].addEventListener('click', async () => {
             const id = config.context()?.appointment_id;
             if (!id || working || ui.reason.disabled) { return; }
-            working = true; ui['save-notes'].disabled = true; inlineStatus('notes', '');
+            setWorking(true); inlineStatus('notes', '');
             try {
                 const result = await request(base + '/' + id + '/notes', json('PATCH', model.nonBlank({ motivo_consulta: ui.reason.value, observaciones: ui.note.value })));
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
                 ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || '';
                 inlineStatus('notes', result.message);
             } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
-            finally { working = false; ui['save-notes'].disabled = ui.reason.disabled; }
+            finally { setWorking(false); ui['save-notes'].disabled = ui.reason.disabled; }
         });
         function payment() { return model.payment(ui.amount.value, ui.method.value, ui.operation.value, ui.origin.value); }
         function calculate() {
@@ -72,8 +106,11 @@
             if (ui.method.value === 'EFECTIVO') { ui.operation.value = ''; }
             try { ui.balance.value = model.decimal(ui.waived.checked ? 0 : Math.max(0, balance - model.cents(ui.amount.value || '0'))); }
             catch (_) { ui.balance.value = 'Revisa el importe'; }
+            if (config.changed) { config.changed(); }
         }
         function economy(p) {
+            lastPosition = { ...lastPosition, ...p };
+            confirmation(lastPosition);
             quote = model.cents(p.precio); balance = model.cents(p.saldo);
             ui.price.value = p.precio; ui.paid.value = p.pago_real; calculate();
         }
@@ -82,7 +119,7 @@
             quote = Math.round(Number(price || 0) * 100); balance = quote;
             ui.price.value = model.decimal(quote); ui.paid.value = '0.00'; calculate();
         }
-        ['amount', 'method', 'waived'].forEach(id => ui[id].addEventListener('input', calculate));
+        ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ui[id].addEventListener('change', () => { captureDirty = true; }));
         async function patientChanged(id, hydrateIdentity = false) {
             if (String(id || '') === String(captureId || '')) {
@@ -107,7 +144,7 @@
         }
         async function register(options) {
             if (working) { return; }
-            working = true; config.busy(true);
+            setWorking(true);
             try {
                 const context = config.context();
                 const payload = config.payload(context, options.patientId || 1, options.serviceId, options.ownerId);
@@ -127,8 +164,8 @@
                 registrationKey = null; ui.amount.value = '0'; ui.proof.value = ''; ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
                 await config.registered(response, options);
-            } catch (e) { showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment'); }
-            finally { working = false; config.busy(false); }
+            } catch (e) { rejected(e, 'registration'); showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment'); }
+            finally { setWorking(false); }
         }
         async function documents(id) {
             const result = await request(base + '/' + id + '/documents');
@@ -159,7 +196,10 @@
             if (key !== selectedKey) { selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
-            ui['confirm-reservation'].hidden = !id || !config.canCreate || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
+            ui['confirm-reservation'].hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
+            ui['confirm-reservation'].disabled = true; lastPosition = null;
+            const confirmationReason = byId('confirmation-reason');
+            if (confirmationReason) { confirmationReason.hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION'; confirmationReason.textContent = 'Consultando el requisito financiero de la reserva…'; }
             ui.documents.replaceChildren();
             inlineStatus('notes', ''); ui['save-notes'].hidden = true;
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
@@ -184,7 +224,7 @@
                 catch (e) { showPlaced(e, 'payment'); return; }
                 if (cents < 1) { showPlaced({ message: root.AgendaGuidance.copy.needAmount }, 'payment'); return; }
             }
-            working = true; config.busy(true);
+            setWorking(true);
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
@@ -194,8 +234,8 @@
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
                 paymentKey = null; ui.amount.value = '0'; ui.proof.value = ''; economy(response.economy);
                 await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
-            } catch (e) { showPlaced(e, 'payment'); }
-            finally { working = false; config.busy(false); }
+            } catch (e) { rejected(e, 'payment'); showPlaced(e, 'payment'); }
+            finally { setWorking(false); }
         }
         function showPlaced(error, context) {
             const placed = root.AgendaGuidance.place(error.message, error.status, context);
@@ -256,7 +296,6 @@
             finally { working = false; }
         });
         function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
-        calculate();
-        return { register, quoteChanged, patientChanged, selectionChanged, openPayment };
+        return { register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness };
     };
 }(typeof window !== 'undefined' ? window : globalThis));

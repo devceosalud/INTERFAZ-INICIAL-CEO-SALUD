@@ -71,14 +71,11 @@ class AgendaAppointmentController extends Controller
     }
 
     public function store(
-        StoreAgendaAppointmentRequest $request,
-        CreateAppointmentService $appointments
+        \App\Http\Requests\Scheduling\StoreRegularAgendaAppointmentRequest $request,
+        \App\Services\Scheduling\OperationalRegistrationService $registrations
     ): JsonResponse {
         try {
-            $appointment = $appointments->create(CreateAppointmentData::fromValidated(
-                $request->validated(),
-                (int) $request->user()->id
-            ));
+            $appointment = $registrations->register($request->validated(), $request->user(), $request->file('proof'));
         } catch (AppointmentSlotUnavailableException $exception) {
             return response()->json(['message' => $exception->getMessage()], 409);
         } catch (AppointmentConfigurationException $exception) {
@@ -86,10 +83,12 @@ class AgendaAppointmentController extends Controller
         }
 
         return response()->json([
-            'message' => 'Cita registrada correctamente',
+            'message' => $appointment->estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'Reserva guardada. Pendiente de adelanto y confirmación.' : 'Cita confirmada.',
+            'request_key' => $request->validated('request_key'),
             'appointment' => [
                 'appointment_id' => (int) $appointment->id,
                 'numero_cita' => $appointment->numero_cita,
+                'estado_agenda' => $appointment->estado_agenda, 'tipo_agendamiento' => $appointment->tipo_agendamiento,
                 'patient_id' => (int) $appointment->patient_id,
                 'doctor_id' => (int) $appointment->doctor_id,
                 'service_id' => (int) $appointment->service_id,

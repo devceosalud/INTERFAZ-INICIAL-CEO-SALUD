@@ -25,6 +25,8 @@ class PilotDiagnosisTest extends TestCase
         $this->assertTrue($result['factiliza_token_present']);
         $this->assertTrue($result['pilot_cash_enabled']);
         $this->assertFalse($result['operator']['capabilities']['appointment.payment.submit']);
+        $this->assertContains('appointment.create', $result['operator']['missing_payment_requirements']);
+        $this->assertContains('appointment.payment.submit', $result['operator']['missing_payment_requirements']);
         $this->assertStringNotContainsString('DO-NOT-EXPOSE', $output);
         $this->assertStringNotContainsString($actor->email, $output);
         foreach ($before as $table => $count) { $this->assertSame($count, DB::table($table)->count()); }
