@@ -1,5 +1,7 @@
 # Entrega 1: estabilización de Agenda y permisos
 
+> Informe de la entrega inicial local `c9e4349`. La validación ampliada autorizada, la corrección de concurrencia y el estado para PR están en [VALIDACION_FINAL_ENTREGA_1.md](VALIDACION_FINAL_ENTREGA_1.md). Las limitaciones de MySQL y navegador descritas aquí fueron evaluadas en esa fase posterior.
+
 Base: `0d37dee0a4209fccc6326894f46dccd4a2688d10` de `origin/main`.
 Rama exclusiva: `codex/auditoria-agenda-adelantos-documentos`.
 Checkout: `.worktrees/auditoria-agenda`. El checkout original y sus cinco modificaciones previas se conservan.
