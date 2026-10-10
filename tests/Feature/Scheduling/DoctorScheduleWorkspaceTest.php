@@ -537,7 +537,8 @@ class DoctorScheduleWorkspaceTest extends TestCase
                 'duracion_edit_cita' => 20,
             ])->assertOk();
 
-        $this->assertSame('10:00', (string) $block->fresh()->hora_inicio);
+        // TIME is HH:mm:ss in MariaDB; SQLite preserves the supplied HH:mm.
+        $this->assertContains((string) $block->fresh()->hora_inicio, ['10:00', '10:00:00']);
 
         $this->actingAs($this->admission)
             ->get(self::PAGE)

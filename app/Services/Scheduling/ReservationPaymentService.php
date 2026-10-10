@@ -22,8 +22,9 @@ class ReservationPaymentService
         unset($data['proof']); $storedPath = null;
         try { return DB::transaction(function () use ($original, $id, $actor, $data, $proof, &$storedPath) {
             $hash = hash('sha256', json_encode([$id, $data]).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
-            DB::table('appointment_operations')->insertOrIgnore(['actor_user_id' => $actor->id, 'request_key' => $data['request_key'],
-                'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
+            // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
+            DB::table('appointment_operations')->upsert([['actor_user_id' => $actor->id, 'request_key' => $data['request_key'],
+                'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
             $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash, $hash), 409);
             if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
@@ -35,7 +36,7 @@ class ReservationPaymentService
             $amount = Money::cents($data['payment']['amount'] ?? 0);
             if ($amount > $p['balance_cents']) { throw ValidationException::withMessages(['payment.amount' => 'El pago supera el saldo efectivo.']); }
             if ($amount > 0) {
-                abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403);
+                abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                 if ($p['authority'] === 'LEGACY_SNAPSHOT' && $p['paid_cents'] > 0) {
                     throw ValidationException::withMessages(['payment' => 'Reconciliar primero el adelanto histórico sin vouchers. No se duplicará ese dinero.']);
                 }
@@ -58,15 +59,14 @@ class ReservationPaymentService
             $a->update(['total_pagado' => Money::decimal($p['paid_cents']), 'saldo_pendiente' => Money::decimal($p['balance_cents']),
                 'estado_pagado' => $p['paid_cents'] === 0 ? 'PENDIENTE' : ($p['paid_cents'] >= $p['price_cents'] ? 'PAGADO' : 'PARCIAL'),
                 'updated_by_user_id' => $actor->id]);
-            if (($data['confirm'] ?? true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
+            if (($data['confirm'] ?? false) === true && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
                 if (!$p['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true);
-                $type = 'REGULAR';
-                try { $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id); }
-                catch (\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e) { $type = 'ADICIONAL'; }
-                $a->update(['estado_agenda' => 'CONFIRMADA', 'tipo_agendamiento' => $type]);
+                // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.
+                $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
+                $a->update(['estado_agenda' => 'CONFIRMADA']);
             }
             if ($proof) {
                 abort_unless($amount > 0 && $actor->can(Capability::SUBMIT_PAYMENT), 403);

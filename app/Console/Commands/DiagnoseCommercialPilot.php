@@ -49,6 +49,25 @@ class DiagnoseCommercialPilot extends Command
             $result['operator']['pilot_series_exists'] = VoucherSerie::where('tipo_comprobante', 'TICKET')->where('serie', $code)->exists();
             $result['operator']['pilot_context_exists'] = Schema::hasTable('appointment_pilot_cash_contexts')
                 && \Illuminate\Support\Facades\DB::table('appointment_pilot_cash_contexts')->where('actor_user_id', $user->id)->exists();
+            $missing = [];
+            if (!$result['scheduling_enabled']) { $missing[] = 'SCHEDULING_MVP_ENABLED'; }
+            foreach ([C::MVP_ACCESS, C::VIEW, C::CREATE, C::SUBMIT_PAYMENT] as $capability) {
+                if (!$user->can($capability)) { $missing[] = $capability; }
+            }
+            foreach (['appointment_operations', 'payments', 'voucher_series', 'appointment_events'] as $table) {
+                if (!$result['schema'][$table]) { $missing[] = 'schema:'.$table; }
+            }
+            if (!$result['schema']['payments_bank_identity']) { $missing[] = 'schema:payments.bank_identity_key'; }
+            if ($result['pilot_cash_enabled']) {
+                if (!$user->hasAnyRole(['COMERCIAL', 'ADMISION', 'ADMINISTRADOR'])) { $missing[] = 'pilot:authorized-role'; }
+                if (!$result['schema']['appointment_pilot_cash_contexts']) { $missing[] = 'schema:appointment_pilot_cash_contexts'; }
+            } else {
+                if ($shifts->count() !== 1) { $missing[] = 'cash:one-own-open-manual-shift'; }
+                elseif ($result['operator']['active_ticket_series_in_manual_shift'] !== 1) { $missing[] = 'cash:one-active-ticket-series'; }
+            }
+            $result['operator']['missing_payment_requirements'] = $missing;
+            $result['operator']['payment_readiness_scope'] = 'Configuration only; validate appointment, balance, bank operation and ticket on each submission.';
+
         }
         $this->line(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         return 0;

@@ -69,7 +69,8 @@ class AgendaAppointmentWriteTest extends TestCase
         ]);
 
         $response->assertCreated()
-            ->assertJsonPath('message', 'Cita registrada correctamente')
+            ->assertJsonPath('message', 'Reserva guardada. Pendiente de adelanto y confirmación.')
+            ->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION')
             ->assertJsonPath('appointment.patient_id', $this->patient->id)
             ->assertJsonPath('appointment.service_id', $this->catalog['service']->id)
             ->assertJsonPath('appointment.creator_user_id', $this->creator->id)
@@ -86,8 +87,9 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertEquals(100, (float) $appointment->saldo_pendiente);
         $this->assertSame('PENDIENTE', $appointment->estado_pagado);
         $this->assertSame('PROGRAMADO', $appointment->estado_cita);
-        $this->assertSame('LEGADO', $appointment->estado_agenda);
-        $this->assertNull($appointment->tipo_agendamiento);
+        $this->assertSame('PENDIENTE_CONFIRMACION', $appointment->estado_agenda);
+        $this->assertSame('REGULAR', $appointment->tipo_agendamiento);
+        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
         $this->assertFalse((bool) $appointment->es_exonerado);
         $this->assertNull($appointment->autorizado_por);
     }
@@ -228,16 +230,13 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertDatabaseCount('appointments', 0);
     }
 
-    public function test_an_occupied_or_out_of_schedule_slot_returns_conflict(): void
+    public function test_an_existing_patient_appointment_and_out_of_schedule_slot_are_rejected(): void
     {
         $this->createExistingAppointment('PROGRAMADO');
 
         $this->postAppointment()
-            ->assertStatus(409)
-            ->assertJsonPath(
-                'message',
-                'El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.'
-            );
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.patient_id.0', 'Este paciente ya tiene una cita o reserva en esta hora.');
         $this->assertDatabaseCount('appointments', 1);
 
         Appointment::query()->delete();
@@ -270,7 +269,8 @@ class AgendaAppointmentWriteTest extends TestCase
         $payload = $this->payload();
 
         $this->actingAs($this->creator)->postJson($this->endpoint(), $payload)->assertCreated();
-        $this->actingAs($this->creator)->postJson($this->endpoint(), $payload)->assertStatus(409);
+        $this->actingAs($this->creator)->postJson($this->endpoint(), $payload)->assertUnprocessable();
+        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
 
         $this->assertDatabaseCount('appointments', 1);
     }

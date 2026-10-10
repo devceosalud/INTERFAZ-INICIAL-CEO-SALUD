@@ -39,6 +39,7 @@
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="SCHEDULING_MVP_ENABLED" value="false" force="true"/>
+        <env name="SCHEDULING_PILOT_PAYMENT_WITHOUT_MANUAL_CASH_SHIFT" value="false" force="true"/>
         <env name="BROADCAST_DRIVER" value="null" force="true"/>
         <env name="FILESYSTEM_DISK" value="local" force="true"/>
         <env name="RENIEC_PROVIDER" value="aqpfact" force="true"/>

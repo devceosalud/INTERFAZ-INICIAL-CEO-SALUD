@@ -232,7 +232,11 @@ class OperationalPatientModuleTest extends TestCase
 
         $listQuery = collect(DB::getQueryLog())
             ->pluck('query')
-            ->first(fn ($query) => str_contains($query, 'from "patients"') && str_contains(strtolower($query), 'limit 100'));
+            ->first(function ($query) {
+                // Identifier quoting differs between SQLite and MySQL/MariaDB.
+                $sql = strtolower(str_replace(['"', '`'], '', $query));
+                return str_contains($sql, 'from patients') && str_contains($sql, 'limit 100');
+            });
 
         $this->assertNotNull($listQuery);
         $sql = strtolower($listQuery);

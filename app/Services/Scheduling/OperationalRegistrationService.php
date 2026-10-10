@@ -30,8 +30,9 @@ class OperationalRegistrationService
         $storedPath = null;
         try {
             return DB::transaction(function () use ($data, $actor, $proof, $hash, &$storedPath) {
-                DB::table('appointment_operations')->insertOrIgnore(['actor_user_id' => $actor->id,
-                    'request_key' => $data['request_key'], 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
+                // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
+                DB::table('appointment_operations')->upsert([['actor_user_id' => $actor->id,
+                    'request_key' => $data['request_key'], 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
                 $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
                 abort_unless(hash_equals($op->payload_hash, $hash), 409, 'Esta operación ya fue usada con datos diferentes.');
                 if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
@@ -73,7 +74,7 @@ class OperationalRegistrationService
                 $amount = Money::cents($data['payment']['amount'] ?? 0);
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
                 if ($amount > 0) {
-                    abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403);
+                    abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                     $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                     $v = $tickets->create($a, $shift, $actor->id);
                     app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,

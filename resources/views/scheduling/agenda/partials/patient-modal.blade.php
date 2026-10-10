@@ -207,7 +207,7 @@
                 <p class="agenda-draft__message" id="agenda-draft-message" role="status" aria-live="polite"></p>
             </div>
 
-            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Agendar cita: confirma el horario con al menos 50% de adelanto.</p>
+            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada.</p>
             <footer class="agenda-patient-dialog__actions">
                 <span id="agenda-patient-write-policy">
                     {{ $canWritePatients ? 'Guardado habilitado para Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Admisión, Recepción o Comercial.' }}
@@ -215,7 +215,7 @@
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
                 <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar reserva</button>
                 <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
-                    Guardar y agendar
+                    Guardar y confirmar cita
                 </button>
             </footer>
         </form>
