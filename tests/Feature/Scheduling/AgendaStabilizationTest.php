@@ -183,6 +183,76 @@ class AgendaStabilizationTest extends TestCase
         $this->postJson($url, ['request_key' => $key, 'confirm' => true])->assertOk();
         $this->assertDatabaseCount('payments', 2); $this->assertEquals(50, Payment::sum('monto'));
     }
+
+    public static function nonConfirmationIntents(): array
+    {
+        return ['omitted' => [[]], 'false' => [['confirm' => false]], 'zero' => [['confirm' => 0]], 'form-zero' => [['confirm' => '0']]];
+    }
+    /** @dataProvider nonConfirmationIntents */
+    public function test_advance_at_fifty_percent_never_confirms_without_explicit_true(array $intent): void
+    {
+        $this->grant(C::SUBMIT_PAYMENT); $this->shift();
+        $id = $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload())->assertCreated()->json('appointment.appointment_id');
+        $url = route('scheduling.mvp.agenda.payments', $id);
+        $data = $intent + ['request_key' => (string) Str::uuid(), 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']];
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson($url, $data)->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION')
+                ->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR')->assertJsonPath('economy.pago_real', '50.00');
+        }
+        $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('vouchers', 1);
+        $this->assertDatabaseCount('appointment_operations', 2); $this->assertEquals(50, Payment::sum('monto'));
+        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
+        $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => 'true'])->assertUnprocessable()->assertJsonValidationErrors('confirm');
+        $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('appointment_operations', 2);
+    }
+    public static function explicitConfirmationIntents(): array { return [[true], [1], ['1']]; }
+    /** @dataProvider explicitConfirmationIntents */
+    public function test_validated_explicit_boolean_confirmation_remains_supported($intent): void
+    {
+        $this->grant(C::SUBMIT_PAYMENT); $this->shift();
+        $id = $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload())->assertCreated()->json('appointment.appointment_id');
+        $this->postJson(route('scheduling.mvp.agenda.payments', $id), ['request_key' => (string) Str::uuid(), 'confirm' => $intent,
+            'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']])->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
+        $this->assertDatabaseCount('payments', 1); $this->assertSame(1, Appointment::consumingRegularSlot()->count());
+    }
+    public static function occupiedReservationCases(): array
+    {
+        return [[false, '0.00'], [false, '25.00'], [true, '0.00'], [true, '25.00']];
+    }
+    /** @dataProvider occupiedReservationCases */
+    public function test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts(bool $additionalPermission, string $paid): void
+    {
+        $this->grant(C::SUBMIT_PAYMENT); $this->shift();
+        if ($additionalPermission) { $this->grant(C::CREATE_ADDITIONAL); }
+        $this->assertSame($additionalPermission, $this->actor->can(C::CREATE_ADDITIONAL));
+        $id = $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload())->assertCreated()->json('appointment.appointment_id');
+        $url = route('scheduling.mvp.agenda.payments', $id);
+        if ($paid !== '0.00') {
+            $this->postJson($url, ['request_key' => (string) Str::uuid(), 'payment' => ['amount' => $paid, 'method' => 'EFECTIVO']])->assertOk();
+        }
+        $other = $this->createPatient($this->actor, ['numero_identidad' => '70000988', 'historia_clinica' => 'QA-COLLISION']);
+        $occupied = $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload(['patient_id' => $other->id, 'mode' => 'CONFIRM',
+            'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
+        $tables = ['appointments', 'payments', 'vouchers', 'voucher_items', 'voucher_series', 'appointment_operations', 'appointment_events', 'appointment_documents', 'cashier_shifts'];
+        $before = [];
+        foreach ($tables as $table) { $before[$table] = \Illuminate\Support\Facades\DB::table($table)->orderBy('id')->get()->toJson(); }
+        $amount = $paid === '0.00' ? '50.00' : '25.00';
+        $data = ['request_key' => (string) Str::uuid(), 'confirm' => true, 'payment' => ['amount' => $amount, 'method' => 'YAPE', 'operation' => 'QA-CONFLICT', 'origin' => 'YAPE']];
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson($url, $data)->assertConflict()->assertJsonPath('message', 'El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.');
+            foreach ($tables as $table) { $this->assertSame($before[$table], \Illuminate\Support\Facades\DB::table($table)->orderBy('id')->get()->toJson(), $table.' changed after rejected confirmation'); }
+        }
+        $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::findOrFail($id)->estado_agenda);
+        $this->assertSame('REGULAR', Appointment::findOrFail($id)->tipo_agendamiento);
+        $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
+        // A deliberate payment-only retry remains valid even though the regular interval is occupied.
+        $data['request_key'] = (string) Str::uuid(); unset($data['confirm']);
+        $this->postJson($url, $data)->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION');
+        $this->postJson($url, $data)->assertOk();
+        $this->assertEquals(100, Payment::sum('monto')); $this->assertDatabaseCount('payments', $paid === '0.00' ? 2 : 3);
+        $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
+    }
+
     public function test_deferred_multiple_proofs_are_rejected_with_laravel_nine_validation(): void
     {
         $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $this->payload(['proofs' => ['unsupported']]))

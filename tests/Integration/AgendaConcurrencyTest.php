@@ -95,7 +95,7 @@ class AgendaConcurrencyTest extends TestCase
     public function test_simultaneous_payment_retry_records_only_one_advance_and_leaves_reservation_pending(): void
     {
         $id = $this->postJson('/scheduling-mvp/agenda/appointments', $this->payload())->assertCreated()->json('appointment.appointment_id');
-        $data = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']];
+        $data = ['request_key' => (string) Str::uuid(), 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']];
         $this->assertSame([200, 200], $this->statuses($this->race('/scheduling-mvp/agenda/appointments/'.$id.'/payments', [$data, $data])));
         $this->assertDatabaseCount('payments', 1); $this->assertEquals(50, Payment::sum('monto'));
         $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::findOrFail($id)->estado_agenda);
@@ -117,6 +117,28 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 1);
         $this->assertDatabaseCount('appointment_operations', 1); $this->assertContains((float) Payment::sum('monto'), [50.0, 60.0]);
     }
+
+    public function test_parallel_confirmation_of_an_occupied_reservation_has_no_partial_effects(): void
+    {
+        $this->assertFalse($this->actor->can(C::CREATE_ADDITIONAL));
+        $id = $this->postJson('/scheduling-mvp/agenda/appointments', $this->payload())->assertCreated()->json('appointment.appointment_id');
+        $other = $this->createPatient($this->actor, ['numero_identidad' => '70000987', 'historia_clinica' => 'QA-OCCUPIED']);
+        $occupied = $this->postJson('/scheduling-mvp/agenda/appointments', $this->payload(['patient_id' => $other->id, 'mode' => 'CONFIRM',
+            'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
+        $tables = ['appointments', 'payments', 'vouchers', 'voucher_items', 'voucher_series', 'appointment_operations', 'appointment_events', 'cashier_shifts'];
+        $before = []; foreach ($tables as $table) { $before[$table] = DB::table($table)->orderBy('id')->get()->toJson(); }
+        $data = ['request_key' => (string) Str::uuid(), 'confirm' => true, 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']];
+        $path = '/scheduling-mvp/agenda/appointments/'.$id.'/payments';
+        $this->assertSame([409, 409], $this->statuses($this->race($path, [$data, $data])));
+        foreach ($tables as $table) { $this->assertSame($before[$table], DB::table($table)->orderBy('id')->get()->toJson(), $table); }
+        $data['request_key'] = (string) Str::uuid(); unset($data['confirm']);
+        $this->assertSame([200, 200], $this->statuses($this->race($path, [$data, $data])));
+        $this->assertDatabaseCount('payments', 2); $this->assertDatabaseCount('vouchers', 2); $this->assertEquals(100, Payment::sum('monto'));
+        $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::findOrFail($id)->estado_agenda);
+        $this->assertSame('REGULAR', Appointment::findOrFail($id)->tipo_agendamiento);
+        $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
+    }
+
     public function test_parallel_direct_requests_without_create_permission_make_no_writes(): void
     {
         $this->actor->revokePermissionTo(C::CREATE);

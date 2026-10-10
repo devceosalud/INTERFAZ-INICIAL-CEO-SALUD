@@ -1,5 +1,7 @@
 # ValidaciÃ³n final de Entrega 1 â€” 10/10/2026
 
+Actualización posterior a la revisión bloqueante del PR #3: [correcciones y nueva validación](CORRECCIONES_PR_3_AGENDA.md). Los resultados de este documento corresponden a la validación anterior (`b83cf57`).
+
 Rama: `codex/auditoria-agenda-adelantos-documentos`.
 Base remota comprobada: `0d37dee0a4209fccc6326894f46dccd4a2688d10`.
 Entrega inicial local: `c9e43492543da7cfc2d6a224df026130a23a0f26`.

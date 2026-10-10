@@ -133,15 +133,18 @@ class OperationalRegistrationTest extends TestCase
         $this->pay($id, $payment)->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->pay($id, $payment)->assertOk(); $this->assertEquals(50, Payment::sum('monto')); $this->assertDatabaseCount('payments', 2);
     }
-    public function test_two_paid_reservations_confirm_to_exactly_one_regular_and_one_additional(): void
+    public function test_two_paid_regular_reservations_never_convert_implicitly_even_with_additional_permission(): void
     {
         $this->shift($this->actor); $other = $this->actor('COMERCIAL'); $this->shift($other);
         $payment = ['amount' => '50.00', 'method' => 'EFECTIVO'];
         $one = $this->create($this->payload(['payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000903', 'historia_clinica' => 'QA-3']);
         $two = $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
-        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid()])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
-        $this->actingAs($other)->pay($two, ['request_key' => (string) Str::uuid()])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL');
+        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
+        $before = Appointment::findOrFail($two)->getAttributes();
+        $this->actingAs($other)->pay($two, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertConflict();
+        $this->assertSame($before, Appointment::findOrFail($two)->getAttributes());
+        $this->assertDatabaseCount('payments', 2);
         $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(100, Payment::sum('monto'));
     }
     public function test_missing_shift_operation_or_insufficient_confirmation_rolls_back_every_write(): void

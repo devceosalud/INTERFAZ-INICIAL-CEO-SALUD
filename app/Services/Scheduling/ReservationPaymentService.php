@@ -59,15 +59,14 @@ class ReservationPaymentService
             $a->update(['total_pagado' => Money::decimal($p['paid_cents']), 'saldo_pendiente' => Money::decimal($p['balance_cents']),
                 'estado_pagado' => $p['paid_cents'] === 0 ? 'PENDIENTE' : ($p['paid_cents'] >= $p['price_cents'] ? 'PAGADO' : 'PARCIAL'),
                 'updated_by_user_id' => $actor->id]);
-            if (($data['confirm'] ?? true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
+            if (($data['confirm'] ?? false) === true && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
                 if (!$p['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true);
-                $type = 'REGULAR';
-                try { $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id); }
-                catch (\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e) { $type = 'ADICIONAL'; }
-                $a->update(['estado_agenda' => 'CONFIRMADA', 'tipo_agendamiento' => $type]);
+                // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.
+                $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
+                $a->update(['estado_agenda' => 'CONFIRMADA']);
             }
             if ($proof) {
                 abort_unless($amount > 0 && $actor->can(Capability::SUBMIT_PAYMENT), 403);

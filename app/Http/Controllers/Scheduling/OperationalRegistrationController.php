@@ -43,6 +43,8 @@ class OperationalRegistrationController extends Controller
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', \Illuminate\Validation\Rule::in(\App\Services\Billing\VoucherPaymentRecorder::METHODS)],
             'payment.operation' => 'nullable|string|max:120', 'payment.origin' => 'nullable|string|max:120']);
+        // Normalize only Laravel-validated boolean representations; omission never requests confirmation.
+        if (array_key_exists('confirm', $data)) { $data['confirm'] = (bool) $data['confirm']; }
         try { $a = $service->submit($appointmentId, $request->user(), $data, $request->file('proof')); }
         catch (AppointmentSlotUnavailableException $e) { return response()->json(['message' => $e->getMessage()], 409); }
         return response()->json(['appointment' => ['appointment_id' => $a->id, 'estado_agenda' => $a->estado_agenda,

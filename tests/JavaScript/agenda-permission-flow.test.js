@@ -84,3 +84,27 @@ test('reserva sin 50% o sin CREATE muestra requisitos y conserva confirmación b
         assert.match(f.get('confirmation-reason').textContent,canCreate?/50%/:/appointment.create/);
     }
 });
+const position={precio:'100.00',pago_real:'0.00',saldo:'100.00',asegurada:false,es_exonerado:false,can_edit_notes:true};
+test('registrar adelanto envía confirm false y el conflicto conserva selección e intención sin otro envío',async()=>{
+    for(const conflict of [false,true]){
+        const f=fixture((url,options)=>{
+            if(url.endsWith('/economy'))return response(200,conflict?{...position,pago_real:'50.00',saldo:'50.00',asegurada:true}:position);
+            if(url.endsWith('/documents'))return response(200,{documents:[],can_write:false});
+            if(url.startsWith('/patients'))return response(200,{patient:{patient_id:1}});
+            return conflict?response(409,{message:'El horario seleccionado ya no se encuentra disponible.'}):response(200,{appointment:{appointment_id:12,estado_agenda:'PENDIENTE_CONFIRMACION',tipo_agendamiento:'REGULAR'},economy:{...position,pago_real:'50.00',saldo:'50.00',asegurada:true}});
+        });
+        const selected={tipo_contexto:'cita_existente',appointment_id:12,patient_id:1,estado_agenda:'PENDIENTE_CONFIRMACION',tipo_agendamiento:'REGULAR'};
+        f.select(selected);await f.workspace.selectionChanged(selected);f.get('amount').value='50';
+        await f.get(conflict?'confirm-reservation':'submit-payment').listeners.click();
+        const posts=f.calls.filter(c=>c.options.method==='POST');assert.equal(posts.length,1);
+        assert.equal(payload(posts[0]).confirm,conflict);assert.equal(payload(posts[0]).payment.amount,conflict?'0.00':'50.00');
+        assert.equal(selected.estado_agenda,'PENDIENTE_CONFIRMACION');assert.equal(selected.tipo_agendamiento,'REGULAR');
+        if(conflict){
+            assert.match(f.notices.join(' '),/horario seleccionado/);
+            await f.get('confirm-reservation').listeners.click();
+            const retry=f.calls.filter(c=>c.options.method==='POST');
+            assert.equal(retry.length,2);assert.equal(payload(retry[0]).request_key,payload(retry[1]).request_key);
+            assert.equal(payload(retry[1]).confirm,true);assert.equal(payload(retry[1]).payment.amount,'0.00');
+        }
+    }
+});
