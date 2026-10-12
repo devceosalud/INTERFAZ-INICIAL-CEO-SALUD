@@ -210,6 +210,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const operationalWorkspace = window.AgendaOperationalWorkspace({
         endpoint: board.dataset.registrationStore, base: board.dataset.rescheduleUrl,
         patientTemplate: el.patientDraft.dataset.detailTemplate, context: () => state.selection,
+        quoteEndpoint: '/scheduling-mvp/agenda/quote',
+        quoteData: () => ({ doctor_id: state.selection?.doctor_id, service_id: el.serviceSelect.value,
+            patient_id: el.quickPatientId.value || 0, fecha_cita: state.selection?.fecha }),
         patientLoaded: (patient) => {
             if (!state.selection?.appointment_id || String(state.selection.patient_id) !== String(patient.patient_id)
                 || String(el.quickPatientId.value) !== String(patient.patient_id)) { return; }

@@ -15,8 +15,10 @@
             <form id="formUpdateAppointmentState" action="{{ route('admissionit.appointment.update') }}" method="POST">
 
                 @csrf
+                <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
 
                 <div class="modal-body">
+                    <p>Confirmar requiere adelanto real o exoneración autorizada. Los pagos se registran en Agenda. Cambiar médico o servicio requiere una nueva cita y revisión del crédito.</p>
 
                     <input type="hidden" name="appointment_id" id="appointment_id" value="">
 

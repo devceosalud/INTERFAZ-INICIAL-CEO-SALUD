@@ -70,6 +70,7 @@ class AgendaBoardController extends Controller
             'phonePrefixes' => PatientPhone::PREFIXES,
             'documentTypes' => OperationalPatientController::DOCUMENT_TYPES,
             'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
+            'additionalRates' => \App\Models\AdditionalRate::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'commercialUsers' => User::query()
                 ->whereHas('roles', fn ($query) => $query->where('name', 'COMERCIAL'))
                 ->orderBy('name')

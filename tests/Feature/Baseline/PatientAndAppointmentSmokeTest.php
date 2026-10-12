@@ -36,8 +36,12 @@ class PatientAndAppointmentSmokeTest extends TestCase
     public function test_authenticated_user_can_create_an_unpaid_appointment_with_current_contract(): void
     {
         $user = $this->createUserWithRole('ADMISION');
+        foreach (['appointment.view', 'appointment.create'] as $permission) {
+            $user->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($permission, 'web'));
+        }
         $patient = $this->createPatient($user);
         $catalog = $this->createAppointmentCatalog();
+        $catalog['rate']->update(['nombre' => 'TARIFA ESTANDAR', 'tipo_tarifa' => 'MONTO_FIJO']);
 
         $this->actingAs($user)->postJson('/admissionist/appointment/store', [
             'patient_id' => $patient->id,
@@ -59,6 +63,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
             'duracion_cita' => 30,
             'estado_pagado' => 'PENDIENTE',
             'estado_cita' => 'PROGRAMADO',
+            'estado_agenda' => 'PENDIENTE_CONFIRMACION',
         ]);
         $this->assertDatabaseCount('vouchers', 0);
         $this->assertDatabaseCount('payments', 0);

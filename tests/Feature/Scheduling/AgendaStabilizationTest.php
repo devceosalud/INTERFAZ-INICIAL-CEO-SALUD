@@ -96,7 +96,7 @@ class AgendaStabilizationTest extends TestCase
     {
         $this->grant(C::SUBMIT_PAYMENT); $this->shift();
         $response = $this->sendAppointment($endpoint, $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => $amount, 'method' => 'EFECTIVO'],
-            'total_pagado' => 100, 'estado_pagado' => 'PAGADO', 'precio_programado' => 1]));
+            'total_pagado' => 100, 'estado_pagado' => 'PAGADO', 'precio_programado' => 100]));
         if ($allowed) {
             $response->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
             $this->assertEquals(50, Payment::sum('monto')); $this->assertSame(1, Appointment::consumingRegularSlot()->count());

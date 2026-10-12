@@ -15,10 +15,14 @@
             <form id="formUpdateSchedule" action="{{ route('admissionit.schedule.update') }}" method="POST">
 
                 @csrf
+                <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
 
                 <div class="modal-body">
+                    <p>Confirmar requiere adelanto real o exoneración autorizada. Los pagos se registran en Agenda. Cambiar médico o servicio requiere una nueva cita y revisión del crédito.</p>
 
                     <input type="hidden" name="appointment_id" id="appointment_id">
+                    <input type="hidden" name="expected_fecha_cita" id="expected_fecha_cita">
+                    <input type="hidden" name="expected_hora_cita" id="expected_hora_cita">
 
                     <!-- ================= DATOS PACIENTE ================= -->
                     <h6 class="fw-bold mb-3">Datos del Paciente</h6>
@@ -107,13 +111,14 @@
                                     class="text-danger">*</span></label>
                             <select class="form-control" name="estado_cita" id="estado_cita">
                               {{--  <option value="PROGRAMADO">PROGRAMADO</option> --}}
+                                <option value="PROGRAMADO">PROGRAMADO (conservar estado)</option>
                                 <option value="CONFIRMADO">CONFIRMADO</option>
-                                <option value="CONFIRMADO">PACIENTE_LLEGO</option>
+                                <option value="PACIENTE_LLEGO">PACIENTE LLEGO</option>
                                 <option value="EN_ESPERA">EN ESPERA</option>
                                 <option value="LLAMANDO">LLAMANDO</option>
                                 <option value="EN_ATENCION">EN ATENCION</option>
                                 <option value="ATENDIDO">ATENDIDO</option>
-                                <option value="ATENDIDO">REEVALUACION</option>
+                                <option value="REEVALUACION">REEVALUACION</option>
                                 <option value="CANCELADO">CANCELADO</option>
                                 <option value="NO_ASISTIO">NO ASISTIO</option>
                             </select>

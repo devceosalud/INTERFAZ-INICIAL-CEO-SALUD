@@ -10,6 +10,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
 
+    $('#formCreateAppointment select').on('change', function () {
+        if ($.fn.selectpicker) { $(this).selectpicker('refresh'); }
+    });
+
     //PARA LLENAR DINAMICAMENTE EL PRECIO
     let precio_programado = document.querySelector('#precio_programado');
 
@@ -63,6 +67,7 @@ window.addEventListener('DOMContentLoaded', () => {
     //REFREZCAR SI HAY CAMBIOS EN LA FECHA
     $('#appointmentModalCreate #fecha_cita').on('change', function () {
         cargarHorariosCita();
+        calcularPrecioCita();
     })
 
 });
@@ -219,6 +224,7 @@ async function calcularPrecioCita() {
                 patient_id,
                 service_id,
                 additional_rate_id,
+                fecha_cita: document.querySelector('#appointmentModalCreate #fecha_cita').value || undefined,
                 es_exonerado
             })
         });
@@ -234,7 +240,7 @@ async function calcularPrecioCita() {
         //ASIGNAMOS LOS DATOS YA CALCULADOS  
         document.querySelector('#precio_programado').value = data.precio_programado;
         document.querySelector('#precio_programado_hidden').value = data.precio_programado;
-        if (data.tipo === 'EXONERADO') {
+        if (es_exonerado) {
             document.querySelector('#total_pagado').value = data.total_pagado;
         }
 
@@ -251,7 +257,7 @@ async function calcularPrecioCita() {
 function calcularSaldoCita() {
     let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
     let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
-    let saldo = precio - pagado;
+    let saldo = document.querySelector('#appointmentModalCreate #es_exonerado').checked ? 0 : precio - pagado;
     if (saldo < 0) {
         saldo = 0;
     }
@@ -297,12 +303,14 @@ $('#formCreateAppointment').on('submit', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    if (role == 'ADMISION') {
+                    if (role == 'ADMISION' || role == 'COMERCIAL') {
                         window.location.href = "/admissionist/appointment";
                     } else if (role == 'RECEPCION') {
                         window.location.href = "/receptionist/appointment";
                     } else if(role == 'ADMINISTRADOR') {
                         window.location.href = "/admin/appointment";
+                    } else {
+                        window.location.href = "/admissionist/appointment";
                     }
                 });
 

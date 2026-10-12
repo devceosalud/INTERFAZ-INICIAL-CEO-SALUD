@@ -120,7 +120,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (eventComun.tipo === 'disponible') {
                 $('#appointmentModalCreate input[name="fecha_cita"]').val(eventComun.fecha_cita);
                 $('#appointmentModalCreate input[name="hora_cita"]').val(eventComun.hora_cita);
-                $('#appointmentModalCreate select[name="doctor_id"]').val(eventComun.doctor_id).trigger('change');
+                const sourceDoctor = document.querySelector('#filtro-calendar_doctor_id option[value="' + eventComun.doctor_id + '"]');
+                const createDoctor = document.querySelector('#appointmentModalCreate select[name="doctor_id"]');
+                if (sourceDoctor) { createDoctor.replaceChildren(sourceDoctor.cloneNode(true)); }
+                $('#appointmentModalCreate #specialty_id').val($('#filtro-calendar_specialty_id').val());
+                $(createDoctor).val(eventComun.doctor_id).selectpicker('refresh');
+                createDoctor.dispatchEvent(new Event('change', { bubbles: true }));
+                $('#appointmentModalCreate #specialty_id').selectpicker('refresh');
                 $('#appointmentModalCreate').modal('show');
                 return;
             }
@@ -137,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let nombre_especialidad = eventComun.nombre_especialidad;
             let doctor_id = eventComun.doctor_id;
             let nombre_doctor = eventComun.nombre_doctor;
-            let servicio_id = eventComun.service_id;
+            let servicio_id = eventComun.doctor_service_id;
             let nombre_servicio = eventComun.nombre_servicio;
             let fecha_cita = eventComun.fecha_cita;
             let hora_cita = eventComun.hora_cita;
@@ -166,10 +172,18 @@ document.addEventListener('DOMContentLoaded', function () {
             option_servicio.value = servicio_id;
             option_servicio.textContent = nombre_servicio;
             selectServicio.appendChild(option_servicio);
+            $(selectDoctor).val(doctor_id);
+            $(selectServicio).val(servicio_id || '');
+            $('#appointmentModalEdit #expected_fecha_cita').val(fecha_cita);
+            $('#appointmentModalEdit #expected_hora_cita').val(String(hora_cita).substring(0, 5));
+            const currentHour = document.createElement('option');
+            currentHour.value = String(hora_cita).substring(0, 5);
+            currentHour.textContent = currentHour.value;
+            document.querySelector('#appointmentModalEdit #hora_cita_edit').replaceChildren(currentHour);
 
             //DATOS DE LA CITA MEDICA
             $('#appointmentModalEdit #fecha_cita_edit').val(fecha_cita);
-            $('#appointmentModalEdit #hora_cita_edit').val(hora_cita);
+            $('#appointmentModalEdit #hora_cita_edit').val(String(hora_cita).substring(0, 5));
             $('#appointmentModalEdit #estado_cita').val(estado_cita);
 
             initSelectEdit();

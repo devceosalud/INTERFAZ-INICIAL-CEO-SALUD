@@ -18,6 +18,7 @@ class ReservationPaymentService
 {
     public function submit(int $id, User $actor, array $data, ?\Illuminate\Http\UploadedFile $proof = null): Appointment
     {
+        abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         unset($data['proof']); $storedPath = null;
         try { return DB::transaction(function () use ($original, $id, $actor, $data, $proof, &$storedPath) {
@@ -63,7 +64,7 @@ class ReservationPaymentService
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
                 if (!$p['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
-                $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true);
+                $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
                 // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.
                 $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
                 $a->update(['estado_agenda' => 'CONFIRMADA']);

@@ -96,11 +96,11 @@
         <!-- TESSERACT -->
         <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-        <script src="{{ asset('js/admissionist/appointment/appointment.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/appointment/appointment.js') }}"></script>
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
 
         <script src="{{ asset('js/admissionist/filtro-calendario/filtro-calendario.js') }}"></script>
-        <script src="{{ asset('js/admissionist/calendario/calendario.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/calendario/calendario.js') }}"></script>
 
         <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
         <script src="{{ asset('js/admissionist/appointment/update.js') }}"></script>

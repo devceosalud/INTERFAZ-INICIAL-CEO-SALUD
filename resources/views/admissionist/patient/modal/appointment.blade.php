@@ -15,6 +15,9 @@
             <form id="formCreateAppointment" action="{{ route('admissionit.appointment.store') }}" method="POST">
 
                 @csrf
+                <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
+                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (no ocupa horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
+                <p>El precio se calcula en el servidor. Registrar adelanto no confirma automáticamente.</p>
 
                 <div class="modal-body">
 
@@ -100,7 +103,7 @@
                                         class="text-danger">*</span></label>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="cita_doble">
+                                    <input class="form-check-input" type="checkbox" name="cita_doble" value="1" id="cita_doble">
 
                                     <label class="form-check-label" for="cita_doble">
                                         Generar turno doble

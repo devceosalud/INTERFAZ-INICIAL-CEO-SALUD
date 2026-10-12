@@ -25,6 +25,8 @@ class OperationalRegistrationService
 {
     public function register(array $data, User $actor, ?UploadedFile $proof = null): Appointment
     {
+        abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
+            'No tienes permiso para registrar citas (appointment.create y appointment.view).');
         unset($data['proof']);
         $hash = hash('sha256', json_encode($data).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
         $storedPath = null;
@@ -65,7 +67,8 @@ class OperationalRegistrationService
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
-                        'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER']);
+                        'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
+                        'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false]);
                 $creator = app(CreateAppointmentService::class);
                 if ($data['booking_type'] === 'ADICIONAL') {
                     abort_unless($actor->can(Capability::CREATE_ADDITIONAL), 403); $a = $creator->createAdditional($create);
@@ -73,6 +76,13 @@ class OperationalRegistrationService
                 else { $a = $creator->createPending($create); }
                 $amount = Money::cents($data['payment']['amount'] ?? 0);
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
+                $expected = ['precio_programado' => Money::cents($a->precio_programado),
+                    'saldo_pendiente' => $waived ? 0 : Money::cents($a->precio_programado) - $amount];
+                foreach ($expected as $field => $value) {
+                    if (isset($data[$field]) && Money::cents($data[$field]) !== $value) {
+                        throw ValidationException::withMessages([$field => 'El precio o saldo enviado no coincide con el cálculo del servidor. Actualiza la cotización.']);
+                    }
+                }
                 if ($amount > 0) {
                     abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                     $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);

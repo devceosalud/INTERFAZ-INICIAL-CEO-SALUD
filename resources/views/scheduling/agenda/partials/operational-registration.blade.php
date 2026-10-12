@@ -25,6 +25,8 @@
     </details>
     <details id="agenda-op-payment-panel">
         <summary>Registrar adelanto</summary>
+        <label class="agenda-field"><span>Tarifa</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Tarifa estándar</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
+        <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
         <div class="agenda-patient-form-grid">
             <label class="agenda-field"><span>Precio de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Pagado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>

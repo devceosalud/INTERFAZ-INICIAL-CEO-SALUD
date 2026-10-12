@@ -52,7 +52,10 @@ class ScheduleController extends Controller
             5 => '#ce14cb', 6 => '#dc3545', 7 => '#110569', 8 => '#ffc107',
         ];
 
-        $events = $appointment->map(function ($schedule) use ($colors) {
+        $assignmentIds = app(ActiveDoctorServiceResolver::class)->query()->get(['id', 'doctor_id', 'service_id'])
+            ->groupBy(fn ($row) => $row->doctor_id.'|'.$row->service_id)
+            ->map(fn ($rows) => $rows->count() === 1 ? (int) $rows->first()->id : null);
+        $events = $appointment->map(function ($schedule) use ($colors, $assignmentIds) {
             $color = $colors[$schedule->service->specialty->id] ?? '#198754';
 
             // Same duration policy as the availability engine, so the calendar cannot drift.
@@ -78,6 +81,7 @@ class ScheduleController extends Controller
                 'doctor_id' => $schedule->doctor_id,
                 'nombre_doctor' => $schedule->doctor->nombre,
                 'service_id' => $schedule->service_id,
+                'doctor_service_id' => $assignmentIds[$schedule->doctor_id.'|'.$schedule->service_id] ?? null,
                 'nombre_servicio' => $schedule->service->nombre,
                 'fecha_cita' => $schedule->fecha_cita,
                 'hora_cita' => $schedule->hora_cita,
@@ -151,57 +155,19 @@ class ScheduleController extends Controller
     }
 
 
-    //PARA ACTUALIZAR LA AGENDA O CITA SELECCIONADA DEL CINTILLO DEL CALENDAR
-    public function update(Request $request)
+    public function update(Request $request, \App\Services\Scheduling\LegacyAppointmentMutation $mutations)
     {
-        //dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'doctor_id_edit' => 'required',
-            'service_id_edit' => 'required',
-            'fecha_cita_edit' => 'required|date',
-            'hora_cita_edit' => 'required',
-            'estado_cita' => 'required',
-            'motivo_consulta_edit' => 'nullable|string',
-            'observaciones_edit' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        $schedule = Appointment::visibleToAgendaUser((int) $request->user()->id)
-            ->whereKey($request->appointment_id)->firstOrFail();
-        \App\Support\Scheduling\AppointmentClosingGuard::assertLegacyUpdate($schedule, $request->estado_cita);
-
-        $doctorService = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $request->service_id_edit, (int) $request->doctor_id_edit);
-        $service = Service::find($doctorService->service_id); //buscamos el servicio por id
-        //dd($service);
-        $exito = $schedule->update([
-            'doctor_id' => $request->doctor_id_edit,
-            'service_id' => $service->id,
-            'fecha_cita' => $request->fecha_cita_edit,
-            'hora_cita' => $request->hora_cita_edit,
-            'estado_cita' => $request->estado_cita,
-            'motivo_consulta' => $request->motivo_consulta_edit,
-            'observaciones' => $request->observaciones_edit
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Cita actualizada correctamente"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "Cita no actualizada"
-            ]);
+        try {
+            $a = $mutations->update($request, true);
+            return response()->json(['code' => 1, 'msg' => 'Cita actualizada correctamente.', 'appointment_id' => $a->id]);
+        } catch (\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e) {
+            return response()->json(['message' => $e->getMessage()], 409);
+        } catch (\App\Exceptions\Scheduling\AppointmentClassificationConfirmationRequired $e) {
+            return response()->json(['message' => $e->getMessage(), 'confirmation_required' => true, 'target_booking_type' => $e->targetType], 409);
+        } catch (\App\Exceptions\Scheduling\AppointmentConfigurationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
     }
-
 
     /********************************************************************************************************
      * CRUD DE HORARIOS MEDICOS  Y SU CALENDARIO WEB                                                        *

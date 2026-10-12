@@ -87,7 +87,7 @@ class AppointmentEndingTest extends TestCase
     }
     public function test_legacy_endpoints_cannot_bypass_closing_capability_presence_money_or_reopen_history(): void
     {
-        [$actor,$a]=$this->fixture(); $payload=['appointment_id'=>$a->id,'estado_cita'=>'CANCELADO',
+        [$actor,$a]=$this->fixture(); $actor->givePermissionTo(Permission::findOrCreate(C::UPDATE, 'web')); $payload=['appointment_id'=>$a->id,'estado_cita'=>'CANCELADO',
             'doctor_id_edit'=>$a->doctor_id,'service_id_edit'=>1,'fecha_cita_edit'=>$a->fecha_cita,'hora_cita_edit'=>'13:20'];
         foreach (['/admissionist/appointment/update','/admissionist/schedule/update'] as $url) {
             $this->postJson($url,$payload)->assertUnprocessable()->assertJsonValidationErrors('estado_cita');

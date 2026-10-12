@@ -12,6 +12,17 @@ use Illuminate\Http\Request;
 
 class OperationalRegistrationController extends Controller
 {
+    public function quote(Request $request)
+    {
+        $d = $request->validate(['doctor_id' => 'required|integer', 'service_id' => 'required|integer',
+            'patient_id' => 'nullable|integer|min:0', 'fecha_cita' => 'required|date_format:Y-m-d',
+            'additional_rate_id' => 'nullable|integer']);
+        $service = app(\App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve($d['doctor_id'], $d['service_id']);
+        $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
+            $d['patient_id'] ?? 0, $d['fecha_cita'], $d['additional_rate_id'] ?? null);
+        return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo']]);
+    }
+
     public function store(OperationalRegistrationRequest $request, OperationalRegistrationService $service)
     {
         try { $a = $service->register($request->validated(), $request->user(), $request->file('proof')); }

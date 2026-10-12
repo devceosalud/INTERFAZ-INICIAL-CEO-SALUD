@@ -60,10 +60,8 @@ class AgendaAppointmentWriteTest extends TestCase
 
         $response = $this->postAppointment([
             'responsible_user_id' => $responsible->id,
-            'precio_programado' => 1,
             'user_id' => $responsible->id,
             'updated_by_user_id' => $responsible->id,
-            'additional_rate_id' => 999999,
             'estado_agenda' => 'PENDIENTE_CONFIRMACION',
             'tipo_agendamiento' => 'ADICIONAL',
         ]);
@@ -236,7 +234,7 @@ class AgendaAppointmentWriteTest extends TestCase
 
         $this->postAppointment()
             ->assertUnprocessable()
-            ->assertJsonPath('errors.patient_id.0', 'Este paciente ya tiene una cita o reserva en esta hora.');
+            ->assertJsonPath('errors.patient_id.0', 'No se pudo registrar en este intervalo. Revisa la disponibilidad o solicita revisión.');
         $this->assertDatabaseCount('appointments', 1);
 
         Appointment::query()->delete();

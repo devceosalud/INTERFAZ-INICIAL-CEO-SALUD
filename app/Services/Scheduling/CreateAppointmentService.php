@@ -73,14 +73,16 @@ class CreateAppointmentService
                     $automaticOwner = !$actor->hasRole('ADMINISTRADOR') && $actor->hasAnyRole(['COMERCIAL', 'ADMISION']);
                     abort_if($automaticOwner && $data->responsibleUserId !== null && $data->responsibleUserId !== (int) $actor->id, 403);
                     $responsible = $this->resolveResponsible($automaticOwner ? $actor->id : $data->responsibleUserId, $automaticOwner);
-                    $rate = $this->resolveStandardRate($data->date);
+                    $quote = app(AppointmentPriceResolver::class)->resolve($doctorService, $data->patientId,
+                        $data->date, $data->operational['additional_rate_id'] ?? null);
 
                     if ($bookingType === AppointmentAgendaLifecycle::OFF_HOURS) {
                         $this->slots->assertOutsideHours($data->doctorId, $data->date, $data->time, $data->duration);
                         $this->slots->assertUnoccupied($data->doctorId, $data->date, $data->time, $data->duration);
                     } else {
                         $this->slots->assertValid($data->doctorId, $data->date, $data->time,
-                            $data->duration, $data->siteId, null, $pending || $bookingType === AppointmentAgendaLifecycle::ADDITIONAL);
+                            $data->duration, $data->siteId, null, $pending || $bookingType === AppointmentAgendaLifecycle::ADDITIONAL,
+                            (bool) ($data->operational['legacy_double'] ?? false));
                     }
 
                     // The doctor lock also serializes private reservations, which do not occupy a slot.
@@ -88,10 +90,10 @@ class CreateAppointmentService
                         ->whereDate('fecha_cita', $data->date)->whereRaw('substr(hora_cita, 1, 5) = ?', [substr($data->time, 0, 5)])
                         ->whereNotIn('estado_cita', \App\Support\Scheduling\AppointmentOccupancy::RELEASING_STATES)
                         ->lockForUpdate()->exists()) {
-                        throw ValidationException::withMessages(['patient_id' => 'Este paciente ya tiene una cita o reserva en esta hora.']);
+                        throw ValidationException::withMessages(['patient_id' => 'No se pudo registrar en este intervalo. Revisa la disponibilidad o solicita revisión.']);
                     }
 
-                    $price = (float) $doctorService->precio_primera_consulta;
+                    $price = $quote['precio_programado'];
                     if ($price <= 0) {
                         throw new AppointmentConfigurationException(
                             'El servicio no tiene un precio normal válido. El costo cero requiere el flujo de autorización pendiente.'
@@ -107,7 +109,7 @@ class CreateAppointmentService
                         'patient_id' => $data->patientId,
                         'doctor_id' => $data->doctorId,
                         'service_id' => $doctorService->service_id,
-                        'additional_rate_id' => $rate->id,
+                        'additional_rate_id' => $quote['additional_rate_id'],
                         'fecha_cita' => $data->date,
                         'hora_cita' => $data->time,
                         'duracion_cita' => $data->duration,

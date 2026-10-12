@@ -44,6 +44,8 @@ Route::middleware([
             ->whereNumber('id')->name('scheduling.mvp.agenda.contingencies.update');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
+        Route::post('/scheduling-mvp/agenda/quote', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'quote'])
+            ->name('scheduling.mvp.agenda.quote');
         Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/documents')->whereNumber('appointmentId')->group(function () {
             $controller = \App\Http\Controllers\Scheduling\AppointmentDocumentController::class;
             Route::get('/', [$controller, 'index'])->name('scheduling.mvp.documents.index');

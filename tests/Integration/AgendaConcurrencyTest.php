@@ -68,6 +68,40 @@ class AgendaConcurrencyTest extends TestCase
         } finally { foreach ($processes as [$process]) { if ($process->isRunning()) { $process->stop(); } } }
     }
     private function statuses(array $results): array { $statuses = array_column($results, 'status'); sort($statuses); return $statuses; }
+    private function legacyPayload(array $data): array
+    {
+        return ['request_key' => $data['request_key'], 'mode' => $data['mode'], 'patient_id' => $data['patient_id'],
+            'doctor_id' => $data['doctor_id'], 'service_id' => $this->catalog['doctorService']->id,
+            'additional_rate_id' => $this->catalog['rate']->id, 'fecha_cita' => $data['fecha_cita'], 'hora_cita' => $data['hora_cita'],
+            'total_pagado' => $data['payment']['amount'] ?? '0', 'metodo_pago' => $data['payment']['method'] ?? 'EFECTIVO',
+            'numero_operacion' => $data['payment']['operation'] ?? null, 'entidad_origen' => $data['payment']['origin'] ?? null,
+            'precio_programado' => '100.00'];
+    }
+    public function test_legacy_concurrent_retry_creates_one_payment_and_one_confirmation(): void
+    {
+        $data = $this->legacyPayload($this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]));
+        $results = $this->race('/admissionist/appointment/store', [$data, $data, $data, $data]);
+        $this->assertSame([200, 200, 200, 200], $this->statuses($results));
+        $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 1);
+        $this->assertEquals(100, Appointment::first()->precio_programado); $this->assertEquals(50, Payment::sum('monto'));
+        $this->assertSame(1, Appointment::occupyingInterval()->count());
+    }
+    public function test_legacy_competing_patients_cannot_confirm_the_same_slot(): void
+    {
+        $other = $this->createPatient($this->actor, ['numero_identidad' => '70000198', 'historia_clinica' => 'QA-LEGACY-OTHER']);
+        $a = $this->legacyPayload($this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]));
+        $b = array_replace($a, ['patient_id' => $other->id, 'request_key' => (string) Str::uuid()]);
+        $this->assertSame([200, 409], $this->statuses($this->race('/admissionist/appointment/store', [$a, $b])));
+        $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 1);
+    }
+    public function test_legacy_bank_operation_with_different_keys_is_not_charged_twice(): void
+    {
+        $other = $this->createPatient($this->actor, ['numero_identidad' => '70000197', 'historia_clinica' => 'QA-LEGACY-BANK']);
+        $a = $this->legacyPayload($this->payload(['payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'QA-LEGACY-BANK', 'origin' => 'YAPE']]));
+        $b = array_replace($a, ['patient_id' => $other->id, 'hora_cita' => '09:00', 'request_key' => (string) Str::uuid()]);
+        $this->assertSame([200, 422], $this->statuses($this->race('/admissionist/appointment/store', [$a, $b])));
+        $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 1);
+    }
     public function test_simultaneous_double_click_with_same_key_creates_one_paid_confirmation(): void
     {
         $data = $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]);

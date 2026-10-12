@@ -6,6 +6,8 @@
         const ui = Object.fromEntries(['phone', 'phone-secondary', 'channel', 'medium', 'reason', 'note', 'price', 'paid',
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
+        let quoteReady = true, quoteVersion = 0;
+        const rateSelect = byId('rate'), quoteStatus = byId('quote-status');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;
         let capturePatient = null;
@@ -32,7 +34,7 @@
             if (kind === 'payment') { paymentKey = null; }
         }
         function readiness() {
-            return { price: ui.price.value, amount: ui.amount.value, canPay: !ui.amount.disabled,
+            return { price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled,
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
         function reservationConfirmation() {
@@ -131,7 +133,29 @@
             if (config.context()?.tipo_contexto === 'cita_existente') { return; }
             quote = Math.round(Number(price || 0) * 100); balance = quote;
             ui.price.value = model.decimal(quote); ui.paid.value = '0.00'; calculate();
+            refreshQuote();
         }
+        async function refreshQuote() {
+            const version = ++quoteVersion;
+            if (!config.quoteData || !config.quoteEndpoint || config.context()?.appointment_id) { return; }
+            const data = config.quoteData();
+            if (!data.doctor_id || !data.service_id || !data.fecha_cita) { quoteReady = false; return; }
+            if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
+            quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
+            if (config.changed) config.changed();
+            try {
+                const result = await request(config.quoteEndpoint, json('POST', data));
+                if (version !== quoteVersion || config.context()?.appointment_id) return;
+                quote = model.cents(result.precio_programado); balance = quote;
+                ui.price.value = result.precio_programado; ui.paid.value = '0.00';
+                quoteReady = true; quoteStatus.hidden = true; calculate();
+            } catch (error) {
+                if (version !== quoteVersion) return;
+                quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = error.message;
+                if (config.changed) config.changed();
+            }
+        }
+        if (rateSelect) rateSelect.addEventListener('change', refreshQuote);
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ui[id].addEventListener('change', () => { captureDirty = true; }));
         async function patientChanged(id, hydrateIdentity = false) {
@@ -141,6 +165,7 @@
             }
             capturePatient = null;
             captureId = id || null; captureDirty = false; const version = ++captureVersion;
+            refreshQuote();
             ui['save-patient'].disabled = !id || ui.phone.disabled; inlineStatus('patient', '');
             ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => { ui[id].value = ''; });
             document.getElementById('agenda-patient-phone-summary').textContent = '—';
@@ -160,12 +185,14 @@
             setWorking(true);
             try {
                 const context = config.context();
+                if (!quoteReady) { throw new Error('Espera el precio vigente antes de registrar.'); }
                 const payload = config.payload(context, options.patientId || 1, options.serviceId, options.ownerId);
                 registrationKey = registrationKey || root.crypto.randomUUID();
                 Object.assign(payload, { request_key: registrationKey, mode: options.pending ? 'RESERVE' : 'CONFIRM',
                     booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null, payment: payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
+                if (rateSelect?.value) payload.additional_rate_id = rateSelect.value;
                 if (options.patient) { payload.patient = options.patient; }
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
                     payload.patient_capture = captureValues();
@@ -208,6 +235,9 @@
             const key = [context?.appointment_id || '', context?.doctor_id || '', context?.fecha || '', context?.hora_inicio || ''].join('|');
             if (key !== selectedKey) { selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
+            ++quoteVersion;
+            if (rateSelect) rateSelect.disabled = Boolean(id);
+            if (id) { quoteReady = true; if (quoteStatus) quoteStatus.hidden = true; }
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
             ui['confirm-reservation'].hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
             ui['confirm-reservation'].disabled = true; lastPosition = null;
