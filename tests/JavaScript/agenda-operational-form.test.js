@@ -38,3 +38,15 @@ test('confirmar regular explica permisos, selección, servicio y el mínimo exac
     assert.equal(form.bookingReadiness({...ready,amount:'0',exception:true}).allowed,true);
     assert.equal(form.bookingReadiness({...ready,amount:'0'}).allowed,false);
 });
+
+test('guardar reserva exige selección completa y permite importe cero sin permiso financiero',()=>{
+    const ready={canCreate:true,busy:false,slot:true,patient:true,service:true,canPay:false,price:'100',amount:'0'};
+    assert.equal(form.reservationReadiness(ready).allowed,true);
+    for(const [change,message] of [[{canCreate:false},/appointment.create/],[{busy:true},/Guardando/],[{slot:false},/intervalo/],
+        [{patient:false},/paciente/],[{service:false},/servicio/],[{price:'0'},/precio válido/],[{amount:'101'},/supera/],
+        [{amount:'50'},/appointment.payment.submit/],[{amount:'1e3'},/importe válido/]]){
+        const result=form.reservationReadiness({...ready,...change});assert.equal(result.allowed,false);assert.match(result.reason,message);
+    }
+    assert.equal(form.reservationReadiness({...ready,canPay:true,amount:'49.99'}).allowed,true);
+    assert.equal(form.bookingReadiness({...ready,canPay:true,amount:'49.99'}).allowed,false);
+});

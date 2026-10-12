@@ -19,7 +19,7 @@ use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaRange;
 use App\Support\Scheduling\SchedulingCapability;
 use Carbon\Carbon;
-use Illuminate\Contracts\View\View;
+use Illuminate\Http\Response;
 
 /**
  * The agenda board page. It ships filters and the legend only; every interval is fetched by
@@ -27,7 +27,7 @@ use Illuminate\Contracts\View\View;
  */
 class AgendaBoardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(): Response
     {
 
         $resolver = app(ActiveDoctorServiceResolver::class);
@@ -58,7 +58,7 @@ class AgendaBoardController extends Controller
             })->values()->all())
             ->all();
 
-        return view('scheduling.agenda.index', [
+        return response()->view('scheduling.agenda.index', [
             'sites' => Site::activo()->orderBy('nombre')->get(['id', 'nombre']),
             'specialties' => Specialty::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'doctors' => Doctor::where('estado', 'ACTIVO')
@@ -94,6 +94,6 @@ class AgendaBoardController extends Controller
             'legend' => AgendaLegend::ordered(),
             'views' => AgendaRange::views(),
             'today' => Carbon::today()->toDateString(),
-        ]);
+        ])->header('Cache-Control', 'private, no-store');
     }
 }

@@ -30,6 +30,23 @@
             return { label, url };
         });
     }
+    function reservationReadiness(input) {
+        let reason = '';
+        if (!input.canCreate) { reason = 'No tienes permiso para guardar reservas (appointment.create). Solicita revisión al administrador.'; }
+        else if (input.busy) { reason = 'Guardando. Espera el resultado de esta operación.'; }
+        else if (!input.slot) { reason = 'Selecciona un intervalo regular para guardar la reserva.'; }
+        else if (!input.patient) { reason = 'Busca y selecciona un paciente activo para guardar la reserva.'; }
+        else if (!input.service) { reason = 'Selecciona un servicio activo para guardar la reserva.'; }
+        else {
+            try {
+                const price = cents(input.price || '0'), amount = cents(input.amount || '0');
+                if (price <= 0) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
+                else if (amount > price) { reason = 'El adelanto supera el precio de la cita.'; }
+                else if (amount > 0 && !input.canPay) { reason = 'Guardar con adelanto requiere appointment.payment.submit. Puedes guardar la reserva con importe cero.'; }
+            } catch (e) { reason = e.message; }
+        }
+        return { allowed: !reason, reason };
+    }
     function bookingReadiness(input) {
         let reason = '';
         if (!input.canCreate) { reason = 'No tienes permiso para guardar reservas ni crear citas (appointment.create). Solicita revisión al administrador.'; }
@@ -51,5 +68,5 @@
         }
         return { allowed: !reason, reason };
     }
-    return { cents, decimal, payment, links, nonBlank, bookingReadiness };
+    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness };
 }));

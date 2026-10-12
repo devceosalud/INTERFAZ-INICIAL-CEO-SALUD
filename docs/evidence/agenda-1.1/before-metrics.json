@@ -1,0 +1,53 @@
+[
+  {
+    "documentWidth": 1366,
+    "height": 768,
+    "legendFont": "8px",
+    "mini": {
+      "bottom": 427.8000030517578,
+      "height": 292,
+      "left": 322.5500183105469,
+      "right": 520.9500274658203,
+      "top": 135.8000030517578,
+      "width": 198.40000915527344,
+      "x": 322.5500183105469,
+      "y": 135.8000030517578
+    },
+    "saveEnabled": true,
+    "width": 1366
+  },
+  {
+    "documentWidth": 1024,
+    "height": 768,
+    "legendFont": "8px",
+    "mini": {
+      "bottom": 428.8000030517578,
+      "height": 292,
+      "left": 312,
+      "right": 508,
+      "top": 136.8000030517578,
+      "width": 196,
+      "x": 312,
+      "y": 136.8000030517578
+    },
+    "saveEnabled": true,
+    "width": 1024
+  },
+  {
+    "documentWidth": 386,
+    "height": 844,
+    "legendFont": "8px",
+    "mini": {
+      "bottom": 784.5,
+      "height": 292,
+      "left": 18.80000114440918,
+      "right": 367.60001945495605,
+      "top": 492.5,
+      "width": 348.8000183105469,
+      "x": 18.80000114440918,
+      "y": 492.5
+    },
+    "saveEnabled": true,
+    "width": 390
+  }
+]

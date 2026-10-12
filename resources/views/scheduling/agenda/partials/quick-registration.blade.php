@@ -102,15 +102,19 @@
         <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <button type="button" class="agenda-btn" id="agenda-see-destination" hidden>Ver nueva fecha</button>
         <p id="agenda-disabled-reason" class="agenda-guidance" hidden></p>
+        <p id="agenda-reservation-reason" class="agenda-guidance" role="status">Selecciona un intervalo, paciente y servicio para guardar la reserva.</p>
         <div class="agenda-fast-actions">
-        <span class="agenda-tip" id="agenda-pending-tip"><button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled aria-describedby="agenda-disabled-reason">Guardar reserva</button></span>
-        <span class="agenda-tip" id="agenda-submit-tip"><button type="button" class="agenda-btn" id="agenda-appointment-submit" @disabled(!$canCreateAppointments)>
+        <span class="agenda-tip" id="agenda-pending-tip"><button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled aria-describedby="agenda-reservation-reason">Guardar reserva</button></span>
+        <span class="agenda-tip" id="agenda-submit-tip"><button type="button" class="agenda-btn" id="agenda-appointment-submit" disabled aria-describedby="agenda-disabled-reason">
             Confirmar cita
         </button></span>
 
         </div>
-        <div class="agenda-secondary-actions"><span class="agenda-tip" id="agenda-payment-tip"><button id="agenda-open-payment" class="agenda-btn" type="button" disabled>Registrar adelanto</button></span>
+        <div class="agenda-secondary-actions"><span class="agenda-tip" id="agenda-payment-tip"><button id="agenda-open-payment" class="agenda-btn" type="button" disabled @unless($canSubmitPayment) aria-describedby="agenda-payment-permission" @endunless>Registrar adelanto</button></span>
         <button type="button" class="agenda-btn agenda-complete-registration" id="agenda-complete-registration" disabled hidden>Completar ficha</button></div>
+        @unless($canSubmitPayment)
+            <p class="agenda-guidance" id="agenda-payment-permission">Registrar adelanto requiere appointment.payment.submit. Solicita revisión al administrador y a Caja.</p>
+        @endunless
         <p id="agenda-complete-registration-help" class="agenda-guidance" hidden>Completa los datos del paciente. Luego puedes volver a Agenda.</p>
         <div id="agenda-op-workspace-host">@include('scheduling.agenda.partials.operational-registration')</div>
         @if ($canCreateAppointments)

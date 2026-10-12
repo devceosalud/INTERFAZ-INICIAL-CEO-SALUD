@@ -9,6 +9,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    // Keep all booking actions fail-closed if a deployment is missing a required script.
+    const requiredAssets = ['FullCalendar', 'AgendaSelection', 'AgendaPatientLookup', 'AgendaPatientDraft',
+        'AgendaAppointmentCreate', 'AgendaAppointmentActions', 'AgendaDayGrid', 'AgendaWeekEvent',
+        'AgendaWeekBackground', 'AgendaWeekSlots', 'AgendaGuidance', 'AgendaOperationalForm',
+        'AgendaOperationalWorkspace', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
+    if (requiredAssets.some(name => !window[name])) {
+        board.querySelectorAll('button').forEach(button => { button.disabled = true; });
+        const notice = document.getElementById('agenda-load-state');
+        notice.hidden = false;
+        notice.textContent = 'No se pudo cargar Agenda completa. Vuelve a abrir la página; si persiste, solicita revisión técnica.';
+        return;
+    }
+
     if (window.AgendaHelp) { window.AgendaHelp.start(document); }
 
     const VIEW_TO_FULLCALENDAR = {
@@ -230,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.completeRegistration.hidden = false;
                 el.completeRegistration.disabled = false;
                 el.completeRegistrationHelp.hidden = false;
-                document.getElementById('agenda-open-payment').disabled = false;
+                document.getElementById('agenda-open-payment').disabled = !operationalWorkspace.readiness().canPay;
             }
             window.clearTimeout(registrationResultTimer);
             registrationResultTimer = window.setTimeout(() => { result.hidden = true; }, 7000);
@@ -273,8 +286,10 @@ document.addEventListener('DOMContentLoaded', function () {
             moveAppointment(info.event.extendedProps, toIso(date),
                 String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0'), info.revert);
         },
-        dayMaxEventRows: 3,
+        dayMaxEventRows: true,
+        expandRows: true,
         moreLinkClick: 'popover',
+        moreLinkContent: arg => '+' + arg.num + ' m\u00e1s',
         displayEventTime: false,
         eventOrder: 'start,doctor',
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
@@ -525,6 +540,7 @@ document.addEventListener('DOMContentLoaded', function () {
             renderMiniCalendar();
             renderMainSurface();
             renderTotals();
+            resizeCalendar();
             updateDoctorFilterSummary();
         } catch (error) {
             if (error.name !== 'AbortError') {
@@ -661,6 +677,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderCalendar() {
+        calendar.setOption('dayHeaderFormat', state.view === 'mes'
+            ? { weekday: 'short' } : { weekday: 'short', day: '2-digit', month: '2-digit' });
         calendar.setOption('firstDay', state.view === 'semana' ? 1 : 0);
         calendar.changeView(VIEW_TO_FULLCALENDAR[state.view], state.date);
         calendar.setOption('allDaySlot', state.view === 'mes');
@@ -986,7 +1004,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 + parseFloat(style.marginBottom);
         }, verticalPadding);
 
-        calendar.setOption('height', Math.max(390, center.clientHeight - reservedHeight));
+        // Follow the available surface so the legend remains visible on short screens.
+        calendar.setOption('height', Math.max(180, center.clientHeight - reservedHeight));
+        calendar.updateSize();
+        window.requestAnimationFrame(() => calendar.updateSize());
     }
 
     function renderTotals() {
@@ -1412,11 +1433,23 @@ document.addEventListener('DOMContentLoaded', function () {
             && state.selection.tipo_contexto === 'slot_libre'
             && state.selection.seleccionable === true;
         const patient = Boolean(el.quickPatientId.value);
-        if (pendingStart) { pendingStart.disabled = !canCreateAppointments || state.appointmentBusy || !state.selection?.hora_inicio || state.selection?.tipo_contexto === 'fuera_horario'; }
+        const service = Boolean(el.serviceSelect.value && !el.serviceSelect.selectedOptions[0]?.disabled);
+        const reservation = window.AgendaOperationalForm.reservationReadiness({
+            canCreate: canCreateAppointments, busy: state.appointmentBusy,
+            slot: Boolean(state.selection?.hora_inicio && ['slot_libre', 'cita_existente'].includes(state.selection.tipo_contexto)
+                && (state.selection.tipo_contexto === 'cita_existente' || state.selection.seleccionable === true)),
+            patient, service, ...operationalWorkspace.readiness(),
+        });
+        if (pendingStart) { pendingStart.disabled = !reservation.allowed; }
+        const reserveReason = document.getElementById('agenda-reservation-reason');
+        reserveReason.hidden = reservation.allowed;
+        reserveReason.textContent = reservation.reason;
         el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Confirmar cita');
-        const readiness = window.AgendaOperationalForm.bookingReadiness({
+        const readiness = state.selection?.appointment_id
+            ? operationalWorkspace.reservationConfirmation()
+            : window.AgendaOperationalForm.bookingReadiness({
             canCreate: state.additionalMode ? canAdditional : canCreateAppointments, busy: state.appointmentBusy,
-            slot, patient, service: Boolean(el.serviceSelect.value && !el.serviceSelect.selectedOptions[0]?.disabled),
+            slot, patient, service,
             exception: state.additionalMode || state.offHoursMode, ...operationalWorkspace.readiness(),
         });
         el.appointmentSubmit.disabled = !readiness.allowed;
@@ -1424,11 +1457,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const guidance = window.AgendaGuidance.copy;
         const paymentButton = document.getElementById('agenda-open-payment');
         if (paymentButton) {
-            paymentButton.disabled = !state.selection || !state.selection.appointment_id;
+            paymentButton.disabled = state.appointmentBusy || !state.selection?.appointment_id || !operationalWorkspace.readiness().canPay;
         }
         const reason = document.getElementById('agenda-disabled-reason');
         if (reason) {
-            const line = state.selection?.tipo_contexto === 'cita_existente' ? '' : readiness.reason;
+            const line = !readiness.allowed && (reservation.allowed || state.selection?.appointment_id) ? readiness.reason : '';
             reason.hidden = line === '';
             reason.textContent = line;
         }
@@ -1902,7 +1935,10 @@ document.addEventListener('DOMContentLoaded', function () {
     el.draftSave.addEventListener('click', function () {
         savePatient(false);
     });
-    el.appointmentSubmit.addEventListener('click', () => createAppointment(false));
+    el.appointmentSubmit.addEventListener('click', () => {
+        if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }
+        else { createAppointment(false); }
+    });
     if (rescheduleForm) {
         rescheduleForm.querySelectorAll('[data-quick-minute]').forEach(function (button) {
             button.addEventListener('click', function () {
