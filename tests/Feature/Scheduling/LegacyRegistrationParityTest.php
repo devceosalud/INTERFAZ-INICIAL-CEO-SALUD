@@ -23,7 +23,7 @@ class LegacyRegistrationParityTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp(); config(['scheduling.enabled' => true]);
+        parent::setUp(); config(['scheduling.enabled' => true, 'app.debug' => false]);
         $this->actor = $this->agendaReader('ADMISION');
         foreach ([C::CREATE, C::SUBMIT_PAYMENT, C::UPDATE, C::RESCHEDULE] as $p) {
             $this->actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
@@ -340,7 +340,7 @@ class LegacyRegistrationParityTest extends TestCase
     }
 
     /** @dataProvider entries */
-    public function test_quote_does_not_reveal_another_workers_private_attended_history(string $entry): void
+    public function test_inconsistent_private_attendance_is_ignored_for_owner_and_other_worker(string $entry): void
     {
         $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
         $other = $this->agendaReader('COMERCIAL');
@@ -355,8 +355,12 @@ class LegacyRegistrationParityTest extends TestCase
         $this->getJson(route('patients.operational.show', $this->patient->id))->assertOk();
         $this->postJson($this->url($entry), $this->payload($entry, ['hora_cita' => '09:30']))->assertSuccessful();
         $this->assertEquals(100, Appointment::where('id', '<>', $history->id)->first()->precio_programado);
-        $quote = $this->actingAs($other)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
-        $this->assertEquals(50, $quote->json('precio_programado'));
+        $quote = $this->actingAs($other)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
+        $this->assertEquals(100, $quote->json('precio_programado'));
+        $other->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        $ownResult = $this->postJson($this->url($entry), $this->payload($entry, ['hora_cita' => '10:00']))->assertSuccessful();
+        $ownId = $entry === 'legacy' ? $ownResult->json('appointment_id') : $ownResult->json('appointment.appointment_id');
+        $this->assertEquals(100, Appointment::findOrFail($ownId)->precio_programado);
         $this->assertSame($before, $history->fresh()->getAttributes());
     }
 
@@ -367,5 +371,125 @@ class LegacyRegistrationParityTest extends TestCase
         $this->actor->revokePermissionTo(C::VIEW);
         $this->postJson($url, $this->payload($entry))->assertForbidden()->assertJsonMissing(['tipo' => 'RECONSULTA']);
         $this->assertDatabaseCount('appointments', 0);
+    }
+
+    public function reconsultationHistories(): array
+    {
+        return [['legacy', 'LEGADO'], ['legacy', 'CONFIRMADA'],
+            ['operational', 'LEGADO'], ['operational', 'CONFIRMADA']];
+    }
+
+    /** @dataProvider reconsultationHistories */
+    public function test_completed_shared_attendance_has_the_same_quote_and_registration_price_for_all_workers(string $entry, string $state): void
+    {
+        $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
+        $history = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO',
+            'estado_agenda' => $state, 'fecha_cita' => now()->subDay()->toDateString()], $this->patient);
+        $before = $history->fresh()->getAttributes();
+        $url = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
+        $expected = null;
+        foreach ([$this->actor, $this->agendaReader('COMERCIAL'), $this->agendaReader('ADMINISTRADOR')] as $i => $worker) {
+            $worker->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+            $payload = $this->payload($entry, ['precio_programado' => '50.00', 'hora_cita' => ['09:30', '10:00', '10:30'][$i]]);
+            $quote = $this->actingAs($worker)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
+            $this->assertEquals(50, $quote->json('precio_programado'));
+            $expected ??= $quote->json(); $this->assertSame($expected, $quote->json());
+            $result = $this->postJson($this->url($entry), $payload)->assertSuccessful();
+            $id = $entry === 'legacy' ? $result->json('appointment_id') : $result->json('appointment.appointment_id');
+            $this->assertEquals(50, Appointment::findOrFail($id)->precio_programado);
+        }
+        $this->assertSame($before, $history->fresh()->getAttributes());
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    /** @dataProvider entries */
+    public function test_inconsistent_recent_history_does_not_hide_older_eligible_attendance(string $entry): void
+    {
+        $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
+        $valid = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO',
+            'estado_agenda' => 'CONFIRMADA', 'fecha_cita' => now()->subDays(2)->toDateString()], $this->patient);
+        $private = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO',
+            'estado_agenda' => 'PENDIENTE_CONFIRMACION', 'responsible_user_id' => $this->actor->id], $this->patient);
+        $before = [$valid->fresh()->getAttributes(), $private->fresh()->getAttributes()];
+        $url = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
+        foreach ([$this->actor, $this->agendaReader('COMERCIAL')] as $worker) {
+            $this->actingAs($worker)->postJson($url, $this->payload($entry))->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
+        }
+        $this->assertSame($before, [$valid->fresh()->getAttributes(), $private->fresh()->getAttributes()]);
+    }
+
+    private function adminPatientPayload(array $changes = []): array
+    {
+        return array_replace(['tipo_identificacion' => 'DNI', 'numero_identidad' => '70000881',
+            'nombre' => 'QA ADMIN PACIENTE', 'apellido_paterno' => 'FICTICIO', 'apellido_materno' => 'LOCAL',
+            'genero' => 'HOMBRE', 'telefono_prefijo' => '+51', 'telefono_numero' => '999000881'], $changes);
+    }
+
+    public function test_administrator_creates_completes_and_edits_a_patient_from_agenda_without_financial_grants(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        $admin->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        $permissions = $admin->getAllPermissions()->pluck('name')->sort()->values()->all();
+        $payload = $this->payload('operational', ['patient_id' => null, 'patient' => $this->adminPatientPayload()]);
+        $id = $this->actingAs($admin)->postJson($this->url('operational'), $payload)->assertCreated()->json('appointment.appointment_id');
+        $appointment = Appointment::findOrFail($id); $patient = $appointment->patient;
+        $this->assertSame('01-70000881', $patient->historia_clinica); $this->assertEquals($admin->id, $patient->user_id);
+        $this->assertDatabaseHas('appointment_events', ['appointment_id' => $id, 'actor_user_id' => $admin->id, 'event_type' => 'REGISTRO_OPERATIVO']);
+        $this->putJson(route('patients.operational.update', $patient->id), $this->adminPatientPayload(
+            ['nombre' => 'QA ADMIN EDITADO', 'direccion' => 'DIRECCION FICTICIA']))->assertOk()->assertJsonPath('patient.nombre', 'QA ADMIN EDITADO');
+        $this->patchJson(route('patients.operational.agenda-contact', $patient->id),
+            ['appointment_id' => $id, 'telefono_secundario' => '+51999000882'])->assertOk();
+        $this->assertDatabaseHas('appointment_events', ['appointment_id' => $id, 'actor_user_id' => $admin->id, 'event_type' => 'CONTACTO_PACIENTE_ACTUALIZADO']);
+        $this->assertSame('01-70000881', $patient->fresh()->historia_clinica);
+        $this->assertSame('PENDIENTE_CONFIRMACION', $appointment->fresh()->estado_agenda);
+        $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);
+        $this->assertFalse($admin->can(C::SUBMIT_PAYMENT)); $this->assertFalse($admin->can(C::APPROVE_ZERO_COST));
+        $this->assertSame($permissions, $admin->fresh()->getAllPermissions()->pluck('name')->sort()->values()->all());
+        $this->assertSame(['ADMINISTRADOR'], $admin->getRoleNames()->all());
+    }
+
+    public function test_administrator_patient_capture_preserves_private_appointment_visibility(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        $hidden = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_agenda' => 'PENDIENTE_CONFIRMACION'], $this->patient);
+        $before = $this->patient->fresh()->getAttributes();
+        $path = route('patients.operational.agenda-contact', $this->patient->id);
+        $hiddenResponse = $this->actingAs($admin)->patchJson($path, ['appointment_id' => $hidden->id, 'telefono' => '+51999000991'])->assertNotFound();
+        $missingResponse = $this->patchJson($path, ['appointment_id' => 999999, 'telefono' => '+51999000991'])->assertNotFound();
+        $this->assertSame($missingResponse->json(), $hiddenResponse->json());
+        $this->assertSame($before, $this->patient->fresh()->getAttributes());
+        $this->getJson(route('scheduling.mvp.agenda.economy', $hidden->id))->assertNotFound();
+    }
+
+    public function test_administrator_still_needs_create_and_payment_permissions_when_registering_a_new_patient_and_appointment(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        $before = \App\Models\Patient::count();
+        $payload = $this->payload('operational', ['patient_id' => null, 'patient' => $this->adminPatientPayload()]);
+        $this->actingAs($admin)->postJson($this->url('operational'), $payload)->assertForbidden();
+        $admin->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        CashierShift::first()->update(['user_id' => $admin->id]);
+        $this->postJson($this->url('operational'), array_replace($payload, ['mode' => 'CONFIRM',
+            'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]))->assertForbidden();
+        $this->assertSame($before, \App\Models\Patient::count()); $this->assertDatabaseCount('appointments', 0);
+        $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);
+    }
+
+    public function test_administrator_patient_writes_keep_identity_and_required_capture_validations(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        $admin->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        $this->actingAs($admin); $before = \App\Models\Patient::count();
+        foreach (['123', '700000001', '70000ABC'] as $invalid) {
+            $this->postJson(route('patients.operational.store'), $this->adminPatientPayload(['numero_identidad' => $invalid]))
+                ->assertUnprocessable()->assertJsonValidationErrors('numero_identidad');
+        }
+        $this->postJson(route('patients.operational.store'), $this->adminPatientPayload(['numero_identidad' => $this->patient->numero_identidad]))
+            ->assertUnprocessable()->assertJsonValidationErrors('numero_identidad');
+        $this->postJson($this->url('operational'), $this->payload('operational', ['patient_id' => null,
+            'patient' => $this->adminPatientPayload(['telefono_numero' => ''])]))->assertUnprocessable();
+        $this->assertSame($before, \App\Models\Patient::count()); $this->assertDatabaseCount('appointments', 0);
+        $this->postJson(route('patients.operational.store'), $this->adminPatientPayload(
+            ['tipo_identificacion' => 'PASAPORTE', 'numero_identidad' => 'QA-PASSPORT-881']))->assertCreated();
     }
 }

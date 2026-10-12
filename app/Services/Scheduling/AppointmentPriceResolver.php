@@ -5,6 +5,7 @@ use App\Models\AdditionalRate;
 use App\Models\Appointment;
 use App\Models\DoctorService;
 use App\Support\Billing\Money;
+use App\Support\Scheduling\AppointmentAgendaLifecycle;
 use App\Support\Scheduling\StandardAdditionalRateResolver;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -28,10 +29,13 @@ class AppointmentPriceResolver
         $type = 'PRIMERA_CONSULTA';
         $price = Money::cents($service->precio_primera_consulta ?? 0);
         // Preserve the existing reconsultation rule: elapsed days at registration, using service IDs.
-        // Only attended history visible to this actor affects quotes and registration.
-        // Shared patient identity does not grant access to another worker's private appointments.
+        // Eligibility is uniform for every worker: only completed legacy/confirmed attendance.
+        // ATENDIDO + private reservation is inconsistent historical data: ignore it for everyone,
+        // preserve the row and require authorized review instead of exposing or repricing it.
         $last = Appointment::visibleToAgendaUser($actorId)->where('patient_id', $patientId)->where('service_id', $service->service_id)
-            ->where('estado_cita', 'ATENDIDO')->whereDate('fecha_cita', '<=', now()->toDateString())
+            ->where('estado_cita', 'ATENDIDO')
+            ->whereIn('estado_agenda', [AppointmentAgendaLifecycle::LEGACY, AppointmentAgendaLifecycle::CONFIRMED])
+            ->whereDate('fecha_cita', '<=', now()->toDateString())
             ->latest('fecha_cita')->first(['fecha_cita']);
         if ($last && $service->dias_reconsulta > 0
             && Carbon::parse($last->fecha_cita)->diffInDays(now()) <= $service->dias_reconsulta) {

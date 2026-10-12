@@ -159,3 +159,16 @@ Para cada decisión se recomienda registrar:
 6. reportes o alertas esperados.
 
 No deben diseñarse migrations definitivas hasta que las decisiones 1–8 tengan respuesta o una exclusión explícita de alcance.
+
+## Decisión de producto aprobada — 12/10/2026: cancelar mapa de calor interno
+
+CEO Salud cancela el desarrollo y uso del mapa de calor propio. Microsoft Clarity ya fue instalado por decisión de negocio en main, commit 1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4, en resources/views/layouts/app.blade.php. PR #5 conserva esa instalación sin modificarla; la retirada del módulo interno queda fuera de esta entrega financiera.
+
+La retirada será una entrega independiente para enlaces, pantallas, rutas, captura de eventos, JavaScript y pruebas exclusivas del mapa de calor. Debe preservar las migraciones históricas y los datos productivos; no autoriza DROP, borrado de eventos ni modificaciones productivas. El código actual permanece hasta aprobar y ejecutar esa entrega.
+
+La revisión de privacidad de pacientes, captura de sesiones y alcance autorizado sigue pendiente de validación. Esta revisión no modifica el script ni la configuración de Clarity ya aprobados; integrar main conserva exactamente su instalación.
+
+## Precisiones aprobadas para PR #5 — 12/10/2026
+
+- Reconsulta automática: considerar ATENDIDO únicamente si estado_agenda es LEGADO o CONFIRMADA. Ignorar ATENDIDO + PENDIENTE_CONFIRMACION para propietario y demás trabajadores, conservando esos registros para revisión autorizada. Se elimina la diferencia de precio por trabajador sin ampliar la visibilidad de citas privadas. Su cantidad productiva no ha sido consultada; los ejemplos inconsistentes de QA son ficticios.
+- ADMINISTRADOR: permitir crear, completar y editar fichas desde Agenda mediante la política operativa de pacientes y sus endpoints reutilizados. Se conservan identidad, validaciones, auditoría existente y visibilidad de citas. No implica conceder capacidades de citas, pagos o exoneraciones ni alterar permisos productivos.

@@ -33,7 +33,7 @@ class AgendaDetailsTest extends TestCase
         $this->patchJson($url, ['interaction_medium_id' => $medium->id])->assertUnprocessable();
     }
 
-    public function test_contact_write_is_denied_to_read_only_role_and_hidden_appointment_context(): void
+    public function test_contact_write_is_denied_without_patient_write_role_and_for_hidden_appointment_context(): void
     {
         config(['scheduling.enabled' => true]);
         $owner = $this->agendaReader(); $other = $this->agendaReader();
@@ -41,7 +41,11 @@ class AgendaDetailsTest extends TestCase
         $appointment = $this->lifecycleAppointment($owner, $this->createAppointmentCatalog(), ['estado_agenda' => 'PENDIENTE_CONFIRMACION'], $patient);
         $url = route('patients.operational.agenda-contact', $patient->id);
         $this->actingAs($other)->patchJson($url, ['appointment_id' => $appointment->id, 'telefono' => '+51999000003'])->assertNotFound();
-        $this->actingAs($this->agendaReader('ADMINISTRADOR'))->patchJson($url, ['telefono' => '+51999000003'])->assertForbidden();
+        $reader = $this->createUser();
+        foreach ([C::MVP_ACCESS, C::VIEW] as $permission) {
+            $reader->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+        }
+        $this->actingAs($reader)->patchJson($url, ['telefono' => '+51999000003'])->assertForbidden();
         $this->assertNull($patient->fresh()->telefono);
     }
 

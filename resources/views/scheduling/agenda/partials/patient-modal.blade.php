@@ -210,7 +210,7 @@
             <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada.</p>
             <footer class="agenda-patient-dialog__actions">
                 <span id="agenda-patient-write-policy">
-                    {{ $canWritePatients ? 'Guardado habilitado para Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Admisión, Recepción o Comercial.' }}
+                    {{ $canWritePatients ? 'Guardado habilitado para Administrador, Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Administrador, Admisión, Recepción o Comercial.' }}
                 </span>
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
                 <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar reserva</button>

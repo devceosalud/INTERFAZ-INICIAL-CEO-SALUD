@@ -10,7 +10,7 @@ Admisión podía crear/editar citas y sus importes directamente desde campos del
 
 Una reserva no confirma ni ocupa un intervalo. Registrar un adelanto conserva la reserva hasta solicitar confirmación. El precio se calcula en servidor; un precio o saldo de referencia alterado produce 422 y revierte toda la operación. Reintentos con la misma UUID reutilizan el resultado; cambiar su contenido produce 409. Las operaciones bancarias duplicadas se rechazan también entre entradas.
 
-Se conservan reconsultas y tarifas especiales por la decisión expresa del usuario. El cálculo compartido usa la última cita ATENDIDO visible al usuario del servicio canónico, plazo de reconsulta configurado al momento del registro y tarifa fija/porcentual activa vigente para la fecha elegida. No recalcula citas existentes.
+Se conservan reconsultas y tarifas especiales por la decisión expresa del usuario. El cálculo compartido usa la última cita ATENDIDO del servicio canónico con estado de agenda LEGADO o CONFIRMADA, uniforme entre trabajadores, plazo de reconsulta configurado al momento del registro y tarifa fija/porcentual activa vigente para la fecha elegida. No recalcula citas existentes.
 
 ## Compatibilidad y consumidores
 
@@ -22,15 +22,15 @@ La edición mantiene importes y precio; un cambio de horario requiere permiso de
 
 ## Validación ejecutada
 
-- PHP completo: 633 casos: 632 aprobados, 1 omitido, 3767 aserciones, 0 fallidos.
+- PHP completo: 643 casos: 642 aprobados, 1 omitido, 3909 aserciones, 0 fallidos.
 - JavaScript: 205 aprobadas, 0 fallidas/omitidas.
-- MariaDB aislada 10.4.32, puerto 33318: 129 aprobadas, 1003 aserciones, 0 fallidas.
+- MariaDB aislada 10.4.32, puerto 33318: 139 aprobadas, 1144 aserciones, 0 fallidas.
 - Navegador con datos ficticios: reserva desde Admisión y Agenda, adelanto separado de confirmación, confirmación posterior con S/50 sobre catálogo S/100, rechazo visible de confirmación impaga, formularios y vistas Día/Semana/Mes. El control posterior registró un solo pago S/50 y la cita histórica ficticia exactamente intacta.
 - Pruebas HTTP automatizadas: paridad financiera/permisos en ambas entradas, precios/reconsultas/tarifas, referencias manipuladas, exoneración autorizada, privacidad, mutación histórica, doble duración ya existente y concurrencia real de peticiones (misma UUID, mismo horario y misma operación bancaria).
 - Las primeras ejecuciones finales fallaron por fixtures antiguos que enviaban precio 1 al probar umbral/idempotencia. Se ajustaron a catálogo 100; los casos independientes que exigen rechazo de manipulación permanecen.
 - `git diff --check` aprobado.
 
-Evidencia actual de la revisión: [logs y capturas](evidence/urgent1/review/). La evidencia original se conserva en su directorio padre. [Control posterior del navegador](evidence/urgent1/browser-check.json).
+Evidencia actual de la revisión: [logs actuales](evidence/urgent1/authorized/). Las capturas y logs de revisiones anteriores se conservan en sus directorios originales. [Control posterior del navegador](evidence/urgent1/browser-check.json).
 Los tests destructivos comprueban entorno testing, host, puerto, nombre, usuario y datadir propios antes de migrar. No se usaron pacientes reales.
 
 ## Límites y decisiones para revisión
@@ -101,15 +101,15 @@ Listado exacto de código/pruebas modificados o añadidos:
 - `tests/JavaScript/agenda-quote.test.js`
 - `tests/Support/urgent-browser-check.php`
 
-## Revisión solicitada del PR #5 sobre b634197
+## Revisión del PR #5 y correcciones posteriores autorizadas
 
 | Problema y causa | Corrección y archivos | Prueba de regresión |
 |---|---|---|
 | paintIdentity cotizaba antes de cambiar el ID en el formulario. | agenda.js actualiza primero; agenda-operational-workspace.js recibe explícitamente el nuevo ID. Conserva invalidación por versión de respuestas y errores anteriores. | agenda-quote.test.js ejecuta el pintor real y workspace async con dos pacientes de S/100 y S/50; cambios de médico, servicio, fecha y tarifa. La copia de b634197 falla (8/9); la corrección pasa (9/9). |
 | Middleware por rol bloqueaba a ADMINISTRADOR incluso con permisos. | routes/admision.php incorpora ADMINISTRADOR únicamente en POST appointment/store, appointment/update y schedule/update. Los servicios siguen exigiendo VIEW/CREATE/UPDATE/RESCHEDULE y permisos financieros efectivos. | LegacyRegistrationParityTest: administrador autorizado registra/confirma/edita; sin SUBMIT_PAYMENT o aprobación de exoneración recibe 403; administrador/trabajador sin permisos de escritura recibe 403 y conserva datos. |
-| La cotización consultaba antecedentes sin aplicar privacidad; API heredada solo verificaba el rol. | AppointmentPriceResolver requiere actor y usa visibleToAgendaUser; ambos controladores de cotización y CreateAppointmentService usan el mismo actor. API exige VIEW. | LegacyRegistrationParityTest en SQLite y MariaDB: historia privada ajena no cambia tipo/precio; el dueño sí obtiene reconsulta, lector sin VIEW recibe 403; búsqueda de datos básicos y nuevo registro siguen funcionando. AppointmentReaderPrivacyTest conserva igualdad para historia LEGADO/CONFIRMADA y excluye historia privada ajena. |
+| La cotización consultaba antecedentes sin aplicar privacidad; API heredada solo verificaba el rol. | AppointmentPriceResolver requiere actor y usa visibleToAgendaUser; ambos controladores de cotización y CreateAppointmentService usan el mismo actor. API exige VIEW. | LegacyRegistrationParityTest en SQLite y MariaDB: historia privada inconsistente no cambia tipo/precio para ningún trabajador, incluido el dueño; lector sin VIEW recibe 403; búsqueda de datos básicos y nuevo registro siguen funcionando. AppointmentReaderPrivacyTest conserva igualdad para historia LEGADO/CONFIRMADA y excluye historia privada ajena. |
 
-Las identidades de pacientes son compartidas por la política existente. No se deniega la búsqueda legítima de un paciente por pertenecer a otro usuario; se excluyen sus antecedentes no visibles del cálculo, incluso si un registro importado combina ATENDIDO con PENDIENTE_CONFIRMACION. Los registros LEGADO/CONFIRMADA siguen siendo visibles conforme a la política existente, sin excepciones por administrador.
+Las identidades de pacientes son compartidas por la política existente. No se deniega la búsqueda legítima de un paciente por pertenecer a otro usuario; se excluyen del cálculo para todos los trabajadores los registros inconsistentes ATENDIDO + PENDIENTE_CONFIRMACION, incluso para el propietario. Los registros LEGADO/CONFIRMADA siguen siendo visibles conforme a la política existente, sin excepciones por administrador.
 
 QA de navegador repetido: primera consulta S/100; cambio a reconsulta S/50; tarifa especial +S/30 produce S/80; volver al paciente inicial produce S/130 y restablecer tarifa estándar S/100. Reserva sin dinero, adelanto separado S/50 y confirmación explícita; vistas Día/Semana/Mes sin errores de consola. Control posterior: dos fixtures históricos intactos, una cita nueva confirmada y un único pago S/50. Registro/edición heredados, exoneración, idempotencia y concurrencia se verificaron mediante suites HTTP automatizadas.
 
@@ -122,3 +122,27 @@ Archivos adicionales de esta revisión:
 - docs/evidence/urgent1/review/: logs reales, reproducción previa y capturas actuales.
 
 Los demás archivos corregidos y sus motivos se detallan en la matriz y en el inventario anterior. Otras rutas de pacientes, responsables y horarios médicos mantienen su middleware heredado; no se amplió esta revisión a cambios generales de permisos. Permanecen pendientes la transición económica al cambiar médico/servicio y el QA autorizado en el motor de Hostinger.
+
+## Cierre de las dos condiciones de código autorizadas tras el preflight
+
+1. AppointmentPriceResolver filtra ATENDIDO y estado_agenda LEGADO/CONFIRMADA antes de elegir el antecedente más reciente. Se conserva la ventana/precio de reconsulta y tarifas existentes. ATENDIDO + PENDIENTE_CONFIRMACION no otorga reconsulta automática ni al dueño ni a otros trabajadores; sus filas, precios y estados permanecen intactos. Si existe un antecedente válido anterior, sigue siendo elegible. Las pruebas cubren cotización y nuevo registro de precios iguales en entradas operativa/heredada para ADMISION, COMERCIAL y ADMINISTRADOR.
+2. PatientWriteAccess incluye ADMINISTRADOR en la política existente de fichas. Los endpoints y controles reutilizados de Agenda/Pacientes habilitan alta, ficha completa y contacto. Se conservan validaciones de documento único, DNI nuevo válido, teléfono principal requerido al registrar desde Agenda, pasaporte sin restricción DNI y demás validaciones heredadas. Las pruebas conservan HCE/creador, eventos REGISTRO_OPERATIVO/CONTACTO_PACIENTE_ACTUALIZADO, visibilidad de citas privadas y rechazos indistinguibles con APP_DEBUG=false. No se concede CREATE, SUBMIT_PAYMENT ni APPROVE_ZERO_COST por rol: citas/dinero conservan sus controles adicionales y rollback de paciente/cita/pago.
+
+Existencia/revisión de inconsistencias: los fixtures ficticios demuestran el estado ATENDIDO + PENDIENTE_CONFIRMACION y se comparan antes/después sin cambios. Su cantidad productiva permanece PENDIENTE. Una revisión posterior autorizada puede contar por estado con SELECT; no se eliminan, reclasifican ni reprician registros automáticamente.
+
+| Archivos de este cierre | Motivo |
+|---|---|
+| app/Services/Scheduling/AppointmentPriceResolver.php | Elegibilidad uniforme y exclusión de antecedentes inconsistentes. |
+| app/Support/Patients/PatientWriteAccess.php | ADMINISTRADOR escribe fichas sin obtener permisos financieros. |
+| resources/views/patients/operational.blade.php; resources/views/scheduling/agenda/partials/patient-modal.blade.php | Mensajes de acceso coherentes con la política aprobada. |
+| tests/Feature/Scheduling/LegacyRegistrationParityTest.php | 47 casos/399 aserciones: precio uniforme, registro, ficha ADMIN, controles financieros, auditoría y privacidad; también ejecutados en MariaDB por la clase de integración existente. |
+| tests/Feature/Scheduling/AppointmentReaderPrivacyTest.php | Inconsistencia privada ignorada para dueño y otro lector; historia compartida conserva reconsulta. |
+| tests/Feature/Patients/OperationalPatientModuleTest.php; tests/Feature/Scheduling/AgendaBoardTest.php; tests/Feature/Scheduling/AgendaDetailsTest.php | Adoptar ADMIN escritor en formularios/endpoints; conservar rechazo de lectores sin rol y contexto privado ajeno. |
+| docs/DECISIONES_NEGOCIO_PENDIENTES.md | Registrar las dos decisiones aprobadas y cancelación de mapa de calor como entrega posterior. |
+| docs/evidence/urgent1/authorized/ | Resultados finales reales de PHP, JavaScript y MariaDB. |
+
+Resultado final ejecutado: PHP 643 casos (642 aprobados, 1 omitido por SQLite <3.35), 3909 aserciones, 0 fallidos; JavaScript 205 aprobados, 0 fallidos; MariaDB aislada 10.4.32: 139 aprobados, 1144 aserciones, 0 fallidos. La primera corrida completa detectó una prueba que aún esperaba ADMIN como lector de contactos; se actualizó el caso negativo a un lector sin rol de escritura y se repitió PHP completo. No se repitió QA manual de navegador en este cierre; la habilitación de los formularios y las operaciones se verificó por PHP/HTTP, y JavaScript completo se ejecutó. Los datos ficticios de la instancia local se restablecieron tras finalizar MariaDB para permitir pruebas locales.
+
+Las dos condiciones de código del preflight quedan atendidas. Siguen pendientes los permisos efectivos productivos, PHP/CLI-FPM/vendor de Hostinger, QA equivalente MariaDB 11.8.9, schema/índices reales, SHA instalado, autodespliegue, backup/restauración y rollback ensayado. No hay migraciones/seeders nuevos ni cambios productivos. No se autoriza merge ni despliegue por estos resultados locales.
+
+Mapa de calor: decisión de producto documentada. No se retiran enlaces, vistas, rutas, eventos, JavaScript ni tests en este PR; migraciones y datos se conservan. Microsoft Clarity ya está instalado por decisión de negocio en main (1a2c1895); PR #5 debe conservar sin cambios resources/views/layouts/app.blade.php al integrar main. La retirada del mapa interno se hará en un PR independiente. La revisión de privacidad y captura de sesiones continúa pendiente.

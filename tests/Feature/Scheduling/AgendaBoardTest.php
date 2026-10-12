@@ -170,7 +170,7 @@ class AgendaBoardTest extends TestCase
             ->get(self::PAGE_URI)
             ->assertOk()
             ->assertSee('data-can-write="1"', false)
-            ->assertSee('Guardado habilitado para Admisión, Recepción y Comercial.')
+            ->assertSee('Guardado habilitado para Administrador, Admisión, Recepción y Comercial.')
             ->assertDontSee('id="agenda-draft-save" disabled', false)
             ->assertSee('Quién agenda')
             ->assertSee($admission->name);
@@ -198,19 +198,19 @@ class AgendaBoardTest extends TestCase
                 ->get(self::PAGE_URI)
                 ->assertOk()
                 ->assertSee('data-can-write="1"', false)
-                ->assertSee('Guardado habilitado para Admisión, Recepción y Comercial.')
+                ->assertSee('Guardado habilitado para Administrador, Admisión, Recepción y Comercial.')
                 ->assertDontSee('id="agenda-draft-save" disabled', false);
         }
     }
 
-    public function test_an_administrator_with_agenda_access_cannot_save_patients(): void
+    public function test_an_administrator_with_agenda_access_can_save_patients(): void
     {
         $this->actingAs($this->agendaOperator('ADMINISTRADOR'))
             ->get(self::PAGE_URI)
             ->assertOk()
-            ->assertSee('data-can-write="0"', false)
-            ->assertSee('id="agenda-draft-save" disabled', false)
-            ->assertSee('Solo lectura: guardar requiere Admisión, Recepción o Comercial.');
+            ->assertSee('data-can-write="1"', false)
+            ->assertDontSee('id="agenda-draft-save" disabled', false)
+            ->assertSee('Guardado habilitado para Administrador, Admisión, Recepción y Comercial.');
     }
 
     public function test_the_operational_board_is_day_first_and_uses_versioned_calendar_assets(): void
