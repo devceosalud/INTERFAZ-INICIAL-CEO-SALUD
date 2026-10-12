@@ -1296,8 +1296,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function paintIdentity(identity) {
         state.identity = identity;
-        operationalWorkspace.patientChanged(identity.patientId);
         el.quickPatientId.value = identity.patientId || '';
+        operationalWorkspace.patientChanged(identity.patientId);
         el.quickPatientIdDisplay.textContent = identity.patientId || '—';
         el.quickPatientState.textContent = identity.name || 'Sin paciente seleccionado';
         el.lookupClinicalRecord.textContent = identity.clinicalRecord || '—';

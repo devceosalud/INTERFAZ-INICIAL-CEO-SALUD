@@ -217,7 +217,7 @@ class AppointmentReaderPrivacyTest extends TestCase
         $this->assertEqualsCanonicalizing([$legacy->id, $confirmed->id], collect($response->json('appointments'))->pluck('appointment_id')->all());
     }
 
-    public function test_price_and_type_for_the_same_economic_history_do_not_depend_on_the_reader(): void
+    public function test_shared_history_prices_match_but_private_attendance_is_not_disclosed(): void
     {
         foreach ([Lifecycle::PENDING_CONFIRMATION, Lifecycle::LEGACY, Lifecycle::CONFIRMED] as $state) {
             $patient = $this->createPatient($this->owner, [
@@ -229,7 +229,8 @@ class AppointmentReaderPrivacyTest extends TestCase
             $this->assertSame($before, $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json());
             $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => $state, 'estado_cita' => 'ATENDIDO'], $patient);
             $after = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA')->json();
-            $this->assertSame($after, $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json());
+            $otherQuote = $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json();
+            $this->assertSame($state === Lifecycle::PENDING_CONFIRMATION ? $before : $after, $otherQuote);
         }
     }
 

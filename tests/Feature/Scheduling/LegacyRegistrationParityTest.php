@@ -288,4 +288,84 @@ class LegacyRegistrationParityTest extends TestCase
         $this->assertEquals(175, $a->fresh()->precio_programado); $this->assertEquals(90, $a->fresh()->total_pagado);
         $this->assertEquals(85, $a->fresh()->saldo_pendiente); $this->assertDatabaseCount('payments', 0);
     }
+
+    public function test_administrator_can_register_confirm_and_edit_with_effective_permissions(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        foreach ([C::CREATE, C::SUBMIT_PAYMENT, C::UPDATE, C::RESCHEDULE] as $permission) {
+            $admin->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+        }
+        CashierShift::first()->update(['user_id' => $admin->id]);
+        $id = $this->actingAs($admin)->postJson($this->url('legacy'), $this->payload('legacy',
+            ['mode' => 'CONFIRM', 'total_pagado' => '50.00']))->assertOk()->json('appointment_id');
+        $a = Appointment::findOrFail($id);
+        $economy = $a->only(['precio_programado', 'total_pagado', 'saldo_pendiente', 'estado_agenda']);
+        $this->postJson('/admissionist/appointment/update', ['appointment_id' => $id,
+            'estado_cita' => 'CONFIRMADO'])->assertOk();
+        $this->postJson('/admissionist/schedule/update', ['appointment_id' => $id, 'estado_cita' => 'CONFIRMADO',
+            'doctor_id_edit' => $a->doctor_id, 'service_id_edit' => $this->catalog['doctorService']->id,
+            'fecha_cita_edit' => substr($a->fecha_cita, 0, 10), 'hora_cita_edit' => '09:30',
+            'expected_fecha_cita' => substr($a->fecha_cita, 0, 10), 'expected_hora_cita' => '09:00'])->assertOk();
+        $this->assertSame($economy, $a->fresh()->only(array_keys($economy)));
+        $this->assertDatabaseCount('payments', 1);
+    }
+
+    public function test_administrator_role_never_grants_payment_or_waiver_capabilities(): void
+    {
+        $admin = $this->agendaReader('ADMINISTRADOR');
+        $admin->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        CashierShift::first()->update(['user_id' => $admin->id]);
+        $this->actingAs($admin)->postJson($this->url('legacy'), $this->payload('legacy',
+            ['mode' => 'CONFIRM', 'total_pagado' => '50.00']))->assertForbidden();
+        $this->postJson($this->url('legacy'), $this->payload('legacy', ['mode' => 'CONFIRM',
+            'es_exonerado' => true, 'autorizado_por' => 'QA AUTORIZADOR']))->assertForbidden();
+        $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0);
+        $this->postJson($this->url('legacy'), $this->payload('legacy'))->assertOk();
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_administrator_and_worker_without_write_permissions_cannot_use_legacy_routes(): void
+    {
+        $a = $this->lifecycleAppointment($this->actor, $this->catalog, [], $this->patient);
+        $before = $a->fresh()->getAttributes();
+        foreach (['ADMINISTRADOR', 'ADMISION'] as $role) {
+            $reader = $this->agendaReader($role);
+            $this->actingAs($reader)->postJson($this->url('legacy'), $this->payload('legacy'))->assertForbidden();
+            $this->postJson('/admissionist/appointment/update',
+                ['appointment_id' => $a->id, 'estado_cita' => 'CONFIRMADO'])->assertForbidden();
+            $this->postJson('/admissionist/schedule/update', ['appointment_id' => $a->id])->assertForbidden();
+        }
+        $this->assertSame($before, $a->fresh()->getAttributes());
+        $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 0);
+    }
+
+    /** @dataProvider entries */
+    public function test_quote_does_not_reveal_another_workers_private_attended_history(string $entry): void
+    {
+        $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
+        $other = $this->agendaReader('COMERCIAL');
+        $history = $this->lifecycleAppointment($other, $this->catalog, ['estado_cita' => 'ATENDIDO',
+            'estado_agenda' => 'PENDIENTE_CONFIRMACION', 'responsible_user_id' => $other->id], $this->patient);
+        $before = $history->fresh()->getAttributes();
+        $url = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
+        $payload = $this->payload($entry);
+        $quote = $this->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
+        $this->assertEquals(100, $quote->json('precio_programado'));
+        // Patient masters remain searchable; a private reservation does not privatize the identity.
+        $this->getJson(route('patients.operational.show', $this->patient->id))->assertOk();
+        $this->postJson($this->url($entry), $this->payload($entry, ['hora_cita' => '09:30']))->assertSuccessful();
+        $this->assertEquals(100, Appointment::where('id', '<>', $history->id)->first()->precio_programado);
+        $quote = $this->actingAs($other)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
+        $this->assertEquals(50, $quote->json('precio_programado'));
+        $this->assertSame($before, $history->fresh()->getAttributes());
+    }
+
+    /** @dataProvider entries */
+    public function test_quote_rejects_readers_without_appointment_view_permission(string $entry): void
+    {
+        $url = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
+        $this->actor->revokePermissionTo(C::VIEW);
+        $this->postJson($url, $this->payload($entry))->assertForbidden()->assertJsonMissing(['tipo' => 'RECONSULTA']);
+        $this->assertDatabaseCount('appointments', 0);
+    }
 }

@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 /** One catalogue policy for quotes and new appointments; never reprices persisted appointments. */
 class AppointmentPriceResolver
 {
-    public function resolve(DoctorService $service, int $patientId, string $date, ?int $rateId = null): array
+    public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null): array
     {
         try {
             $rate = $rateId === null ? app(StandardAdditionalRateResolver::class)->resolve($date)
@@ -28,8 +28,9 @@ class AppointmentPriceResolver
         $type = 'PRIMERA_CONSULTA';
         $price = Money::cents($service->precio_primera_consulta ?? 0);
         // Preserve the existing reconsultation rule: elapsed days at registration, using service IDs.
-        // Only attended economic history affects the quote; pending reservations never do.
-        $last = Appointment::where('patient_id', $patientId)->where('service_id', $service->service_id)
+        // Only attended history visible to this actor affects quotes and registration.
+        // Shared patient identity does not grant access to another worker's private appointments.
+        $last = Appointment::visibleToAgendaUser($actorId)->where('patient_id', $patientId)->where('service_id', $service->service_id)
             ->where('estado_cita', 'ATENDIDO')->whereDate('fecha_cita', '<=', now()->toDateString())
             ->latest('fecha_cita')->first(['fecha_cita']);
         if ($last && $service->dias_reconsulta > 0

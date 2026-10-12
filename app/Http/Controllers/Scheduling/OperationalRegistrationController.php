@@ -19,7 +19,7 @@ class OperationalRegistrationController extends Controller
             'additional_rate_id' => 'nullable|integer']);
         $service = app(\App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve($d['doctor_id'], $d['service_id']);
         $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
-            $d['patient_id'] ?? 0, $d['fecha_cita'], $d['additional_rate_id'] ?? null);
+            $d['patient_id'] ?? 0, (int) $request->user()->id, $d['fecha_cita'], $d['additional_rate_id'] ?? null);
         return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo']]);
     }
 

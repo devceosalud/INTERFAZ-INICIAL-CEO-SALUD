@@ -10,7 +10,7 @@ Admisión podía crear/editar citas y sus importes directamente desde campos del
 
 Una reserva no confirma ni ocupa un intervalo. Registrar un adelanto conserva la reserva hasta solicitar confirmación. El precio se calcula en servidor; un precio o saldo de referencia alterado produce 422 y revierte toda la operación. Reintentos con la misma UUID reutilizan el resultado; cambiar su contenido produce 409. Las operaciones bancarias duplicadas se rechazan también entre entradas.
 
-Se conservan reconsultas y tarifas especiales por la decisión expresa del usuario. El cálculo compartido usa la última cita ATENDIDO del servicio canónico, plazo de reconsulta configurado al momento del registro y tarifa fija/porcentual activa vigente para la fecha elegida. No recalcula citas existentes.
+Se conservan reconsultas y tarifas especiales por la decisión expresa del usuario. El cálculo compartido usa la última cita ATENDIDO visible al usuario del servicio canónico, plazo de reconsulta configurado al momento del registro y tarifa fija/porcentual activa vigente para la fecha elegida. No recalcula citas existentes.
 
 ## Compatibilidad y consumidores
 
@@ -22,15 +22,15 @@ La edición mantiene importes y precio; un cambio de horario requiere permiso de
 
 ## Validación ejecutada
 
-- PHP completo: 626 casos: 625 aprobados, 1 omitido, 3721 aserciones, 0 fallidos.
-- JavaScript: 200 aprobadas, 0 fallidas/omitidas.
-- MariaDB aislada 10.4.32, puerto 33318: 122 aprobadas, 957 aserciones, 0 fallidas.
+- PHP completo: 633 casos: 632 aprobados, 1 omitido, 3767 aserciones, 0 fallidos.
+- JavaScript: 205 aprobadas, 0 fallidas/omitidas.
+- MariaDB aislada 10.4.32, puerto 33318: 129 aprobadas, 1003 aserciones, 0 fallidas.
 - Navegador con datos ficticios: reserva desde Admisión y Agenda, adelanto separado de confirmación, confirmación posterior con S/50 sobre catálogo S/100, rechazo visible de confirmación impaga, formularios y vistas Día/Semana/Mes. El control posterior registró un solo pago S/50 y la cita histórica ficticia exactamente intacta.
 - Pruebas HTTP automatizadas: paridad financiera/permisos en ambas entradas, precios/reconsultas/tarifas, referencias manipuladas, exoneración autorizada, privacidad, mutación histórica, doble duración ya existente y concurrencia real de peticiones (misma UUID, mismo horario y misma operación bancaria).
 - Las primeras ejecuciones finales fallaron por fixtures antiguos que enviaban precio 1 al probar umbral/idempotencia. Se ajustaron a catálogo 100; los casos independientes que exigen rechazo de manipulación permanecen.
 - `git diff --check` aprobado.
 
-Evidencia: [logs y capturas](evidence/urgent1/). [Control posterior del navegador](evidence/urgent1/browser-check.json).
+Evidencia actual de la revisión: [logs y capturas](evidence/urgent1/review/). La evidencia original se conserva en su directorio padre. [Control posterior del navegador](evidence/urgent1/browser-check.json).
 Los tests destructivos comprueban entorno testing, host, puerto, nombre, usuario y datadir propios antes de migrar. No se usaron pacientes reales.
 
 ## Límites y decisiones para revisión
@@ -100,3 +100,25 @@ Listado exacto de código/pruebas modificados o añadidos:
 - `tests/Integration/LegacyRegistrationMariaDbTest.php`
 - `tests/JavaScript/agenda-quote.test.js`
 - `tests/Support/urgent-browser-check.php`
+
+## Revisión solicitada del PR #5 sobre b634197
+
+| Problema y causa | Corrección y archivos | Prueba de regresión |
+|---|---|---|
+| paintIdentity cotizaba antes de cambiar el ID en el formulario. | agenda.js actualiza primero; agenda-operational-workspace.js recibe explícitamente el nuevo ID. Conserva invalidación por versión de respuestas y errores anteriores. | agenda-quote.test.js ejecuta el pintor real y workspace async con dos pacientes de S/100 y S/50; cambios de médico, servicio, fecha y tarifa. La copia de b634197 falla (8/9); la corrección pasa (9/9). |
+| Middleware por rol bloqueaba a ADMINISTRADOR incluso con permisos. | routes/admision.php incorpora ADMINISTRADOR únicamente en POST appointment/store, appointment/update y schedule/update. Los servicios siguen exigiendo VIEW/CREATE/UPDATE/RESCHEDULE y permisos financieros efectivos. | LegacyRegistrationParityTest: administrador autorizado registra/confirma/edita; sin SUBMIT_PAYMENT o aprobación de exoneración recibe 403; administrador/trabajador sin permisos de escritura recibe 403 y conserva datos. |
+| La cotización consultaba antecedentes sin aplicar privacidad; API heredada solo verificaba el rol. | AppointmentPriceResolver requiere actor y usa visibleToAgendaUser; ambos controladores de cotización y CreateAppointmentService usan el mismo actor. API exige VIEW. | LegacyRegistrationParityTest en SQLite y MariaDB: historia privada ajena no cambia tipo/precio; el dueño sí obtiene reconsulta, lector sin VIEW recibe 403; búsqueda de datos básicos y nuevo registro siguen funcionando. AppointmentReaderPrivacyTest conserva igualdad para historia LEGADO/CONFIRMADA y excluye historia privada ajena. |
+
+Las identidades de pacientes son compartidas por la política existente. No se deniega la búsqueda legítima de un paciente por pertenecer a otro usuario; se excluyen sus antecedentes no visibles del cálculo, incluso si un registro importado combina ATENDIDO con PENDIENTE_CONFIRMACION. Los registros LEGADO/CONFIRMADA siguen siendo visibles conforme a la política existente, sin excepciones por administrador.
+
+QA de navegador repetido: primera consulta S/100; cambio a reconsulta S/50; tarifa especial +S/30 produce S/80; volver al paciente inicial produce S/130 y restablecer tarifa estándar S/100. Reserva sin dinero, adelanto separado S/50 y confirmación explícita; vistas Día/Semana/Mes sin errores de consola. Control posterior: dos fixtures históricos intactos, una cita nueva confirmada y un único pago S/50. Registro/edición heredados, exoneración, idempotencia y concurrencia se verificaron mediante suites HTTP automatizadas.
+
+La primera suite completa de esta revisión detectó una expectativa antigua que exigía divulgar reconsulta privada a otro lector. Se corrigió para verificar privacidad y conservar igualdad en antecedentes compartidos. Resultado final: 0 fallos; una omisión SQLite ya documentada. Sin pruebas en Hostinger/MariaDB 11.8.9.
+
+Archivos adicionales de esta revisión:
+- routes/admision.php: retirar bloqueo de rol de las tres entradas de citas.
+- tests/Support/urgent-review-browser-seed.php: fixtures descartables para primera consulta/reconsulta.
+- tests/Support/urgent-review-browser-check.php: control de integridad histórica y pago único después del navegador.
+- docs/evidence/urgent1/review/: logs reales, reproducción previa y capturas actuales.
+
+Los demás archivos corregidos y sus motivos se detallan en la matriz y en el inventario anterior. Otras rutas de pacientes, responsables y horarios médicos mantienen su middleware heredado; no se amplió esta revisión a cambios generales de permisos. Permanecen pendientes la transición económica al cambiar médico/servicio y el QA autorizado en el motor de Hostinger.

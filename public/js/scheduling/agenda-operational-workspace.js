@@ -135,10 +135,11 @@
             ui.price.value = model.decimal(quote); ui.paid.value = '0.00'; calculate();
             refreshQuote();
         }
-        async function refreshQuote() {
+        async function refreshQuote(patientId) {
             const version = ++quoteVersion;
             if (!config.quoteData || !config.quoteEndpoint || config.context()?.appointment_id) { return; }
-            const data = config.quoteData();
+            const data = { ...config.quoteData() };
+            if (patientId !== undefined) data.patient_id = patientId || 0;
             if (!data.doctor_id || !data.service_id || !data.fecha_cita) { quoteReady = false; return; }
             if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
             quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
@@ -155,7 +156,7 @@
                 if (config.changed) config.changed();
             }
         }
-        if (rateSelect) rateSelect.addEventListener('change', refreshQuote);
+        if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ui[id].addEventListener('change', () => { captureDirty = true; }));
         async function patientChanged(id, hydrateIdentity = false) {
@@ -165,7 +166,7 @@
             }
             capturePatient = null;
             captureId = id || null; captureDirty = false; const version = ++captureVersion;
-            refreshQuote();
+            refreshQuote(id || 0);
             ui['save-patient'].disabled = !id || ui.phone.disabled; inlineStatus('patient', '');
             ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => { ui[id].value = ''; });
             document.getElementById('agenda-patient-phone-summary').textContent = '—';

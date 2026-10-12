@@ -73,7 +73,7 @@ class CreateAppointmentService
                     $automaticOwner = !$actor->hasRole('ADMINISTRADOR') && $actor->hasAnyRole(['COMERCIAL', 'ADMISION']);
                     abort_if($automaticOwner && $data->responsibleUserId !== null && $data->responsibleUserId !== (int) $actor->id, 403);
                     $responsible = $this->resolveResponsible($automaticOwner ? $actor->id : $data->responsibleUserId, $automaticOwner);
-                    $quote = app(AppointmentPriceResolver::class)->resolve($doctorService, $data->patientId,
+                    $quote = app(AppointmentPriceResolver::class)->resolve($doctorService, $data->patientId, (int) $actor->id,
                         $data->date, $data->operational['additional_rate_id'] ?? null);
 
                     if ($bookingType === AppointmentAgendaLifecycle::OFF_HOURS) {
