@@ -13,7 +13,7 @@
 .agenda-board .agenda-doctor-search input { height: 36px; font-size: 13px; }
 .agenda-board .agenda-doctors__footer { padding: 10px; flex-wrap: wrap; font-size: 11px; }
 .agenda-board .agenda-text-button { font-size: 12px; }
-.agenda-board .agenda-pane-head { padding: 12px; background: #f2f8f8; border-radius: 4px 12px 0 0; align-items: flex-start; }
+.agenda-board .agenda-pane-head { padding: 12px; background: #f2f8f8; border-radius: 4px 4px 0 0; align-items: flex-start; }
 .agenda-board .agenda-pane-head p { margin-top: 4px; font-size: 12px; line-height: 1.45; }
 .agenda-board .agenda-section-title { font-size: 16px; line-height: 1.3; letter-spacing: 0; }
 .agenda-board .agenda-compare-control { font-size: 11px; padding-top: 3px; }
@@ -92,7 +92,7 @@
 .agenda-board .agenda-filter-button { height: 38px; font-size: 13px; border-radius: 4px; }
 .agenda-board .agenda-commandbar__actions { gap: 10px; margin: 0; }
 .agenda-board .agenda-btn-group .agenda-btn { white-space: nowrap; border-radius: 0; }
-.agenda-board .agenda-btn-group .agenda-btn:first-child { border-radius: 4px 0 0 6px; }
+.agenda-board .agenda-btn-group .agenda-btn:first-child { border-radius: 4px 0 0 4px; }
 .agenda-board .agenda-btn-group .agenda-btn:last-child { border-radius: 0 4px 4px 0; }
 .agenda-board .agenda-calendar.fc .fc-col-header-cell-cushion,
 .agenda-board .agenda-calendar.fc .fc-timegrid-axis-cushion,
