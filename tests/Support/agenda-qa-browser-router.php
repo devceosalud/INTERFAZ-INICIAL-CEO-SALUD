@@ -8,6 +8,7 @@ $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $asset = realpath($root.'/public'.$path);
 if ($path !== '/' && $asset && is_file($asset) && str_starts_with($asset, realpath($root.'/public').DIRECTORY_SEPARATOR)
     && strtolower(pathinfo($asset, PATHINFO_EXTENSION)) !== 'php') { return false; }
+if ($path === '/__qa/viewport') { require __DIR__.'/agenda-qa-viewport.php'; return; }
 require $root.'/vendor/autoload.php';
 $app = \Tests\Support\IsolatedAgendaQa::boot(true);
 $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);

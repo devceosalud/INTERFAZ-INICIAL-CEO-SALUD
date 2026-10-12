@@ -67,7 +67,8 @@ test('reserva financiada se confirma sin otro cobro aunque el operador no pueda 
     const selected={tipo_contexto:'cita_existente',appointment_id:12,patient_id:1,estado_agenda:'PENDIENTE_CONFIRMACION'};
     f.select(selected);await f.workspace.selectionChanged(selected);
     assert.equal(f.get('confirm-reservation').disabled,false);
-    await f.get('confirm-reservation').listeners.click();
+    assert.equal(f.workspace.reservationConfirmation().allowed,true);
+    await f.workspace.confirmReservation();
     const sent=payload(f.calls.find(c=>c.options.method==='POST'));
     assert.equal(sent.confirm,true);assert.equal(sent.payment.amount,'0.00');
     assert.equal(f.get('submit-payment').disabled,true);
@@ -82,6 +83,9 @@ test('reserva sin 50% o sin CREATE muestra requisitos y conserva confirmación b
         f.select(selected);await f.workspace.selectionChanged(selected);
         assert.equal(f.get('confirm-reservation').disabled,true);
         assert.match(f.get('confirmation-reason').textContent,canCreate?/50%/:/appointment.create/);
+        assert.equal(f.workspace.reservationConfirmation().allowed,false);
+        await f.workspace.confirmReservation();
+        assert.equal(f.calls.filter(c=>c.options.method==='POST').length,0);
     }
 });
 const position={precio:'100.00',pago_real:'0.00',saldo:'100.00',asegurada:false,es_exonerado:false,can_edit_notes:true};
@@ -107,4 +111,30 @@ test('registrar adelanto envía confirm false y el conflicto conserva selección
             assert.equal(payload(retry[1]).confirm,true);assert.equal(payload(retry[1]).payment.amount,'0.00');
         }
     }
+});
+
+
+test('confirmation from the main action serializes double clicks and never adds a payment', async()=>{
+    let release;
+    const position={precio:'100.00',pago_real:'50.00',saldo:'50.00',asegurada:true,can_edit_notes:true};
+    const f=fixture((url,options)=>{
+        if(url.endsWith('/economy'))return response(200,position);
+        if(url.endsWith('/documents'))return response(200,{documents:[]});
+        if(url.startsWith('/patients'))return response(200,{patient:{patient_id:1}});
+        return new Promise(resolve=>{release=resolve;});
+    });
+    const selected={tipo_contexto:'cita_existente',appointment_id:12,patient_id:1,estado_agenda:'PENDIENTE_CONFIRMACION'};
+    f.select(selected);
+    assert.equal(f.workspace.reservationConfirmation().allowed,false);
+    await f.workspace.selectionChanged(selected);
+    const first=f.workspace.confirmReservation();
+    assert.equal(f.workspace.reservationConfirmation().allowed,false);
+    await f.workspace.confirmReservation();
+    const posts=f.calls.filter(c=>c.options.method==='POST');
+    assert.equal(posts.length,1);assert.equal(payload(posts[0]).confirm,true);
+    assert.equal(payload(posts[0]).payment.amount,'0.00');
+    release(response(200,{appointment:{appointment_id:12},economy:position}));await first;
+    f.select({...selected,estado_agenda:'CONFIRMADA'});
+    await f.workspace.confirmReservation();
+    assert.equal(f.calls.filter(c=>c.options.method==='POST').length,1);
 });

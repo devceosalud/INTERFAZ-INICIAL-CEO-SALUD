@@ -1,8 +1,8 @@
 <section data-ui-zone="mini" class="agenda-operations__section agenda-mini" aria-labelledby="agenda-mini-title">
     <div class="agenda-pane-head agenda-mini__head">
-        <button type="button" class="agenda-mini__nav" id="agenda-mini-prev" aria-label="Mes anterior">Anterior</button>
+        <button type="button" class="agenda-mini__nav" id="agenda-mini-prev" aria-label="Mes anterior">&lsaquo;</button>
         <h2 class="agenda-section-title" id="agenda-mini-title">Calendario <button type="button" class="agenda-help" data-help-title="Semáforo" data-help-text="El color indica cuánto del horario regular ya está confirmado con adelantos." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: semáforo">?</button></h2>
-        <button type="button" class="agenda-mini__nav" id="agenda-mini-next" aria-label="Mes siguiente">Siguiente</button>
+        <button type="button" class="agenda-mini__nav" id="agenda-mini-next" aria-label="Mes siguiente">&rsaquo;</button>
     </div>
 
     <p class="agenda-mini__month" id="agenda-mini-month"></p>

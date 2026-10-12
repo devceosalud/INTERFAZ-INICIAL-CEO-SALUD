@@ -35,6 +35,19 @@
             return { price: ui.price.value, amount: ui.amount.value, canPay: !ui.amount.disabled,
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
+        function reservationConfirmation() {
+            const pending = config.context()?.estado_agenda === 'PENDIENTE_CONFIRMACION';
+            return { allowed: Boolean(pending && !working && config.canCreate && lastPosition
+                && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
+                reason: working ? 'Guardando. Espera el resultado de esta operaci\u00f3n.' :
+                    !config.canCreate ? 'Confirmar requiere appointment.create.' :
+                    !pending ? 'La cita seleccionada no tiene una confirmaci\u00f3n pendiente.' :
+                    !lastPosition ? 'Consultando el requisito financiero de la reserva\u2026' :
+                    'Para confirmar se requiere al menos 50% de pago real o exoneraci\u00f3n autorizada.' };
+        }
+        function confirmReservation() {
+            if (reservationConfirmation().allowed) { return submitPayment(true); }
+        }
         function confirmation(position) {
             const reason = byId('confirmation-reason');
             const allowed = config.canCreate && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
@@ -296,6 +309,6 @@
             finally { working = false; }
         });
         function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
-        return { register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness };
+        return { register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness, reservationConfirmation, confirmReservation };
     };
 }(typeof window !== 'undefined' ? window : globalThis));

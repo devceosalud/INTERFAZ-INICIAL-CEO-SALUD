@@ -188,7 +188,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('data-can-create-appointments="1"', false)
             ->assertSee('id="agenda-service-select"', false)
             ->assertSee('id="agenda-responsible-select" disabled', false)
-            ->assertDontSee('id="agenda-appointment-submit" disabled', false);
+            ->assertSee('id="agenda-appointment-submit" disabled', false);
     }
 
     public function test_reception_and_commercial_can_use_the_embedded_patient_write_actions(): void
@@ -223,6 +223,26 @@ class AgendaBoardTest extends TestCase
             ->assertSee('assets/vendor/fullcalendar/css/main.min.css', false)
             ->assertSee('assets/vendor/fullcalendar/js/main.min.js', false)
             ->assertDontSee('cdn.jsdelivr.net/npm/fullcalendar', false);
+    }
+
+    public function test_agenda_html_is_fresh_and_all_local_agenda_assets_are_content_versioned_in_dependency_order(): void
+    {
+        $response = $this->actingAs($this->reader())->get(self::PAGE_URI)->assertOk();
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $html = $response->getContent();
+        preg_match_all('/(?:src|href)="[^"]*\/((?:js\/scheduling|js\/patients|css\/scheduling|assets\/vendor\/fullcalendar)\/[^"?]+)([^" ]*)"/', $html, $matches, PREG_SET_ORDER);
+        $this->assertGreaterThan(18, count($matches));
+        foreach ($matches as $match) {
+            $this->assertSame('?v='.substr(hash_file('sha256', public_path($match[1])), 0, 20), $match[2], $match[1]);
+        }
+        foreach ([['assets/vendor/global/global.min.js','bootstrap-select.min.js'], ['bootstrap-select.min.js','assets/js/custom.min.js'],
+            ['fullcalendar/js/main.min.js','js/scheduling/agenda.js'], ['agenda-operational-form.js','agenda-operational-workspace.js'],
+            ['agenda-operational-workspace.js','js/scheduling/agenda.js'], ['agenda-guidance.js','js/scheduling/agenda.js']] as [$before, $after]) {
+            $this->assertLessThan(strpos($html, $after), strpos($html, $before));
+        }
+        $this->assertMatchesRegularExpression('/id="agenda-appointment-submit"[^>]*disabled/', $html);
+        $this->assertMatchesRegularExpression('/id="agenda-pending-start"[^>]*disabled/', $html);
+        $response->assertSee('agenda-registration', false)->assertSee('agenda-reservation-reason', false)->assertSee('Confirmar cita');
     }
 
     /*

@@ -3,8 +3,9 @@
 @section('body_class', 'agenda-viewport')
 
 @section('css_data')
-    <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/scheduling/agenda.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-layout.css') }}" rel="stylesheet">
 @endsection
 
 @section('body')
@@ -43,14 +44,11 @@
                     @include('scheduling.agenda.partials.toolbar')
 
                     <div class="agenda-workspace">
-                        <aside class="agenda-operations" aria-label="Selección y preparación de cita">
+                        <aside class="agenda-operations" aria-label="Médicos y calendario">
                             <div class="agenda-operations__pair">
                                 @include('scheduling.agenda.partials.professionals')
                                 @include('scheduling.agenda.partials.mini-calendar')
                             </div>
-                            @include('scheduling.agenda.partials.quick-registration')
-                            @include('scheduling.agenda.partials.withdrawal')
-                            <details class="agenda-workflow"><summary>Reservas afectadas por cambios de horario <span id="agenda-contingency-badge"></span></summary><p id="agenda-contingency-status" class="agenda-action-notice" role="status" hidden></p><div id="agenda-contingency-list" aria-live="polite"></div></details>
                         </aside>
 
                         <section data-ui-zone="grid" class="agenda-center" aria-labelledby="agenda-title">
@@ -143,6 +141,12 @@
                             <p class="agenda-center__foot" id="agenda-detail-hint"></p>
                             <details id="agenda-withdrawal-history" hidden><summary>Retiros previos · horario liberado <span id="agenda-withdrawal-count"></span></summary><div id="agenda-withdrawal-history-list"></div></details>
                         </section>
+
+                        <aside class="agenda-registration" aria-label="Registro y seguimiento de citas">
+                            @include('scheduling.agenda.partials.quick-registration')
+                            @include('scheduling.agenda.partials.withdrawal')
+                            <details class="agenda-workflow"><summary>Reservas afectadas por cambios de horario <span id="agenda-contingency-badge"></span></summary><p id="agenda-contingency-status" class="agenda-action-notice" role="status" hidden></p><div id="agenda-contingency-list" aria-live="polite"></div></details>
+                        </aside>
                     </div>
 
                     @include('scheduling.agenda.partials.patient-modal')
@@ -155,26 +159,28 @@
 @endsection
 
 @section('script_data')
-    <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-    <script src="{{ asset('assets/js/custom.min.js') }}"></script>
-    <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
-    <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-selection.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-day-grid.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-week-event.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-week-background.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-week-slots.js') }}"></script>
-    <script src="{{ asset('js/patients/patient-phone.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-patient-lookup.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-patient-draft.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-appointment-create.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-appointment-actions.js') }}"></script>
-    @include('telemetry.collector')
-    <script src="{{ asset('js/scheduling/agenda-guidance.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-help.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-operational-form.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-operational-workspace.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-patient-navigation.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda-withdrawal.js') }}"></script>
-    <script src="{{ asset('js/scheduling/agenda.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/js/custom.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-shell.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/js/deznav-init.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-selection.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-day-grid.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-week-event.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-week-background.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-week-slots.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/patients/patient-phone.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-lookup.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-draft.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-create.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-actions.js') }}"></script>
+    @include('telemetry.collector', ['agendaAssetVersions' => true])
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-guidance.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-help.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-form.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-workspace.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>
 @endsection
