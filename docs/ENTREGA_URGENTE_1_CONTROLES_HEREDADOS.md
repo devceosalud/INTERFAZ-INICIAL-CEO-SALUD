@@ -30,14 +30,14 @@ La edición mantiene importes y precio; un cambio de horario requiere permiso de
 - Las primeras ejecuciones finales fallaron por fixtures antiguos que enviaban precio 1 al probar umbral/idempotencia. Se ajustaron a catálogo 100; los casos independientes que exigen rechazo de manipulación permanecen.
 - `git diff --check` aprobado.
 
-Evidencia actual de la revisión: [logs actuales](evidence/urgent1/authorized/). Las capturas y logs de revisiones anteriores se conservan en sus directorios originales. [Control posterior del navegador](evidence/urgent1/browser-check.json).
+Evidencia actual tras integrar main: [logs de integración](evidence/urgent1/integrated/). Evidencia de las correcciones antes del merge: [logs autorizados](evidence/urgent1/authorized/). Las capturas y logs de revisiones anteriores se conservan en sus directorios originales. [Control posterior del navegador](evidence/urgent1/browser-check.json).
 Los tests destructivos comprueban entorno testing, host, puerto, nombre, usuario y datadir propios antes de migrar. No se usaron pacientes reales.
 
 ## Límites y decisiones para revisión
 
 - No hay migraciones nuevas, backfill ni cambios masivos de estados/importes históricos.
 - Un rollback nativo DROP COLUMN quedó omitido por SQLite anterior a 3.35; no es una prueba nueva.
-- No se ejecutó QA en MariaDB 11.8.9 ni Hostinger. No se hizo merge, despliegue, migraciones ni cambios de permisos productivos.
+- No se ejecutó QA en MariaDB 11.8.9 ni Hostinger. No se hizo merge hacia main, despliegue, migraciones ni cambios de permisos productivos.
 - Validar la transición propuesta para cambio de médico/servicio en edición: conservar cita y exigir revisión económica; no se implementan créditos/devoluciones.
 - Revisar la dotación existente de VIEW/CREATE/UPDATE/RESCHEDULE/SUBMIT_PAYMENT y permisos de exoneración de los perfiles. No se concede acceso por rol automáticamente.
 - Los clientes antiguos que confirman/pagan sin UUID o usan cotizaciones obsoletas deben actualizar su formulario y repetir la cotización.
@@ -146,3 +146,22 @@ Resultado final ejecutado: PHP 643 casos (642 aprobados, 1 omitido por SQLite <3
 Las dos condiciones de código del preflight quedan atendidas. Siguen pendientes los permisos efectivos productivos, PHP/CLI-FPM/vendor de Hostinger, QA equivalente MariaDB 11.8.9, schema/índices reales, SHA instalado, autodespliegue, backup/restauración y rollback ensayado. No hay migraciones/seeders nuevos ni cambios productivos. No se autoriza merge ni despliegue por estos resultados locales.
 
 Mapa de calor: decisión de producto documentada. No se retiran enlaces, vistas, rutas, eventos, JavaScript ni tests en este PR; migraciones y datos se conservan. Microsoft Clarity ya está instalado por decisión de negocio en main (1a2c1895); PR #5 debe conservar sin cambios resources/views/layouts/app.blade.php al integrar main. La retirada del mapa interno se hará en un PR independiente. La revisión de privacidad y captura de sesiones continúa pendiente.
+
+
+## Integración autorizada de main y verificación final — 12/10/2026
+
+Antes de integrar se conservaron 15 archivos locales mediante copias SHA-256 verificadas, patch binario y manifiesto recuperable en storage/app/qa-final/recovery-2026-10-12T21-41-14-915Z (local, ignorado por Git). Se registraron las correcciones en b6c1fc148860205e9ddb98f1764068901cccc2fb. origin/main se verificó en 1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4; su único cambio frente a ccd36c75 es la instalación de Clarity en resources/views/layouts/app.blade.php.
+
+Merge convencional: 1f2a00b07492c55454a4d5ff0fe1da4b6eb83365, padres b6c1fc148860205e9ddb98f1764068901cccc2fb y 1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4. Cero conflictos o cambios inesperados. 2fe10c9 permanece como ancestro; no hubo rebase, reset, limpieza destructiva ni force push. Los worktrees previos se conservaron. El blob completo del layout en HEAD y origin/main es 2eb1124b96ad44e4133e3f8dc754d89311fb2a69: Clarity permanece exactamente intacto.
+
+Pruebas repetidas sobre el merge, todas con salida 0:
+
+| Suite | Resultado real |
+|---|---|
+| PHP completo, SQLite en memoria | 643 casos: 642 aprobados, 1 omitido, 3909 aserciones, 0 fallidos. |
+| JavaScript completo | 205 aprobados, 0 fallidos, 0 omitidos. |
+| MariaDB 10.4.32 aislada, 127.0.0.1:33318 | 139 aprobados, 1144 aserciones, 0 fallidos; incluye concurrencia real y paridad heredada/operativa. |
+
+La omisión es test_native_rollback_preserves_all_legacy_columns_rows_indexes_and_foreign_keys: el SQLite local es anterior a 3.35. Logs y comandos exactos: docs/evidence/urgent1/integrated/. Las suites cubren reservas, cobros, confirmación, precios/tarifas/reconsultas, permisos, exoneración, idempotencia, concurrencia, privacidad, históricos y vistas Día/Semana/Mes. La inclusión del layout de Clarity no produjo fallos en estas suites. No se ejecutó su JavaScript remoto ni se verificó captura, enmascaramiento o privacidad de sesiones; no se repitió QA manual de navegador tras este merge. Tras MariaDB se restablecieron únicamente los fixtures ficticios de la instancia local descartable, con guardas de entorno y datadir.
+
+El PR respecto de origin/main no modifica el layout, migraciones, seeders ni archivos de dependencias. Se mantiene Draft #5; no se hizo merge hacia main ni despliegue. Continúan pendientes el preflight Hostinger, permisos efectivos productivos, compatibilidad PHP/CLI-FPM/vendor y MariaDB 11.8.9, schema/índices, backup/restauración, autodespliegue y rollback; también la revisión de privacidad de Clarity y la revisión autorizada de registros inconsistentes. La retirada del mapa de calor interno será otro PR.
