@@ -44,7 +44,7 @@
                                 <input class="form-check-input" type="checkbox" id="cita_doble_edit">
 
                                 <label class="form-check-label" for="cita_doble_edit">
-                                    Generar turno doble
+                                    Doble duración guardada · se conserva al reprogramar
                                 </label>
                             </div>
                         </div>

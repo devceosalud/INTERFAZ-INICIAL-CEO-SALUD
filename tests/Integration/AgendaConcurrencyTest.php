@@ -203,4 +203,13 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertSame(1,DB::table('appointment_events')->where('event_type','INDICACION_REEVALUACION_VINCULADA')->count());
     }
 
+    public function test_double_booking_competes_with_second_interval_without_duplicate_money():void {
+        $other=$this->createPatient($this->actor,['numero_identidad'=>'70009431','historia_clinica'=>'QA-DOUBLE-RACE']);
+        $a=$this->payload(['mode'=>'CONFIRM','hora_cita'=>'09:00','duracion_cita'=>60,'cita_doble'=>true,'payment'=>['amount'=>'50','method'=>'EFECTIVO']]);
+        $b=$this->payload(['mode'=>'CONFIRM','hora_cita'=>'09:30','patient_id'=>$other->id,'payment'=>['amount'=>'50','method'=>'EFECTIVO']]);
+        $this->assertSame([201,409],$this->statuses($this->race('/scheduling-mvp/agenda/registrations',[$a,$b])));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);
+        $this->assertEquals(50,Payment::sum('monto'));$this->assertEquals(100,Appointment::first()->precio_programado);
+    }
+
 }

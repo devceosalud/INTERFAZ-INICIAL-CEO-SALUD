@@ -14,6 +14,7 @@
         <p id="agenda-op-patient-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-patient-error" class="agenda-field-error" role="alert" hidden></p>
     </details>
+    <label><input id="agenda-op-double" type="checkbox"> Cita extendida · dos intervalos consecutivos, una sola consulta</label>
     <details id="agenda-op-notes-panel">
         <summary>Motivo y observación · opcional</summary>
         <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>

@@ -39,7 +39,7 @@ class OperationalRegistrationRequest extends FormRequest
             'saldo_pendiente' => 'nullable|numeric|min:0|max:99999999.99|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'site_id' => ['nullable', 'integer', Rule::exists('sites', 'id')->where('estado', 'ACTIVO')],
             'fecha_cita' => 'required|date_format:Y-m-d', 'hora_cita' => 'required|date_format:H:i',
-            'duracion_cita' => 'required|integer|between:1,255', 'responsible_user_id' => 'nullable|integer|exists:users,id',
+            'duracion_cita' => 'required|integer|between:1,255','cita_doble'=>'sometimes|boolean','duration_slots'=>'prohibited', 'responsible_user_id' => 'nullable|integer|exists:users,id',
             'motivo_consulta' => 'nullable|string|max:2000', 'observaciones' => 'nullable|string|max:2000',
             'es_exonerado' => 'sometimes|boolean', 'autorizado_por' => 'nullable|string|max:255',
             'payment' => 'nullable|array:amount,method,operation,origin',

@@ -13,7 +13,8 @@ test('confirmación ERP muestra origen/destino y cancelación asíncrona no env�
     });
     assert.equal(outcome.cancelled,true);assert.equal(sent,0);assert.equal(reverted,1);
     const source = require('node:fs').readFileSync(require('node:path').join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
-    assert.doesNotMatch(source,/window\.confirm\s*\(/);
+    const handler=source.slice(source.indexOf('async function moveAppointment('),source.indexOf('function syncModalBooking('));
+    assert.doesNotMatch(handler,/window\.confirm\s*\(/);
 });
 
 test('cancelar conversión asíncrona no envía segundo PATCH',async()=>{

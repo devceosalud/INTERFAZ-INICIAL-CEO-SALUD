@@ -50,6 +50,12 @@ class OperationalRegistrationService
                 if ($data['mode'] === 'RESERVE' && $data['booking_type'] !== 'REGULAR') {
                     throw ValidationException::withMessages(['booking_type' => 'La reserva privada utiliza un intervalo regular.']);
                 }
+                if(!empty($data['cita_doble'])) {
+                    if($data['booking_type']!=='REGULAR') throw ValidationException::withMessages(['cita_doble'=>'La cita extendida requiere dos intervalos regulares consecutivos.']);
+                    $double=app(DoubleAppointmentDuration::class)->resolve((int)$data['doctor_id'],$data['fecha_cita'],$data['hora_cita'],$data['site_id']??null);
+                    if((int)$data['duracion_cita']!==$double['minutes']) throw ValidationException::withMessages(['duracion_cita'=>'La duración no coincide con dos intervalos vigentes. Actualiza la Agenda.']);
+                    $data['_legacy_double']=true;
+                }
                 $owner = $this->owner($actor, $data['responsible_user_id'] ?? null);
                 $waived = (bool) ($data['es_exonerado'] ?? false);
                 if (!empty($data['autorizado_por']) || $waived) {

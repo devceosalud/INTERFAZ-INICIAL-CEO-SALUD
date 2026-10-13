@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
 function workspace() {
-    const elements = new Map(), pending = [], calls = [];
+    const elements = new Map(), pending = [], calls = [],asks=[];let decision=true;
     const element = () => ({ value: '', hidden: true, disabled: false, checked: false, files: [], dataset: {}, handlers: {},
         addEventListener(name, handler) { this.handlers[name] = handler; }, replaceChildren() {},
         classList: { add() {}, remove() {} }, focus() {}, scrollIntoView() {} });
@@ -15,7 +15,7 @@ function workspace() {
     let patientId = 2, serviceId = 3;
     let selected = { tipo_contexto: 'slot_libre', doctor_id: 1, fecha: '2026-10-13', hora_inicio: '09:00' };
     const sandbox = { document, FormData:class {constructor(){this.values=new Map();}append(k,v){this.values.set(k,v);}},
-        window: { crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
+        window: {confirm:message=>{asks.push(message);return decision;},crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
         fetch: (url, options = {}) => {
             calls.push({ url, options });
             if (url === '/quote') return new Promise(resolve => pending.push(resolve));
@@ -27,10 +27,10 @@ function workspace() {
         vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../public/js/scheduling/' + name + '.js'), 'utf8'), sandbox);
         if (name === 'agenda-operational-form') sandbox.window.AgendaOperationalForm = sandbox.AgendaOperationalForm;
     }
-    const widget = sandbox.window.AgendaOperationalWorkspace({ base: '/appointments', quoteEndpoint: '/quote',
+    const widget = sandbox.window.AgendaOperationalWorkspace({endpoint:'/register',payload:()=>({doctor_id:1,service_id:3,patient_id:2,duracion_cita:30}),registered:async()=>{},base: '/appointments', quoteEndpoint: '/quote',
         patientTemplate: '/patients/__PATIENT__', context: () => selected, canCreate: true, notice() {}, error: b => b.message,
         quoteData: () => ({ doctor_id: selected.doctor_id, service_id: serviceId, patient_id: patientId, fecha_cita: selected.fecha }) });
-    return { widget, pending, calls, field: id => document.getElementById('agenda-op-' + id),
+    return { widget, pending, calls, asks,decision(v){decision=v;},field: id => document.getElementById('agenda-op-' + id),
         select(value) { selected = value; }, patient(value) { patientId = value; }, service(value) { serviceId = value; }, answer(index, price, ok = true, rule = 'NORMAL') {
             pending[index]({ ok, status: ok ? 200 : 422, json: async () => ok ? { precio_programado: price, pricing_rule:rule } : { message: 'Tarifa no vigente' } });
         } };
@@ -164,3 +164,79 @@ test('subida de orden privada usa multipart y limpiar contexto elimina evidencia
     assert.equal(qa.field('indication-file').value,'');assert.equal(qa.field('indication-attested').checked,false);
     assert.equal(qa.field('indication-date').value,'');assert.equal(qa.field('indication-reference').value,'');
 });
+
+test('sin datos pendientes cambia directamente; con cambios permite cancelar sin borrar el formulario',async()=>{
+    const qa=workspace();const first={tipo_contexto:'slot_libre',doctor_id:1,fecha:'2026-10-13',hora_inicio:'09:00'};
+    qa.select(first);await qa.widget.selectionChanged(first);
+    const next={...first,hora_inicio:'10:00'};
+    assert.equal(qa.widget.prepareSelection(next),true);assert.equal(qa.asks.length,0);
+    qa.field('reason').value='Dato ficticio sin guardar';qa.decision(false);
+    assert.equal(qa.widget.prepareSelection(next),false);assert.equal(qa.field('reason').value,'Dato ficticio sin guardar');
+    assert.equal(qa.asks.length,1);qa.decision(true);assert.equal(qa.widget.prepareSelection(next),true);
+    qa.select(next);await qa.widget.selectionChanged(next);assert.equal(qa.field('reason').value,'');assert.equal(qa.widget.hasUnsavedChanges(),false);
+});
+test('descartar limpia contextos de dinero, descuentos, indicación y contactos del intervalo anterior',async()=>{
+    const qa=workspace();const first={tipo_contexto:'slot_libre',doctor_id:1,fecha:'2026-10-13',hora_inicio:'09:00'};
+    qa.select(first);await qa.widget.selectionChanged(first);
+    Object.assign(qa.field('amount'),{value:'50'});qa.field('method').value='YAPE';qa.field('operation').value='QA-OLD';qa.field('origin').value='YAPE';
+    qa.field('phone').value='999000123';qa.field('discount-type').value='FIXED';qa.field('discount-value').value='10';
+    qa.field('indication').value='42';qa.field('double').checked=true;qa.field('postoperative').checked=true;
+    const next={...first,doctor_id:2,hora_inicio:'10:00'};assert.equal(qa.widget.prepareSelection(next),true);
+    qa.select(next);await qa.widget.selectionChanged(next);
+    for(const name of ['operation','origin','phone','indication','discount-type'])assert.equal(qa.field(name).value,'',name);
+    assert.equal(qa.field('amount').value,'0');assert.equal(qa.field('method').value,'EFECTIVO');
+    assert.equal(qa.field('double').checked,false);assert.equal(qa.field('postoperative').checked,false);
+    assert.equal(qa.field('price').value,'0.00');assert.equal(qa.field('paid').value,'0.00');
+});
+test('una actualización del mismo contexto conserva notas todavía sin guardar',async()=>{
+    const qa=workspace();const selected={tipo_contexto:'cita_existente',appointment_id:5,patient_id:2,estado_agenda:'CONFIRMADA'};
+    qa.select(selected);await qa.widget.selectionChanged(selected);qa.field('reason').disabled=false;
+    qa.field('reason').value='Corrección ficticia pendiente';await qa.widget.selectionChanged(selected);
+    assert.equal(qa.field('reason').value,'Corrección ficticia pendiente');
+});
+test('selección del calendario consulta el aviso antes de modificar la cita elegida',()=>{
+    const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
+    const fn=source.slice(source.indexOf('    function selectInterval('),source.indexOf('    function applyQuickState('));
+    const original={appointment_id:5},next={appointment_id:6};let asks=0;
+    const sandbox={state:{selection:original},operationalWorkspace:{prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
+    vm.runInNewContext(fn+'\nglobalThis.choose=selectInterval;',sandbox);
+    assert.equal(sandbox.choose(next,null),false);assert.equal(sandbox.state.selection,original);assert.equal(asks,1);
+});
+test('doble duración se envía explícita, ocupa dos intervalos y se desactiva al cambiar de horario',async()=>{
+    const qa=workspace();qa.widget.quoteChanged(100);qa.answer(0,'100.00');await settle();
+    qa.field('double').checked=true;
+    await qa.widget.register({patientId:2,serviceId:3,bookingType:'REGULAR',pending:true});
+    const call=qa.calls.find(c=>c.url==='/register');const payload=JSON.parse(call.options.body.values.get('payload'));
+    assert.equal(payload.cita_doble,true);assert.equal(payload.duracion_cita,60);
+    const next={tipo_contexto:'slot_libre',doctor_id:1,fecha:'2026-10-13',hora_inicio:'10:00'};
+    qa.select(next);await qa.widget.selectionChanged(next);assert.equal(qa.field('double').checked,false);
+});
+
+test('abrir ficha sin editar no marca cambios; modificar y revertir compara los datos reales',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
+ const helper=source.slice(source.indexOf('    let draftBaseline'),source.indexOf('    function paintDraft'));
+ const sandbox={state:{draft:null},draftModel:{toPayload:d=>({nombre:d.nombre})}};
+ vm.runInNewContext(helper+'\nglobalThis.changed=draftChanged;globalThis.open=(name)=>{state.draft={nombre:name};draftBaseline=JSON.stringify(draftModel.toPayload(state.draft));};',sandbox);
+ assert.equal(sandbox.changed(),false);sandbox.open('Paciente ficticio');assert.equal(sandbox.changed(),false);
+ sandbox.state.draft.nombre='Cambio pendiente';assert.equal(sandbox.changed(),true);
+ sandbox.state.draft.nombre='Paciente ficticio';assert.equal(sandbox.changed(),false);
+});
+
+for(const dimension of ['context','document']){
+ test('la búsqueda tardía de paciente no hidrata otro '+dimension,async()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
+  const handler=source.slice(source.indexOf("    el.patientLookup.addEventListener('submit'"),source.indexOf("    el.patientDraft.addEventListener('submit'"));
+  let submit,answer;const painted=[];
+  const el={patientLookup:{dataset:{endpoint:'/lookup'},addEventListener(name,fn){submit=fn;}},documentType:{value:'DNI'},
+   documentNumber:{value:'70000001'},documentSearch:{disabled:false},lookupResult:{}};
+  const state={selection:{doctor_id:1,hora_inicio:'09:00'},draft:null};
+  const sandbox={el,state,operationalWorkspace:{contextKey:c=>JSON.stringify(c)},scheduleSnapshot:()=>({}),
+   paintIdentity:value=>painted.push(value),lookupModel:{edited:()=>({status:'searching'}),present:()=>({status:'found',patientId:7})},
+   document:{querySelector:()=>({content:'test-csrf'})},fetch:()=>new Promise(resolve=>answer=resolve)};
+  vm.runInNewContext(handler,sandbox);
+  const pending=submit({preventDefault(){}});
+  if(dimension==='context')state.selection={doctor_id:2,hora_inicio:'10:00'};else el.documentNumber.value='70000002';
+  answer({ok:true,json:async()=>({patient_id:7})});await pending;
+  assert.equal(painted.length,1);assert.equal(painted[0].status,'searching');assert.equal(el.documentSearch.disabled,false);
+ });
+}

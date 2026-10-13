@@ -121,7 +121,7 @@ class CreateAppointmentService
                         'additional_rate_id' => $quote['additional_rate_id'],
                         'fecha_cita' => $data->date,
                         'hora_cita' => $data->time,
-                        'duracion_cita' => $data->duration,
+                        'duracion_cita' => $data->duration,'duration_slots'=>!empty($data->operational['legacy_double'])?2:1,
                         'turno_cita' => 0,
                         'motivo_consulta' => $data->operational['motivo_consulta'] ?? null,
                         'precio_programado' => $price,

@@ -1,3 +1,6 @@
+function legacyCalendarText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
 document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar');
@@ -41,46 +44,46 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="calendar-popover">
             <div class="border-bottom pb-2 mb-2">
                 <h6 class="mb-0 text-primary">
-                    👤 ${info.event.title}
+                    👤 ${legacyCalendarText(info.event.title)}
                 </h6>
                 <small class="text-muted">
-                    ${info.timeText}
+                    ${legacyCalendarText(info.timeText)}
                 </small>
             </div>
 
             <div class="mb-2">
                 <span class="badge bg-success">
-                    ${info.event.extendedProps.estado_cita}
+                    ${legacyCalendarText(info.event.extendedProps.estado_cita)}
                 </span>
                 <span class="badge bg-success">
-                    ${info.event.extendedProps.estado_pagado}
+                    ${legacyCalendarText(info.event.extendedProps.estado_pagado)}
                 </span>
             </div>
 
             <table class="display">
                 <tr>
                     <td><strong>👤 DR(a):</strong></td>
-                    <td>S/. ${info.event.extendedProps.nombre_doctor}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.nombre_doctor)}</td>
                 </tr>
                 <tr>
                     <td><strong>💼 Servicio:</strong></td>
-                    <td>S/. ${info.event.extendedProps.nombre_servicio}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.nombre_servicio)}</td>
                 </tr>
                 <tr>
                     <td><strong>💰 Pago:</strong></td>
-                    <td>S/. ${info.event.extendedProps.total_pagado}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.total_pagado)}</td>
                 </tr>
                 <tr>
                     <td><strong>💵 Pendiente:</strong></td>
-                    <td>S/. ${info.event.extendedProps.saldo_pendiente}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.saldo_pendiente)}</td>
                 </tr>
                 <tr>
                     <td><strong>📝 Motivo:</strong></td>
-                    <td>${info.event.extendedProps.motivo_consulta}</td>
+                    <td>${legacyCalendarText(info.event.extendedProps.motivo_consulta)}</td>
                 </tr>
                 <tr>
                     <td><strong>📋 Obs:</strong></td>
-                    <td>${info.event.extendedProps.observaciones}</td>
+                    <td>${legacyCalendarText(info.event.extendedProps.observaciones)}</td>
                 </tr>
             </table>
         </div>
@@ -90,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html: true,
                 trigger: 'hover',
                 placement: 'auto',
-                sanitize: false,
+                sanitize: true,
                 container: 'body',
                 title: '<strong>Información de la cita</strong>',
                 content: contenido
@@ -150,6 +153,9 @@ document.addEventListener('DOMContentLoaded', function () {
             let estado_cita = eventComun.estado_cita
 
             // DATOS COMUNES SETEADOS
+            const durationChoice=document.querySelector('#appointmentModalEdit #cita_doble_edit');
+            durationChoice.checked=Number(eventComun.duration_slots)===2;
+            durationChoice.disabled=true;
             $('#appointmentModalEdit #appointment_id').val(id);
             $('#appointmentModalEdit #documento_paciente_edit').val(documento_paciente);
             $('#appointmentModalEdit #nombre_paciente_edit').val(title);
