@@ -66,7 +66,7 @@ class Appointment extends Model
         'tipo_agendamiento',
         'observaciones',
         'fecha_registro',
-        'economic_source', 'catalog_price', 'discount_type', 'discount_value', 'discount_amount',
+        'economic_source', 'pricing_rule','referral_origin','referral_recorded_by_user_id','catalog_price', 'discount_type', 'discount_value', 'discount_amount',
         'discount_reason', 'discount_actor_user_id', 'is_postoperative', 'motivo_exoneracion',
     ];
 

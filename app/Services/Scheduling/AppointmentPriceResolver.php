@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 /** One catalogue policy for quotes and new appointments; never reprices persisted appointments. */
 class AppointmentPriceResolver
 {
-    public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null, array $discount = []): array
+    public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null, array $discount = [], ?int $indicationId = null, array $referral = [], ?int $existing = null, bool $lock = false): array
     {
         try {
             $rate = $rateId === null ? app(StandardAdditionalRateResolver::class)->resolve($date)
@@ -28,26 +28,39 @@ class AppointmentPriceResolver
         }
         $type = 'PRIMERA_CONSULTA';
         $price = Money::cents($service->precio_primera_consulta ?? 0);
-        // Preserve the existing reconsultation rule: elapsed days at registration, using service IDs.
-        // Eligibility is uniform for every worker: only completed legacy/confirmed attendance.
-        // ATENDIDO + private reservation is inconsistent historical data: ignore it for everyone,
-        // preserve the row and require authorized review instead of exposing or repricing it.
-        $last = Appointment::visibleToAgendaUser($actorId)->where('patient_id', $patientId)->where('service_id', $service->service_id)
-            ->where('estado_cita', 'ATENDIDO')
-            ->whereIn('estado_agenda', [AppointmentAgendaLifecycle::LEGACY, AppointmentAgendaLifecycle::CONFIRMED])
-            ->whereDate('fecha_cita', '<=', now()->toDateString())
-            ->latest('fecha_cita')->first(['fecha_cita']);
-        if ($last && $service->dias_reconsulta > 0
-            && Carbon::parse($last->fecha_cita)->diffInDays(now()) <= $service->dias_reconsulta) {
-            $price = Money::cents($service->precio_reconsulta ?? 0);
-            $type = 'RECONSULTA';
+        $rule='NORMAL'; $indication=null; $days=null;
+        if($indicationId) {
+            $eligibility=app(ReevaluationIndicationService::class)->eligible($indicationId,$patientId,(int)$service->service_id,$date,$actorId,$existing,$lock);
+            $indication=$eligibility['indication']; $days=$eligibility['days'];
+            if($days<=15) {
+                $type='RECONSULTA'; $rule=$days===0?'SAME_DAY_REEVALUATION':'INDICATED_REEVALUATION';
+                $price=$days===0?0:Money::cents($service->precio_reconsulta ?? 0);
+            }
         }
-        if ($price <= 0) {
+        $referred=!empty($referral);
+        if($referred) {
+            $actor=\App\Models\User::findOrFail($actorId);
+            abort_unless($actor->can(\App\Support\Scheduling\SchedulingCapability::CREATE) && $actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW),403);
+            $cfg=config('scheduling.quiroz_referral',[]);
+            if(empty($cfg['doctor_id']) || (int)$service->doctor_id!==(int)$cfg['doctor_id']
+                || !in_array((int)$service->service_id,$cfg['service_ids'] ?? [],true)
+                || trim((string)($referral['origin'] ?? ''))==='' || empty($referral['attested'])) {
+                throw ValidationException::withMessages(['referral'=>'La tarifa requiere referido acreditado y médico/servicio autorizados.']);
+            }
+            $price=$days===0?0:($days!==null && $days<=15?22000:25000);
+            $legacyRate=$cfg['additional_rate_ids'][(int)$service->service_id] ?? null;
+            if(Money::cents($rate->tarifa ?? 0)!==0 && (int)$rate->id!==(int)$legacyRate) {
+                throw ValidationException::withMessages(['additional_rate_id'=>'No combines la tarifa referida con otro recargo. Usa tarifa estándar o el referido de este servicio.']);
+            }
+        }
+        if ($price <= 0 && $rule !== 'SAME_DAY_REEVALUATION') {
             throw ValidationException::withMessages(['service_id' => 'El servicio no tiene un precio de catálogo válido.']);
         }
-        $price += $rate->tipo_tarifa === 'MONTO_FIJO' ? Money::cents($rate->tarifa ?? 0)
-            : (int) round($price * (float) $rate->tarifa / 100);
-        if ($price <= 0 || $price > 9999999999) {
+        if(!$referred && $rule!=='SAME_DAY_REEVALUATION') {
+            $price += $rate->tipo_tarifa === 'MONTO_FIJO' ? Money::cents($rate->tarifa ?? 0)
+                : (int) round($price * (float) $rate->tarifa / 100);
+        }
+        if (($price <= 0 && $rule!=='SAME_DAY_REEVALUATION') || $price > 9999999999) {
             throw ValidationException::withMessages(['additional_rate_id' => 'La tarifa no produce un precio válido. El costo cero requiere exoneración autorizada.']);
         }
         $adjustment = app(AppointmentDiscount::class)->calculate($price, $discount);
@@ -58,6 +71,6 @@ class AppointmentPriceResolver
         }
         return ['price_cents'=>$adjustment['net_cents'],'precio_programado'=>Money::decimal($adjustment['net_cents']),
             'catalog_price'=>Money::decimal($price),'discount'=>$adjustment,'tipo'=>$type,
-            'additional_rate_id'=>(int)$rate->id];
+            'additional_rate_id'=>(int)$rate->id,'pricing_rule'=>$rule,'indication'=>$indication,'referral_origin'=>$referred?trim($referral['origin']):null];
     }
 }

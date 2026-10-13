@@ -20,6 +20,9 @@ class AppointmentEconomicPosition
     {
         if ($appointments->isEmpty()) { return []; }
         $ids = $appointments->pluck('id');
+        $indications=Schema::hasTable('appointment_reevaluation_indications')
+            ? DB::table('appointment_reevaluation_indications')->whereIn('bound_appointment_id',$ids)->get()->keyBy('bound_appointment_id') : collect();
+
         $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->get();
         $directIds = $links->pluck('voucher_id')->unique();
         $vouchers = Voucher::whereIn('id', $directIds)->orWhereIn('parent_voucher_id', $directIds)->get()->keyBy('id');
@@ -62,7 +65,9 @@ class AppointmentEconomicPosition
             $result[$a->id] = ['price_cents' => $price, 'paid_cents' => $paid, 'credit_cents' => $credit,
                 'outgoing_credit_cents' => $used, 'refund_reserved_cents' => $reserved, 'effective_cents' => $effective,
                 'balance_cents' => $a->es_exonerado && trim($a->autorizado_por ?? '') !== '' ? 0 : max(0, $price - $effective),
-                'secured' => !$ambiguous && $price > 0 && $effective * 2 >= $price,
+                'secured' => !$ambiguous && (($price > 0 && $effective * 2 >= $price)
+                    || ($price===0 && $a->pricing_rule==='SAME_DAY_REEVALUATION' && $indications->has($a->id)
+                        && substr($a->fecha_cita,0,10)===(string)$indications[$a->id]->attended_on)),
                 'secured_percentage' => $price ? round($effective * 100 / $price, 2) : 0,
                 'authority' => $ambiguous ? 'UNALLOCATED' : ($fallback ? 'LEGACY_SNAPSHOT' : 'PAYMENTS'),
                 'allocation_required' => $ambiguous, 'available_by_voucher' => array_map(fn ($c) => max(0, $c), $cash)];

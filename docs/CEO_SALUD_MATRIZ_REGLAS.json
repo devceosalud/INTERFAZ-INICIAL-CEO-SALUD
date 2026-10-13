@@ -30,16 +30,16 @@
   {
     "id": "R05",
     "status": "PARCIAL",
-    "gap": "Política definitiva: indicación acreditada del médico de uso único; mismo service_id, fecha programada, día0 gratis,1–15 reevaluación,16+ normal. El código actual aún infiere por antecedente sin indicación: debe corregirse antes de publicar esta política.",
-    "evidence": "AppointmentPriceResolver; LegacyRegistrationParityTest",
-    "dependency": "PR separado; evidencia privada, permiso específico, binding único, reprogramación con ajustes R25; catálogo Quiroz pendiente."
+    "gap": "Motor central y UI mínima con indicación escrita acreditada, permiso específico, evidencia privada, referencia diferenciada, uso único concurrente; fechas 0/1/15/16, mismo servicio y otro médico. Reprograma sin dinero; cambio de precio con ticket/pago se bloquea hasta ajustes R25. Cancelación no libera indicación; reasignación explícita pendiente.",
+    "evidence": "ReevaluationIndicationService; AppointmentPriceResolver; ReevaluationIndicationTest; AgendaConcurrencyTest; agenda-quote.test.js",
+    "dependency": "PR separado sobre #6; activar mapa de catálogo Quiroz revisado; crear permiso web y asignarlo explícitamente con editor existente; R25 para reprogramación pagada/reasignación."
   },
   {
     "id": "R06",
-    "status": "FALTANTE",
-    "gap": "Sin descuento sobre referido explícito.",
-    "evidence": "AppointmentPriceResolver",
-    "dependency": "Motor neto + catálogo Quiroz verificado."
+    "status": "IMPLEMENTADO",
+    "gap": "Referido explícito con origen y actor; S/250/S/220 para ambos servicios de Quiroz, S/0 solo con indicación del mismo día; descuento y 50% del neto sin duplicar recargo heredado. No altera otros médicos/catalogo/históricos.",
+    "evidence": "AppointmentPriceResolver; ReevaluationIndicationTest::test_referred_discount_confirmation; AppointmentDiscountRegistrationTest",
+    "dependency": "Configuración verificada Quiroz doctor1/service1,3/rates2,3 durante despliegue controlado; no automática en otros entornos."
   },
   {
     "id": "R07",
@@ -72,9 +72,9 @@
   {
     "id": "R11",
     "status": "FALTANTE",
-    "gap": "Default hoy/Magdalena definido. No panel específico; Figma compartido solicita autenticación y no se pudo inspeccionar.",
+    "gap": "Figma design24:2 inspeccionado visualmente; negocio Magdalena y hoy definidos. Catálogo productivo sites vacío confirmado; panel aún faltante.",
     "evidence": "Site; rutas/listados heredados; prototipo Figma",
-    "dependency": "Catálogo site_id verificado, acceso al prototipo; servicios pueden desarrollarse antes de UI."
+    "dependency": "Alta real controlada/idempotente propuesta en CEO_SALUD_MAGDALENA_PROPUESTA.md; backend/panel PR separado sin backfill."
   },
   {
     "id": "R12",
@@ -93,8 +93,8 @@
   {
     "id": "R14",
     "status": "PARCIAL",
-    "gap": "Documentos privados genéricos por cita; falta receta/informe y reemplazo tipado de archivo.",
-    "evidence": "AppointmentDocumentController; AppointmentProofStorage",
+    "gap": "Evidencia de indicación médica admite subida privada atómica, purpose y permiso específico. Recetas/informes operativos generales y reemplazo versionado siguen pendientes.",
+    "evidence": "AppointmentDocumentController; ReevaluationIndicationService; ReevaluationIndicationTest; AppointmentProofStorage",
     "dependency": "PR documentos; privacidad/autorización."
   },
   {

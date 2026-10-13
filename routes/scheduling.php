@@ -22,6 +22,8 @@ Route::middleware([
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
+            ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');
         Route::get('/scheduling-mvp/agenda/heatmap/preview', [\App\Http\Controllers\Scheduling\AgendaHeatmapController::class, 'preview'])
             ->name('scheduling.mvp.agenda.heatmap.preview');
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/cancel', [$workflow, 'cancel'])

@@ -16,7 +16,7 @@ class AppointmentDocumentController extends Controller
         $appointments = Appointment::visibleToAgendaUser($r->user()->id)->where('patient_id', $patientId)
             ->whereHas('documents')->with('documents')->orderByDesc('fecha_cita')->limit(100)->get();
         return response()->json(['appointments' => $appointments->map(fn ($a) => ['appointment_id' => $a->id,
-            'fecha' => substr($a->fecha_cita, 0, 10), 'documents' => $a->documents->map(fn ($d) => $this->payload($d))])]);
+            'fecha' => substr($a->fecha_cita, 0, 10), 'documents' => $a->documents->filter(fn($d)=>$this->canReadEvidence($r,$d))->values()->map(fn ($d) => $this->payload($d))])]);
     }
     private function appointment(Request $r, int $id, bool $write = false): Appointment
     {
@@ -25,15 +25,21 @@ class AppointmentDocumentController extends Controller
             || ($r->user()->can(Capability::CREATE) && (int) ($a->responsible_user_id ?? $a->user_id) === (int) $r->user()->id), 403); }
         return $a;
     }
+    private function canReadEvidence(Request $r,AppointmentDocument $d):bool {
+        if($d->purpose==='REEVALUATION_ORDER') return $r->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY);
+        if(!\Illuminate\Support\Facades\Schema::hasTable('appointment_reevaluation_indications')) return true;
+        return $r->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
+            || !\App\Models\AppointmentReevaluationIndication::where('evidence_document_id',$d->id)->exists();
+    }
     private function payload(AppointmentDocument $d): array
     {
-        return ['id' => $d->id, 'type' => $d->type, 'label' => $d->label, 'url' => $d->url,
+        return ['id' => $d->id, 'type' => $d->type, 'purpose'=>$d->purpose, 'label' => $d->label, 'url' => $d->url,
             'download_url' => $d->private_path ? route('scheduling.mvp.documents.download', [$d->appointment_id, $d->id]) : null];
     }
     public function index(Request $r, int $appointmentId)
     {
         $a = $this->appointment($r, $appointmentId);
-        return response()->json(['documents' => $a->documents->map(fn ($d) => $this->payload($d)), 'can_write' => $r->user()->can(Capability::UPDATE)
+        return response()->json(['documents' => $a->documents->filter(fn($d)=>$this->canReadEvidence($r,$d))->values()->map(fn ($d) => $this->payload($d)), 'can_write' => $r->user()->can(Capability::UPDATE)
             || ($r->user()->can(Capability::CREATE) && (int) ($a->responsible_user_id ?? $a->user_id) === (int) $r->user()->id)]);
     }
     public function store(Request $r, int $appointmentId)
@@ -51,6 +57,7 @@ class AppointmentDocumentController extends Controller
     public function update(Request $r, int $appointmentId, int $documentId)
     {
         $d = $this->appointment($r, $appointmentId, true)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
+        abort_unless($this->canReadEvidence($r,$d),404);
         $rules = ['label' => 'required|string|max:120'];
         if ($d->type === 'EXTERNAL_LINK') { $rules['url'] = 'required|url|max:2048|starts_with:https://'; }
         $d->update($r->validate($rules)); return response()->json($this->payload($d));
@@ -58,12 +65,13 @@ class AppointmentDocumentController extends Controller
     public function destroy(Request $r, int $appointmentId, int $documentId)
     {
         // Soft delete keeps private evidence for retention/review; user cannot download it anymore.
-        $this->appointment($r, $appointmentId, true)->documents()->whereKey($documentId)->firstOr(fn () => abort(404))->delete(); return response()->noContent();
+        $d=$this->appointment($r, $appointmentId, true)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
+        abort_unless($this->canReadEvidence($r,$d),404);$d->delete(); return response()->noContent();
     }
     public function download(Request $r, int $appointmentId, int $documentId)
     {
         $d = $this->appointment($r, $appointmentId)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
-        abort_unless($d->private_path && Storage::disk('local')->exists($d->private_path), 404);
+        abort_unless($this->canReadEvidence($r,$d) && $d->private_path && Storage::disk('local')->exists($d->private_path), 404);
         return Storage::disk('local')->download($d->private_path, basename($d->private_path),
             ['Content-Type' => $d->mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
     }

@@ -228,10 +228,10 @@ class AppointmentReaderPrivacyTest extends TestCase
             $before = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->json();
             $this->assertSame($before, $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json());
             $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => $state, 'estado_cita' => 'ATENDIDO'], $patient);
-            $after = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->assertJsonPath('tipo', $state === Lifecycle::PENDING_CONFIRMATION ? 'PRIMERA_CONSULTA' : 'RECONSULTA')->json();
+            $after = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA')->json();
             $otherQuote = $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json();
             $this->assertSame($after, $otherQuote);
-            if ($state === Lifecycle::PENDING_CONFIRMATION) { $this->assertSame($before, $after); }
+            $this->assertSame($before, $after);
         }
     }
 

@@ -14,11 +14,12 @@ function workspace() {
         querySelector() { return { content: 'test-csrf' }; }, createElement: element };
     let patientId = 2, serviceId = 3;
     let selected = { tipo_contexto: 'slot_libre', doctor_id: 1, fecha: '2026-10-13', hora_inicio: '09:00' };
-    const sandbox = { document, window: { AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
+    const sandbox = { document, FormData:class {constructor(){this.values=new Map();}append(k,v){this.values.set(k,v);}},
+        window: { crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
         fetch: (url, options = {}) => {
             calls.push({ url, options });
             if (url === '/quote') return new Promise(resolve => pending.push(resolve));
-            const body = url.endsWith('/economy') ? { precio: '175.00', saldo: '175.00', pago_real: '0.00' }
+            const body = url.endsWith('/reevaluation-indications')?{indication_id:42}:url.endsWith('/economy') ? { precio: '175.00', saldo: '175.00', pago_real: '0.00' }
                 : url.endsWith('/documents') ? { documents: [] } : { patient: { telefono: '' } };
             return Promise.resolve({ ok: true, status: 200, json: async () => body });
         } };
@@ -30,8 +31,8 @@ function workspace() {
         patientTemplate: '/patients/__PATIENT__', context: () => selected, canCreate: true, notice() {}, error: b => b.message,
         quoteData: () => ({ doctor_id: selected.doctor_id, service_id: serviceId, patient_id: patientId, fecha_cita: selected.fecha }) });
     return { widget, pending, calls, field: id => document.getElementById('agenda-op-' + id),
-        select(value) { selected = value; }, patient(value) { patientId = value; }, service(value) { serviceId = value; }, answer(index, price, ok = true) {
-            pending[index]({ ok, status: ok ? 200 : 422, json: async () => ok ? { precio_programado: price } : { message: 'Tarifa no vigente' } });
+        select(value) { selected = value; }, patient(value) { patientId = value; }, service(value) { serviceId = value; }, answer(index, price, ok = true, rule = 'NORMAL') {
+            pending[index]({ ok, status: ok ? 200 : 422, json: async () => ok ? { precio_programado: price, pricing_rule:rule } : { message: 'Tarifa no vigente' } });
         } };
 }
 
@@ -125,4 +126,41 @@ test('Agenda cotiza descuento neto, invalida respuesta anterior y bloquea editar
     const selected={tipo_contexto:'cita_existente',appointment_id:5,patient_id:2,estado_agenda:'CONFIRMADA'};
     qa.select(selected);await qa.widget.selectionChanged(selected);assert.equal(qa.field('discount-type').disabled,true);
     assert.equal(qa.field('discount-value').disabled,true);
+});
+
+test('indicación y referido explícitos viajan al servidor; gratuidad solo desde cotización vigente',async()=>{
+    const qa=workspace();qa.field('indication').value='42';qa.field('referred').checked=true;qa.field('referral-origin').value='QA origen verificable';
+    qa.widget.quoteChanged(150);
+    const data=JSON.parse(qa.calls[0].options.body);
+    assert.equal(data.reevaluation_indication_id,42);assert.deepEqual(data.referral,{origin:'QA origen verificable',attested:true});
+    assert.equal(qa.widget.readiness().automaticFree,false);
+    qa.answer(0,'0.00',true,'SAME_DAY_REEVALUATION');await settle();assert.equal(qa.widget.readiness().automaticFree,true);
+    qa.field('indication').value='43';qa.field('indication').handlers.input();assert.equal(qa.widget.readiness().automaticFree,false);
+    qa.answer(1,'220.00');await settle();assert.equal(qa.widget.readiness().automaticFree,false);assert.equal(qa.widget.readiness().price,'220.00');
+});
+
+test('registro de indicación escrita envía evidencia y atestación, nunca importes',async()=>{
+    const qa=workspace();const selected={tipo_contexto:'cita_existente',appointment_id:5,patient_id:2,estado_agenda:'LEGADO'};
+    qa.select(selected);await qa.widget.selectionChanged(selected);
+    qa.field('indication-document').value='11';qa.field('indication-date').value='2026-10-13';qa.field('indication-evidence').value='WRITTEN_ORDER';
+    qa.field('indication-reference').value='Folio QA 1';qa.field('indication-attested').checked=true;
+    await qa.field('record-indication').handlers.click();
+    const call=qa.calls.find(c=>c.url.endsWith('/reevaluation-indications'));
+    const data=JSON.parse(call.options.body);assert.equal(data.evidence_document_id,11);assert.equal(data.doctor_order_attested,true);
+    assert.equal(data.instruction_reference,'Folio QA 1');assert.equal(data.payment,undefined);assert.equal(data.precio_programado,undefined);
+});
+test('subida de orden privada usa multipart y limpiar contexto elimina evidencia del anterior',async()=>{
+    const qa=workspace();const selected={tipo_contexto:'cita_existente',appointment_id:5,patient_id:2,estado_agenda:'LEGADO'};
+    qa.select(selected);await qa.widget.selectionChanged(selected);
+    const file={type:'image/png',size:120};qa.field('indication-file').files=[file];
+    qa.field('indication-file').value='qa.png';qa.field('indication-attested').checked=true;
+    qa.field('indication-reference').value='Folio QA 2';qa.field('indication-date').value='2026-10-13';
+    await qa.field('record-indication').handlers.click();
+    const call=qa.calls.find(c=>c.url.endsWith('/reevaluation-indications'));
+    assert.equal(call.options.body.values.get('file'),file);
+    const data=JSON.parse(call.options.body.values.get('payload'));assert.equal(data.evidence_document_id,undefined);
+    const next={tipo_contexto:'cita_existente',appointment_id:6,patient_id:3,estado_agenda:'LEGADO'};
+    qa.select(next);await qa.widget.selectionChanged(next);
+    assert.equal(qa.field('indication-file').value,'');assert.equal(qa.field('indication-attested').checked,false);
+    assert.equal(qa.field('indication-date').value,'');assert.equal(qa.field('indication-reference').value,'');
 });

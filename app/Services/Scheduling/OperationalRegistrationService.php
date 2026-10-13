@@ -38,6 +38,10 @@ class OperationalRegistrationService
                 $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
                 abort_unless(hash_equals($op->payload_hash, $hash), 409, 'Esta operación ya fue usada con datos diferentes.');
                 if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
+                if(!empty($data['reevaluation_indication_id'])) {
+                    app(ReevaluationIndicationService::class)->eligible((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),
+                        (int)$data['service_id'],$data['fecha_cita'],$actor->id,null,true);
+                }
                 Doctor::whereKey($data['doctor_id'])->lockForUpdate()->firstOrFail();
                 if ($data['mode'] === 'RESERVE' && $data['booking_type'] !== 'REGULAR') {
                     throw ValidationException::withMessages(['booking_type' => 'La reserva privada utiliza un intervalo regular.']);
@@ -72,6 +76,7 @@ class OperationalRegistrationService
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
                         'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
+                        'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
                         'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
                         'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null]);
                 $creator = app(CreateAppointmentService::class);

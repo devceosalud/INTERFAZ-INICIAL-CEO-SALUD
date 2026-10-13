@@ -196,7 +196,7 @@ class LegacyRegistrationParityTest extends TestCase
     }
 
     /** @dataProvider entries */
-    public function test_reconsultation_and_special_tariff_are_resolved_for_both_entries(string $entry): void
+    public function test_special_tariff_without_medical_indication_uses_normal_consultation_in_both_entries(string $entry): void
     {
         // Different assignment/service IDs exercise the legacy ID translation.
         $this->catalog['doctorService']->update(['estado' => 'INACTIVO']);
@@ -206,11 +206,11 @@ class LegacyRegistrationParityTest extends TestCase
         $this->catalog['doctorService'] = $assignment;
         $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO'], $this->patient);
         $rate = AdditionalRate::create(['nombre' => 'Tarifa ficticia', 'tipo_tarifa' => 'MONTO_FIJO', 'tarifa' => 30, 'estado' => 'ACTIVO']);
-        $p = $this->payload($entry, ['additional_rate_id' => $rate->id, 'precio_programado' => '80.00']);
+        $p = $this->payload($entry, ['additional_rate_id' => $rate->id, 'precio_programado' => '130.00']);
         $this->postJson($this->url($entry), $p)->assertSuccessful();
-        $this->assertEquals(80, Appointment::where('estado_agenda', 'PENDIENTE_CONFIRMACION')->first()->precio_programado);
+        $this->assertEquals(130, Appointment::where('estado_agenda', 'PENDIENTE_CONFIRMACION')->first()->precio_programado);
         $quote = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
-        $this->postJson($quote, $p)->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
+        $this->postJson($quote, $p)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
     }
 
     /** @dataProvider entries */
@@ -380,7 +380,7 @@ class LegacyRegistrationParityTest extends TestCase
     }
 
     /** @dataProvider reconsultationHistories */
-    public function test_completed_shared_attendance_has_the_same_quote_and_registration_price_for_all_workers(string $entry, string $state): void
+    public function test_completed_attendance_without_indication_has_normal_price_for_all_workers(string $entry, string $state): void
     {
         $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
         $history = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO',
@@ -390,20 +390,20 @@ class LegacyRegistrationParityTest extends TestCase
         $expected = null;
         foreach ([$this->actor, $this->agendaReader('COMERCIAL'), $this->agendaReader('ADMINISTRADOR')] as $i => $worker) {
             $worker->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
-            $payload = $this->payload($entry, ['precio_programado' => '50.00', 'hora_cita' => ['09:30', '10:00', '10:30'][$i]]);
-            $quote = $this->actingAs($worker)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
-            $this->assertEquals(50, $quote->json('precio_programado'));
+            $payload = $this->payload($entry, ['precio_programado' => '100.00', 'hora_cita' => ['09:30', '10:00', '10:30'][$i]]);
+            $quote = $this->actingAs($worker)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
+            $this->assertEquals(100, $quote->json('precio_programado'));
             $expected ??= $quote->json(); $this->assertSame($expected, $quote->json());
             $result = $this->postJson($this->url($entry), $payload)->assertSuccessful();
             $id = $entry === 'legacy' ? $result->json('appointment_id') : $result->json('appointment.appointment_id');
-            $this->assertEquals(50, Appointment::findOrFail($id)->precio_programado);
+            $this->assertEquals(100, Appointment::findOrFail($id)->precio_programado);
         }
         $this->assertSame($before, $history->fresh()->getAttributes());
         $this->assertDatabaseCount('payments', 0);
     }
 
     /** @dataProvider entries */
-    public function test_inconsistent_recent_history_does_not_hide_older_eligible_attendance(string $entry): void
+    public function test_no_history_implicitly_authorizes_reevaluation_without_indication(string $entry): void
     {
         $this->catalog['doctorService']->update(['precio_reconsulta' => 50, 'dias_reconsulta' => 7]);
         $valid = $this->lifecycleAppointment($this->actor, $this->catalog, ['estado_cita' => 'ATENDIDO',
@@ -413,7 +413,7 @@ class LegacyRegistrationParityTest extends TestCase
         $before = [$valid->fresh()->getAttributes(), $private->fresh()->getAttributes()];
         $url = $entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote';
         foreach ([$this->actor, $this->agendaReader('COMERCIAL')] as $worker) {
-            $this->actingAs($worker)->postJson($url, $this->payload($entry))->assertOk()->assertJsonPath('tipo', 'RECONSULTA');
+            $this->actingAs($worker)->postJson($url, $this->payload($entry))->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
         }
         $this->assertSame($before, [$valid->fresh()->getAttributes(), $private->fresh()->getAttributes()]);
     }

@@ -26,6 +26,10 @@
     </details>
     <details id="agenda-op-payment-panel">
         <summary>Registrar adelanto</summary>
+        <div class="agenda-patient-form-grid">
+            <label class="agenda-field"><span>N.º de indicación médica acreditada · opcional</span><input id="agenda-op-indication" class="agenda-field__input" type="number" min="1" step="1"><small>Sin una indicación registrada, se cotiza consulta normal. La indicación autoriza una sola cita.</small></label>
+            <label class="agenda-field"><span><input id="agenda-op-referred" type="checkbox"> Referido acreditado del Dr. Julio Quiroz</span><input id="agenda-op-referral-origin" class="agenda-field__input" maxlength="255" placeholder="Origen verificable del referido"><small>Solo Traumatología y Pie Diabético. Registrar el origen es obligatorio.</small></label>
+        </div>
         <label class="agenda-field"><span>Tarifa</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Tarifa estándar</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
         <div class="agenda-patient-form-grid">
             <label class="agenda-field"><span>Descuento opcional</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
@@ -54,6 +58,18 @@
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
         <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
         <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
+    </details>
+    <details id="agenda-op-indication-record-panel" hidden>
+        <summary>Registrar indicación escrita del médico tratante</summary>
+        <p>La indicación pertenece al médico de esta atención realizada. Sube su orden escrita en esta operación o selecciona evidencia ya privada; no se admite evidencia verbal ni una solicitud del paciente.</p>
+        <label class="agenda-field"><span>Subir evidencia privada · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-indication-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+        <label class="agenda-field"><span>O usar documento privado de esta cita</span><select id="agenda-op-indication-document" class="agenda-field__input"></select></label>
+        <label class="agenda-field"><span>Tipo de evidencia</span><select id="agenda-op-indication-evidence" class="agenda-field__input"><option value="WRITTEN_ORDER">Orden escrita</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option><option value="AUTHENTICATED_DOCTOR_RECORD">Registro autenticado del médico</option></select></label>
+        <label class="agenda-field"><span>Referencia operativa de la indicación · folio / número, sin diagnóstico</span><input id="agenda-op-indication-reference" class="agenda-field__input" maxlength="120"></label>
+        <label class="agenda-field"><span>Fecha de la indicación</span><input id="agenda-op-indication-date" class="agenda-field__input" type="date"></label>
+        <label><input id="agenda-op-indication-attested" type="checkbox"> Acredito que el documento contiene la indicación del médico tratante.</label>
+        <button id="agenda-op-record-indication" class="agenda-btn" type="button">Registrar indicación</button>
+        <p id="agenda-op-indication-record-message" role="status"></p>
     </details>
     <details id="agenda-op-documents-panel">
         <summary>Comprobantes y documentos</summary>

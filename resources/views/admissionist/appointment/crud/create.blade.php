@@ -160,7 +160,14 @@
 
 
                     <div class="row g-3">
-                        <div class="col-md-4"><label for="discount_type">Descuento opcional</label><select id="discount_type" name="discount[type]" class="form-control"><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></div>
+                        <div class="col-md-12">
+    <label>Indicación médica acreditada · número opcional</label>
+    <input id="reevaluation_indication_id" name="reevaluation_indication_id" type="number" min="1" step="1" class="form-control">
+    <small>Sin indicación escrita registrada se cobra consulta normal; una indicación autoriza una sola cita.</small>
+    <label><input id="referral_attested" name="referral[attested]" type="checkbox" value="1"> Referido acreditado del Dr. Julio Quiroz</label>
+    <input id="referral_origin" name="referral[origin]" class="form-control" maxlength="255" placeholder="Origen verificable del referido" disabled>
+</div>
+<div class="col-md-4"><label for="discount_type">Descuento opcional</label><select id="discount_type" name="discount[type]" class="form-control"><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></div>
                         <div class="col-md-4"><label for="discount_value">Valor de descuento</label><input id="discount_value" name="discount[value]" class="form-control" type="number" min="0" step="0.01" value="0"></div>
                         <div class="col-md-4"><label for="discount_reason">Referencia · opcional</label><input id="discount_reason" name="discount[reason]" class="form-control" maxlength="500"></div>
                         <div class="col-md-12"><label><input name="is_postoperative" type="checkbox" value="1"> Cita postoperatoria · no implica gratuidad</label></div>
