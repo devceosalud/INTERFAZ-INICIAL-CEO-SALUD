@@ -27,6 +27,10 @@ class OperationalRegistrationService
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
             'No tienes permiso para registrar citas (appointment.create y appointment.view).');
+        if(!empty($data['reevaluation_indication_id']) && !DB::table('appointment_operations')->where('actor_user_id',$actor->id)
+            ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
+            app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
+        }
         unset($data['proof']);
         $hash = hash('sha256', json_encode($data).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
         $storedPath = null;
@@ -38,6 +42,10 @@ class OperationalRegistrationService
                 $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
                 abort_unless(hash_equals($op->payload_hash, $hash), 409, 'Esta operación ya fue usada con datos diferentes.');
                 if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
+                if(!empty($data['reevaluation_indication_id'])) {
+                    app(ReevaluationIndicationService::class)->eligible((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),
+                        (int)$data['service_id'],$data['fecha_cita'],$actor->id,null,true,(int)$data['doctor_id']);
+                }
                 Doctor::whereKey($data['doctor_id'])->lockForUpdate()->firstOrFail();
                 if ($data['mode'] === 'RESERVE' && $data['booking_type'] !== 'REGULAR') {
                     throw ValidationException::withMessages(['booking_type' => 'La reserva privada utiliza un intervalo regular.']);
@@ -72,6 +80,7 @@ class OperationalRegistrationService
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
                         'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
+                        'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
                         'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
                         'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null]);
                 $creator = app(CreateAppointmentService::class);

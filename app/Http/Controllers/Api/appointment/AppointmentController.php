@@ -76,11 +76,11 @@ class AppointmentController extends Controller
             'fecha_cita' => 'nullable|date_format:Y-m-d', 'es_exonerado' => 'sometimes|boolean']);
         $service = app(ActiveDoctorServiceResolver::class)->resolveAssignment($data['service_id'], $data['doctor_id'] ?? null);
         $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
-            $data['patient_id'] ?? 0, (int) $request->user()->id, $data['fecha_cita'] ?? now()->toDateString(), $data['additional_rate_id'] ?? null, $data['discount'] ?? []);
+            $data['patient_id'] ?? 0, (int) $request->user()->id, $data['fecha_cita'] ?? now()->toDateString(), $data['additional_rate_id'] ?? null, $data['discount'] ?? [],$data['reevaluation_indication_id'] ?? null,$data['referral'] ?? []);
         if (!empty($data['es_exonerado'])) {
             abort_unless($request->user()->can(\App\Support\Scheduling\SchedulingCapability::APPROVE_ZERO_COST), 403);
         }
-        return response()->json(['precio_programado' => (float) $quote['precio_programado'], 'tipo' => $quote['tipo'],
+        return response()->json(['precio_programado' => (float) $quote['precio_programado'], 'pricing_rule'=>$quote['pricing_rule'],'tipo' => $quote['tipo'],
             'catalog_price'=>$quote['catalog_price'], 'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents']),
             'total_pagado' => 0, 'importe_exigible' => !empty($data['es_exonerado']) ? '0.00' : $quote['precio_programado']]);
     }

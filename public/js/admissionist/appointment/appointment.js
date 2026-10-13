@@ -213,6 +213,8 @@ async function calcularPrecioCita() {
     if(!patient_id || !service_id) return;
     const data={patient_id,service_id,additional_rate_id:field('additional_rate_id').value,
         fecha_cita:field('fecha_cita').value || undefined,es_exonerado:field('es_exonerado').checked};
+    if(field('reevaluation_indication_id')?.value) data.reevaluation_indication_id=Number(field('reevaluation_indication_id').value);
+    if(field('referral_attested')?.checked) data.referral={origin:field('referral_origin').value,attested:true};
     if(field('discount_type')?.value) data.discount={type:field('discount_type').value,value:field('discount_value').value || '0',reason:field('discount_reason').value || null};
     try {
         const res=await fetch(window.location.origin+'/api/appointment/calculated',{method:'POST',
@@ -231,6 +233,8 @@ async function calcularPrecioCita() {
         legacyQuoteReady=false;if(status)status.textContent=error.message;
     }
 }
+$('#reevaluation_indication_id,#referral_origin').on('input',calcularPrecioCita);
+$('#referral_attested').on('change',function(){ $('#referral_origin').prop('disabled',!this.checked);calcularPrecioCita(); });
 $('#discount_value').on('input',calcularPrecioCita);
 $('#discount_type').on('change',calcularPrecioCita);
 $('#fecha_cita').on('change',calcularPrecioCita);

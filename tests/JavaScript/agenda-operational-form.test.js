@@ -50,3 +50,11 @@ test('guardar reserva exige selección completa y permite importe cero sin permi
     assert.equal(form.reservationReadiness({...ready,canPay:true,amount:'49.99'}).allowed,true);
     assert.equal(form.bookingReadiness({...ready,canPay:true,amount:'49.99'}).allowed,false);
 });
+
+test('tarifa médica gratuita vigente permite reserva y confirmación sin permiso financiero, nunca admite dinero',()=>{
+    const input={canCreate:true,busy:false,slot:true,patient:true,service:true,canPay:false,price:'0.00',amount:'0',automaticFree:true};
+    assert.equal(form.reservationReadiness(input).allowed,true);assert.equal(form.bookingReadiness(input).allowed,true);
+    assert.equal(form.bookingReadiness({...input,automaticFree:false}).allowed,false);
+    assert.equal(form.bookingReadiness({...input,amount:'0.01'}).allowed,false);
+    assert.equal(form.bookingReadiness({...input,canCreate:false}).allowed,false);
+});

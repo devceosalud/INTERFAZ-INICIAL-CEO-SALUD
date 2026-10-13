@@ -58,6 +58,7 @@ class LegacyAppointmentRegistration
             'precio_programado' => $data['precio_programado'] ?? null, 'saldo_pendiente' => $data['saldo_pendiente'] ?? null,
             'observaciones' => $data['observaciones'] ?? null, 'es_exonerado' => (bool) ($data['es_exonerado'] ?? false),
             'autorizado_por' => $data['autorizado_por'] ?? null,
+            'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
             'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
             'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null,
             'payment' => ['amount' => (string) $amount, 'method' => strtoupper($data['metodo_pago'] ?? ''),

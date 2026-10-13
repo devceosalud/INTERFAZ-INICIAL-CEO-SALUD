@@ -20,8 +20,9 @@ class ReservationPaymentService
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
+        $indication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
         unset($data['proof']); $storedPath = null;
-        try { return DB::transaction(function () use ($original, $id, $actor, $data, $proof, &$storedPath) {
+        try { return DB::transaction(function () use ($original, $id, $actor, $data, $proof, &$storedPath,$indication) {
             $hash = hash('sha256', json_encode([$id, $data]).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
             // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
             DB::table('appointment_operations')->upsert([['actor_user_id' => $actor->id, 'request_key' => $data['request_key'],
@@ -29,8 +30,12 @@ class ReservationPaymentService
             $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash, $hash), 409);
             if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
+            Doctor::whereIn('id',array_unique(array_filter([$original->doctor_id,$indication?->doctor_id])))->orderBy('id')->lockForUpdate()->get();
             $doctor = Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->lockForUpdate()->whereKey($id)->firstOr(fn () => abort(404));
+            abort_if((int)$a->doctor_id!==(int)$original->doctor_id,409,'La cita cambió; actualiza antes de operar.');
+            if($indication) app(ReevaluationIndicationService::class)->eligible((int)$indication->id,(int)$a->patient_id,(int)$a->service_id,
+                substr($a->fecha_cita,0,10),$actor->id,$a->id,true,(int)$a->doctor_id);
             abort_if(in_array($a->estado_cita, ['CANCELADO', 'NO_ASISTIO', 'RETIRO', 'ATENDIDO'], true), 409, 'La cita no admite otro cobro.');
             $positions = app(AppointmentEconomicPosition::class); $p = $positions->forAppointment($a);
             if ($p['allocation_required']) { throw ValidationException::withMessages(['payment' => 'Este documento necesita atribución financiera por cita antes de otro pago.']); }

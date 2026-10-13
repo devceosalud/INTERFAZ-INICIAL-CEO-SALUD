@@ -1,6 +1,14 @@
 <?php
 
 return [
+    // Clinical dates belong to the operational site; global app timestamps remain unchanged.
+    'clinic_timezone'=>env('CEO_SCHEDULING_TIMEZONE','America/Lima'),
+    // Catalogue verified by the operator; mapping enabled only during controlled deployment.
+    'quiroz_referral'=>[
+        'doctor_id'=>(int)env('CEO_QUIROZ_DOCTOR_ID',0),
+        'service_ids'=>array_values(array_filter(array_map('intval',explode(',',env('CEO_QUIROZ_REFERRAL_SERVICE_IDS',''))))),
+        'additional_rate_ids'=>[1=>(int)env('CEO_QUIROZ_TRAUMA_REFERRAL_RATE_ID',0),3=>(int)env('CEO_QUIROZ_PIE_REFERRAL_RATE_ID',0)],
+    ],
     /*
     |--------------------------------------------------------------------------
     | Scheduling MVP

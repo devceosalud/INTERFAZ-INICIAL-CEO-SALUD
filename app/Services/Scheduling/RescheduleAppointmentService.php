@@ -22,7 +22,9 @@ class RescheduleAppointmentService
         $original = Appointment::query()->visibleToAgendaUser($actorId)->find($id);
         abort_if($original === null, 404);
 
-        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType) {
+        $sourceIndication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
+        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication) {
+            Doctor::whereIn('id',array_unique(array_filter([$original->doctor_id,$sourceIndication?->doctor_id])))->orderBy('id')->lockForUpdate()->get();
             $doctor = Doctor::query()->lockForUpdate()->find($original->doctor_id);
             $appointment = Appointment::query()->visibleToAgendaUser($actorId)->lockForUpdate()->find($id);
             abort_if($appointment === null, 404);
@@ -60,6 +62,31 @@ class RescheduleAppointmentService
                 } elseif ($confirmedType !== null && $confirmedType !== $targetType) {
                     throw new AppointmentSlotUnavailableException('El destino cambió de clasificación. Revisa el horario antes de continuar.');
                 }
+            }
+            $indication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->lockForUpdate()->first();
+            if($indication) {
+                $assignment=app(\App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve((int)$appointment->doctor_id,(int)$appointment->service_id);
+                $discount=$appointment->discount_type?['type'=>$appointment->discount_type,'value'=>$appointment->discount_value,'reason'=>$appointment->discount_reason]:[];
+                // A free same-day rate has no ordinary discount; keep the original policy for subsequent dates.
+                if($date===$indication->attended_on->toDateString()) $discount=[];
+                $referral=$appointment->referral_origin?['origin'=>$appointment->referral_origin,'attested'=>true]:[];
+                $quote=app(AppointmentPriceResolver::class)->resolve($assignment,(int)$appointment->patient_id,$actorId,$date,
+                    $appointment->additional_rate_id,$discount,(int)$indication->id,$referral,$id,true);
+                $position=app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($appointment);
+                if($quote['price_cents']!==$position['price_cents']) {
+                    $hasVoucher=\App\Models\VoucherItem::whereIn('item_type',['cita',Appointment::class])->where('item_id',$id)->exists();
+                    if($position['effective_cents']>0 || $position['paid_cents']>0 || $hasVoucher) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['fecha_cita'=>'El cambio de fecha requiere un ajuste económico auditado porque existe dinero o un ticket. No se modificó la cita; solicita revisión.']);
+                    }
+                    if($appointment->estado_agenda===AppointmentAgendaLifecycle::CONFIRMED && $quote['price_cents']>0 && !$appointment->es_exonerado) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['fecha_cita'=>'El nuevo precio requiere adelanto antes de conservar la confirmación. Guarda una reserva mediante el flujo autorizado; no se cambió la cita.']);
+                    }
+                }
+                $changes+=['precio_programado'=>$quote['precio_programado'],'catalog_price'=>$quote['catalog_price'],
+                    'saldo_pendiente'=>$appointment->es_exonerado?0:\App\Support\Billing\Money::decimal(max(0,$quote['price_cents']-$position['effective_cents'])),
+                    'pricing_rule'=>$quote['pricing_rule'],'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents'])];
+                app(AppointmentHistory::class)->record($appointment,'PRECIO_REPROGRAMACION_REEVALUACION',$actorId,
+                    ['metadata'=>['indication_id'=>$indication->id,'from_price'=>$appointment->precio_programado,'to_price'=>$quote['precio_programado'],'pricing_rule'=>$quote['pricing_rule']]]);
             }
             $former = $appointment->only(['fecha_cita', 'hora_cita', 'tipo_agendamiento']);
             $appointment->update($changes);

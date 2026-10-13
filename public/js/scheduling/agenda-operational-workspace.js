@@ -10,6 +10,14 @@
         const catalogPrice = byId('catalog-price'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
         function discountInput() { return discountType?.value ? { type: discountType.value, value: discountValue.value || '0', reason: discountReason.value || null } : null; }
         const initialFinancialLocks = { waived: ui.waived.disabled, authorized: ui.authorized.disabled, exemption: exemptionReason?.disabled };
+        const indicationInput=byId('indication'), referredInput=byId('referred'), referralOrigin=byId('referral-origin');
+        function medicalPriceInput() {
+            const data={};
+            if(indicationInput?.value) data.reevaluation_indication_id=Number(indicationInput.value);
+            if(referredInput?.checked) data.referral={origin:referralOrigin.value,attested:true};
+            return data;
+        }
+        let automaticFree=false, indicationRecordKey=null;
         let quoteReady = true, quoteVersion = 0;
         const rateSelect = byId('rate'), quoteStatus = byId('quote-status');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
@@ -38,7 +46,7 @@
             if (kind === 'payment') { paymentKey = null; }
         }
         function readiness() {
-            return { price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled,
+            return { automaticFree: quoteReady && automaticFree, price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled,
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
         function reservationConfirmation() {
@@ -146,12 +154,14 @@
             if (patientId !== undefined) data.patient_id = patientId || 0;
             if (!data.doctor_id || !data.service_id || !data.fecha_cita) { quoteReady = false; return; }
             if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
+            Object.assign(data,medicalPriceInput());
             if (discountInput()) data.discount = discountInput();
-            quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
+            quoteReady = false; automaticFree=false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
             if (config.changed) config.changed();
             try {
                 const result = await request(config.quoteEndpoint, json('POST', data));
                 if (version !== quoteVersion || config.context()?.appointment_id) return;
+                automaticFree=result.pricing_rule==='SAME_DAY_REEVALUATION';
                 quote = model.cents(result.precio_programado); balance = quote;
                 if (catalogPrice) catalogPrice.value = result.catalog_price || result.precio_programado;
                 ui.price.value = result.precio_programado; ui.paid.value = '0.00';
@@ -162,6 +172,7 @@
                 if (config.changed) config.changed();
             }
         }
+        [indicationInput,referredInput,referralOrigin].forEach(field=>field?.addEventListener('input',()=>refreshQuote()));
         [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
@@ -200,6 +211,7 @@
                     booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null, payment: payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
+                Object.assign(payload,medicalPriceInput());
                 if (discountInput()) payload.discount = discountInput();
                 payload.is_postoperative = Boolean(postoperative?.checked);
                 payload.motivo_exoneracion = exemptionReason?.value || null;
@@ -222,7 +234,9 @@
             const result = await request(base + '/' + id + '/documents');
             if (String(config.context()?.appointment_id) !== String(id)) { return; }
             ui.documents.replaceChildren();
+            const orderDocument=byId('indication-document'); if(orderDocument) orderDocument.replaceChildren();
             (result.documents || []).forEach(d => {
+                if(orderDocument && d.download_url) {const option=document.createElement('option');option.value=String(d.id);option.textContent=d.label;orderDocument.appendChild(option);}
                 const row = document.createElement('div'); row.className = 'agenda-document-row';
                 const link = document.createElement('a'); link.textContent = d.label; link.href = d.url || d.download_url;
                 link.target = '_blank'; link.rel = 'noopener noreferrer'; row.appendChild(link);
@@ -244,8 +258,10 @@
         }
         async function selectionChanged(context) {
             const key = [context?.appointment_id || '', context?.doctor_id || '', context?.fecha || '', context?.hora_inicio || ''].join('|');
-            if (key !== selectedKey) { if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
+            if (key !== selectedKey) { ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
+            [indicationInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
+            if(byId('indication-record-panel')) byId('indication-record-panel').hidden=true;
             [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
             if (postoperative) postoperative.disabled = Boolean(id);
             ++quoteVersion;
@@ -267,7 +283,8 @@
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                economy(p); if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
+                economy(p); if(referredInput)referredInput.checked=Boolean(p.referral_origin);if(referralOrigin)referralOrigin.value=p.referral_origin||''; if(byId('indication-record-panel')) byId('indication-record-panel').hidden=!p.can_record_indication;
+                if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
                 if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
                 if (discountReason) discountReason.value=p.discount_reason || '';
                 if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; }
@@ -358,6 +375,25 @@
                 else { config.notice(saved); }
             } catch (e) { showPlaced(e, 'documents'); }
             finally { working = false; }
+        });
+        const recordIndication=byId('record-indication');
+        recordIndication?.addEventListener('click',async()=>{
+            const id=config.context()?.appointment_id,message=byId('indication-record-message');
+            if(!id || working) return;
+            indicationRecordKey=indicationRecordKey || root.crypto.randomUUID();
+            const payload={request_key:indicationRecordKey,evidence_document_id:Number(byId('indication-document').value),
+                indicated_on:byId('indication-date').value,evidence_type:byId('indication-evidence').value,
+                instruction_reference:byId('indication-reference').value,doctor_order_attested:Boolean(byId('indication-attested').checked)};
+            const file=byId('indication-file').files[0];
+            if(file && root.AgendaGuidance.invalidProof(file)){message.textContent=root.AgendaGuidance.copy.fileInvalid;return;}
+            let options=json('POST',payload);
+            if(file){delete payload.evidence_document_id;const body=new FormData();body.append('payload',JSON.stringify(payload));body.append('file',file);options={method:'POST',body};}
+            recordIndication.disabled=true;setWorking(true);
+            try {const result=await request(base+'/'+id+'/reevaluation-indications',options);
+                indicationRecordKey=null;if(String(config.context()?.appointment_id)!==String(id))return;message.textContent='Indicación acreditada n.º '+result.indication_id+'. Autoriza una sola cita.';
+                byId('indication-attested').checked=false;byId('indication-file').value='';await documents(id);
+            }catch(e){if([400,403,404,422].includes(e.status)) indicationRecordKey=null;message.textContent=e.message;}
+            finally{setWorking(false);recordIndication.disabled=false;}
         });
         function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
         return { register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness, reservationConfirmation, confirmReservation };

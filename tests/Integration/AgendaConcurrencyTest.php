@@ -41,13 +41,13 @@ class AgendaConcurrencyTest extends TestCase
             'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $this->catalog['service']->id,
             'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30], $changes);
     }
-    private function race(string $path, array $payloads): array
+    private function race(string $path, array $payloads, array $actors = []): array
     {
         $dir = storage_path('app/qa-final/races/'.Str::uuid()); mkdir($dir, 0777, true);
         $release = $dir.'/release'; $processes = [];
         foreach ($payloads as $i => $payload) {
             $input = $dir.'/'.$i.'.input.json'; $output = $dir.'/'.$i.'.output.json';
-            file_put_contents($input, json_encode(['actor' => $this->actor->id, 'release' => $release, 'path' => $path, 'payload' => $payload]));
+            file_put_contents($input, json_encode(['actor' => $actors[$i] ?? $this->actor->id, 'release' => $release, 'path' => $path, 'payload' => $payload]));
             $process = new Process([PHP_BINARY, base_path('tests/Support/agenda-qa-request.php'), $input, $output], base_path(), null, null, 30);
             $process->start(); $processes[] = [$process, $output];
         }
@@ -179,4 +179,28 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertSame([403, 403], $this->statuses($this->race('/scheduling-mvp/agenda/appointments', [$this->payload(), $this->payload()])));
         foreach (['appointments', 'payments', 'vouchers', 'appointment_operations'] as $table) { $this->assertDatabaseCount($table, 0); }
     }
+    public function test_two_workers_with_different_doctors_cannot_bind_one_indication_twice():void
+    {
+        $cap=\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY;
+        $this->actor->givePermissionTo(Permission::findOrCreate($cap,'web'));
+        $source=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO','estado_agenda'=>'LEGADO','fecha_cita'=>now()->subDay()->toDateString(),'hora_cita'=>'08:00'],$this->patient);
+        $path='qa-indications/'.Str::uuid().'.txt';
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path,'Indicación escrita exclusivamente ficticia QA');
+        $doc=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden médica ficticia','private_path'=>$path,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
+        $indication=app(\App\Services\Scheduling\ReevaluationIndicationService::class)->record($source->id,$this->actor,
+            ['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true]);
+        $otherWorker=$this->agendaReader('COMERCIAL');
+        $otherWorker->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
+        $other=$this->createAppointmentCatalog();
+        \App\Models\DoctorService::create(['doctor_id'=>$other['doctor']->id,'service_id'=>$this->catalog['service']->id,
+            'precio_primera_consulta'=>100,'precio_reconsulta'=>50,'dias_reconsulta'=>15,'estado'=>'ACTIVO']);
+        $a=$this->payload(['reevaluation_indication_id'=>$indication->id,'hora_cita'=>'09:00']);
+        $b=array_replace($a,['request_key'=>(string)Str::uuid(),'doctor_id'=>$other['doctor']->id]);
+        $results=$this->race('/scheduling-mvp/agenda/registrations',[$a,$b],[$this->actor->id,$otherWorker->id]);
+        $this->assertSame([201,422],$this->statuses($results));
+        $this->assertDatabaseCount('appointments',2);$this->assertDatabaseCount('payments',0);
+        $this->assertNotNull($indication->fresh()->bound_appointment_id);
+        $this->assertSame(1,DB::table('appointment_events')->where('event_type','INDICACION_REEVALUACION_VINCULADA')->count());
+    }
+
 }
