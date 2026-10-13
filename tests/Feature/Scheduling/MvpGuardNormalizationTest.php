@@ -54,6 +54,48 @@ class MvpGuardNormalizationTest extends TestCase
         catch (\RuntimeException $e) { $this->assertStringContainsString('Normaliza',$e->getMessage()); }
         $this->assertEquals($before,$this->snapshot());
     }
+    public function test_existing_web_extraordinary_grants_are_effective_before_and_after_five_role_only_repair(): void
+    {
+        config(['scheduling.enabled'=>true,'app.debug'=>false]);
+        foreach ([C::WITHDRAW,C::CREATE_ADDITIONAL] as $cap) {
+            $p=Permission::findOrCreate($cap,'web');
+            foreach(['ADMISION','COMERCIAL'] as $name){
+                DB::table('role_has_permissions')->insert(['role_id'=>$this->legacyRoles[$name]->id,'permission_id'=>$p->id]);
+            }
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $permissions=DB::table('permissions')->orderBy('id')->get()->toArray();
+        $links=DB::table('role_has_permissions')->orderBy('role_id')->orderBy('permission_id')->get()->toArray();
+        $catalog=$this->createAppointmentCatalog();$i=0;
+        foreach(['before','after'] as $phase){
+            if($phase==='after'){
+                $names=array_values(array_diff($this->legacyRoleNames(),['COMERCIAL']));
+                $n=app(N::class);$plan=$n->plan($names);
+                $this->assertSame([],$plan['selected_permission_ids']);$this->assertSame([],$plan['blockers']);
+                $this->assertCount(5,$plan['changes']);
+                $n->apply($names,[],$plan['plan_hash'],'QA-FIVE-ROLE-ONLY');
+            }
+            foreach(['ADMISION','COMERCIAL'] as $name){
+                $u=$this->legacyActors[$name]->fresh();
+                $this->assertTrue($u->can(C::WITHDRAW),$phase.' '.$name);
+                $this->assertTrue($u->can(C::CREATE_ADDITIONAL),$phase.' '.$name);
+                $this->assertFalse($u->can(C::SUBMIT_PAYMENT));
+                $this->assertFalse($u->can(C::APPROVE_ZERO_COST));
+                $patient=$this->createPatient($u,['numero_identidad'=>(string)(70001900+$i),'historia_clinica'=>'QA-GUARD-EXTRA-'.$i++]);
+                $a=$this->lifecycleAppointment($u,$catalog,['estado_agenda'=>'LEGADO','estado_cita'=>'CONFIRMADO'],$patient);
+                $d=['request_key'=>(string)\Illuminate\Support\Str::uuid(),'motivo'=>'FICTICIO GUARDS','requested_action'=>'PENDIENTE','was_present'=>true];
+                $this->actingAs($u)->postJson('/scheduling-mvp/agenda/appointments/'.$a->id.'/withdraw',$d)->assertOk();
+                $this->postJson('/scheduling-mvp/agenda/appointments/'.$a->id.'/withdraw',$d)->assertOk();
+                $this->assertSame('RETIRO',$a->fresh()->estado_cita);
+                $this->assertSame(1,$a->events()->where('event_type','RETIRO')->count());
+            }
+        }
+        $this->assertEquals($permissions,DB::table('permissions')->orderBy('id')->get()->toArray());
+        $this->assertEquals($links,DB::table('role_has_permissions')->orderBy('role_id')->orderBy('permission_id')->get()->toArray());
+        $this->assertSame('web',$this->legacyRoles['COMERCIAL']->fresh()->guard_name);
+        $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointment_refund_requests',0);
+    }
+
     public function test_audit_only_lists_guards_and_incompatible_links_without_personal_data_or_writes(): void
     {
         $this->withoutMockingConsoleOutput(); $before=$this->snapshot();

@@ -17,7 +17,7 @@ No hay migraciones o seeders nuevos en PR #5. Si falta schema/índice previo, de
 
 ## 3. Publicación futura y habilitación ordinaria
 
-**Bloqueo confirmado 13/10:** cinco roles tienen guard vacío; COMERCIAL tiene web. Ejecutar primero la lectura y, solo con autorización de despliegue, la normalización delimitada de [CEO_SALUD_MVP_GUARDS_PR5.md](CEO_SALUD_MVP_GUARDS_PR5.md). Los guards de permissions todavía requieren evidencia; no asumir web ni ejecutar SQL de corrección masiva. Bootstrap rechaza guards incompatibles, sin excluir perfiles silenciosamente.
+**Bloqueo confirmado 13/10:** cinco roles tienen guard vacío; COMERCIAL tiene web. Ejecutar primero la lectura y, solo con autorización de despliegue, la normalización delimitada de [CEO_SALUD_MVP_GUARDS_PR5.md](CEO_SALUD_MVP_GUARDS_PR5.md). Permissions confirmado: 23, TODOS web. Normalizar solo ADMINISTRADOR/ADMISION/CAJA/FACTURACION/RECEPCION; excluir COMERCIAL y no usar --permission-id. Preservar los grants extraordinarios withdraw/additional.create ya asignados a ADMISION/COMERCIAL; el procedimiento documenta su efectividad y alcance. Bootstrap mantiene la habilitación ordinaria separada.
 
 1. Autorizar PR final y procedimiento, después de resolver privacidad/seguridad. Registrar SHA final aprobado, backups y responsable de rollback. Merge a main y deploy son acciones futuras, no realizadas en esta tarea.
 2. Deploy de la release resultante por el mecanismo verificado, preservando paths compartidos. Composer install desde lock únicamente si el mecanismo necesita vendor, con PHP correcto; nunca update o flags ignore-platform. Seguir scripts revisados del repo. Invalidar/reconstruir cachés de release/Blade/routes según el mecanismo autorizado; no borrar datos ni recibos. Si no se dispone de cambio de release atómico, mantener corte hasta completar todo.
@@ -66,7 +66,7 @@ La versión anterior reintroduce bypass heredados: no reabrir escrituras financi
 
 ## 6. Condiciones aún abiertas
 
-- Catálogo/participantes productivos completos, conteos reales y modo de caja elegido. No hay sesión Hostinger disponible para verificarlos aquí; usar SQL sanitizado y revisión supervisada.
+- Catálogo confirmado: seis roles y 23 permisos web; normalización únicamente de cinco roles vacíos. Continúan pendientes selección/aplicación productiva final, conteos reales y modo de caja elegido. No hay sesión Hostinger disponible para verificarlos aquí; usar SQL sanitizado y revisión supervisada.
 - Backup/restauración/rollback y autodespliegue comprobados. Versiones/UNIQUE previos ya confirmados; restante schema/config y diferencias de sistema operativo/modos siguen pendientes.
 - Clarity se conserva EXACTAMENTE: masking efectivo de nombres, DNI/HCE, teléfonos, texto clínico, RX/informes, imágenes, pagos, mensajes, títulos/URLs/referrers/etiquetas; acceso/retención y grabaciones ficticias. Sus [términos 1.b.ii](https://clarity.microsoft.com/terms) restringen contenido sensible sanitario/financiero: resolver ámbito admisible con responsable/proveedor; enmascaramiento por sí solo no acredita admisibilidad. [Masking oficial](https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-masking). No generar capturas de pacientes reales para probarlo ni modificar/remover instalación sin autorización.
 

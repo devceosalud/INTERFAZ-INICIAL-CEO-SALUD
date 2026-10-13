@@ -1,0 +1,65 @@
+{
+  "scope": "Production catalogue closure; five role guards only",
+  "confirmedByOperator": {
+    "permissions": 23,
+    "permissionGuards": "all web",
+    "emptyRoleGuards": [
+      "ADMINISTRADOR",
+      "ADMISION",
+      "CAJA",
+      "FACTURACION",
+      "RECEPCION"
+    ],
+    "unchangedWebRole": "COMERCIAL",
+    "grantsByRole": {
+      "ADMINISTRADOR": 9,
+      "ADMISION": 8,
+      "CAJA": 1,
+      "COMERCIAL": 6,
+      "FACTURACION": 0,
+      "RECEPCION": 1
+    },
+    "knownExtraordinaryRoleGrants": {
+      "ADMISION": [
+        "appointment.withdraw",
+        "appointment.additional.create"
+      ],
+      "COMERCIAL": [
+        "appointment.withdraw",
+        "appointment.additional.create"
+      ]
+    }
+  },
+  "implementationChanged": false,
+  "productionModified": false,
+  "permissionNormalizationRequired": false,
+  "focusedRegression": {
+    "phpVersion": "8.3.35",
+    "sqlite": {
+      "passed": 1,
+      "assertions": 40
+    },
+    "mariadbVersion": "11.8.9",
+    "mariadb": {
+      "passed": 1,
+      "assertions": 40
+    },
+    "isolated": true,
+    "fullSuitesRerun": false,
+    "javascriptRerun": false,
+    "checks": [
+      "Both named extra capabilities true for ADMISION and COMERCIAL before and after five-role normalization",
+      "Withdraw HTTP success/idempotency in both phases",
+      "No permissions/pivots changed",
+      "No payment/waiver capability implicitly granted",
+      "No payments or refund requests created"
+    ]
+  },
+  "pending": [
+    "Productive counts and pilot mode",
+    "Final deployment/normalization/grants approval",
+    "Transaction/index metadata if not yet verified",
+    "Backup restoration/hosting smoke/rollback",
+    "Clarity privacy/admissible scope"
+  ]
+}

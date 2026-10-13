@@ -220,3 +220,15 @@ Evidencia: docs/evidence/urgent1/guards. Un primer assertion de snapshot no refr
 [Publicación completa](CEO_SALUD_MVP_DESPLIEGUE_PR5.md).
 
 Sin cambios productivos, merge, deploy, migraciones nuevas ni asignaciones. Solución técnica probada; aplicación productiva pendiente de guards reales de permissions, lista/IDs aprobados, backup/restauración, humo de hosting y privacidad Clarity. Mantener PR Draft y esperar revisión.
+
+
+## Catálogo productivo confirmado y alcance final de guards
+El responsable confirmó 23 permisos TODOS web; no se normaliza permissions. Roles/grants por rol: ADMINISTRADOR 9, ADMISION 8, CAJA GESTION_CAJA, COMERCIAL 6, FACTURACION 0, RECEPCION GESTION_RECEPCION. ADMISION/COMERCIAL tienen withdraw y additional.create; conservarlos explícitamente.
+
+Procedimiento final limitado a los cinco roles vacíos, sin COMERCIAL ni --permission-id; blockers=[] y cinco cambios exclusivamente de roles. Habilitación de seis capacidades ordinarias sigue siendo una segunda previa/aprobación separada, con lista de participantes que puede incluir COMERCIAL. No repetir lectura del catálogo cerrado; continuar conteos y modo piloto pendientes.
+
+Comprobación enfocada nueva: con permisos web vinculados por ID, ADMISION y COMERCIAL ya pueden cumplir User::can(withdraw/additional.create) antes de normalizar. Prueba HTTP de RETIRO antes y después en ambos perfiles; idempotencia preservada, ningún permiso/pivot modificado, COMERCIAL web, sin grants de pago/exoneración implícitos. PHP 8.3.35/SQLite: 1 aprobada/40 aserciones. MariaDB 11.8.9 aislada: 1 aprobada/40 aserciones. Sin fallos/omisiones; no se repitieron suites completas ni JavaScript. Las suites completas anteriores conservan sus resultados, no se presentan como nueva ejecución.
+
+withdraw también habilita solicitud de devolución con reserva de saldo bajo sus validaciones; no ejecuta devolución de dinero. Mantener facultades extraordinarias preexistentes puede hacerlas visibles/usables cuando se habilite el MVP; no tratar guard vacío como barrera de seguridad. No se demuestra autorización individual productiva por conteos de rol, ni se presume ausencia de otros grants.
+
+Sin cambio de lógica de autorización/finanzas, migración, grant, actualización productiva, merge o modificación Clarity. Procedimiento y evidencia actualizados para revisión.

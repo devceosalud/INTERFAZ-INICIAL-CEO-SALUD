@@ -1,3 +1,5 @@
+-- Catálogo ya confirmado: 23 permisos web; cinco roles vacíos y COMERCIAL web.
+-- No repetir ahora los bloques de catálogo. Conservar para comprobación del corte/post-cambio.
 -- Hostinger PR #5: SOLO SELECT; BD correcta, tablas/pivots estándar Spatie verificados.
 -- Catálogo sin datos personales. No actualizar ni crear filas/roles/permisos desde este archivo.
 SELECT guard_name,LENGTH(guard_name) AS guard_bytes,COUNT(*) AS permissions_count
