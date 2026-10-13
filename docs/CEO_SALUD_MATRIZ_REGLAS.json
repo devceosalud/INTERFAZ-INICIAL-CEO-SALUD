@@ -57,17 +57,17 @@
   },
   {
     "id": "R09",
-    "status": "PARCIAL",
-    "gap": "Heredado soporta cita_doble y ocupación con locks; Agenda sin selector equivalente.",
-    "evidence": "LegacyAppointmentRegistration; AppointmentSlotValidator; LegacyRegistrationParityTest",
-    "dependency": "PR Agenda; dos intervalos consecutivos, una tarifa y concurrencia."
+    "status": "IMPLEMENTADO",
+    "gap": "Dos intervalos consecutivos reales del mismo médico/bloque/sede; una tarifa, exclusión concurrente y reprogramación por cadencia destino; UI Agenda y editor heredado coherentes.",
+    "evidence": "DoubleAppointmentDuration; AgendaDoubleDurationTest; AgendaConcurrencyTest; smoke navegador reserva→pago→confirmación Día/Semana/Mes",
+    "dependency": "PR Agenda sobre #7; migration duration_slots nullable sin backfill."
   },
   {
     "id": "R10",
-    "status": "PARCIAL",
-    "gap": "Default false heredado; falta control equivalente en Agenda.",
-    "evidence": "LegacyAppointmentRegistration",
-    "dependency": "PR Agenda; opcional y reset por contexto."
+    "status": "IMPLEMENTADO",
+    "gap": "Selector opcional default false, reset por contexto; datos históricos null sin inferir duración.",
+    "evidence": "agenda-operational-workspace.js; agenda-quote.test.js; legacy-calendar-safety.test.js",
+    "dependency": "PR Agenda sobre #7."
   },
   {
     "id": "R11",
@@ -142,9 +142,9 @@
   {
     "id": "R24",
     "status": "PARCIAL",
-    "gap": "Reset/invalida quote/identidad existente; falta advertencia completa de cambios pendientes.",
-    "evidence": "agenda-operational-workspace.js; agenda.js; agenda-quote.test.js",
-    "dependency": "PR Agenda; dirty y cancelación/reset."
+    "gap": "Aviso antes de cambiar selección/fecha/vista/filtros, cancelación conserva contexto (JS), reset de dinero/contactos/indicación/notas y descarte comprobado en navegador. Cancelación del diálogo nativo en navegador pendiente por interrupción de automatización.",
+    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke navegador",
+    "dependency": "PR Agenda; revisión supervisada de cancelación nativa y ficha modal."
   },
   {
     "id": "R25",

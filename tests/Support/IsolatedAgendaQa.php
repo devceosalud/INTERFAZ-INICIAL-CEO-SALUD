@@ -23,13 +23,13 @@ final class IsolatedAgendaQa
         $password = $rules ? 'rules-local-only' : ($equivalent ? 'mvp-equivalent-only' : 'urgent-local-qa-only');
         $dataDir = $equivalent ? '/storage/app/qa-final/equivalent/mysql-runtime' : '/storage/app/qa-final/mysql-runtime';
         if (file_exists($root.'/.env')) { throw new \RuntimeException('QA requires a separate checkout without .env.'); }
-        $values = ['APP_ENV' => 'testing', 'APP_DEBUG' => 'false', 'APP_URL' => 'http://127.0.0.1:8022',
+        $values = ['APP_ENV' => 'testing', 'APP_DEBUG' => 'false', 'APP_URL' => $rules ? 'http://127.0.0.1:8023' : 'http://127.0.0.1:8022',
             'APP_KEY' => 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             'DB_CONNECTION' => 'mysql', 'DB_HOST' => '127.0.0.1', 'DB_PORT' => $port,
             'DB_DATABASE' => $database, 'DB_USERNAME' => $username, 'DB_PASSWORD' => $password,
             'DATABASE_URL' => '', 'DB_SOCKET' => '', 'CACHE_DRIVER' => 'array', 'LOG_CHANNEL' => 'null',
             'MAIL_MAILER' => 'array', 'QUEUE_CONNECTION' => 'sync', 'BROADCAST_DRIVER' => 'null', 'BCRYPT_ROUNDS' => '4',
-            'SESSION_DRIVER' => $browser ? 'file' : 'array', 'SESSION_COOKIE' => 'agenda_urgent_only',
+            'SESSION_DRIVER' => $browser ? 'file' : 'array', 'SESSION_COOKIE' => $rules ? 'agenda_rules_only' : 'agenda_urgent_only',
             'SCHEDULING_MVP_ENABLED' => 'true', 'SCHEDULING_PILOT_PAYMENT_WITHOUT_MANUAL_CASH_SHIFT' => 'false',
             'TELESCOPE_ENABLED' => 'false'];
         foreach (['CONFIG', 'EVENTS', 'PACKAGES', 'ROUTES', 'SERVICES'] as $cache) {

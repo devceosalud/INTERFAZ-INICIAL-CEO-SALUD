@@ -85,6 +85,7 @@ class ScheduleController extends Controller
                 'nombre_servicio' => $schedule->service->nombre,
                 'fecha_cita' => $schedule->fecha_cita,
                 'hora_cita' => $schedule->hora_cita,
+                'duration_slots' => $schedule->duration_slots,
                 'total_pagado' => $schedule->total_pagado,
                 'saldo_pendiente' => $schedule->saldo_pendiente,
                 'estado_pagado' => $schedule->estado_pagado,

@@ -50,7 +50,7 @@ class Appointment extends Model
         'additional_rate_id',
         'fecha_cita',
         'hora_cita',
-        'duracion_cita',
+        'duracion_cita','duration_slots',
         'motivo_consulta',
         'turno_cita',
         'precio_programado',

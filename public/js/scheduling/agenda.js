@@ -210,6 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const operationalWorkspace = window.AgendaOperationalWorkspace({
         endpoint: board.dataset.registrationStore, base: board.dataset.rescheduleUrl,
         patientTemplate: el.patientDraft.dataset.detailTemplate, context: () => state.selection,
+        isBusy:()=>state.appointmentBusy,
+        extraState:()=>JSON.stringify([draftChanged()?draftModel.toPayload(state.draft):null,state.selection?.appointment_id?[document.getElementById('agenda-reschedule-date')?.value||'',document.getElementById('agenda-reschedule-time')?.value||'']:[state.identity?.patientId||'',el.documentType.value,el.documentNumber.value,el.serviceSelect.value,el.responsibleSelect.disabled?'':el.responsibleSelect.value]]),
         quoteEndpoint: '/scheduling-mvp/agenda/quote',
         quoteData: () => ({ doctor_id: state.selection?.doctor_id, service_id: el.serviceSelect.value,
             patient_id: el.quickPatientId.value || 0, fecha_cita: state.selection?.fecha }),
@@ -222,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
             paintIdentity(identity);
         },
         payload: appointmentCreateModel.payload, error: appointmentCreateModel.validationMessage, canCreate: canCreateAppointments,
-        paymentUpdated: async (response) => { state.revealAppointmentId = String(response.appointment.appointment_id); await load(); },
+        paymentUpdated: async (response) => { state.revealAppointmentId = String(response.appointment.appointment_id); await load({preserveContext:true}); },
         refresh: load, notice: showActionNotice, changed: () => updateAppointmentAction(),
         busy: (busy) => { state.appointmentBusy = busy; updateAppointmentAction(); el.draftSaveSchedule.disabled = busy || !canCreateAppointments; },
         registered: async (payload, options) => {
@@ -230,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
             paintIdentity(state.identity); paintDraft(draftModel.discard(scheduleSnapshot()));
             el.responsibleSelect.value = ''; paintResponsible();
             state.revealAppointmentId = String(payload.appointment.appointment_id);
-            await load();
+            await load({committed:true});
             window.clearTimeout(actionNoticeTimer);
             const notice = document.getElementById('agenda-action-notice');
             if (notice) { notice.hidden = true; notice.textContent = ''; notice.classList.remove('is-alert'); }
@@ -511,7 +513,17 @@ document.addEventListener('DOMContentLoaded', function () {
         el.doctorFilterSummary.textContent = selected.length + ' médicos en comparación';
     }
 
-    async function load() {
+    let loadedFilters=null;
+    function rememberFilters() {loadedFilters={date:state.date,view:state.view,miniAnchor:state.miniAnchor,compare:state.compare,comparisonDoctorId:state.comparisonDoctorId,
+        site:el.site.value,specialty:el.specialty.value,checks:el.doctorChecks.map(c=>c.checked)};}
+    function restoreFilters() {if(!loadedFilters)return;state.date=loadedFilters.date;state.miniAnchor=loadedFilters.miniAnchor;state.compare=loadedFilters.compare;state.comparisonDoctorId=loadedFilters.comparisonDoctorId;
+        el.date.value=state.date;el.site.value=loadedFilters.site;el.specialty.value=loadedFilters.specialty;el.compareToggle.checked=state.compare;
+        el.doctorChecks.forEach((c,i)=>c.checked=loadedFilters.checks[i]);setView(loadedFilters.view);updateDoctorFilterSummary();}
+    function clearIdentityContext() {state.identity=lookupModel.blank();state.draft=null;el.documentNumber.value='';el.responsibleSelect.value='';
+        paintIdentity(state.identity);paintDraft(draftModel.discard(scheduleSnapshot()));el.serviceSelect.value='';}
+    async function load(options={}) {
+        if(!options.committed && !options.preserveContext && !operationalWorkspace.prepareSelection(null)){restoreFilters();return false;}
+        const revision=operationalWorkspace.pendingRevision();
         if (state.requestController) {
             state.requestController.abort();
         }
@@ -530,21 +542,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error('El servidor respondió ' + response.status);
             }
 
-            state.payload = await response.json();
+            const payload=await response.json();
+            if(!options.committed && !options.preserveContext && revision!==operationalWorkspace.pendingRevision() && !operationalWorkspace.prepareSelection(null)){restoreFilters();return false;}
+            state.payload = payload;
             withdrawalWorkspace.feed(state.payload);
             state.legend = {};
             (state.payload.leyenda || []).forEach((entry) => {
                 state.legend[entry.clave] = entry;
             });
 
-            clearSelection();
+            if(!options.preserveContext)clearSelection(true);
             renderRange();
             renderDoctors();
             renderMiniCalendar();
             renderMainSurface();
             renderTotals();
             resizeCalendar();
-            updateDoctorFilterSummary();
+            updateDoctorFilterSummary();rememberFilters();
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error(error);
@@ -755,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (exact) {
             const event = state.visibleEvents.find(event => String(event.extendedProps?.appointment_id) === String(state.revealAppointmentId));
             state.revealAppointmentId = null;
-            if (event) { selectInterval(event.extendedProps, exact); }
+            if (event) { selectInterval(event.extendedProps, exact,true); }
         }
     }
 
@@ -1097,7 +1111,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (_) { if (request === capacityRequest) { el.miniMonth.title = 'Semáforo temporalmente no disponible'; } }
     }
 
-    function clearSelection() {
+    function clearSelection(force=false) {
+        if(!force && !operationalWorkspace.prepareSelection(null))return false;
+        clearIdentityContext();
         state.additionalMode = false;
         state.offHoursMode = false;
         state.pendingMode = false;
@@ -1146,12 +1162,15 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'Seleccione un intervalo disponible, un paciente y un servicio.';
     }
 
-    function selectInterval(context, node) {
+    function selectInterval(context, node, force=false) {
+        if(!force && !operationalWorkspace.prepareSelection(context))return false;
+        const changed=operationalWorkspace.contextKey(context)!==operationalWorkspace.contextKey(state.selection);
+        if(changed)clearIdentityContext();
         state.additionalMode = false;
         state.offHoursMode = false;
         state.pendingMode = false;
         state.selection = context;
-        if (context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
+        if (changed && context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
         operationalWorkspace.selectionChanged(context);
         withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Otra reserva en esta hora' : 'Guardar reserva'; }
@@ -1257,6 +1276,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         updateAppointmentAction();
+        if(changed)operationalWorkspace.captureClean();
+        return true;
     }
 
     function applyQuickState(quick) {
@@ -1498,7 +1519,12 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftType.appendChild(option);
     }
 
+    let draftBaseline = null;
+    function draftChanged() {
+        return Boolean(state.draft && JSON.stringify(draftModel.toPayload(state.draft)) !== draftBaseline);
+    }
     function paintDraft(draft) {
+        const opening = !state.draft && Boolean(draft && draft.open);
         state.draft = draft && draft.open ? draft : null;
         el.patientModal.hidden = !state.draft;
         document.getElementById(state.draft ? 'agenda-op-modal-host' : 'agenda-op-workspace-host').prepend(document.getElementById('agenda-operational-fields'));
@@ -1510,6 +1536,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftReniec.hidden = !state.draft || !state.draft.reniecOffered;
 
         if (!state.draft) {
+            draftBaseline = null;
             el.draftMessage.textContent = '';
             return;
         }
@@ -1549,6 +1576,7 @@ document.addEventListener('DOMContentLoaded', function () {
             el.draftCommercialOwner.value = el.responsibleSelect.value;
             state.draft.commercial_owner_id = el.responsibleSelect.value;
         }
+        if (opening || draftBaseline === null) draftBaseline = JSON.stringify(draftModel.toPayload(state.draft));
         el.draftContextDoctor.textContent = draft.doctor || '—';
         el.draftContextDate.textContent = draft.date || '—';
         el.draftContextTime.textContent = draft.time || '—';
@@ -1605,6 +1633,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closePatientModal() {
+        if(state.appointmentBusy)return;
+        if(draftChanged() && !window.confirm('Hay cambios sin guardar en la ficha. ¿Descartarlos?'))return;
         paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
         el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
         el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
@@ -1626,6 +1656,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const sourceKey=operationalWorkspace.contextKey(state.selection);
         el.completeRegistration.disabled = true;
 
         try {
@@ -1640,6 +1671,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error('No se pudo cargar la ficha.');
             }
 
+            if(sourceKey!==operationalWorkspace.contextKey(state.selection)||String(el.quickPatientId.value)!==String(patientId))return;
             paintDraft(draftModel.openExisting(payload.patient, scheduleSnapshot()));
         } catch (error) {
             el.lookupResult.className = 'agenda-lookup__result is-conflict';
@@ -1650,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function savePatient(attachToSchedule) {
-        if (!state.draft || !canWritePatients) {
+        if (!state.draft || !canWritePatients || state.appointmentBusy) {
             return;
         }
 
@@ -1695,6 +1727,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const currentDraft = state.draft;
+        const savedDraft = JSON.stringify(draftModel.toPayload(currentDraft));
+        state.appointmentBusy = true;
         const existing = Boolean(currentDraft.patientId);
         const url = existing
             ? el.patientDraft.dataset.updateTemplate.replace('__PATIENT__', encodeURIComponent(currentDraft.patientId))
@@ -1721,6 +1755,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error(patientValidationMessage(payload));
             }
 
+            draftBaseline = savedDraft;
+            if(JSON.stringify(draftModel.toPayload(state.draft))!==savedDraft){
+                el.draftMessage.textContent='La ficha se guardó. Hay cambios posteriores todavía sin guardar.';
+                return;
+            }
             const ownerOption = el.draftCommercialOwner.selectedOptions[0];
             const ownerName = currentDraft.commercial_owner_id && ownerOption
                 ? ownerOption.textContent.trim()
@@ -1749,6 +1788,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             el.draftMessage.textContent = error.message || 'No se pudo guardar el paciente.';
         } finally {
+            state.appointmentBusy = false;
             if (state.draft) {
                 el.draftSave.disabled = !canWritePatients;
                 el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments;
@@ -1868,6 +1908,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const tipo = el.documentType.value.trim();
         const numero = el.documentNumber.value.trim();
         const schedule = scheduleSnapshot();
+        const sourceKey=operationalWorkspace.contextKey(state.selection);
+        const stillCurrent=()=>sourceKey===operationalWorkspace.contextKey(state.selection) && tipo===el.documentType.value.trim() && numero===el.documentNumber.value.trim();
 
         paintIdentity(lookupModel.edited(null, tipo, numero));
         state.draft = null;
@@ -1893,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }),
             });
             const data = await response.json();
+            if(!stillCurrent())return;
 
             if (!response.ok) {
                 el.lookupResult.className = 'agenda-lookup__result is-conflict';
@@ -1909,6 +1952,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             paintIdentity(identity);
         } catch (error) {
+            if(!stillCurrent())return;
             el.lookupResult.className = 'agenda-lookup__result is-conflict';
             el.lookupResult.textContent = 'No se pudo consultar el documento.';
         } finally {
@@ -2011,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!state.selection || state.selection.tipo_contexto !== 'fuera_horario') { return; }
             const context = Object.assign({}, state.selection, { tipo_contexto: 'slot_libre', seleccionable: true,
                 site_id: el.site.value ? Number(el.site.value) : null });
-            selectInterval(context, null);
+            if(!selectInterval(context, null))return;
             state.offHoursMode = true;
             el.quickMode.textContent = 'FUERA DE HORARIO';
             showActionNotice(window.AgendaGuidance.copy.offHours, false);
@@ -2033,7 +2077,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let booking;
             try { booking = window.AgendaAppointmentActions.additionalContext(selected, slot); }
             catch (error) { showActionNotice(error.message, true); return; }
-            selectInterval(booking, null);
+            if(!selectInterval(booking, null))return;
             state.additionalMode = true;
             el.documentNumber.value = saved.document;
             if (saved.identity && saved.identity.status) { paintIdentity(saved.identity); }
@@ -2049,7 +2093,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function moveAppointment(context, date, time, revert) {
-        if (state.appointmentBusy || !canReschedule) { revert(); return; }
+        if (state.appointmentBusy || !canReschedule || !operationalWorkspace.prepareSelection({...context,fecha:date,hora_inicio:time})) { revert(); return; }
         state.appointmentBusy = true;
         updateAppointmentAction();
         try {
@@ -2063,7 +2107,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return decision.isConfirmed === true || decision.value === true;
                 }, revert: revert, refresh: async () => {
                     state.revealAppointmentId = String(context.appointment_id);
-                    await load();
+                    await load({committed:true});
                 },
                 send: async function (id, payload) {
                     const response = await fetch(board.dataset.rescheduleUrl + '/' + id + '/reschedule', {
