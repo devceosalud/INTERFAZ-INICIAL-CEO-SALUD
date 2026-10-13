@@ -114,3 +114,15 @@ for (const dimension of ['doctor', 'service', 'date', 'rate']) {
         assert.equal(qa.field('quote-status').hidden, true);
     });
 }
+
+
+test('Agenda cotiza descuento neto, invalida respuesta anterior y bloquea editar descuentos persistidos', async () => {
+    const qa=workspace();
+    qa.field('discount-type').value='FIXED';qa.field('discount-value').value='30';qa.widget.quoteChanged(100);
+    assert.deepEqual(JSON.parse(qa.calls[0].options.body).discount,{type:'FIXED',value:'30',reason:null});
+    qa.field('discount-value').value='20';qa.field('discount-value').handlers.input();
+    qa.answer(1,'80.00');await settle();qa.answer(0,'70.00');await settle();assert.equal(qa.widget.readiness().price,'80.00');
+    const selected={tipo_contexto:'cita_existente',appointment_id:5,patient_id:2,estado_agenda:'CONFIRMADA'};
+    qa.select(selected);await qa.widget.selectionChanged(selected);assert.equal(qa.field('discount-type').disabled,true);
+    assert.equal(qa.field('discount-value').disabled,true);
+});

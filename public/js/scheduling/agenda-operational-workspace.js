@@ -6,6 +6,10 @@
         const ui = Object.fromEntries(['phone', 'phone-secondary', 'channel', 'medium', 'reason', 'note', 'price', 'paid',
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
+        const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
+        const catalogPrice = byId('catalog-price'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
+        function discountInput() { return discountType?.value ? { type: discountType.value, value: discountValue.value || '0', reason: discountReason.value || null } : null; }
+        const initialFinancialLocks = { waived: ui.waived.disabled, authorized: ui.authorized.disabled, exemption: exemptionReason?.disabled };
         let quoteReady = true, quoteVersion = 0;
         const rateSelect = byId('rate'), quoteStatus = byId('quote-status');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
@@ -103,9 +107,9 @@
             if (!id || working || ui.reason.disabled) { return; }
             setWorking(true); inlineStatus('notes', '');
             try {
-                const result = await request(base + '/' + id + '/notes', json('PATCH', model.nonBlank({ motivo_consulta: ui.reason.value, observaciones: ui.note.value })));
+                const result = await request(base + '/' + id + '/notes', json('PATCH', model.nonBlank({ motivo_consulta: ui.reason.value, observaciones: ui.note.value, is_postoperative: Boolean(postoperative?.checked) })));
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || '';
+                ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || ''; if (postoperative) postoperative.checked = Boolean(result.is_postoperative);
                 inlineStatus('notes', result.message);
             } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
             finally { setWorking(false); ui['save-notes'].disabled = ui.reason.disabled; }
@@ -142,12 +146,14 @@
             if (patientId !== undefined) data.patient_id = patientId || 0;
             if (!data.doctor_id || !data.service_id || !data.fecha_cita) { quoteReady = false; return; }
             if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
+            if (discountInput()) data.discount = discountInput();
             quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
             if (config.changed) config.changed();
             try {
                 const result = await request(config.quoteEndpoint, json('POST', data));
                 if (version !== quoteVersion || config.context()?.appointment_id) return;
                 quote = model.cents(result.precio_programado); balance = quote;
+                if (catalogPrice) catalogPrice.value = result.catalog_price || result.precio_programado;
                 ui.price.value = result.precio_programado; ui.paid.value = '0.00';
                 quoteReady = true; quoteStatus.hidden = true; calculate();
             } catch (error) {
@@ -156,6 +162,7 @@
                 if (config.changed) config.changed();
             }
         }
+        [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ui[id].addEventListener('change', () => { captureDirty = true; }));
@@ -193,6 +200,9 @@
                     booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null, payment: payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
+                if (discountInput()) payload.discount = discountInput();
+                payload.is_postoperative = Boolean(postoperative?.checked);
+                payload.motivo_exoneracion = exemptionReason?.value || null;
                 if (rateSelect?.value) payload.additional_rate_id = rateSelect.value;
                 if (options.patient) { payload.patient = options.patient; }
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
@@ -234,10 +244,15 @@
         }
         async function selectionChanged(context) {
             const key = [context?.appointment_id || '', context?.doctor_id || '', context?.fecha || '', context?.hora_inicio || ''].join('|');
-            if (key !== selectedKey) { selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
+            if (key !== selectedKey) { if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
+            [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
+            if (postoperative) postoperative.disabled = Boolean(id);
             ++quoteVersion;
             if (rateSelect) rateSelect.disabled = Boolean(id);
+            ui.waived.disabled = Boolean(id) || initialFinancialLocks.waived;
+            ui.authorized.disabled = Boolean(id) || initialFinancialLocks.authorized;
+            if (exemptionReason) exemptionReason.disabled = Boolean(id) || initialFinancialLocks.exemption;
             if (id) { quoteReady = true; if (quoteStatus) quoteStatus.hidden = true; }
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
             ui['confirm-reservation'].hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
@@ -252,7 +267,12 @@
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                economy(p); ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
+                economy(p); if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
+                if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
+                if (discountReason) discountReason.value=p.discount_reason || '';
+                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; }
+                if (exemptionReason) exemptionReason.value=p.motivo_exoneracion || '';
+                ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
                 ui.reason.disabled = !p.can_edit_notes; ui.note.disabled = !p.can_edit_notes;
                 ui['save-notes'].hidden = !p.can_edit_notes; ui['save-notes'].disabled = !p.can_edit_notes;
                 byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : 'Esta cita está en consulta: no tienes permiso para modificar sus notas.';

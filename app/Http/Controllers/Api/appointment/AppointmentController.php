@@ -70,16 +70,18 @@ class AppointmentController extends Controller
     public function calculatedPrice(Request $request)
     {
         abort_unless($request->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW), 403);
-        $data = $request->validate(['service_id' => 'required|integer', 'patient_id' => 'nullable|integer|min:0',
+        \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
+        $data = $request->validate(\App\Support\Scheduling\AppointmentPriceInput::rules() + ['service_id' => 'required|integer', 'patient_id' => 'nullable|integer|min:0',
             'doctor_id' => 'nullable|integer', 'additional_rate_id' => 'nullable|integer',
             'fecha_cita' => 'nullable|date_format:Y-m-d', 'es_exonerado' => 'sometimes|boolean']);
         $service = app(ActiveDoctorServiceResolver::class)->resolveAssignment($data['service_id'], $data['doctor_id'] ?? null);
         $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
-            $data['patient_id'] ?? 0, (int) $request->user()->id, $data['fecha_cita'] ?? now()->toDateString(), $data['additional_rate_id'] ?? null);
+            $data['patient_id'] ?? 0, (int) $request->user()->id, $data['fecha_cita'] ?? now()->toDateString(), $data['additional_rate_id'] ?? null, $data['discount'] ?? []);
         if (!empty($data['es_exonerado'])) {
             abort_unless($request->user()->can(\App\Support\Scheduling\SchedulingCapability::APPROVE_ZERO_COST), 403);
         }
         return response()->json(['precio_programado' => (float) $quote['precio_programado'], 'tipo' => $quote['tipo'],
+            'catalog_price'=>$quote['catalog_price'], 'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents']),
             'total_pagado' => 0, 'importe_exigible' => !empty($data['es_exonerado']) ? '0.00' : $quote['precio_programado']]);
     }
 }

@@ -18,6 +18,7 @@
         <summary>Motivo y observación · opcional</summary>
         <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label class="agenda-field"><span>Observación operativa</span><textarea id="agenda-op-note" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
+        <label><input id="agenda-op-postoperative" type="checkbox"> Cita postoperatoria · no implica gratuidad</label>
         <button id="agenda-op-save-notes" class="agenda-btn" type="button" hidden>Guardar motivo y observación</button>
         <small id="agenda-op-notes-tip">Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.</small>
         <p id="agenda-op-notes-status" class="agenda-action-notice" role="status" hidden></p>
@@ -26,9 +27,16 @@
     <details id="agenda-op-payment-panel">
         <summary>Registrar adelanto</summary>
         <label class="agenda-field"><span>Tarifa</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Tarifa estándar</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
+        <div class="agenda-patient-form-grid">
+            <label class="agenda-field"><span>Descuento opcional</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
+            <label class="agenda-field"><span>Valor del descuento</span><input id="agenda-op-discount-value" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canCreateAppointments)></label>
+            <label class="agenda-field"><span>Referencia del descuento · opcional</span><input id="agenda-op-discount-reason" class="agenda-field__input" maxlength="500" @disabled(!$canCreateAppointments)></label>
+            <label class="agenda-field"><span>Precio antes de descuento</span><input id="agenda-op-catalog-price" class="agenda-field__input" readonly value="0.00"></label>
+        </div>
+        <small>El descuento se guarda con tu usuario. El adelanto mínimo es el 50% del precio neto. Una gratuidad discrecional requiere exoneración.</small>
         <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
         <div class="agenda-patient-form-grid">
-            <label class="agenda-field"><span>Precio de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
+            <label class="agenda-field"><span>Precio neto de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Pagado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Adelanto</span><input id="agenda-op-amount" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canSubmitPayment)></label>
             <label class="agenda-field"><span>Saldo pendiente</span><input id="agenda-op-balance" class="agenda-field__input" value="0.00" readonly></label>
@@ -37,6 +45,7 @@
             <label class="agenda-field"><span>Banco / billetera</span><input id="agenda-op-origin" class="agenda-field__input" maxlength="120" placeholder="BCP, BBVA…" @disabled(!$canSubmitPayment)></label>
             <label class="agenda-field"><span>Autorizado por</span><input id="agenda-op-authorized" class="agenda-field__input" maxlength="255" @disabled(!$canAuthorize)></label>
         </div>
+        <label class="agenda-field"><span>Motivo de exoneración · obligatorio al exonerar</span><textarea id="agenda-op-exemption-reason" class="agenda-field__input" rows="2" maxlength="2000" @disabled(!$canWaive)></textarea></label>
         <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
         <small>La autorización no registra dinero. Confirmar una cita regular exige al menos 50% de adelanto real, salvo exoneración expresamente autorizada.</small>
         <p>En una cita nueva, Guardar reserva guarda también el adelanto ingresado si tienes permiso, sin confirmar el horario. Confirmar cita registra el adelanto ingresado y valida el requisito financiero. En una reserva existente, primero registra el adelanto y luego confirma.</p>

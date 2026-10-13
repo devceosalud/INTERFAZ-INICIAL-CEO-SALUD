@@ -17,7 +17,8 @@ class LegacyAppointmentRegistration
     public function register(Request $request): Appointment
     {
         abort_unless($request->user()->can(C::VIEW) && $request->user()->can(C::CREATE), 403);
-        $data = $request->validate([
+        \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
+        $data = $request->validate(\App\Support\Scheduling\AppointmentPriceInput::rules() + [
             'patient_id' => ['required', 'integer', Rule::exists('patients', 'id')->where('estado', 'ACTIVO')],
             'doctor_id' => 'required|integer', 'service_id' => 'required|integer',
             'additional_rate_id' => 'nullable|integer', 'site_id' => 'nullable|integer|exists:sites,id',
@@ -57,6 +58,8 @@ class LegacyAppointmentRegistration
             'precio_programado' => $data['precio_programado'] ?? null, 'saldo_pendiente' => $data['saldo_pendiente'] ?? null,
             'observaciones' => $data['observaciones'] ?? null, 'es_exonerado' => (bool) ($data['es_exonerado'] ?? false),
             'autorizado_por' => $data['autorizado_por'] ?? null,
+            'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
+            'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null,
             'payment' => ['amount' => (string) $amount, 'method' => strtoupper($data['metodo_pago'] ?? ''),
                 'operation' => $data['numero_operacion'] ?? null, 'origin' => $data['entidad_origen'] ?? null],
         ], $request->user());

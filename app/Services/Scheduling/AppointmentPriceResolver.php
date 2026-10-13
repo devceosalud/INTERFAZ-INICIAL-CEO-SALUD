@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 /** One catalogue policy for quotes and new appointments; never reprices persisted appointments. */
 class AppointmentPriceResolver
 {
-    public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null): array
+    public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null, array $discount = []): array
     {
         try {
             $rate = $rateId === null ? app(StandardAdditionalRateResolver::class)->resolve($date)
@@ -50,7 +50,14 @@ class AppointmentPriceResolver
         if ($price <= 0 || $price > 9999999999) {
             throw ValidationException::withMessages(['additional_rate_id' => 'La tarifa no produce un precio válido. El costo cero requiere exoneración autorizada.']);
         }
-        return ['price_cents' => $price, 'precio_programado' => Money::decimal($price), 'tipo' => $type,
-            'additional_rate_id' => (int) $rate->id];
+        $adjustment = app(AppointmentDiscount::class)->calculate($price, $discount);
+        if ($adjustment['amount_cents'] > 0) {
+            $actor = \App\Models\User::findOrFail($actorId);
+            abort_unless($actor->can(\App\Support\Scheduling\SchedulingCapability::CREATE)
+                && $actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW),403);
+        }
+        return ['price_cents'=>$adjustment['net_cents'],'precio_programado'=>Money::decimal($adjustment['net_cents']),
+            'catalog_price'=>Money::decimal($price),'discount'=>$adjustment,'tipo'=>$type,
+            'additional_rate_id'=>(int)$rate->id];
     }
 }

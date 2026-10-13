@@ -116,7 +116,7 @@ class AgendaStabilizationTest extends TestCase
     public function test_authorization_text_or_administrator_role_does_not_replace_exoneration_permission(): void
     {
         $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR', 'web'));
-        $data = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'autorizado_por' => 'QA responsable ficticio']);
+        $data = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'motivo_exoneracion' => 'Exoneración autorizada ficticia', 'autorizado_por' => 'QA responsable ficticio']);
         $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $data)->assertForbidden();
         $this->grant(C::OVERRIDE_DOWN_PAYMENT);
         $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $this->payload(['mode' => 'CONFIRM', 'autorizado_por' => 'QA responsable ficticio']))

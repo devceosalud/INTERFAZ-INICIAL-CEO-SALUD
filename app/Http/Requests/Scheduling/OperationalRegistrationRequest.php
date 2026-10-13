@@ -14,6 +14,7 @@ class OperationalRegistrationRequest extends FormRequest
             $payload = json_decode((string) $this->input('payload'), true);
             if (is_array($payload)) { $this->merge($payload); }
         }
+        \App\Support\Scheduling\AppointmentPriceInput::normalize($this);
     }
     public function authorize(): bool { return $this->user()?->can(Capability::CREATE) ?? false; }
     protected function failedAuthorization()
@@ -22,7 +23,7 @@ class OperationalRegistrationRequest extends FormRequest
     }
     public function rules(): array
     {
-        return [
+        return \App\Support\Scheduling\AppointmentPriceInput::rules() + [
             'request_key' => 'required|uuid', 'mode' => 'required|in:RESERVE,CONFIRM',
             'booking_type' => 'required|in:REGULAR,ADICIONAL,FUERA_HORARIO',
             'patient_id' => ['nullable', 'integer', 'required_without:patient', Rule::exists('patients', 'id')->where('estado', 'ACTIVO')],
