@@ -62,7 +62,7 @@ class AgendaPermissionPlanTest extends TestCase
     public function test_invalid_target_or_profile_is_rejected_without_writes(): void
     {
         $this->withoutMockingConsoleOutput();
-        $user = $this->createUserWithRole('RECEPCION'); $before = $this->snapshot();
+        $user = $this->createUser(); $before = $this->snapshot();
         foreach ([['user' => 'invalid'], ['user' => '999999'], ['user' => (string) $user->id],
             ['user' => (string) $user->id, '--profile' => 'everything']] as $arguments) {
             $this->assertSame(1, Artisan::call('agenda:permission-plan', $arguments));

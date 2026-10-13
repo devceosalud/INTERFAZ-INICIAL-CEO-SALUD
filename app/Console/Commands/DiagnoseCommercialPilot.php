@@ -59,7 +59,6 @@ class DiagnoseCommercialPilot extends Command
             }
             if (!$result['schema']['payments_bank_identity']) { $missing[] = 'schema:payments.bank_identity_key'; }
             if ($result['pilot_cash_enabled']) {
-                if (!$user->hasAnyRole(['COMERCIAL', 'ADMISION', 'ADMINISTRADOR'])) { $missing[] = 'pilot:authorized-role'; }
                 if (!$result['schema']['appointment_pilot_cash_contexts']) { $missing[] = 'schema:appointment_pilot_cash_contexts'; }
             } else {
                 if ($shifts->count() !== 1) { $missing[] = 'cash:one-own-open-manual-shift'; }

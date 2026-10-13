@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 $operationalReaders = 'ADMISION|RECEPCION|ADMINISTRADOR|COMERCIAL';
 
-Route::middleware(['auth', "role:{$operationalReaders}"])->group(function () {
+Route::middleware(['auth', 'mvp-operational'])->group(function () {
     Route::get('/admissionist/patient', [OperationalPatientController::class, 'index'])->name('admissionit.patient.index');
     Route::get('/admissionist/appointment', [AppointmentController::class, 'index'])->name('admissionit.appointment.index');
     Route::get('/admissionist/responsible', [ResponsibleController::class, 'index'])->name('admissionit.responsible.index');
@@ -40,7 +40,7 @@ Route::middleware(['auth', 'role:ADMISION|COMERCIAL'])->group(function () {
 });
 
 // Appointment adapters enforce effective capabilities and financial checks, including administrators.
-Route::middleware(['auth', 'role:ADMISION|COMERCIAL|ADMINISTRADOR'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::post('/admissionist/appointment/store', [AppointmentController::class, 'store'])->name('admissionit.appointment.store');
     Route::post('/admissionist/appointment/update', [AppointmentController::class, 'update'])->name('admissionit.appointment.update');
     Route::post('/admissionist/schedule/update', [ScheduleController::class, 'update'])->name('admissionit.schedule.update');

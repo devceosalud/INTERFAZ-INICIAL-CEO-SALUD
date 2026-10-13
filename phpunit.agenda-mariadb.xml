@@ -6,6 +6,7 @@
         </testsuite>
     </testsuites>
     <php>
+        <env name="AGENDA_QA_RUNTIME" value="legacy-10.4" force="true" />
         <env name="APP_ENV" value="testing" force="true" />
         <env name="APP_DEBUG" value="true" force="true" />
         <env name="APP_URL" value="http://localhost" force="true" />

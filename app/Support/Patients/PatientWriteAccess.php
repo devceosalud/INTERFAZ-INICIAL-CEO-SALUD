@@ -12,7 +12,8 @@ use App\Models\User;
  * en estos roles hasta que el proyecto defina esa capability.
  *
  * ADMINISTRADOR también puede crear y completar fichas operativas.
- * Esta política no concede capacidades de citas, pagos ni exoneraciones.
+ * Otros perfiles MVP con acceso, lectura, creación y edición efectivos pueden
+ * escribir fichas. Esta política no concede capacidades ni excepciones financieras.
  */
 final class PatientWriteAccess
 {
@@ -20,11 +21,11 @@ final class PatientWriteAccess
 
     public static function middleware(): string
     {
-        return 'role:'.implode('|', self::ROLES);
+        return 'mvp-operational:write';
     }
 
     public static function allows(?User $user): bool
     {
-        return $user !== null && $user->hasAnyRole(self::ROLES);
+        return \App\Support\Scheduling\MvpOperationalAccess::writesPatients($user);
     }
 }

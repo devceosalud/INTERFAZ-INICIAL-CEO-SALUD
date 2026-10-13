@@ -6,7 +6,7 @@ use App\Http\Controllers\Scheduling\AgendaReniecLookupController;
 use App\Support\Patients\PatientWriteAccess;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
+Route::middleware(['auth', 'mvp-operational'])
     ->prefix('patients')
     ->name('patients.operational.')
     ->group(function () {

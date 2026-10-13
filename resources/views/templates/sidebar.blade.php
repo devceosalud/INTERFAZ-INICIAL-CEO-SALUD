@@ -17,6 +17,12 @@
                 ],
             ])
 
+            @if (!auth()->user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)
+                && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+                && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
+                @include('templates.nav.mvp')
+            @endif
+
             @if (auth()->user()->getRoleNames()->contains('ADMINISTRADOR'))
                 @include('templates.nav.administrador')
             @endif

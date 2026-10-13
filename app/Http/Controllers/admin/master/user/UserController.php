@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -104,7 +106,7 @@ class UserController extends Controller
     //FORMULARIO PARA ASIGNAR ROLE AL USUARIO 
     public function edit(User $user)
     {
-        $roles = Role::all();
+        $roles = Role::where('guard_name', 'web')->get();
         return view('admin.user.edit', [
             'user' => $user,
             'roles' => $roles
@@ -114,7 +116,11 @@ class UserController extends Controller
     //ASIGNAR ROLE AL USUARIO 
     public function update(User $user, Request $request)
     {
-        $user->roles()->sync([$request->role]); // Usamos sync() con un array de un solo elemento
+        $data = $request->validate(['role' => ['required', 'integer', Rule::exists('roles', 'id')->where('guard_name', 'web')]]);
+        $before = $user->roles()->pluck('id')->all();
+        $user->syncRoles(Role::findOrFail($data['role']));
+        Log::notice('authorization.user_role_updated', ['actor_user_id' => $request->user()->id,
+            'target_user_id' => $user->id, 'before_role_ids' => $before, 'after_role_ids' => [$data['role']]]);
         return redirect()->route('admin.user.index')->with('exito', 'Rol asignado correctamente al usuario');
     }
 }

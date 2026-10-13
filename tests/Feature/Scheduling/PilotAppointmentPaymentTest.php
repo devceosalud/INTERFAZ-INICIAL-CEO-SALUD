@@ -58,13 +58,14 @@ class PilotAppointmentPaymentTest extends TestCase
 
     public static function operators(): array { return [['COMERCIAL'], ['ADMISION'], ['ADMINISTRADOR']]; }
 
-    public function test_pilot_requires_capability_role_and_transaction_and_never_reuses_a_foreign_series(): void
+    public function test_pilot_requires_capabilities_and_transaction_and_never_reuses_a_foreign_series(): void
     {
         config(['scheduling.pilot_payment_without_manual_cash_shift' => true]);
         $actor = $this->agendaReader('ADMISION');
         try { DB::transaction(fn () => app(\App\Services\Billing\PilotAppointmentCashContext::class)->resolve($actor->id)); $this->fail(); }
         catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) { $this->assertSame(403, $e->getStatusCode()); }
         $actor->givePermissionTo(Permission::findOrCreate(C::SUBMIT_PAYMENT, 'web'));
+        $actor->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
         $code = 'P'.str_pad(strtoupper(base_convert((string) $actor->id, 10, 36)), 3, '0', STR_PAD_LEFT);
         VoucherSerie::create(['tipo_comprobante' => 'TICKET', 'serie' => $code, 'estado' => 'ACTIVO']);
         try { DB::transaction(fn () => app(\App\Services\Billing\PilotAppointmentCashContext::class)->resolve($actor->id)); $this->fail(); }
@@ -78,7 +79,8 @@ class PilotAppointmentPaymentTest extends TestCase
     public function test_daily_context_preserves_actor_series_and_rollback_does_not_erase_provenance(): void
     {
         config(['scheduling.pilot_payment_without_manual_cash_shift' => true]);
-        $actor = $this->agendaReader('COMERCIAL'); $actor->givePermissionTo(Permission::findOrCreate(C::SUBMIT_PAYMENT, 'web'));
+        $actor = $this->agendaReader('COMERCIAL');
+        foreach ([C::CREATE, C::SUBMIT_PAYMENT] as $cap) { $actor->givePermissionTo(Permission::findOrCreate($cap, 'web')); }
         $cash = app(\App\Services\Billing\PilotAppointmentCashContext::class);
         $first = DB::transaction(fn () => $cash->resolve($actor->id));
         $this->travel(1)->days();
