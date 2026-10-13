@@ -21,7 +21,17 @@ final class MvpPermissionBootstrap
         if ($names) { $query->whereIn('name', $names); }
         if ($lock) { $query->lockForUpdate(); }
         $roles = $query->get();
-        if ($roles->isEmpty() || ($names && array_diff($names, $roles->pluck('name')->all()))) {
+        $legacyQuery = Role::where('guard_name', '');
+        if ($names) { $legacyQuery->whereIn('name', $names); }
+        $legacy = $legacyQuery->orderBy('id')->get(['id','name','guard_name']);
+        $guardIssues = $legacy->map(fn ($r) => ['role_id' => $r->id, 'role_name' => $r->name, 'guard' => ''])->all();
+        foreach ($roles as $role) {
+            foreach ($role->permissions()->where('guard_name', '<>', 'web')->get(['id','name','guard_name']) as $permission) {
+                $guardIssues[] = ['role_id' => $role->id, 'permission_id' => $permission->id,
+                    'permission_name' => $permission->name, 'guard' => $permission->guard_name];
+            }
+        }
+        if (($roles->isEmpty() && $legacy->isEmpty()) || ($names && array_diff($names, $roles->pluck('name')->merge($legacy->pluck('name'))->all()))) {
             throw new \InvalidArgumentException('Selecciona roles web existentes. No se crearon ni cambiaron roles.');
         }
         $known = Permission::where('guard_name', 'web')->whereIn('name', self::REQUIRED)->pluck('name')->all();
@@ -33,7 +43,7 @@ final class MvpPermissionBootstrap
         }
         $catalogue = Role::orderBy('id')->get(['id', 'name', 'guard_name'])->toArray();
         $plan = ['catalogue_roles' => $catalogue, 'guard' => 'web', 'required' => self::REQUIRED, 'roles' => $rows,
-            'missing_definitions' => array_values(array_diff(self::REQUIRED, $known))];
+            'missing_definitions' => array_values(array_diff(self::REQUIRED, $known)), 'guard_issues' => $guardIssues];
         $plan['plan_hash'] = hash('sha256', json_encode($plan, JSON_UNESCAPED_UNICODE));
         return $plan;
     }
@@ -43,6 +53,7 @@ final class MvpPermissionBootstrap
         $result = DB::transaction(function () use ($names, $expected, $reference) {
             $plan = $this->plan($names, true);
             if (!hash_equals($plan['plan_hash'], $expected)) { throw new \RuntimeException('El plan cambió. Genera y revisa otra vista previa.'); }
+            if ($plan['guard_issues']) { throw new \RuntimeException('Normaliza los guards heredados mediante agenda:mvp-guards antes de asignar permisos.'); }
             if ($plan['missing_definitions']) { throw new \RuntimeException('Faltan permisos del catálogo; no se creó ni asignó ninguno.'); }
             $id = (string) Str::uuid();
             $receipt = ['id' => $id, 'status' => 'APPLIED', 'reference' => $reference,

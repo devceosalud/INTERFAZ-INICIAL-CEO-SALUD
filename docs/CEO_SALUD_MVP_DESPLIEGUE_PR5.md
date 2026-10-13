@@ -17,23 +17,24 @@ No hay migraciones o seeders nuevos en PR #5. Si falta schema/índice previo, de
 
 ## 3. Publicación futura y habilitación ordinaria
 
+**Bloqueo confirmado 13/10:** cinco roles tienen guard vacío; COMERCIAL tiene web. Ejecutar primero la lectura y, solo con autorización de despliegue, la normalización delimitada de [CEO_SALUD_MVP_GUARDS_PR5.md](CEO_SALUD_MVP_GUARDS_PR5.md). Los guards de permissions todavía requieren evidencia; no asumir web ni ejecutar SQL de corrección masiva. Bootstrap rechaza guards incompatibles, sin excluir perfiles silenciosamente.
+
 1. Autorizar PR final y procedimiento, después de resolver privacidad/seguridad. Registrar SHA final aprobado, backups y responsable de rollback. Merge a main y deploy son acciones futuras, no realizadas en esta tarea.
 2. Deploy de la release resultante por el mecanismo verificado, preservando paths compartidos. Composer install desde lock únicamente si el mecanismo necesita vendor, con PHP correcto; nunca update o flags ignore-platform. Seguir scripts revisados del repo. Invalidar/reconstruir cachés de release/Blade/routes según el mecanismo autorizado; no borrar datos ni recibos. Si no se dispone de cambio de release atómico, mantener corte hasta completar todo.
 3. Configuración: SCHEDULING_MVP_ENABLED=true. Para MVP sin apertura manual de Caja, se recomienda reutilizar SCHEDULING_PILOT_PAYMENT_WITHOUT_MANUAL_CASH_SHIFT=true, sujeto a aprobación final: contexto contable automático separado por operador/día y TICKET, sin SUNAT. No cambia el adelanto mínimo ni crea dinero por una imagen. Si se mantiene false, TODOS los cobradores requieren turno manual propio ABIERTO y única serie TICKET activa; permisos por sí solos no resuelven un 422 de contexto financiero.
 4. Generar vista previa en la release nueva. Solo lectura de grants, sin asignación automática:
 
 ~~~bash
-php artisan agenda:mvp-permissions
-# Si el catálogo incluye roles web que no participarán, seleccionar los aprobados explícitamente:
+# Usar SIEMPRE la lista explícita aprobada, después de normalizar guards:
 php artisan agenda:mvp-permissions --role=ADMINISTRADOR --role=ADMISION --role=COMERCIAL --role=RECEPCION --role=CAJA --role=FACTURACION
 ~~~
 
 La segunda línea es EJEMPLO: los nombres deben existir y coincidir con el catálogo aprobado, incluyendo cualquier otro perfil participante; no inventarlos. Revisar missing_definitions=[] y additions. Generar/refrescar plan después del corte; si cambia, no reutilizar una huella antigua.
 
-5. Solo con autorización final para esa lista, aplicar exactamente el plan revisado, usando mismas opciones --role que en la vista previa o vacío si todos los web fueron aprobados:
+5. Solo con autorización final para esa lista, aplicar exactamente el plan revisado, usando mismas opciones --role que en la vista previa sin usar una lista vacía por omisión:
 
 ~~~bash
-php artisan agenda:mvp-permissions --apply --confirm=HUELLA_SHA256_DEL_PLAN --reference=PR5-APROBACION-REFERENCIA
+php artisan agenda:mvp-permissions --role=ADMINISTRADOR --role=ADMISION --role=COMERCIAL --role=RECEPCION --role=CAJA --role=FACTURACION --apply --confirm=HUELLA_SHA256_DEL_PLAN --reference=PR5-APROBACION-REFERENCIA
 ~~~
 
 Referencia alfanumérica técnica, sin PII. Añade únicamente appointment.mvp.access/view/create/update/reschedule/payment.submit que falten. Preserva roles, permisos anteriores y grants directos; no crea definiciones. Transacción y recibo privado before/after/additions/id, más auditoría; Spatie invalida caché. Guardar primer recibo con additions y verificar código de salida 0/estado efectivo. Un recibo repetido sin additions es un no-op; no reemplaza el primero para reversión. Si faltan definiciones, hash cambió o no se guarda recibo, se aborta/revierte; no corregir con SQL masivo.
@@ -48,6 +49,8 @@ Primero ejecutar humo en staging equivalente con fixtures, esquema y flags/modos
 - Tras desplegar, comprobar release, assets/cachés, salud y accesos en producción sin crear pacientes/pruebas de dinero reales. Humo con datos ficticios en producción solo con autorización explícita separada; hasta entonces usar staging. Autorizar apertura después de evidencias y visto bueno de responsable, no porque exista un botón habilitado.
 
 ## 5. Reversión preservando datos nuevos
+
+Si se normalizaron guards, revertir grants antes de guards y antes de retirar la release nueva; seguir el recibo/after.state_hash y las guardas del procedimiento de normalización. No restaurar tablas Spatie parciales ignorando pivots.
 
 Ante incidente autorizado: detener escritores de Agenda/Admisión/Caja/APIs/jobs, conservar solicitudes/cobros en curso, backup POST-cambio de BD/storage/recibos. Retorno SOLO de código/vendor/assets/config compatible preservando BD, correlativos, payments, vouchers, operaciones/idempotencia y adjuntos. Conservar Clarity; nunca restaurar una release anterior a su instalación ni hacer reset --hard/force push sobre servidor compartido.
 

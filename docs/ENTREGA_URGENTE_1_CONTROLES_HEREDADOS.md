@@ -196,3 +196,27 @@ Correcciones durante QA: pruebas nuevas enviaban inicialmente view/date en lugar
 Evidencia productiva ya confirmada por responsable: main desplegado 1a2c1895, tracked clean, PHP web/CLI 8.3.35, Laravel 9.52.21, plataforma Composer success, MariaDB 11.8.9, cinco tablas financieras e índices únicos idempotencia/banco. No se consultó producción desde esta tarea ni se repitieron esas comprobaciones. No hay sesión Hostinger disponible para verificar catálogo de TODOS los roles o conteos; por eso siguen PENDIENTES y no se supone BD vacía ni se clasifican registros por nombres. Laravel local declara 9.52.21, consistente con versión reportada; restante vendor/config/schema/modos específicos siguen por contrastar.
 
 Estado final: código MVP ordinario y pruebas locales terminados; NO LISTO todavía para abrir datos reales hasta catálogo/participantes/conteos, backup-restauración/rollback, autodespliegue/humo Hostinger y seguridad/privacidad Clarity documentados. Layout Clarity idéntico al main integrado; no se instala, retira ni modifica. PR permanece Draft, sin merge/despliegue/alteraciones productivas. La asignación productiva está PREPARADA, no ejecutada, y requiere autorización final. Procedimiento breve y comandos en docs/CEO_SALUD_MVP_DESPLIEGUE_PR5.md.
+
+
+## Cierre de bloqueo real de guards Spatie — 13/10/2026
+Hostinger confirmó cinco guards de roles vacíos (ADMINISTRADOR, ADMISION, CAJA, FACTURACION, RECEPCION) y COMERCIAL web. No había evidencia de los guards de permissions; quedan pendientes de SELECT. El filtro web del bootstrap y editores excluía cinco roles; Spatie por nombres/guard puede fallar, aunque roles por nombre y algunos permisos web ya vinculados funcionan. No se anuló toda autorización previamente.
+
+- agenda:mvp-guards: previa de catálogo/relaciones sin PII; selección explícita, solo guard vacío→web, hash de plan/estado, referencia, transacción/locks, recibo privado y auditoría/cache. Mantiene IDs/nombres/pivots/usuarios/timestamps y datos financieros/históricos.
+- Permisos vacíos requieren IDs explícitos; duplicados, guard compartido incompatible, api/otros/null/espacios, modelos incompatibles y cambios concurrentes bloquean. No crea/fusiona/ reasigna ni concede facultades financieras; advierte que reparar un permiso extraordinario vacío puede activar una asignación anterior.
+- Exige tablas Spatie InnoDB y UNIQUE(name,guard_name) de roles/permissions al aplicar/revertir en MariaDB. Nunca ejecuta DDL ni SQL de corrección masiva.
+- Bootstrap muestra guard_issues y rechaza aplicación que excluya silenciosamente roles heredados o incluya permisos vinculados incompatibles. Primero normalizar con aprobación; después nueva previa/grants ordinarios con su propia huella.
+- Rollback de grants antes de guards; rechaza cambios de catálogo/pivots posteriores. No restaura BD antigua sobre dinero nuevo. Recibos/estado DB deben cotejarse si hubo interrupción.
+
+Pruebas FINALES ejecutadas con código definitivo:
+- PHP 8.3.35 / SQLite en memoria: **695 aprobadas, 5108 aserciones**, 0 fallos/omisiones.
+- PHP 8.3.35 / MariaDB 11.8.9 aislada 33319: **180 aprobadas, 2262 aserciones**, 0 fallos/omisiones; conserva pruebas de concurrencia financiera.
+- 25 casos nuevos en cada runtime: fixture exacto, ambas entradas por seis perfiles, permisos web/vacíos/compartidos, multirrol, rollback ordenado, recibo fallido, datos históricos intactos, precio/50%/privacidad/exoneraciones e idempotencia.
+- JavaScript sin cambios: no se reejecutó; evidencia previa de 205 aprobadas se conserva y no se presenta como nueva ejecución.
+- Clarity layout sin cambios, blob 2eb1124b96ad44e4133e3f8dc754d89311fb2a69.
+Evidencia: docs/evidence/urgent1/guards. Un primer assertion de snapshot no refrescado fue corregido en el fixture; un intento MariaDB se interrumpió para ejecutar runtimes secuencialmente. No se cuentan como verificaciones aprobadas.
+
+[Procedimiento/rollback y decisiones pendientes](CEO_SALUD_MVP_GUARDS_PR5.md).
+[Lectura productiva pendiente de guards/permisos](CEO_SALUD_MVP_GUARDS_SELECT.sql).
+[Publicación completa](CEO_SALUD_MVP_DESPLIEGUE_PR5.md).
+
+Sin cambios productivos, merge, deploy, migraciones nuevas ni asignaciones. Solución técnica probada; aplicación productiva pendiente de guards reales de permissions, lista/IDs aprobados, backup/restauración, humo de hosting y privacidad Clarity. Mantener PR Draft y esperar revisión.
