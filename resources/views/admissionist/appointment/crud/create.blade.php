@@ -158,6 +158,16 @@
 
                     <hr>
 
+
+                    <div class="row g-3">
+                        <div class="col-md-4"><label for="discount_type">Descuento opcional</label><select id="discount_type" name="discount[type]" class="form-control"><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></div>
+                        <div class="col-md-4"><label for="discount_value">Valor de descuento</label><input id="discount_value" name="discount[value]" class="form-control" type="number" min="0" step="0.01" value="0"></div>
+                        <div class="col-md-4"><label for="discount_reason">Referencia · opcional</label><input id="discount_reason" name="discount[reason]" class="form-control" maxlength="500"></div>
+                        <div class="col-md-12"><label><input name="is_postoperative" type="checkbox" value="1"> Cita postoperatoria · no implica gratuidad</label></div>
+                        <div class="col-md-12"><label for="motivo_exoneracion">Motivo de exoneración</label><textarea id="motivo_exoneracion" name="motivo_exoneracion" class="form-control" maxlength="2000"></textarea></div>
+                    </div>
+                    <p id="legacy-quote-status" role="status">El precio y descuento se validan en servidor. Confirmar requiere el 50% neto.</p>
+
                     <!-- ================= PAGO ================= -->
                     <h6 class="fw-bold mb-3">Información de Pago</h6>
 

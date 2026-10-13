@@ -168,7 +168,7 @@ class LegacyRegistrationParityTest extends TestCase
         $this->actingAs($this->actor); $this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);
         $this->postJson($this->url($entry), $this->payload($entry, $this->pay($entry, '50')))->assertForbidden();
         $this->postJson($this->url($entry), $this->payload($entry, ['mode' => 'CONFIRM',
-            'es_exonerado' => true, 'autorizado_por' => 'Autorización ficticia']))->assertForbidden();
+            'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'Autorización ficticia']))->assertForbidden();
         $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0);
     }
 
@@ -177,7 +177,7 @@ class LegacyRegistrationParityTest extends TestCase
     {
         $this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST, 'web'));
         $this->postJson($this->url($entry), $this->payload($entry, ['mode' => 'CONFIRM',
-            'es_exonerado' => true, 'autorizado_por' => 'Autorización ficticia']))->assertSuccessful();
+            'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'Autorización ficticia']))->assertSuccessful();
         $a = Appointment::first(); $this->assertEquals(100, $a->precio_programado);
         $this->assertEquals(0, $a->saldo_pendiente); $this->assertEquals(0, $a->total_pagado);
         $this->assertSame('CONFIRMADA', $a->estado_agenda); $this->assertDatabaseCount('payments', 0);
@@ -318,7 +318,7 @@ class LegacyRegistrationParityTest extends TestCase
         $this->actingAs($admin)->postJson($this->url('legacy'), $this->payload('legacy',
             ['mode' => 'CONFIRM', 'total_pagado' => '50.00']))->assertForbidden();
         $this->postJson($this->url('legacy'), $this->payload('legacy', ['mode' => 'CONFIRM',
-            'es_exonerado' => true, 'autorizado_por' => 'QA AUTORIZADOR']))->assertForbidden();
+            'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'QA AUTORIZADOR']))->assertForbidden();
         $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0);
         $this->postJson($this->url('legacy'), $this->payload('legacy'))->assertOk();
         $this->assertDatabaseCount('payments', 0);

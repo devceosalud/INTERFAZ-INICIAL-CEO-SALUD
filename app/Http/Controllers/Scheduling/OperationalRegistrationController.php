@@ -14,13 +14,15 @@ class OperationalRegistrationController extends Controller
 {
     public function quote(Request $request)
     {
-        $d = $request->validate(['doctor_id' => 'required|integer', 'service_id' => 'required|integer',
+        \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
+        $d = $request->validate(\App\Support\Scheduling\AppointmentPriceInput::rules() + ['doctor_id' => 'required|integer', 'service_id' => 'required|integer',
             'patient_id' => 'nullable|integer|min:0', 'fecha_cita' => 'required|date_format:Y-m-d',
             'additional_rate_id' => 'nullable|integer']);
         $service = app(\App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve($d['doctor_id'], $d['service_id']);
         $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
-            $d['patient_id'] ?? 0, (int) $request->user()->id, $d['fecha_cita'], $d['additional_rate_id'] ?? null);
-        return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo']]);
+            $d['patient_id'] ?? 0, (int) $request->user()->id, $d['fecha_cita'], $d['additional_rate_id'] ?? null, $d['discount'] ?? []);
+        return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo'], 'catalog_price'=>$quote['catalog_price'],
+            'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents'])]);
     }
 
     public function store(OperationalRegistrationRequest $request, OperationalRegistrationService $service)
@@ -41,7 +43,8 @@ class OperationalRegistrationController extends Controller
             || ($request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE)
                 && (int) ($a->responsible_user_id ?? $a->user_id) === (int) $request->user()->id);
         return response()->json($position->publicPosition($a) + ['can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]
-            + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por']));
+            + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'motivo_exoneracion',
+                'catalog_price', 'discount_type', 'discount_value', 'discount_amount']));
     }
     public function payment(Request $request, int $appointmentId, \App\Services\Scheduling\ReservationPaymentService $service)
     {

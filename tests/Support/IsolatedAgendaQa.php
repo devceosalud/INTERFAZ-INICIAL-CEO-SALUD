@@ -14,12 +14,13 @@ final class IsolatedAgendaQa
     public static function boot(bool $browser = false)
     {
         $root = dirname(__DIR__, 2);
-        // Two concrete disposable runtimes only; no arbitrary environment connection is accepted.
+        // Three concrete disposable runtimes only; no arbitrary environment connection is accepted.
         $equivalent = getenv('AGENDA_QA_RUNTIME') === 'equivalent-11.8.9';
-        $port = $equivalent ? '33319' : '33318';
-        $database = $equivalent ? 'ceosalud_qa_mvp_equivalent' : 'ceosalud_qa_urgente1';
-        $username = $equivalent ? 'agenda_mvp_eq' : 'agenda_urgent';
-        $password = $equivalent ? 'mvp-equivalent-only' : 'urgent-local-qa-only';
+        $rules = getenv('AGENDA_QA_RUNTIME') === 'rules-11.8.9';
+        $port = $rules ? '33320' : ($equivalent ? '33319' : '33318');
+        $database = $rules ? 'ceosalud_qa_rules' : ($equivalent ? 'ceosalud_qa_mvp_equivalent' : 'ceosalud_qa_urgente1');
+        $username = $rules ? 'agenda_rules' : ($equivalent ? 'agenda_mvp_eq' : 'agenda_urgent');
+        $password = $rules ? 'rules-local-only' : ($equivalent ? 'mvp-equivalent-only' : 'urgent-local-qa-only');
         $dataDir = $equivalent ? '/storage/app/qa-final/equivalent/mysql-runtime' : '/storage/app/qa-final/mysql-runtime';
         if (file_exists($root.'/.env')) { throw new \RuntimeException('QA requires a separate checkout without .env.'); }
         $values = ['APP_ENV' => 'testing', 'APP_DEBUG' => 'false', 'APP_URL' => 'http://127.0.0.1:8022',
@@ -47,10 +48,10 @@ final class IsolatedAgendaQa
         $identity = DB::selectOne('SELECT DATABASE() AS db, @@port AS port, @@datadir AS dir, VERSION() AS version');
         $normalize = fn ($path) => strtolower(rtrim(str_replace('\\', '/', $path), '/'));
         if ($identity->db !== $database || (int) $identity->port !== (int) $port
-            || $normalize($identity->dir) !== $normalize($root.$dataDir)) {
+            || $normalize($identity->dir) !== $normalize($rules ? dirname($root).'/.rules-mariadb-1189/data' : $root.$dataDir)) {
             throw new \RuntimeException('QA refused an unowned database runtime.');
         }
-        if ($equivalent && !str_starts_with($identity->version, '11.8.9-MariaDB')) {
+        if (($equivalent || $rules) && !str_starts_with($identity->version, '11.8.9-MariaDB')) {
             throw new \RuntimeException('Equivalent QA requires MariaDB 11.8.9.');
         }
         Http::preventStrayRequests(); Mail::fake(); Queue::fake(); Notification::fake();

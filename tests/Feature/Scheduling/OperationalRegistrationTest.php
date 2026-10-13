@@ -157,7 +157,7 @@ class OperationalRegistrationTest extends TestCase
     }
     public function test_authorization_is_not_money_and_requires_explicit_capability(): void
     {
-        $p = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'autorizado_por' => 'DR QUIROZ']);
+        $p = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'DR QUIROZ']);
         $this->create($p)->assertForbidden();
         $this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST, 'web'));
         $this->create($p)->assertCreated()->assertJsonPath('economy.pago_real', '0.00')->assertJsonPath('economy.saldo', '0.00')->assertJsonPath('economy.asegurada', false);

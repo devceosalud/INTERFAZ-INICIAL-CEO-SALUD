@@ -48,6 +48,9 @@ class OperationalRegistrationService
                     abort_unless($actor->can($waived ? Capability::APPROVE_ZERO_COST : Capability::OVERRIDE_DOWN_PAYMENT), 403);
                     if (trim($data['autorizado_por'] ?? '') === '') { throw ValidationException::withMessages(['autorizado_por' => 'Indica quién autorizó la exoneración.']); }
                 }
+                if ($waived && trim((string)($data['motivo_exoneracion'] ?? '')) === '') {
+                    throw ValidationException::withMessages(['motivo_exoneracion'=>'Registra el motivo de la exoneración.']);
+                }
                 $patientId = $data['patient_id'] ?? null;
                 if (isset($data['patient'])) {
                     if (!$patientId && trim((string) ($data['patient']['telefono_numero'] ?? $data['patient']['telefono'] ?? '')) === '') {
@@ -68,7 +71,9 @@ class OperationalRegistrationService
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
-                        'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false]);
+                        'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
+                        'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
+                        'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null]);
                 $creator = app(CreateAppointmentService::class);
                 if ($data['booking_type'] === 'ADICIONAL') {
                     abort_unless($actor->can(Capability::CREATE_ADDITIONAL), 403); $a = $creator->createAdditional($create);

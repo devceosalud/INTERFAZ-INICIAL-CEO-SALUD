@@ -29,7 +29,7 @@ class LegacyAppointmentMutation
         $actor = $request->user();
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($data['appointment_id'])->firstOr(fn () => abort(404));
         foreach (['precio_programado', 'total_pagado', 'saldo_pendiente', 'estado_pagado', 'metodo_pago', 'numero_operacion',
-            'es_exonerado', 'autorizado_por', 'payment', 'estado_agenda', 'tipo_agendamiento', 'duracion_cita', 'patient_id', 'additional_rate_id'] as $field) {
+            'es_exonerado', 'autorizado_por', 'motivo_exoneracion', 'discount', 'catalog_price', 'discount_amount', 'discount_actor_user_id', 'payment', 'estado_agenda', 'tipo_agendamiento', 'duracion_cita', 'patient_id', 'additional_rate_id'] as $field) {
             if ($request->exists($field)) {
                 throw ValidationException::withMessages([$field => 'Esta edición no modifica dinero, precio ni autorización. Usa las acciones operativas de Agenda.']);
             }

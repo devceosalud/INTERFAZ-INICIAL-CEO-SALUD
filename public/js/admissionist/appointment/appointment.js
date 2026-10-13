@@ -202,56 +202,38 @@ async function buscarServicioPorMedicoCita(event) {
 
 
 //PARA CALCULAR EL PRECIO
+let legacyQuoteVersion = 0, legacyQuoteReady = false;
 async function calcularPrecioCita() {
-
-    //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
-    const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
-    const service_id = document.querySelector('#appointmentModalCreate #service_id').value; //id de  pero de la tabla DoctorServices
-    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
-    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
-
-    if (!service_id || !patient_id) {
-        return;
-    }
-
+    const version = ++legacyQuoteVersion, modal = document.getElementById('appointmentModalCreate');
+    const field = id => modal.querySelector('#' + id);
+    const patient_id=field('patient_id').value, service_id=field('service_id').value;
+    legacyQuoteReady=false;
+    const status=field('legacy-quote-status');
+    if(status) status.textContent='Consultando precio neto vigente…';
+    if(!patient_id || !service_id) return;
+    const data={patient_id,service_id,additional_rate_id:field('additional_rate_id').value,
+        fecha_cita:field('fecha_cita').value || undefined,es_exonerado:field('es_exonerado').checked};
+    if(field('discount_type')?.value) data.discount={type:field('discount_type').value,value:field('discount_value').value || '0',reason:field('discount_reason').value || null};
     try {
-        const res = await fetch(`${window.location.origin}/api/appointment/calculated`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                patient_id,
-                service_id,
-                additional_rate_id,
-                fecha_cita: document.querySelector('#appointmentModalCreate #fecha_cita').value || undefined,
-                es_exonerado
-            })
-        });
-
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
-        const data = await res.json();
-        console.log('Data Precio:', data);
-
-        //ASIGNAMOS LOS DATOS YA CALCULADOS  
-        document.querySelector('#precio_programado').value = data.precio_programado;
-        document.querySelector('#precio_programado_hidden').value = data.precio_programado;
-        if (es_exonerado) {
-            document.querySelector('#total_pagado').value = data.total_pagado;
-        }
-
-        //FUNCION CALCULAR SALDO FINAL
+        const res=await fetch(window.location.origin+'/api/appointment/calculated',{method:'POST',
+            headers:{'Content-Type':'application/json',Accept:'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content || ''},
+            body:JSON.stringify(data)});
+        const result=await res.json();
+        if(version!==legacyQuoteVersion)return;
+        if(!res.ok)throw Error(result.message || 'No se pudo cotizar.');
+        field('precio_programado').value=result.precio_programado;
+        field('precio_programado_hidden').value=result.precio_programado;
+        legacyQuoteReady=true;
+        if(status)status.textContent='Precio neto vigente: S/ '+Number(result.precio_programado).toFixed(2)+'. Adelanto mínimo 50%.';
         calcularSaldoCita();
-
-    } catch (error) {
-        console.error('Error:', error);
-        console.error('Error al consultar paciente: ' + error.message);
+    } catch(error) {
+        if(version!==legacyQuoteVersion)return;
+        legacyQuoteReady=false;if(status)status.textContent=error.message;
     }
 }
+$('#discount_value').on('input',calcularPrecioCita);
+$('#discount_type').on('change',calcularPrecioCita);
+$('#fecha_cita').on('change',calcularPrecioCita);
 
 //PARA CALCULAR EL SALDO
 function calcularSaldoCita() {
@@ -270,6 +252,7 @@ function calcularSaldoCita() {
 $('#formCreateAppointment').on('submit', function (e) {
     e.preventDefault();
 
+    if (!legacyQuoteReady) { calcularPrecioCita(); notificacion('warning','Cotización','Espera el precio vigente antes de guardar.',3000,false,false); return; }
     let form = this;
 
     $.ajax({

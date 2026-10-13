@@ -61,6 +61,7 @@ class AgendaDetailsController extends Controller
             $data = $request->validate([
                 'motivo_consulta' => 'sometimes|nullable|string|max:2000',
                 'observaciones' => 'sometimes|nullable|string|max:2000',
+                'is_postoperative'=>'sometimes|boolean', 'discount'=>'prohibited',
             ]);
             $data = array_filter($data, fn ($value) => $value !== null && $value !== '');
             if ($data) {
@@ -69,7 +70,7 @@ class AgendaDetailsController extends Controller
                     ['metadata' => ['fields' => array_keys($data)]]);
             }
             return response()->json(['message' => 'Motivo y observación guardados.']
-                + $appointment->only(['motivo_consulta', 'observaciones']));
+                + $appointment->only(['motivo_consulta', 'observaciones', 'is_postoperative']));
         });
     }
 }

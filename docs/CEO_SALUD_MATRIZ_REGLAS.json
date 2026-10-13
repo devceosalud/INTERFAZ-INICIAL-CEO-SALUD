@@ -1,0 +1,191 @@
+[
+  {
+    "id": "R01",
+    "status": "IMPLEMENTADO",
+    "gap": "Descuento al registrar con CREATE+VIEW, responsable y evento PRECIO_REGISTRADO; probado en ambas entradas.",
+    "evidence": "AppointmentDiscount; CreateAppointmentService; AppointmentDiscountRegistrationTest",
+    "dependency": "PR precios local; no incluye ajuste posterior al cobro."
+  },
+  {
+    "id": "R02",
+    "status": "IMPLEMENTADO",
+    "gap": "Importe fijo y porcentaje, cálculo en céntimos y validación de dos decimales.",
+    "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
+    "dependency": "PR precios local."
+  },
+  {
+    "id": "R03",
+    "status": "IMPLEMENTADO",
+    "gap": "Rechaza >=100% y redondeo que deje neto cero.",
+    "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
+    "dependency": "Exoneración específica separada."
+  },
+  {
+    "id": "R04",
+    "status": "PARCIAL",
+    "gap": "Adelanto mínimo 50% del precio neto probado; reserva, pago y confirmación separados. Crédito general pendiente.",
+    "evidence": "AppointmentEconomicPosition; AppointmentDiscountRegistrationTest; MvpAllRolesFlowTest",
+    "dependency": "PR #5 + precios; R28 general depende ledger."
+  },
+  {
+    "id": "R05",
+    "status": "PARCIAL",
+    "gap": "Política definitiva: indicación acreditada del médico de uso único; mismo service_id, fecha programada, día0 gratis,1–15 reevaluación,16+ normal. El código actual aún infiere por antecedente sin indicación: debe corregirse antes de publicar esta política.",
+    "evidence": "AppointmentPriceResolver; LegacyRegistrationParityTest",
+    "dependency": "PR separado; evidencia privada, permiso específico, binding único, reprogramación con ajustes R25; catálogo Quiroz pendiente."
+  },
+  {
+    "id": "R06",
+    "status": "FALTANTE",
+    "gap": "Sin descuento sobre referido explícito.",
+    "evidence": "AppointmentPriceResolver",
+    "dependency": "Motor neto + catálogo Quiroz verificado."
+  },
+  {
+    "id": "R07",
+    "status": "IMPLEMENTADO",
+    "gap": "Indicador por cita registrado/editado y auditado, sin gratuidad automática.",
+    "evidence": "Appointment; AgendaDetailsController; AppointmentDiscountRegistrationTest",
+    "dependency": "PR precios local; histórica null sin modificación."
+  },
+  {
+    "id": "R08",
+    "status": "IMPLEMENTADO",
+    "gap": "Permiso explícito, motivo obligatorio y responsable/evento; sin rol que lo omita.",
+    "evidence": "OperationalRegistrationService; CreateAppointmentService; AppointmentDiscountRegistrationTest",
+    "dependency": "Asignación extraordinaria en producción fuera de este desarrollo."
+  },
+  {
+    "id": "R09",
+    "status": "PARCIAL",
+    "gap": "Heredado soporta cita_doble y ocupación con locks; Agenda sin selector equivalente.",
+    "evidence": "LegacyAppointmentRegistration; AppointmentSlotValidator; LegacyRegistrationParityTest",
+    "dependency": "PR Agenda; dos intervalos consecutivos, una tarifa y concurrencia."
+  },
+  {
+    "id": "R10",
+    "status": "PARCIAL",
+    "gap": "Default false heredado; falta control equivalente en Agenda.",
+    "evidence": "LegacyAppointmentRegistration",
+    "dependency": "PR Agenda; opcional y reset por contexto."
+  },
+  {
+    "id": "R11",
+    "status": "FALTANTE",
+    "gap": "Default hoy/Magdalena definido. No panel específico; Figma compartido solicita autenticación y no se pudo inspeccionar.",
+    "evidence": "Site; rutas/listados heredados; prototipo Figma",
+    "dependency": "Catálogo site_id verificado, acceso al prototipo; servicios pueden desarrollarse antes de UI."
+  },
+  {
+    "id": "R12",
+    "status": "PARCIAL",
+    "gap": "Operaciones unificadas en #5; faltan panel/totales/Excel.",
+    "evidence": "MvpAllRolesFlowTest; AppointmentEconomicPosition",
+    "dependency": "PR Admisión; exportación acotada y sin fórmulas inyectadas."
+  },
+  {
+    "id": "R13",
+    "status": "PARCIAL",
+    "gap": "Contactos/citas visibles existen; falta proyección administrativa sin clínica y estado receta/informe.",
+    "evidence": "OperationalPatientController; AppointmentVisibility",
+    "dependency": "PR Admisión/historial y documentos."
+  },
+  {
+    "id": "R14",
+    "status": "PARCIAL",
+    "gap": "Documentos privados genéricos por cita; falta receta/informe y reemplazo tipado de archivo.",
+    "evidence": "AppointmentDocumentController; AppointmentProofStorage",
+    "dependency": "PR documentos; privacidad/autorización."
+  },
+  {
+    "id": "R15",
+    "status": "IMPLEMENTADO",
+    "gap": "FK/rutas appointment_id, descarga privada y visibilidad; no mezclar entre citas.",
+    "evidence": "AppointmentDocument; AppointmentDocumentController; OperationalRegistrationTest",
+    "dependency": "Reutilizar; aún no certificado en producción."
+  },
+  {
+    "id": "R16",
+    "status": "PARCIAL",
+    "gap": "ADMIN requiere permiso explícito; sus 9 grants no acreditan APPROVE_ZERO_COST.",
+    "evidence": "OperationalRegistrationService; LegacyRegistrationParityTest",
+    "dependency": "Asignación extraordinaria productiva aprobada aparte."
+  },
+  {
+    "id": "R17",
+    "status": "FALTANTE",
+    "gap": "User no guarda DNI; verificar entidad trabajador/relación antes de unique para nuevos.",
+    "evidence": "User; admin/master/user/UserController",
+    "dependency": "PR trabajadores; preservar identidades heredadas."
+  },
+  {
+    "id": "R18",
+    "status": "FALTANTE",
+    "gap": "Bloqueo global activo y revocación inmediata de sesiones/tokens no acreditados.",
+    "evidence": "User; middleware; UserController",
+    "dependency": "PR trabajadores; todos guards e historial."
+  },
+  {
+    "id": "R19",
+    "status": "IMPLEMENTADO",
+    "gap": "Editor existente claro, permisos marcados, revisión concurrente, confirmación/auditoría/Spatie; drag/drop opcional.",
+    "evidence": "RoleController; user-editor.test.js; MvpPermissionBootstrapTest",
+    "dependency": "PR #5; normalizar cinco guards. Si drag/drop obligatorio, PR UX."
+  },
+  {
+    "id": "R20",
+    "status": "PARCIAL",
+    "gap": "OCR heredado Tesseract sugiere operación; faltan monto, revisión explícita y deduplicación de contenido privada. Pagos/adjuntos múltiples existen.",
+    "evidence": "VoucherPaymentRecorder; AppointmentProofStorage; controladores OCR heredados",
+    "dependency": "PR OCR; runtime hosting/formatos/revisión humana."
+  },
+  {
+    "id": "R24",
+    "status": "PARCIAL",
+    "gap": "Reset/invalida quote/identidad existente; falta advertencia completa de cambios pendientes.",
+    "evidence": "agenda-operational-workspace.js; agenda.js; agenda-quote.test.js",
+    "dependency": "PR Agenda; dirty y cancelación/reset."
+  },
+  {
+    "id": "R25",
+    "status": "FALTANTE",
+    "gap": "Sin ajustes auditados posteriores a pago; no sobrescribir precios/pagos/vouchers históricos.",
+    "evidence": "AppointmentEconomicPosition; AppointmentTicketService",
+    "dependency": "PR ledger después de descuentos."
+  },
+  {
+    "id": "R26",
+    "status": "FALTANTE",
+    "gap": "Sobrepago se rechaza hoy; falta elección devolución/crédito del excedente.",
+    "evidence": "OperationalRegistrationService; ReservationPaymentService",
+    "dependency": "PR ledger; conciliación de registros existentes."
+  },
+  {
+    "id": "R27",
+    "status": "PARCIAL",
+    "gap": "Solicitar devolución con WITHDRAW no ejecuta dinero; appointment.refund.execute aprobado como capacidad específica, asignación final pendiente.",
+    "evidence": "AppointmentWithdrawalService::requestRefund; AppointmentWithdrawalTest",
+    "dependency": "PR devolución: solicitud/autorización/ejecución/evidencia separadas."
+  },
+  {
+    "id": "R28",
+    "status": "PARCIAL",
+    "gap": "Crédito de cita retirada aplicado con locks; falta crédito general y PAYMENT_SUBMIT en toda aplicación.",
+    "evidence": "AppointmentWithdrawalService::rebook/reserveMoney; AppointmentWithdrawalTest",
+    "dependency": "PR créditos/ledger; no copiar payments."
+  },
+  {
+    "id": "R29",
+    "status": "PARCIAL",
+    "gap": "Crédito de rebook integra secured/50%; falta aplicación general futura.",
+    "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
+    "dependency": "Completar R28 y conservar fórmula."
+  },
+  {
+    "id": "R30",
+    "status": "PARCIAL",
+    "gap": "Regla definida: crédito convertido no admite devolución ordinaria. Falta ledger; excepciones legales requieren procedimiento autorizado específico.",
+    "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
+    "dependency": "PR ledger bloquea devolución ordinaria; no implementar excepciones sin definición."
+  }
+]
