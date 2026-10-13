@@ -27,6 +27,10 @@ class OperationalRegistrationService
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
             'No tienes permiso para registrar citas (appointment.create y appointment.view).');
+        if(!empty($data['reevaluation_indication_id']) && !DB::table('appointment_operations')->where('actor_user_id',$actor->id)
+            ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
+            app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
+        }
         unset($data['proof']);
         $hash = hash('sha256', json_encode($data).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
         $storedPath = null;
@@ -40,7 +44,7 @@ class OperationalRegistrationService
                 if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
                 if(!empty($data['reevaluation_indication_id'])) {
                     app(ReevaluationIndicationService::class)->eligible((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),
-                        (int)$data['service_id'],$data['fecha_cita'],$actor->id,null,true);
+                        (int)$data['service_id'],$data['fecha_cita'],$actor->id,null,true,(int)$data['doctor_id']);
                 }
                 Doctor::whereKey($data['doctor_id'])->lockForUpdate()->firstOrFail();
                 if ($data['mode'] === 'RESERVE' && $data['booking_type'] !== 'REGULAR') {

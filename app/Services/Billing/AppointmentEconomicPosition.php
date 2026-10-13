@@ -21,7 +21,11 @@ class AppointmentEconomicPosition
         if ($appointments->isEmpty()) { return []; }
         $ids = $appointments->pluck('id');
         $indications=Schema::hasTable('appointment_reevaluation_indications')
-            ? DB::table('appointment_reevaluation_indications')->whereIn('bound_appointment_id',$ids)->get()->keyBy('bound_appointment_id') : collect();
+            ? DB::table('appointment_reevaluation_indications as i')->join('appointments as source','source.id','=','i.source_appointment_id')
+                ->join('appointment_documents as evidence','evidence.id','=','i.evidence_document_id')->whereColumn('evidence.appointment_id','i.source_appointment_id')
+                ->where('evidence.purpose','REEVALUATION_ORDER')->whereIn('i.bound_appointment_id',$ids)->where('source.estado_cita','ATENDIDO')->whereIn('source.estado_agenda',['LEGADO','CONFIRMADA'])
+                ->whereColumn('source.patient_id','i.patient_id')->whereColumn('source.service_id','i.service_id')->whereColumn('source.doctor_id','i.doctor_id')
+                ->whereRaw('DATE(source.fecha_cita) = i.attended_on')->whereDate('source.fecha_cita','<=',now(config('scheduling.clinic_timezone'))->toDateString())->get(['i.*'])->keyBy('bound_appointment_id') : collect();
 
         $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->get();
         $directIds = $links->pluck('voucher_id')->unique();
@@ -67,6 +71,7 @@ class AppointmentEconomicPosition
                 'balance_cents' => $a->es_exonerado && trim($a->autorizado_por ?? '') !== '' ? 0 : max(0, $price - $effective),
                 'secured' => !$ambiguous && (($price > 0 && $effective * 2 >= $price)
                     || ($price===0 && $a->pricing_rule==='SAME_DAY_REEVALUATION' && $indications->has($a->id)
+                        && (int)$a->patient_id===(int)$indications[$a->id]->patient_id && (int)$a->service_id===(int)$indications[$a->id]->service_id
                         && substr($a->fecha_cita,0,10)===(string)$indications[$a->id]->attended_on)),
                 'secured_percentage' => $price ? round($effective * 100 / $price, 2) : 0,
                 'authority' => $ambiguous ? 'UNALLOCATED' : ($fallback ? 'LEGACY_SNAPSHOT' : 'PAYMENTS'),

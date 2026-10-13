@@ -283,7 +283,7 @@
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                economy(p); if(byId('indication-record-panel')) byId('indication-record-panel').hidden=!p.can_record_indication;
+                economy(p); if(referredInput)referredInput.checked=Boolean(p.referral_origin);if(referralOrigin)referralOrigin.value=p.referral_origin||''; if(byId('indication-record-panel')) byId('indication-record-panel').hidden=!p.can_record_indication;
                 if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
                 if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
                 if (discountReason) discountReason.value=p.discount_reason || '';

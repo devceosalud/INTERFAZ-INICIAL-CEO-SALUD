@@ -1,6 +1,8 @@
 <?php
 
 return [
+    // Clinical dates belong to the operational site; global app timestamps remain unchanged.
+    'clinic_timezone'=>env('CEO_SCHEDULING_TIMEZONE','America/Lima'),
     // Catalogue verified by the operator; mapping enabled only during controlled deployment.
     'quiroz_referral'=>[
         'doctor_id'=>(int)env('CEO_QUIROZ_DOCTOR_ID',0),

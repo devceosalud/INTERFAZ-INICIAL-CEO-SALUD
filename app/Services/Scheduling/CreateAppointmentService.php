@@ -59,12 +59,16 @@ class CreateAppointmentService
 
     private function createWithMode(CreateAppointmentData $data, ?string $bookingType, bool $pending = false): Appointment
     {
+        if(!empty($data->operational['reevaluation_indication_id'])) {
+            app(ReevaluationIndicationService::class)->eligible((int)$data->operational['reevaluation_indication_id'],
+                $data->patientId,$data->serviceId,$data->date,$data->creatorUserId);
+        }
         for ($attempt = 1; $attempt <= self::NUMBER_ATTEMPTS; $attempt++) {
             try {
                 return DB::transaction(function () use ($data, $attempt, $bookingType, $pending) {
                     if(!empty($data->operational['reevaluation_indication_id'])) {
                         app(ReevaluationIndicationService::class)->eligible((int)$data->operational['reevaluation_indication_id'],
-                            $data->patientId,$data->serviceId,$data->date,$data->creatorUserId,null,true);
+                            $data->patientId,$data->serviceId,$data->date,$data->creatorUserId,null,true,$data->doctorId);
                     }
                     $doctor = Doctor::query()->lockForUpdate()->find($data->doctorId);
 

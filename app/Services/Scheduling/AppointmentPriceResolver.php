@@ -30,18 +30,23 @@ class AppointmentPriceResolver
         $price = Money::cents($service->precio_primera_consulta ?? 0);
         $rule='NORMAL'; $indication=null; $days=null;
         if($indicationId) {
-            $eligibility=app(ReevaluationIndicationService::class)->eligible($indicationId,$patientId,(int)$service->service_id,$date,$actorId,$existing,$lock);
+            $eligibility=app(ReevaluationIndicationService::class)->eligible($indicationId,$patientId,(int)$service->service_id,$date,$actorId,$existing,$lock,(int)$service->doctor_id);
             $indication=$eligibility['indication']; $days=$eligibility['days'];
             if($days<=15) {
                 $type='RECONSULTA'; $rule=$days===0?'SAME_DAY_REEVALUATION':'INDICATED_REEVALUATION';
                 $price=$days===0?0:Money::cents($service->precio_reconsulta ?? 0);
             }
         }
+        $cfg=config('scheduling.quiroz_referral',[]);
+        $quirozService=!empty($cfg['doctor_id']) && (int)$service->doctor_id===(int)$cfg['doctor_id'] && in_array((int)$service->service_id,$cfg['service_ids']??[],true);
+        $knownReferralRates=array_filter(array_map('intval',array_values($cfg['additional_rate_ids']??[])));
         $referred=!empty($referral);
+        if(!$referred && $quirozService && in_array((int)$rate->id,$knownReferralRates,true)) {
+            throw ValidationException::withMessages(['referral.origin'=>'Para utilizar esta tarifa identifica y acredita expresamente el origen del referido.']);
+        }
         if($referred) {
             $actor=\App\Models\User::findOrFail($actorId);
             abort_unless($actor->can(\App\Support\Scheduling\SchedulingCapability::CREATE) && $actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW),403);
-            $cfg=config('scheduling.quiroz_referral',[]);
             if(empty($cfg['doctor_id']) || (int)$service->doctor_id!==(int)$cfg['doctor_id']
                 || !in_array((int)$service->service_id,$cfg['service_ids'] ?? [],true)
                 || trim((string)($referral['origin'] ?? ''))==='' || empty($referral['attested'])) {

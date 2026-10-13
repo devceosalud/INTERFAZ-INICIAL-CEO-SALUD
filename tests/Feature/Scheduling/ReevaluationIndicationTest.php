@@ -27,7 +27,7 @@ class ReevaluationIndicationTest extends TestCase {
         $this->patient=$this->createPatient($this->actor);$this->catalog=$this->createAppointmentCatalog();
         $this->catalog['rate']->update(['nombre'=>'TARIFA ESTANDAR','tipo_tarifa'=>'MONTO_FIJO']);
         $this->catalog['doctorService']->update(['precio_primera_consulta'=>150,'precio_reconsulta'=>120,'dias_reconsulta'=>15]);
-        $this->catalog['schedule']->update(['fecha_cita'=>now()->toDateString(),'dia_semana'=>now()->dayOfWeekIso]);
+        $this->catalog['schedule']->update(['fecha_cita'=>now('America/Lima')->toDateString(),'dia_semana'=>now('America/Lima')->dayOfWeekIso]);
         $this->otherService=Service::create(['nombre'=>'PIE DIABETICO QA','specialty_id'=>$this->catalog['specialty']->id,'estado'=>'ACTIVO']);
         $this->otherAssignment=DoctorService::create(['doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->otherService->id,'precio_primera_consulta'=>150,'precio_reconsulta'=>120,'dias_reconsulta'=>15,'estado'=>'ACTIVO']);
         config(['scheduling.quiroz_referral'=>['doctor_id'=>$this->catalog['doctor']->id,'service_ids'=>[$this->catalog['service']->id,$this->otherService->id],'additional_rate_ids'=>[]]]);
@@ -35,18 +35,18 @@ class ReevaluationIndicationTest extends TestCase {
     }
     protected function source(int $days=0,?int $service=null,array $extra=[]):Appointment {
         return $this->lifecycleAppointment($this->actor,$this->catalog,array_replace(['estado_cita'=>'ATENDIDO','estado_agenda'=>'LEGADO',
-            'fecha_cita'=>now()->subDays($days)->toDateString(),'hora_cita'=>'08:00','service_id'=>$service??$this->catalog['service']->id],$extra),$this->patient);
+            'fecha_cita'=>now('America/Lima')->subDays($days)->toDateString(),'hora_cita'=>'08:00','service_id'=>$service??$this->catalog['service']->id],$extra),$this->patient);
     }
     protected function indicate(Appointment $source,?string $key=null):int {
         $file='qa-orders/'.Str::uuid().'.pdf'; Storage::disk('local')->put($file,'Orden escrita ficticia del médico, sin información real');
         $d=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden QA','private_path'=>$file,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
-        $data=['request_key'=>$key??(string)Str::uuid(),'evidence_document_id'=>$d->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true];
+        $data=['request_key'=>$key??(string)Str::uuid(),'evidence_document_id'=>$d->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true];
         return $this->postJson('/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications',$data)->assertCreated()->json('indication_id');
     }
     protected function payload(string $entry,int $service,int $assignment,array $extra=[]):array {
         return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$this->patient->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$entry==='legacy'?$assignment:$service,
-            'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>now()->toDateString(),'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
+            'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>now('America/Lima')->toDateString(),'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
     }
     public static function boundaries():array {
         $rows=[];foreach(['operational','legacy'] as $entry) foreach([false,true] as $ref) foreach([0,1,15,16] as $day) foreach([false,true] as $other)
@@ -82,13 +82,13 @@ class ReevaluationIndicationTest extends TestCase {
     }
     private function expectInvalidIndication(Appointment $a):void {
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$a->id.'/reevaluation-indications',['request_key'=>(string)Str::uuid(),
-            'evidence_document_id'=>9999,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true])->assertUnprocessable();
+            'evidence_document_id'=>9999,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true])->assertUnprocessable();
     }
     public function test_indication_permission_evidence_idempotency_and_privacy_are_checked():void {
         $source=$this->source(1);$file='qa-order.txt';Storage::disk('local')->put($file,'QA');
         $doc=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden QA','private_path'=>$file,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
         $url='/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications';
-        $data=['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true];
+        $data=['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true];
         $this->actor->revokePermissionTo(Indicators::CAPABILITY);$this->postJson($url,$data)->assertForbidden();
         $this->actor->givePermissionTo(Indicators::CAPABILITY);$id=$this->postJson($url,$data)->assertCreated()->json('indication_id');
         $this->postJson($url,$data)->assertCreated()->assertJsonPath('indication_id',$id);$this->assertDatabaseCount('appointment_reevaluation_indications',1);
@@ -113,7 +113,7 @@ class ReevaluationIndicationTest extends TestCase {
     public function test_different_doctor_same_service_allowed_and_referral_does_not_follow_to_other_doctor():void {
         $id=$this->indicate($this->source(1));$other=$this->createAppointmentCatalog();
         DoctorService::create(['doctor_id'=>$other['doctor']->id,'service_id'=>$this->catalog['service']->id,'precio_primera_consulta'=>90,'precio_reconsulta'=>70,'dias_reconsulta'=>15,'estado'=>'ACTIVO']);
-        $other['schedule']->update(['fecha_cita'=>now()->toDateString(),'dia_semana'=>now()->dayOfWeekIso]);
+        $other['schedule']->update(['fecha_cita'=>now('America/Lima')->toDateString(),'dia_semana'=>now('America/Lima')->dayOfWeekIso]);
         $data=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['doctor_id'=>$other['doctor']->id,'reevaluation_indication_id'=>$id]);
         $this->postJson('/scheduling-mvp/agenda/quote',$data)->assertOk()->assertJsonPath('precio_programado','70.00');
         $data['referral']=['origin'=>'QA referido','attested'=>true];$this->postJson('/scheduling-mvp/agenda/quote',$data)->assertUnprocessable();
@@ -122,7 +122,7 @@ class ReevaluationIndicationTest extends TestCase {
         $rate=AdditionalRate::create(['nombre'=>'REFERIDO TRAUMATOLOGIA','tipo_tarifa'=>'MONTO_FIJO','tarifa'=>50,'estado'=>'ACTIVO']);
         config(['scheduling.quiroz_referral.additional_rate_ids'=>[$this->catalog['service']->id=>$rate->id]]);
         $data=$this->payload('legacy',$this->catalog['service']->id,$this->catalog['doctorService']->id,['additional_rate_id'=>$rate->id]);
-        $this->postJson('/api/appointment/calculated',$data)->assertOk()->assertJsonPath('precio_programado',200);
+        $this->postJson('/api/appointment/calculated',$data)->assertUnprocessable()->assertJsonValidationErrors('referral.origin');
         $data['referral']=['origin'=>'Derivación ficticia','attested'=>true];$data['discount']=['type'=>'FIXED','value'=>'25'];
         $this->postJson('/api/appointment/calculated',$data)->assertOk()->assertJsonPath('precio_programado',225)->assertJsonPath('catalog_price','250.00');
         unset($data['referral']['origin']);$this->postJson('/api/appointment/calculated',$data)->assertUnprocessable();
@@ -131,13 +131,13 @@ class ReevaluationIndicationTest extends TestCase {
     public function test_reschedule_retains_indication_reprices_unpaid_and_blocks_paid_price_changes():void {
         $id=$this->indicate($this->source(15));$data=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['reevaluation_indication_id'=>$id]);
         $aId=$this->postJson('/scheduling-mvp/agenda/registrations',$data)->assertCreated()->json('appointment.appointment_id');
-        $tomorrow=now()->addDay()->toDateString();DoctorSchedule::create(['doctor_id'=>$this->catalog['doctor']->id,'fecha_cita'=>$tomorrow,'dia_semana'=>now()->addDay()->dayOfWeekIso,'hora_inicio'=>'08:00','hora_fin'=>'12:00','duracion_cita'=>30,'estado'=>'ACTIVO']);
-        $move=['fecha_cita'=>$tomorrow,'hora_cita'=>'09:00','expected_fecha_cita'=>now()->toDateString(),'expected_hora_cita'=>'09:00'];
+        $tomorrow=now('America/Lima')->addDay()->toDateString();DoctorSchedule::create(['doctor_id'=>$this->catalog['doctor']->id,'fecha_cita'=>$tomorrow,'dia_semana'=>now('America/Lima')->addDay()->dayOfWeekIso,'hora_inicio'=>'08:00','hora_fin'=>'12:00','duracion_cita'=>30,'estado'=>'ACTIVO']);
+        $move=['fecha_cita'=>$tomorrow,'hora_cita'=>'09:00','expected_fecha_cita'=>now('America/Lima')->toDateString(),'expected_hora_cita'=>'09:00'];
         $this->patchJson('/scheduling-mvp/agenda/appointments/'.$aId.'/reschedule',$move)->assertOk();
         $this->assertEquals(150,Appointment::find($aId)->precio_programado);$this->assertSame($aId,(int)Indication::find($id)->bound_appointment_id);
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$aId.'/payments',['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'75','method'=>'EFECTIVO']])->assertOk();
         $before=Appointment::find($aId)->getAttributes();
-        $back=['fecha_cita'=>now()->toDateString(),'hora_cita'=>'09:00','expected_fecha_cita'=>$tomorrow,'expected_hora_cita'=>'09:00'];
+        $back=['fecha_cita'=>now('America/Lima')->toDateString(),'hora_cita'=>'09:00','expected_fecha_cita'=>$tomorrow,'expected_hora_cita'=>'09:00'];
         $this->patchJson('/scheduling-mvp/agenda/appointments/'.$aId.'/reschedule',$back)->assertUnprocessable();
         $this->assertSame($before,Appointment::find($aId)->getAttributes());$this->assertEquals(75,Payment::sum('monto'));
     }
@@ -145,7 +145,7 @@ class ReevaluationIndicationTest extends TestCase {
         $source=$this->source(1);$path='qa-multiple-orders.txt';Storage::disk('local')->put($path,'Dos órdenes ficticias diferenciadas');
         $doc=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden QA','private_path'=>$path,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
         $url='/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications';
-        $data=['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),
+        $data=['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),
             'instruction_reference'=>'Folio 1 orden 1','doctor_order_attested'=>true];
         $id=$this->postJson($url,$data)->assertCreated()->json('indication_id');
         $data['request_key']=(string)Str::uuid();$this->postJson($url,$data)->assertUnprocessable()->assertJsonValidationErrors('instruction_reference');
@@ -166,7 +166,7 @@ class ReevaluationIndicationTest extends TestCase {
     public function test_order_upload_is_atomic_private_idempotent_and_hidden_from_ordinary_agenda_readers():void {
         $source=$this->source(1);
         $data=['request_key'=>(string)Str::uuid(),'file'=>\Illuminate\Http\UploadedFile::fake()->createWithContent('written-order-qa.png',base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHYsAAAAASUVORK5CYII=')),
-            'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),'instruction_reference'=>'Folio imagen QA 1','doctor_order_attested'=>true];
+            'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio imagen QA 1','doctor_order_attested'=>true];
         $url='/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications';
         $id=$this->post($url,$data,['Accept'=>'application/json'])->assertCreated()->json('indication_id');
         $this->post($url,$data,['Accept'=>'application/json'])->assertCreated()->assertJsonPath('indication_id',$id);
@@ -199,6 +199,65 @@ class ReevaluationIndicationTest extends TestCase {
         $this->assertDatabaseCount('payments',1);$this->assertEquals(112.5,Payment::sum('monto'));
         $this->assertEquals(225,\App\Models\Voucher::firstOrFail()->total);
         $this->assertSame('CONFIRMADA',Appointment::find($id)->estado_agenda);
+    }
+
+    public static function changedOrigins():array {return [['patient'],['service'],['doctor'],['date'],['status'],['document']];}
+    /** @dataProvider changedOrigins */
+    public function test_origin_corrections_never_transfer_indication_or_confirm_a_free_pending_appointment(string $change):void {
+        $source=$this->source(0);$id=$this->indicate($source);
+        $payload=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['reevaluation_indication_id'=>$id]);
+        $aId=$this->postJson('/scheduling-mvp/agenda/registrations',$payload)->assertCreated()->json('appointment.appointment_id');
+        $a=Appointment::find($aId);$before=$a->getAttributes();
+        $this->assertTrue(app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a)['secured']);
+        if($change==='patient')$source->update(['patient_id'=>$this->createPatient($this->actor,['numero_identidad'=>'70007091','historia_clinica'=>'QA-CORRECTION'])->id]);
+        if($change==='service')$source->update(['service_id'=>$this->otherService->id]);
+        if($change==='doctor')$source->update(['doctor_id'=>$this->createAppointmentCatalog()['doctor']->id]);
+        if($change==='date')$source->update(['fecha_cita'=>now('America/Lima')->subDay()->toDateString()]);
+        if($change==='status')$source->update(['estado_cita'=>'PROGRAMADO']);
+        if($change==='document')\App\Models\AppointmentDocument::find(Indication::find($id)->evidence_document_id)->update(['appointment_id'=>$aId]);
+        $this->assertFalse(app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a)['secured']);
+        $response=$this->postJson('/scheduling-mvp/agenda/appointments/'.$aId.'/payments',['request_key'=>(string)Str::uuid(),'confirm'=>true]);
+        $this->assertContains($response->status(),[404,422]);
+        $this->assertSame($before,Appointment::find($aId)->getAttributes());$this->assertDatabaseCount('payments',0);
+        $this->assertSame($this->patient->id,(int)Indication::find($id)->patient_id);
+        $this->assertSame($this->catalog['service']->id,(int)Indication::find($id)->service_id);
+    }
+    public function test_record_retry_does_not_reveal_a_different_workers_private_reservation():void {
+        $source=$this->source(1);$file='qa-replay-privacy.txt';Storage::disk('local')->put($file,'Orden ficticia');
+        $doc=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden QA','private_path'=>$file,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
+        $data=['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Orden QA 1','doctor_order_attested'=>true];
+        $url='/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications';
+        $id=$this->postJson($url,$data)->assertCreated()->json('indication_id');
+        $other=$this->agendaReader('COMERCIAL');$other->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
+        $payload=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['reevaluation_indication_id'=>$id]);
+        $aId=$this->actingAs($other)->postJson('/scheduling-mvp/agenda/registrations',$payload)->assertCreated()->json('appointment.appointment_id');
+        $this->actingAs($this->actor)->getJson('/scheduling-mvp/agenda/appointments/'.$aId.'/economy')->assertNotFound();
+        $this->postJson($url,$data)->assertCreated()->assertExactJson(['indication_id'=>$id]);
+    }
+    public function test_clinical_day_is_lima_without_changing_global_utc_timestamps():void {
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-10-14 02:00:00','UTC'));
+        try {
+            $this->assertSame('UTC',config('app.timezone'));
+            $this->catalog['schedule']->update(['fecha_cita'=>'2026-10-13','dia_semana'=>2]);
+            $future=$this->source(0,null,['fecha_cita'=>'2026-10-14']);
+            $this->postJson('/scheduling-mvp/agenda/appointments/'.$future->id.'/reevaluation-indications',[
+                'request_key'=>(string)Str::uuid(),'evidence_document_id'=>9999,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>'2026-10-13',
+                'instruction_reference'=>'Orden QA 1','doctor_order_attested'=>true])->assertUnprocessable();
+            $id=$this->indicate($this->source(0));
+            $payload=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['reevaluation_indication_id'=>$id]);
+            $this->postJson('/scheduling-mvp/agenda/quote',$payload)->assertOk()->assertJsonPath('precio_programado','0.00');
+        }finally{\Carbon\Carbon::setTestNow();}
+    }
+
+    public function test_hidden_origin_cannot_be_probed_through_an_already_used_indication():void {
+        $source=$this->source(1);$id=$this->indicate($source);
+        $other=$this->agendaReader('COMERCIAL');$other->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
+        $payload=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['reevaluation_indication_id'=>$id]);
+        $this->actingAs($other)->postJson('/scheduling-mvp/agenda/registrations',$payload)->assertCreated();
+        $source->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$other->id]);
+        $payload['request_key']=(string)Str::uuid();
+        $this->actingAs($this->actor)->postJson('/scheduling-mvp/agenda/registrations',$payload)->assertNotFound();
+        $this->assertDatabaseCount('appointments',2);$this->assertDatabaseCount('payments',0);
     }
 
 }

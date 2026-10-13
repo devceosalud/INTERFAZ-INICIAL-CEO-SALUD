@@ -11,6 +11,8 @@ return new class extends Migration {
             $t->foreign('source_appointment_id','reeval_source_fk')->references('id')->on('appointments')->restrictOnDelete();
             $t->foreignId('evidence_document_id');
             $t->foreign('evidence_document_id','reeval_document_fk')->references('id')->on('appointment_documents')->restrictOnDelete();
+            $t->foreignId('patient_id');$t->foreign('patient_id','reeval_patient_fk')->references('id')->on('patients')->restrictOnDelete();
+            $t->foreignId('service_id');$t->foreign('service_id','reeval_service_fk')->references('id')->on('services')->restrictOnDelete();
             $t->foreignId('doctor_id');
             $t->foreign('doctor_id','reeval_doctor_fk')->references('id')->on('doctors')->restrictOnDelete();
             $t->foreignId('recorded_by_user_id');

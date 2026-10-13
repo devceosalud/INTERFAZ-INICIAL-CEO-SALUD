@@ -13,6 +13,6 @@ class ReevaluationIndicationController extends Controller {
         $file=$r->file('file');unset($data['file']);
         abort_if($file && !empty($data['evidence_document_id']),422,'Usa un documento existente o un archivo nuevo.');
         $i=$service->record($appointmentId,$r->user(),$data,$file);
-        return response()->json(['indication_id'=>$i->id,'bound_appointment_id'=>$i->bound_appointment_id],201);
+        return response()->json(['indication_id'=>$i->id],201);
     }
 }

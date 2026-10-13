@@ -22,7 +22,9 @@ class RescheduleAppointmentService
         $original = Appointment::query()->visibleToAgendaUser($actorId)->find($id);
         abort_if($original === null, 404);
 
-        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType) {
+        $sourceIndication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
+        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication) {
+            Doctor::whereIn('id',array_unique(array_filter([$original->doctor_id,$sourceIndication?->doctor_id])))->orderBy('id')->lockForUpdate()->get();
             $doctor = Doctor::query()->lockForUpdate()->find($original->doctor_id);
             $appointment = Appointment::query()->visibleToAgendaUser($actorId)->lockForUpdate()->find($id);
             abort_if($appointment === null, 404);

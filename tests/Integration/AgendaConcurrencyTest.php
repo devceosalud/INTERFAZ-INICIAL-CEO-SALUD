@@ -188,7 +188,7 @@ class AgendaConcurrencyTest extends TestCase
         \Illuminate\Support\Facades\Storage::disk('local')->put($path,'Indicación escrita exclusivamente ficticia QA');
         $doc=$source->documents()->create(['type'=>'PAYMENT_PROOF','label'=>'Orden médica ficticia','private_path'=>$path,'mime'=>'application/pdf','actor_user_id'=>$this->actor->id]);
         $indication=app(\App\Services\Scheduling\ReevaluationIndicationService::class)->record($source->id,$this->actor,
-            ['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now()->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true]);
+            ['request_key'=>(string)Str::uuid(),'evidence_document_id'=>$doc->id,'evidence_type'=>'WRITTEN_ORDER','indicated_on'=>now('America/Lima')->toDateString(),'instruction_reference'=>'Folio QA n.º 1','doctor_order_attested'=>true]);
         $otherWorker=$this->agendaReader('COMERCIAL');
         $otherWorker->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
         $other=$this->createAppointmentCatalog();
