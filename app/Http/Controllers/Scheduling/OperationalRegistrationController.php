@@ -42,7 +42,7 @@ class OperationalRegistrationController extends Controller
         $canEdit = $request->user()->can(\App\Support\Scheduling\SchedulingCapability::UPDATE)
             || ($request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE)
                 && (int) ($a->responsible_user_id ?? $a->user_id) === (int) $request->user()->id);
-        return response()->json($position->publicPosition($a) + ['can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
+        return response()->json($position->publicPosition($a) + app(\App\Services\Scheduling\RegularReservationAvailability::class)->describe($a) + ['can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
                 && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]
             + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'motivo_exoneracion',
                 'duration_slots','pricing_rule', 'referral_origin', 'discount_reason', 'catalog_price', 'discount_type', 'discount_value', 'discount_amount']));

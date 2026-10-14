@@ -43,6 +43,7 @@ class ReservationPaymentService
             if ($amount > $p['balance_cents']) { throw ValidationException::withMessages(['payment.amount' => 'El pago supera el saldo efectivo.']); }
             if ($amount > 0) {
                 abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
+                app(RegularReservationAvailability::class)->assertAvailable($a);
                 if ($p['authority'] === 'LEGACY_SNAPSHOT' && $p['paid_cents'] > 0) {
                     throw ValidationException::withMessages(['payment' => 'Reconciliar primero el adelanto histórico sin vouchers. No se duplicará ese dinero.']);
                 }

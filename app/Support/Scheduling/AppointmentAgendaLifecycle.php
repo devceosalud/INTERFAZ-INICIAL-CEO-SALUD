@@ -31,18 +31,21 @@ final class AppointmentAgendaLifecycle
     public static function consumesRegularSlot(
         string $agendaState,
         ?string $bookingType,
-        ?string $careState
+        ?string $careState,
+        bool $hasRecordedFunds = false
     ): bool {
         if ($bookingType === self::OFF_HOURS) {
             return false;
         }
-        return self::occupiesInterval($agendaState, $bookingType, $careState);
+        return self::occupiesInterval($agendaState, $bookingType, $careState, $hasRecordedFunds);
     }
 
-    public static function occupiesInterval(string $agendaState, ?string $bookingType, ?string $careState): bool
+    public static function occupiesInterval(string $agendaState, ?string $bookingType, ?string $careState, bool $hasRecordedFunds = false): bool
     {
-        if ($agendaState === self::PENDING_CONFIRMATION
-            || ($agendaState === self::CONFIRMED && $bookingType === self::ADDITIONAL)) {
+        if ($agendaState === self::PENDING_CONFIRMATION) {
+            return $hasRecordedFunds && in_array($bookingType,[null,self::REGULAR],true) && AppointmentOccupancy::blocks($careState);
+        }
+        if ($agendaState === self::CONFIRMED && $bookingType === self::ADDITIONAL) {
             return false;
         }
 
@@ -68,11 +71,15 @@ final class AppointmentAgendaLifecycle
     {
         return $query
             ->whereNotIn($table.'.estado_cita', AppointmentOccupancy::RELEASING_STATES)
-            ->where($table.'.estado_agenda', '<>', self::PENDING_CONFIRMATION)
-            ->where(function ($occupants) use ($table): void {
-                $occupants->where($table.'.estado_agenda', '<>', self::CONFIRMED)
-                    ->orWhere($table.'.tipo_agendamiento', '<>', self::ADDITIONAL)
-                    ->orWhereNull($table.'.tipo_agendamiento');
+            ->where(function ($interval) use ($table): void {
+                $interval->where(function ($ordinary) use ($table): void {
+                    $ordinary->where($table.'.estado_agenda','<>',self::PENDING_CONFIRMATION)
+                        ->where(function ($occupants) use ($table): void {
+                            $occupants->where($table.'.estado_agenda','<>',self::CONFIRMED)
+                                ->orWhere($table.'.tipo_agendamiento','<>',self::ADDITIONAL)
+                                ->orWhereNull($table.'.tipo_agendamiento');
+                        });
+                })->orWhere(fn ($funded) => FundedReservation::apply($funded,$table));
             });
     }
 }

@@ -35,7 +35,7 @@ test('confirmar regular explica permisos, selección, servicio y el mínimo exac
     }
     assert.equal(form.bookingReadiness({...ready,amount:'0',waived:true,canPay:false}).allowed,true);
     assert.equal(form.bookingReadiness({...ready,amount:'50',waived:true,canPay:false}).allowed,false);
-    assert.equal(form.bookingReadiness({...ready,amount:'0',exception:true}).allowed,true);
+    assert.equal(form.bookingReadiness({...ready,amount:'0',exception:true}).allowed,false);
     assert.equal(form.bookingReadiness({...ready,amount:'0'}).allowed,false);
 });
 
@@ -57,4 +57,12 @@ test('tarifa médica gratuita vigente permite reserva y confirmación sin permis
     assert.equal(form.bookingReadiness({...input,automaticFree:false}).allowed,false);
     assert.equal(form.bookingReadiness({...input,amount:'0.01'}).allowed,false);
     assert.equal(form.bookingReadiness({...input,canCreate:false}).allowed,false);
+});
+
+test('pago completo nunca implica horario confirmado ni atención realizada',()=>{
+ const pending=form.stateSummary({estado_agenda:'PENDIENTE_CONFIRMACION',estado_cita:'PROGRAMADO',estado_pagado:'PAGADO'});
+ assert.equal(pending.agenda,'RESERVA PENDIENTE');assert.equal(pending.care,'PROGRAMADO');assert.equal(pending.payment,'PAGADO');
+ const confirmed=form.stateSummary({estado_agenda:'CONFIRMADA',estado_cita:'PROGRAMADO',estado_pagado:'PARCIAL'});
+ assert.equal(confirmed.agenda,'CONFIRMADA');assert.equal(confirmed.care,'PROGRAMADO');assert.match(confirmed.description,/Pago: PARCIAL/);
+ assert.equal(form.stateSummary({estado_pagado:'PAGADO'}).agenda,'AGENDA SIN ACREDITAR');
 });

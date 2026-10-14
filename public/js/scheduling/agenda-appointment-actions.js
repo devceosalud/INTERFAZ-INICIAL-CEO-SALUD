@@ -39,13 +39,15 @@
         if (!selection || !selection.hora_inicio || selection.tipo_contexto === 'fuera_horario') {
             return { post: false, reason: 'hour' };
         }
+        if (selection.appointment_id || selection.tipo_contexto==='cita_existente') { return {post:false,reason:'existing'}; }
+        if (selection.seleccionable===false || selection.tipo_contexto==='slot_ocupado') return {post:false,reason:'hour'};
         if (!String(patientId || '').trim()) {
             return { post: false, reason: 'patient' };
         }
         if (!String(serviceId || '').trim()) {
             return { post: false, reason: 'service' };
         }
-        return { post: true, pending: true, bookingType: 'REGULAR', occupiedHour: selection.tipo_contexto === 'cita_existente' };
+        return { post: true, pending: true, bookingType: 'REGULAR', occupiedHour: false };
     }
     function mondayOf(iso) {
         const parts = String(iso || '').split('-').map(Number);

@@ -15,7 +15,7 @@ function workspace() {
     let patientId = 2, serviceId = 3;
     let selected = { tipo_contexto: 'slot_libre', doctor_id: 1, fecha: '2026-10-13', hora_inicio: '09:00' };
     const sandbox = { document, FormData:class {constructor(){this.values=new Map();}append(k,v){this.values.set(k,v);}},
-        window: {confirm:message=>{asks.push(message);return decision;},crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
+        window: {Swal:{fire:async options=>{asks.push(options.text);return {isConfirmed:decision};}},confirm:message=>{asks.push(message);return decision;},crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
         fetch: (url, options = {}) => {
             calls.push({ url, options });
             if (url === '/quote') return new Promise(resolve => pending.push(resolve));
@@ -169,10 +169,10 @@ test('sin datos pendientes cambia directamente; con cambios permite cancelar sin
     const qa=workspace();const first={tipo_contexto:'slot_libre',doctor_id:1,fecha:'2026-10-13',hora_inicio:'09:00'};
     qa.select(first);await qa.widget.selectionChanged(first);
     const next={...first,hora_inicio:'10:00'};
-    assert.equal(qa.widget.prepareSelection(next),true);assert.equal(qa.asks.length,0);
+    assert.equal(await qa.widget.prepareSelection(next),true);assert.equal(qa.asks.length,0);
     qa.field('reason').value='Dato ficticio sin guardar';qa.decision(false);
-    assert.equal(qa.widget.prepareSelection(next),false);assert.equal(qa.field('reason').value,'Dato ficticio sin guardar');
-    assert.equal(qa.asks.length,1);qa.decision(true);assert.equal(qa.widget.prepareSelection(next),true);
+    assert.equal(await qa.widget.prepareSelection(next),false);assert.equal(qa.field('reason').value,'Dato ficticio sin guardar');
+    assert.equal(qa.asks.length,1);qa.decision(true);assert.equal(await qa.widget.prepareSelection(next),true);
     qa.select(next);await qa.widget.selectionChanged(next);assert.equal(qa.field('reason').value,'');assert.equal(qa.widget.hasUnsavedChanges(),false);
 });
 test('descartar limpia contextos de dinero, descuentos, indicación y contactos del intervalo anterior',async()=>{
@@ -181,7 +181,7 @@ test('descartar limpia contextos de dinero, descuentos, indicación y contactos 
     Object.assign(qa.field('amount'),{value:'50'});qa.field('method').value='YAPE';qa.field('operation').value='QA-OLD';qa.field('origin').value='YAPE';
     qa.field('phone').value='999000123';qa.field('discount-type').value='FIXED';qa.field('discount-value').value='10';
     qa.field('indication').value='42';qa.field('double').checked=true;qa.field('postoperative').checked=true;
-    const next={...first,doctor_id:2,hora_inicio:'10:00'};assert.equal(qa.widget.prepareSelection(next),true);
+    const next={...first,doctor_id:2,hora_inicio:'10:00'};assert.equal(await qa.widget.prepareSelection(next),true);
     qa.select(next);await qa.widget.selectionChanged(next);
     for(const name of ['operation','origin','phone','indication','discount-type'])assert.equal(qa.field(name).value,'',name);
     assert.equal(qa.field('amount').value,'0');assert.equal(qa.field('method').value,'EFECTIVO');
@@ -194,13 +194,13 @@ test('una actualización del mismo contexto conserva notas todavía sin guardar'
     qa.field('reason').value='Corrección ficticia pendiente';await qa.widget.selectionChanged(selected);
     assert.equal(qa.field('reason').value,'Corrección ficticia pendiente');
 });
-test('selección del calendario consulta el aviso antes de modificar la cita elegida',()=>{
+test('selección del calendario consulta el aviso antes de modificar la cita elegida',async()=>{
     const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
-    const fn=source.slice(source.indexOf('    function selectInterval('),source.indexOf('    function applyQuickState('));
+    const fn=source.slice(source.indexOf('    async function selectInterval('),source.indexOf('    function applyQuickState('));
     const original={appointment_id:5},next={appointment_id:6};let asks=0;
     const sandbox={state:{selection:original},operationalWorkspace:{prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
     vm.runInNewContext(fn+'\nglobalThis.choose=selectInterval;',sandbox);
-    assert.equal(sandbox.choose(next,null),false);assert.equal(sandbox.state.selection,original);assert.equal(asks,1);
+    assert.equal(await sandbox.choose(next,null),false);assert.equal(sandbox.state.selection,original);assert.equal(asks,1);
 });
 test('doble duración se envía explícita, ocupa dos intervalos y se desactiva al cambiar de horario',async()=>{
     const qa=workspace();qa.widget.quoteChanged(100);qa.answer(0,'100.00');await settle();

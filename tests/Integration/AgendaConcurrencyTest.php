@@ -41,13 +41,13 @@ class AgendaConcurrencyTest extends TestCase
             'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $this->catalog['service']->id,
             'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30], $changes);
     }
-    private function race(string $path, array $payloads, array $actors = []): array
+    private function race(string $path, array $payloads, array $actors = [], array $paths = []): array
     {
         $dir = storage_path('app/qa-final/races/'.Str::uuid()); mkdir($dir, 0777, true);
         $release = $dir.'/release'; $processes = [];
         foreach ($payloads as $i => $payload) {
             $input = $dir.'/'.$i.'.input.json'; $output = $dir.'/'.$i.'.output.json';
-            file_put_contents($input, json_encode(['actor' => $actors[$i] ?? $this->actor->id, 'release' => $release, 'path' => $path, 'payload' => $payload]));
+            file_put_contents($input, json_encode(['actor' => $actors[$i] ?? $this->actor->id, 'release' => $release, 'path' => $paths[$i] ?? $path, 'payload' => $payload]));
             $process = new Process([PHP_BINARY, base_path('tests/Support/agenda-qa-request.php'), $input, $output], base_path(), null, null, 30);
             $process->start(); $processes[] = [$process, $output];
         }
@@ -166,8 +166,9 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertSame([409, 409], $this->statuses($this->race($path, [$data, $data])));
         foreach ($tables as $table) { $this->assertSame($before[$table], DB::table($table)->orderBy('id')->get()->toJson(), $table); }
         $data['request_key'] = (string) Str::uuid(); unset($data['confirm']);
-        $this->assertSame([200, 200], $this->statuses($this->race($path, [$data, $data])));
-        $this->assertDatabaseCount('payments', 2); $this->assertDatabaseCount('vouchers', 2); $this->assertEquals(100, Payment::sum('monto'));
+        $this->assertSame([409, 409], $this->statuses($this->race($path, [$data, $data])));
+        foreach ($tables as $table) $this->assertSame($before[$table], DB::table($table)->orderBy('id')->get()->toJson(), $table);
+        $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('vouchers', 1); $this->assertEquals(50, Payment::sum('monto'));
         $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::findOrFail($id)->estado_agenda);
         $this->assertSame('REGULAR', Appointment::findOrFail($id)->tipo_agendamiento);
         $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
@@ -210,6 +211,29 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertSame([201,409],$this->statuses($this->race('/scheduling-mvp/agenda/registrations',[$a,$b])));
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);
         $this->assertEquals(50,Payment::sum('monto'));$this->assertEquals(100,Appointment::first()->precio_programado);
+    }
+
+    public function test_partial_paid_reservations_compete_without_confirming_or_duplicating_money():void {
+        $other=$this->createPatient($this->actor,['numero_identidad'=>'70009231','historia_clinica'=>'QA-HOLD-RACE']);
+        $a=$this->payload(['payment'=>['amount'=>'20','method'=>'EFECTIVO']]);
+        $b=array_replace($a,['request_key'=>(string)Str::uuid(),'patient_id'=>$other->id]);
+        $this->assertSame([201,409],$this->statuses($this->race('/scheduling-mvp/agenda/registrations',[$a,$b])));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);
+        $this->assertEquals(20,Payment::sum('monto'));$this->assertSame('PENDIENTE_CONFIRMACION',Appointment::first()->estado_agenda);
+        $this->assertSame(1,Appointment::occupyingInterval()->count());
+    }
+    public function test_first_deposits_for_two_existing_reservations_cannot_both_take_time():void {
+        $other=$this->createPatient($this->actor,['numero_identidad'=>'70009232','historia_clinica'=>'QA-FIRST-HOLD-RACE']);
+        $a=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload())->assertCreated()->json('appointment.appointment_id');
+        $b=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['patient_id'=>$other->id]))->assertCreated()->json('appointment.appointment_id');
+        $pay=['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'20','method'=>'EFECTIVO']];
+        $results=$this->race('/scheduling-mvp/agenda/appointments/'.$a.'/payments',
+            [$pay,array_replace($pay,['request_key'=>(string)Str::uuid()])],[],
+            ['/scheduling-mvp/agenda/appointments/'.$a.'/payments','/scheduling-mvp/agenda/appointments/'.$b.'/payments']);
+        $this->assertSame([200,409],$this->statuses($results));$this->assertDatabaseCount('appointments',2);
+        $this->assertDatabaseCount('payments',1);$this->assertEquals(20,Payment::sum('monto'));
+        $this->assertSame(1,Appointment::occupyingInterval()->count());
+        $this->assertSame(2,Appointment::where('estado_agenda','PENDIENTE_CONFIRMACION')->count());
     }
 
 }

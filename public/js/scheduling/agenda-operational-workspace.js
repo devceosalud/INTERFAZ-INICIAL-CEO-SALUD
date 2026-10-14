@@ -35,10 +35,17 @@
         function hasUnsavedChanges() {return pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
         function contextKey(c) {return [c?.appointment_id||'',c?.doctor_id||'',c?.fecha||'',c?.hora_inicio||'',c?.site_id||'',c?.tipo_contexto||''].join('|');}
         function pendingRevision() {return JSON.stringify([tracked.map(fieldValue),Array.from(pendingDocumentEdits),config.extraState?.()||'']);}
-        function prepareSelection(next) {
+        async function confirmDiscard(message) {
+            if (!root.Swal) {config.notice('No se pudo abrir la confirmación. Actualiza Agenda; tus cambios se conservaron.',true);return false;}
+            const decision=await root.Swal.fire({title:'Cambios sin guardar',text:message,showCancelButton:true,
+                confirmButtonText:'Descartar y continuar',cancelButtonText:'Conservar cambios',focusCancel:true,
+                allowEscapeKey:true,allowOutsideClick:false,width:430});
+            return decision.isConfirmed===true || decision.value===true;
+        }
+        async function prepareSelection(next) {
             if(working || (config.isBusy && config.isBusy())){config.notice('Espera a que termine la operación antes de cambiar de contexto.',true);return false;}
             if(contextKey(next)===selectedKey || !hasUnsavedChanges())return true;
-            return root.confirm('Hay datos sin guardar en esta cita o reserva. ¿Descartar esos cambios y continuar?');
+            return confirmDiscard('Hay datos sin guardar en esta cita o reserva. ¿Descartar esos cambios y continuar?');
         }
 
         const headers = () => ({ Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content });
@@ -66,17 +73,18 @@
             if (kind === 'payment') { paymentKey = null; }
         }
         function readiness() {
-            return { automaticFree: quoteReady && automaticFree, price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled,
+            return { automaticFree: quoteReady && automaticFree, price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled && lastPosition?.reservation_slot_available !== false,
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
         function reservationConfirmation() {
             const pending = config.context()?.estado_agenda === 'PENDIENTE_CONFIRMACION';
             return { allowed: Boolean(pending && !working && config.canCreate && lastPosition
-                && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
+                && lastPosition.reservation_slot_available !== false && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
                 reason: working ? 'Guardando. Espera el resultado de esta operaci\u00f3n.' :
                     !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     !pending ? 'La cita seleccionada no tiene una confirmaci\u00f3n pendiente.' :
                     !lastPosition ? 'Consultando el requisito financiero de la reserva\u2026' :
+                    lastPosition.reservation_slot_available===false ? lastPosition.reservation_block_reason :
                     'Para confirmar se requiere al menos 50% de pago real o exoneraci\u00f3n autorizada.' };
         }
         function confirmReservation() {
@@ -84,10 +92,12 @@
         }
         function confirmation(position) {
             const reason = byId('confirmation-reason');
-            const allowed = config.canCreate && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
+            const allowed = config.canCreate && position.reservation_slot_available!==false && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
             ui['confirm-reservation'].disabled = working || !allowed;
+            ui['submit-payment'].disabled = working || position.reservation_slot_available===false || ui.amount.disabled;
             if (reason) {
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
+                    position.reservation_slot_available===false ? position.reservation_block_reason :
                     !allowed ? 'Para confirmar se requiere al menos 50% de pago real o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el médico.';
             }
@@ -330,6 +340,7 @@
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
             if (!confirm) {
+                if(lastPosition?.reservation_slot_available===false){config.notice(lastPosition.reservation_block_reason,true);return;}
                 let cents = 0;
                 try { cents = model.cents(ui.amount.value || '0'); }
                 catch (e) { showPlaced(e, 'payment'); return; }
@@ -427,6 +438,6 @@
         });
         function openPayment() { ui['payment-panel'].open = true; ui.amount.focus(); ui['payment-panel'].scrollIntoView({ block: 'nearest' }); }
         captureClean();
-        return { prepareSelection,hasUnsavedChanges,pendingRevision,contextKey,captureClean,register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness, reservationConfirmation, confirmReservation };
+        return { prepareSelection,confirmDiscard,hasUnsavedChanges,pendingRevision,contextKey,captureClean,register, quoteChanged, patientChanged, selectionChanged, openPayment, readiness, reservationConfirmation, confirmReservation };
     };
 }(typeof window !== 'undefined' ? window : globalThis));

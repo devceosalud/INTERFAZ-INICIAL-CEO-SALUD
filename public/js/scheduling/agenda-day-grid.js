@@ -11,6 +11,7 @@
 
     const AVAILABLE = 'DISPONIBLE';
     const OFF_HOURS = 'SIN_HORARIO';
+    const OCCUPIED = 'OCUPADO';
 
     function minutes(value) {
         const parts = String(value || '00:00').split(':').map(Number);
@@ -125,10 +126,11 @@
     function baseContext(options, rowStart, rowEnd, slot) {
         const professional = options.professional || {};
         const available = Boolean(slot && slot.estado === AVAILABLE);
+        const occupied = Boolean(slot && !available);
 
         return {
-            leyenda: available ? AVAILABLE : OFF_HOURS,
-            etiqueta: available ? 'Disponible' : 'Fuera de horario',
+            leyenda: available ? AVAILABLE : (occupied ? OCCUPIED : OFF_HOURS),
+            etiqueta: available ? 'Disponible' : (occupied ? 'Ocupado' : 'Fuera de horario'),
             doctor_id: professional.id || null,
             doctor: professional.nombre || 'Sin médico disponible',
             especialidad: professional.especialidad || null,
@@ -136,10 +138,10 @@
             hora_inicio: time(rowStart),
             hora_fin: time(rowEnd),
             minutos: slotMinutes(slot, rowStart, rowEnd),
-            estado: available ? AVAILABLE : OFF_HOURS,
+            estado: available ? AVAILABLE : (occupied ? OCCUPIED : OFF_HOURS),
             site_id: slot ? slot.site_id : null,
             seleccionable: available,
-            tipo_contexto: available ? 'slot_libre' : 'fuera_horario',
+            tipo_contexto: available ? 'slot_libre' : (occupied ? 'slot_ocupado' : 'fuera_horario'),
             appointment_id: null,
             patient_id: null,
             paciente: null,
@@ -185,14 +187,14 @@
             ));
             const context = items.length > 0
                 ? items[0].context
-                : baseContext(options, rowStart, rowEnd, available ? slot : null);
+                : baseContext(options, rowStart, rowEnd, slot);
 
             rows.push({
                 id: 'agenda-day-row-' + options.date + '-' + time(rowStart).replace(':', ''),
                 start: time(rowStart),
                 end: time(rowEnd),
                 kind: items.length > 0 ? (starting.length > 0 ? 'appointment' : 'continuation')
-                    : (available ? 'available' : 'off-hours'),
+                    : (available ? 'available' : (slot ? 'occupied' : 'off-hours')),
                 context: context,
                 availableContext: available ? baseContext(options, rowStart, rowEnd, slot) : null,
                 items: items,

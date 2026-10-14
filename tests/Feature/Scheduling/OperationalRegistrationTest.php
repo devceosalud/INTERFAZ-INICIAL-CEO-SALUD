@@ -133,19 +133,21 @@ class OperationalRegistrationTest extends TestCase
         $this->pay($id, $payment)->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->pay($id, $payment)->assertOk(); $this->assertEquals(50, Payment::sum('monto')); $this->assertDatabaseCount('payments', 2);
     }
-    public function test_two_paid_regular_reservations_never_convert_implicitly_even_with_additional_permission(): void
+    public function test_paid_regular_reservation_prevents_another_worker_even_with_additional_permission(): void
     {
         $this->shift($this->actor); $other = $this->actor('COMERCIAL'); $this->shift($other);
-        $payment = ['amount' => '50.00', 'method' => 'EFECTIVO'];
+        $payment = ['amount' => '20.00', 'method' => 'EFECTIVO'];
         $one = $this->create($this->payload(['payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000903', 'historia_clinica' => 'QA-3']);
-        $two = $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
-        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
-        $before = Appointment::findOrFail($two)->getAttributes();
-        $this->actingAs($other)->pay($two, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertConflict();
-        $this->assertSame($before, Appointment::findOrFail($two)->getAttributes());
-        $this->assertDatabaseCount('payments', 2);
-        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(100, Payment::sum('monto'));
+        $before=Appointment::findOrFail($one)->getAttributes();
+        $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertConflict();
+        $this->assertSame($before, Appointment::findOrFail($one)->getAttributes());
+        $this->assertDatabaseCount('appointments',1); $this->assertDatabaseCount('payments',1);
+        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(20, Payment::sum('monto'));
+        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
+        $this->pay($one,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'30','method'=>'EFECTIVO']])
+            ->assertOk()->assertJsonPath('appointment.tipo_agendamiento','REGULAR');
+        $this->assertEquals(50,Payment::sum('monto'));
     }
     public function test_missing_shift_operation_or_insufficient_confirmation_rolls_back_every_write(): void
     {
@@ -292,6 +294,7 @@ class OperationalRegistrationTest extends TestCase
 
     public function test_an_additional_booking_stays_confirmed_without_consuming_the_regular_slot(): void
     {
+        $this->shift($this->actor);
         $this->create($this->payload())->assertCreated();
         $other = $this->createPatient($this->actor, [
             'historia_clinica' => 'HC-ADICIONAL-B',
@@ -302,6 +305,7 @@ class OperationalRegistrationTest extends TestCase
             'patient_id' => $other->id,
             'mode' => 'CONFIRM',
             'booking_type' => 'ADICIONAL',
+            'payment'=>['amount'=>'50','method'=>'EFECTIVO'],
         ]));
         $created->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA')->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL');
         $this->assertSame($other->id, (int) Appointment::findOrFail($created->json('appointment.appointment_id'))->patient_id);

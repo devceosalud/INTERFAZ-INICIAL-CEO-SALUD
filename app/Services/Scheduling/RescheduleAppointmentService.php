@@ -49,7 +49,7 @@ class RescheduleAppointmentService
                 if ($confirmedType === AppointmentAgendaLifecycle::OFF_HOURS) {
                     throw new AppointmentSlotUnavailableException('La reserva privada se conserva como REGULAR; confirma primero el flujo de atención excepcional.');
                 }
-                $this->slots->assertValid((int) $doctor->id, $date, $time, $duration, $siteId, $id, true, true);
+                $this->slots->assertValid((int) $doctor->id, $date, $time, $duration, $siteId, $id, false, true);
             } elseif ($additional) {
                 $this->slots->assertValid((int) $doctor->id, $date, $time, $duration, $siteId, $id, true, true);
             } else {

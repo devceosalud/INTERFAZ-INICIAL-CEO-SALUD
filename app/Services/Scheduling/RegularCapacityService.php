@@ -19,6 +19,7 @@ class RegularCapacityService
         $paid = Appointment::query()->whereIn('doctor_id', $query->doctorIds())
             ->whereBetween('fecha_cita', [$query->start()->toDateString(), $query->end()->toDateString()])
             ->consumingRegularSlot()
+            ->where('estado_agenda','<>',\App\Support\Scheduling\AppointmentAgendaLifecycle::PENDING_CONFIRMATION)
             ->where(fn ($q) => $q->whereNull('tipo_agendamiento')->orWhere('tipo_agendamiento', 'REGULAR'))
             ->where('precio_programado', '>', 0)
             ->when($query->siteId() !== null, fn ($q) => $q->where(fn ($s) => $s->where('site_id', $query->siteId())->orWhereNull('site_id')))

@@ -19,7 +19,8 @@ test('el par reserva/agendar explica el siguiente paso sin decir que la reserva 
     const help = guidance.copy.reserveVsSchedule;
     assert.match(help, /Guardar reserva: guarda el seguimiento sin confirmar el horario/);
     assert.match(help, /Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada/);
-    assert.doesNotMatch(help, /bloquea|aparta el horario|ocupa el slot/i);
+    assert.match(help, /Con adelanto o crédito, la reserva protege el horario sin confirmarlo/);
+    assert.match(guidance.copy.legendPrivate,/Pendiente de confirmación.*protege el horario/);
     for (const file of [
         'resources/views/scheduling/agenda/partials/quick-registration.blade.php',
         'resources/views/scheduling/agenda/partials/patient-modal.blade.php',
@@ -37,7 +38,7 @@ test('un adelanto menor a 50% se explica en el pago y no abre un modal', () => {
 });
 
 test('guardar reserva nombra el siguiente paso y los botones apagados explican por qué', () => {
-    assert.equal(guidance.copy.reserveSaved, 'Reserva guardada. Pendiente de adelanto.');
+    assert.equal(guidance.copy.reserveSaved, 'Reserva guardada. Pendiente de confirmación.');
     assert.equal(guidance.copy.reserveSavedHere, 'Reserva guardada para esta hora.');
     assert.equal(guidance.copy.appointmentSaved, 'Cita confirmada.');
     assert.equal(guidance.copy.additionalSaved, 'Cita adicional creada.');
@@ -138,26 +139,17 @@ test('un error de adelanto abre el bloque, enfoca el importe y no crea un modal'
     assert.equal(elements.has('agenda-guidance-modal'), false);
 });
 
-test('otra reserva con paciente y servicio pide RESERVE y no borra el documento', () => {
-    const actions = require('../../public/js/scheduling/agenda-appointment-actions');
-    const selected = { tipo_contexto: 'cita_existente', hora_inicio: '10:00', fecha: '2026-10-09', doctor_id: 4, site_id: 1 };
-    const intent = actions.reserveIntent(selected, '15', '3');
-    assert.equal(intent.post, true);
-    assert.equal(intent.pending, true);
-    assert.equal(intent.bookingType, 'REGULAR');
-    assert.equal(intent.occupiedHour, true);
-    assert.equal(actions.reserveIntent(selected, '', '3').post, false);
-    assert.equal(actions.reserveIntent(selected, '', '3').reason, 'patient');
-    const file = source('public/js/scheduling/agenda.js');
-    const handler = file.slice(
-        file.indexOf("pendingStart.addEventListener('click'"),
-        file.indexOf("additionalStart.addEventListener('click'")
-    );
-    assert.match(handler, /responsibleSelect\.value = ''/);
-    assert.match(handler, /createAppointment\(true\)/);
-    assert.match(handler, /needReservePatient/);
-    assert.match(handler, /matchesDocument/);
-    assert.doesNotMatch(handler, /documentNumber\.value = ''/);
+test('cita existente no dispara otra reserva regular; preparar otra exige intervalo libre',()=>{
+ const actions=require('../../public/js/scheduling/agenda-appointment-actions');
+ const selected={tipo_contexto:'cita_existente',appointment_id:5,hora_inicio:'10:00'};
+ assert.deepEqual(actions.reserveIntent(selected,'15','3'),{post:false,reason:'existing'});
+ const free={tipo_contexto:'slot_libre',hora_inicio:'10:00'};
+ assert.equal(actions.reserveIntent(free,'15','3').post,true);
+ assert.equal(actions.reserveIntent(free,'','3').reason,'patient');
+ const sourceText=source('public/js/scheduling/agenda.js');
+ const handler=sourceText.slice(sourceText.indexOf("pendingStart.addEventListener('click'"),sourceText.indexOf("offHoursStart.addEventListener('click'"));
+ assert.match(handler,/slot.estado !== 'DISPONIBLE'/);assert.match(handler,/await selectInterval/);
+ assert.doesNotMatch(handler,/reserveOnOccupiedHour/);
 });
 
 test('cita adicional no borra al paciente y el éxito no dice solo cita agendada', () => {
