@@ -21,6 +21,12 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        $admission = \App\Http\Controllers\Scheduling\AdmissionBoardController::class;
+        Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
+        Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
+        Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
+            ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
             ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');

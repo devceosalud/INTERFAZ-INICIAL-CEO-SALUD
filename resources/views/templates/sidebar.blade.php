@@ -17,6 +17,13 @@
                 ],
             ])
 
+            @if (config('scheduling.enabled') && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS) && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
+                @include('templates.nav.module', ['key'=>'operational-admission', 'label'=>'Admisión',
+                    'activePatterns'=>['scheduling.mvp.admission*'], 'items'=>[
+                        ['label'=>'Agenda de admisión', 'route'=>'scheduling.mvp.admission', 'patterns'=>['scheduling.mvp.admission*']],
+                    ]])
+            @endif
+
             @if (!auth()->user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)
                 && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
                 && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))

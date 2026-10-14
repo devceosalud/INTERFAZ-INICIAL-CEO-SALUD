@@ -1,0 +1,57 @@
+<?php
+namespace App\Http\Controllers\Scheduling;
+
+use App\Http\Controllers\Controller;
+use App\Models\Doctor;
+use App\Models\Site;
+use App\Models\Specialty;
+use App\Services\Scheduling\AdmissionBoardService;
+use App\Services\Scheduling\AdmissionCareService;
+use App\Support\Scheduling\AdmissionStatus;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class AdmissionBoardController extends Controller
+{
+    public function index(AdmissionBoardService $board)
+    {
+        return response()->view('scheduling.admission.index',[
+            'today'=>now('America/Lima')->toDateString(),'defaultSite'=>$board->defaultSite(),
+            'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre']),
+            'doctors'=>Doctor::orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
+            'specialties'=>Specialty::orderBy('nombre')->get(['id','nombre']),
+            'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,
+        ])->header('Cache-Control','private, no-store')->header('Referrer-Policy','same-origin');
+    }
+
+    public function feed(Request $r, AdmissionBoardService $board)
+    {
+        $data = $r->validate(['fecha'=>'required|date_format:Y-m-d',
+            'hasta'=>'nullable|date_format:Y-m-d|after_or_equal:fecha',
+            'site_id'=>['nullable','integer',Rule::exists('sites','id')->where('estado','ACTIVO')],
+            'doctor_id'=>'nullable|integer|exists:doctors,id','specialty_id'=>'nullable|integer|exists:specialties,id',
+            'patient'=>'nullable|string|max:100','estado'=>['nullable',Rule::in(AdmissionStatus::STATES)],
+            'grupo'=>['nullable',Rule::in(array_merge(array_diff(array_keys(AdmissionStatus::LABELS),['total']),['reservas','otros']))],
+            'page'=>'nullable|integer|min:1|max:1000']);
+        abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
+        // Missing site chooses the actual catalog record; explicit null selects all sites.
+        if (!$r->exists('site_id')) $data['site_id'] = $board->defaultSite()?->id;
+        return response()->json($board->board($data,$r->user()))->header('Cache-Control','private, no-store');
+    }
+
+    public function detail(Request $r, int $appointmentId, AdmissionBoardService $board)
+    {
+        return response()->json($board->detail($appointmentId,$r->user()))->header('Cache-Control','private, no-store');
+    }
+
+    public function care(Request $r, int $appointmentId, AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
+        $data = $r->validate(['request_key'=>'required|uuid','expected_state'=>['required',Rule::in(AdmissionStatus::STATES)],
+            'state'=>'required|in:EN_ESPERA,LLAMANDO,EN_ATENCION,ATENDIDO']);
+        $a = $service->transition($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda])
+            ->header('Cache-Control','private, no-store');
+    }
+}
