@@ -121,39 +121,39 @@
   },
   {
     "id": "R11",
-    "status": "FALTANTE",
-    "gap": "Figma design24:2 inspeccionado visualmente; negocio Magdalena y hoy definidos. Catálogo productivo sites vacío confirmado; panel aún faltante.",
-    "evidence": "Site; rutas/listados heredados; prototipo Figma",
-    "dependency": "Alta real controlada/idempotente propuesta en CEO_SALUD_MAGDALENA_PROPUESTA.md; backend/panel PR separado sin backfill.",
+    "status": "PARCIAL",
+    "gap": "Panel de Nicole implementado según Figma, hoy Lima, sede real por catálogo, seis KPIs aprobados, filtros coherentes, tabla y detalle lateral. Reservas privadas pendientes y tres estados desactivados se distinguen; no reescribe estados. QA escritorio y circuito integrado aprobados; QA móvil y alta productiva de Magdalena pendientes.",
+    "evidence": "AdmissionBoardService; AdmissionStatus; AdmissionBoardTest; AdmissionBoardMariaDbTest; admission-board.js; smoke navegador ADMIN con paciente/adelanto/OCR/seguimiento",
+    "dependency": "PR #12 sobre #10; catálogo supervisado PR #11 (9d1eb29). Horarios/citas NULL se conservan; configurar futuros horarios con sede explícita. Privacidad y despliegue pendientes.",
     "priority": "P0",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#11 / #12",
+    "commit": "9d1eb29 / 2270eb5"
   },
   {
     "id": "R12",
     "status": "PARCIAL",
-    "gap": "Operaciones unificadas en #5; faltan panel/totales/Excel.",
-    "evidence": "MvpAllRolesFlowTest; AppointmentEconomicPosition",
-    "dependency": "PR Admisión; exportación acotada y sin fórmulas inyectadas.",
+    "gap": "Panel con totales del conjunto filtrado, métodos y pagos atribuidos, llegada/llamado/inicio/fin auditados; acciones de cita/pago/OCR usan Agenda con referencia exacta, sin motor financiero duplicado. Excel pendiente, no bloquea circuito P0.",
+    "evidence": "AdmissionBoardService; AdmissionCareService; AppointmentEconomicPosition; AdmissionBoardTest; smoke Nicole → Agenda → OCR → Nicole",
+    "dependency": "PR #12 depende de #10; exportación futura acotada, autorizada y sin fórmulas inyectadas.",
     "priority": "P0",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
     "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "pull_request": "#12",
+    "commit": "2270eb5"
   },
   {
     "id": "R13",
     "status": "PARCIAL",
-    "gap": "Contactos/citas visibles existen; falta proyección administrativa sin clínica y estado receta/informe.",
-    "evidence": "OperationalPatientController; AppointmentVisibility",
-    "dependency": "PR Admisión/historial y documentos.",
+    "gap": "Detalle administrativo con contactos, responsable, hasta 20 citas visibles, médicos/servicios y situación económica, sin diagnósticos, motivos históricos, observaciones ni contenido médico. Seguimiento específico de recetas/informes pendiente.",
+    "evidence": "AdmissionBoardService::detail; AdmissionBoardTest privacidad/históricos; AppointmentVisibility",
+    "dependency": "PR #12; R14 para documentos operativos y estados de recetas/informes.",
     "priority": "P1",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
     "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "pull_request": "#12",
+    "commit": "2270eb5"
   },
   {
     "id": "R14",
@@ -193,27 +193,27 @@
   },
   {
     "id": "R17",
-    "status": "FALTANTE",
-    "gap": "User no guarda DNI; verificar entidad trabajador/relación antes de unique para nuevos.",
-    "evidence": "User; admin/master/user/UserController",
-    "dependency": "PR trabajadores; preservar identidades heredadas.",
+    "status": "IMPLEMENTADO",
+    "gap": "DNI nuevo numérico de ocho dígitos y único, conserva ceros; legados sin DNI o sin corrección se conservan. Editor existente protegido, búsqueda por nombre/DNI, sin asignación automática de roles.",
+    "evidence": "UserController; users_worker_dni_unique; WorkerAccessTest; WorkerConcurrencyTest (dos altas con mismo DNI); smoke local edición y búsqueda DNI",
+    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
     "priority": "P1",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#13",
+    "commit": "b2a0121"
   },
   {
     "id": "R18",
-    "status": "FALTANTE",
-    "gap": "Bloqueo global activo y revocación inmediata de sesiones/tokens no acreditados.",
-    "evidence": "User; middleware; UserController",
-    "dependency": "PR trabajadores; todos guards e historial.",
+    "status": "IMPLEMENTADO",
+    "gap": "Desactivar/reactivar exclusivo ADMIN activo, motivo/confirmación/auditoría, época de sesión y remember token rotados, tokens revocados; sesión antigua no revive. Bloquea nuevas solicitudes y responsables inactivos sin alterar historial. No aborta operaciones ya en curso.",
+    "evidence": "UserAccountAccess; Authenticate; AuthController; User::hasPermissionTo; WorkerAccessTest (file/database/Sanctum); carreras reales de reintento y dos administradores; smoke local",
+    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
     "priority": "P1",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#13",
+    "commit": "b2a0121"
   },
   {
     "id": "R19",
@@ -230,13 +230,13 @@
   {
     "id": "R20",
     "status": "PARCIAL",
-    "gap": "OCR local Tesseract.js 7 probado en navegador con Yape/BCP sintéticos, ambiguo e ilegible; sugerencias editables, uso y revisión expresos. Pagos y múltiples adjuntos privados vinculados, hash único + operación bancaria, auditoría e idempotencia; carrera real corregida. Pendiente smoke Hostinger equivalente y muestras adicionales ficticias; no validación bancaria automática.",
+    "gap": "OCR local Tesseract.js 7 probado en navegador con Yape/BCP sintéticos, ambiguo e ilegible; sugerencias editables, uso y revisión expresos. Pagos y múltiples adjuntos privados vinculados, hash único + operación bancaria, auditoría e idempotencia; carrera real corregida. Pendiente smoke Hostinger equivalente y muestras adicionales ficticias; no validación bancaria automática. Circuito nuevo paciente/descuento/reserva/OCR/pago/confirmación/seguimiento de Nicole verificado en navegador; pago único e histórico intacto por SELECT de QA.",
     "evidence": "AppointmentPaymentProofs; AppointmentProofStorage; AppointmentPaymentProofsTest; AgendaConcurrencyTest; appointment-receipt-ocr/review; smoke Agenda y Admisión + readback QA",
     "dependency": "PR OCR sobre #9; migración aditiva de appointment_documents y recursos estáticos locales. Privacidad Clarity antes de datos reales; sin requerir Tesseract nativo ni proc_open web.",
     "priority": "P0",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
     "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#10",
+    "pull_request": "#10 / #12",
     "commit": "f1b3c25"
   },
   {
@@ -277,15 +277,15 @@
   },
   {
     "id": "R24",
-    "status": "PARCIAL",
-    "gap": "Diálogo ERP Swal para descarte, esperas asíncronas en selección/fecha/vista/movimiento, reset y bloqueo de respuestas tardías. Cancelar conserva observación/paciente/hora y descartar limpia contexto: verificado en navegador. Casos de ficha modal completa aún pendientes de QA de navegador.",
-    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke QA P0 del 13/10",
-    "dependency": "Rama codex/mvp-p0-agenda sobre #8. Completar smoke de creación/ficha modal durante circuito integrado.",
+    "status": "IMPLEMENTADO",
+    "gap": "Swal de descarte con esperas, reset de contexto y protección de respuestas tardías. Navegador: conserva motivo al cancelar, limpia motivo/descuento/importe/archivo al descartar y permite cambiar vistas sin advertencia si está limpio. Alta completa de paciente desde modal verificada en circuito Nicole/Agenda/OCR.",
+    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke QA integrado del 14/10: nuevo paciente, descarte/conservación y Día/Semana/Mes",
+    "dependency": "PR #9 reutilizado en #12; verificación productiva pendiente.",
     "priority": "P0",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
     "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#5 / #9",
-    "commit": "7c02b44"
+    "pull_request": "#9 / #12",
+    "commit": "7c02b44 / 2270eb5"
   },
   {
     "id": "R25",
