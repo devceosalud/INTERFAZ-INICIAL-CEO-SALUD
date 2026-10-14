@@ -39,7 +39,7 @@ class AppointmentEconomicPosition
         $result = [];
         foreach ($appointments as $a) {
             $linked = $links->where('item_id', $a->id)->pluck('voucher_id')->unique();
-            $cash = []; $ambiguous = false; $seen = [];
+            $cash = []; $ambiguous = false; $seen = []; $paymentDetails = [];
             foreach ($vouchers as $v) {
                 if (!$linked->contains($v->id) && !$linked->contains($v->parent_voucher_id)) { continue; }
                 if (!in_array($v->tipo_comprobante, ['TICKET', 'BOLETA', 'FACTURA'], true) || $v->estado === 'ANULADO') { continue; }
@@ -51,7 +51,10 @@ class AppointmentEconomicPosition
                 $root = $v->parent_voucher_id && $vouchers->get($v->parent_voucher_id)?->tipo_comprobante === 'TICKET'
                     ? $v->parent_voucher_id : $v->id;
                 foreach ($payments->get($v->id, collect()) as $p) {
-                    if (!isset($seen[$p->id])) { $cash[$root] = ($cash[$root] ?? 0) + (int) round((float) $p->monto * 100); $seen[$p->id] = true; }
+                    if (!isset($seen[$p->id])) { $cash[$root] = ($cash[$root] ?? 0) + (int) round((float) $p->monto * 100); $seen[$p->id] = true;
+                        $paymentDetails[] = ['id'=>(int)$p->id,'amount'=>Money::decimal((int)round((float)$p->monto*100)),
+                            'method'=>$p->metodo_pago,'recorded_at'=>$p->created_at?->toISOString()];
+                    }
                 }
             }
             $paid = array_sum($cash);
@@ -75,6 +78,7 @@ class AppointmentEconomicPosition
                         && substr($a->fecha_cita,0,10)===(string)$indications[$a->id]->attended_on)),
                 'secured_percentage' => $price ? round($effective * 100 / $price, 2) : 0,
                 'authority' => $ambiguous ? 'UNALLOCATED' : ($fallback ? 'LEGACY_SNAPSHOT' : 'PAYMENTS'),
+                'payment_details' => $ambiguous ? [] : $paymentDetails,
                 'allocation_required' => $ambiguous, 'available_by_voucher' => array_map(fn ($c) => max(0, $c), $cash)];
             $result[$a->id]['credit_review_required'] = $ambiguous || $paid < 0 || $paid > $price;
         }

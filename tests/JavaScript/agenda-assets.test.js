@@ -8,10 +8,10 @@ test('dependencia ausente deja todas las acciones bloqueadas y explica el fallo 
 });
 
 
-test('Agenda keeps dynamic native selectors after the shared theme loads, without changing other modules',()=>{
+test('Agenda and Admission keep dynamic native selectors after the shared theme loads, without changing other modules',()=>{
     let onLoad;const calls=[];
     const jQuery=selector=>({selectpicker:command=>calls.push({selector,command})});jQuery.fn={selectpicker(){}};
     vm.runInNewContext(fs.readFileSync('public/js/scheduling/agenda-shell.js','utf8'),{window:{jQuery,addEventListener:(event,fn)=>{assert.equal(event,'load');onLoad=fn;}}});
     assert.deepEqual(calls,[]);onLoad();
-    assert.deepEqual(calls,[{selector:'#agenda-board select',command:'destroy'}]);
+    assert.deepEqual(calls,[{selector:'#agenda-board select, #admission-board select',command:'destroy'}]);
 });

@@ -158,10 +158,13 @@ class AdmissionBoardTest extends TestCase
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.reservas',1)->assertJsonPath('totals.pagos_reales','50.00');
         $this->postJson(route('scheduling.mvp.agenda.payments',$id),['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.por_llegar',1)->assertJsonPath('totals.pagos_reales','50.00')->assertJsonPath('totals.saldo','50.00');
-        $this->detail($id)->assertOk()->assertJsonCount(1,'documents')->assertJsonPath('appointment.economy.fuente','PAYMENTS');
+        $this->detail($id)->assertOk()->assertJsonCount(1,'documents')->assertJsonPath('appointment.economy.fuente','PAYMENTS')->assertJsonPath('payments.0.method','YAPE')->assertJsonPath('payments.0.amount','50.00');
         $this->care(Appointment::findOrFail($id),'EN_ESPERA')->assertOk();
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.en_espera',1)->assertJsonPath('kpis.por_llegar',0);
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointment_documents',1);
         $this->assertEquals(50,Payment::sum('monto'));
+        $this->appointment(['fecha_cita'=>$date,'total_pagado'=>75,'saldo_pendiente'=>25]);
+        $r=$this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('totals.pagos_reales','50.00')->assertJsonPath('totals.pagado_historico','75.00')->assertJsonPath('totals.saldo','75.00');
+        $this->assertStringNotContainsString('QA-NICOLE-1',$this->detail($id)->getContent());
     }
 }

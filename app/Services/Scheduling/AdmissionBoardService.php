@@ -17,6 +17,11 @@ use Illuminate\Validation\ValidationException;
 /** Administrative projection of existing appointments. No new payment or clinical store. */
 class AdmissionBoardService
 {
+    private const COLUMNS = ['id','numero_cita','user_id','responsible_user_id','patient_id','doctor_id','service_id','site_id',
+        'fecha_cita','hora_cita','estado_cita','estado_agenda','estado_pagado','precio_programado','total_pagado',
+        'economic_source','es_exonerado','autorizado_por','pricing_rule','is_postoperative',
+        'hora_llegada','hora_llamado','hora_atencion','hora_atendido'];
+
     public function __construct(private OperationalAgendaAppointmentService $appointments,
         private AppointmentEconomicPosition $economics) {}
 
@@ -33,7 +38,7 @@ class AdmissionBoardService
             ->when(!empty($filters['specialty_id']), fn ($q) => $q->where('specialty_id',$filters['specialty_id']))->pluck('id')->all();
         $query = new AgendaQuery($doctors, Carbon::parse($filters['fecha']),
             Carbon::parse($filters['hasta'] ?? $filters['fecha']), $filters['site_id'] ?? null);
-        $rows = $this->appointments->rangeQuery($query, $actor->id)
+        $rows = $this->appointments->rangeQuery($query, $actor->id)->select(self::COLUMNS)
             ->when(!empty($filters['estado']), fn ($q) => $q->where('estado_cita',$filters['estado']))
             ->when(!empty($filters['patient']), function ($q) use ($filters) {
                 // Bound parameters and escaped LIKE metacharacters; POST body keeps identity out of URLs.
@@ -75,6 +80,7 @@ class AdmissionBoardService
             'doctor'=>$a->doctor?->nombre,'especialidad'=>$a->doctor?->specialty?->nombre,'servicio'=>$a->service?->nombre,
             'responsable'=>$a->responsibleUser?->name ?? $a->user?->name,'sede'=>$a->site?->nombre,
             'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda,'estado_pagado'=>$a->estado_pagado,
+            'payment_methods'=>array_values(array_unique(array_column($p['payment_details'],'method'))),
             'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
             'tiempos'=>collect(['llegada'=>$a->hora_llegada,'llamado'=>$a->hora_llamado,'inicio'=>$a->hora_atencion,'fin'=>$a->hora_atendido])->map(fn ($time) => $time ? Carbon::parse($time,config('app.timezone'))->toISOString() : null)->all(),
             'economy'=>['precio'=>Money::decimal($p['price_cents']),'pagado'=>Money::decimal($p['paid_cents']),
@@ -84,9 +90,11 @@ class AdmissionBoardService
 
     public function detail(int $id, User $actor): array
     {
-        $a = Appointment::visibleToAgendaUser($actor->id)->with(['patient.channel:id,nombre','patient.interactionMedium:id,nombre',
-            'doctor.specialty','service','site','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
-        $previous = Appointment::visibleToAgendaUser($actor->id)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
+        $a = Appointment::visibleToAgendaUser($actor->id)->select(self::COLUMNS)->with([
+            'patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad,telefono,telefono_secundario,channel_id,interaction_medium_id',
+            'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
+            'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
+        $previous = Appointment::visibleToAgendaUser($actor->id)->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
         $positions = $this->economics->forAppointments($previous->push($a));
@@ -105,7 +113,7 @@ class AdmissionBoardService
         return ['appointment'=>$this->row($a,$positions[$a->id]),'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
-            'events'=>$events,'history'=>$history,'documents'=>$documents,
+            'events'=>$events,'history'=>$history,'documents'=>$documents,'payments'=>$positions[$a->id]['payment_details'],
             'care_actions'=>$this->careActions($a,$actor),
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];

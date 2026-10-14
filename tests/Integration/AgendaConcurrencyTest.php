@@ -24,6 +24,11 @@ class AgendaConcurrencyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Committed worker fixtures rebuild the schema outside RefreshDatabase. Invalidate its
+        // process-wide cache so a preceding transactional test cannot contaminate the next class.
+        $this->beforeApplicationDestroyed(function (): void {
+            \Illuminate\Foundation\Testing\RefreshDatabaseState::$migrated = false;
+        });
         $this->artisan('migrate:fresh', ['--force' => true])->assertExitCode(0);
         $this->actor = $this->agendaReader('ADMISION');
         foreach ([C::CREATE, C::SUBMIT_PAYMENT] as $name) { $this->actor->givePermissionTo(Permission::findOrCreate($name, 'web')); }
