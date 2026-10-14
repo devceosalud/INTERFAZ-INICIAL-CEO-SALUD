@@ -6,6 +6,12 @@
         const ui = Object.fromEntries(['phone', 'phone-secondary', 'channel', 'medium', 'reason', 'note', 'price', 'paid',
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
+        const receipt = root.AppointmentReceiptReview ? root.AppointmentReceiptReview({host:byId('receipt-review'),input:ui.proof,prefix:'agenda-op',
+            paymentFields:{amount:ui.amount,method:ui.method,operation:ui.operation,origin:ui.origin}}) : {
+                append() {if(Array.from(ui.proof.files || []).some(f=>root.AgendaGuidance.invalidProof(f))) throw new Error(root.AgendaGuidance.copy.fileInvalid);
+                    if(ui.proof.files?.length) throw new Error('No se cargó la revisión de comprobantes. Actualiza Agenda antes de adjuntar; puedes registrar un pago manual sin imagen.');},
+                reset:async()=>{ui.proof.value='';},hasChanges:()=>Boolean(ui.proof.files?.length)};
+        const documentFile=byId('document-file');
         const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
         const catalogPrice = byId('catalog-price'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
         function discountInput() { return discountType?.value ? { type: discountType.value, value: discountValue.value || '0', reason: discountReason.value || null } : null; }
@@ -27,12 +33,13 @@
         const pendingDocumentEdits=new Map();
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
             'rate','discount-type','discount-value','discount-reason','postoperative','exemption-reason','double','indication','referred','referral-origin',
-            'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested'];
+            'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
+            'document-file','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
         let cleanExtra='',detailsVersion=0,documentsVersion=0;
         function fieldValue(name) {const f=byId(name);return f?JSON.stringify([f.value||'',Boolean(f.checked),Array.from(f.files||[]).map(v=>[v.name||'',v.size||0])]):'';}
         function captureClean(names=tracked) {names.forEach(name=>cleanValues.set(name,fieldValue(name)));if(names===tracked)cleanExtra=config.extraState?.()||'';}
-        function hasUnsavedChanges() {return pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
+        function hasUnsavedChanges() {return receipt.hasChanges() || pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
         function contextKey(c) {return [c?.appointment_id||'',c?.doctor_id||'',c?.fecha||'',c?.hora_inicio||'',c?.site_id||'',c?.tipo_contexto||''].join('|');}
         function pendingRevision() {return JSON.stringify([tracked.map(fieldValue),Array.from(pendingDocumentEdits),config.extraState?.()||'']);}
         async function confirmDiscard(message) {
@@ -256,11 +263,9 @@
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
                     payload.patient_capture = captureValues();
                 }
-                const body = new FormData(); body.append('payload', JSON.stringify(payload));
-                if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
-                if (ui.proof.files[0]) { body.append('proof', ui.proof.files[0]); }
+                const body = new FormData(); receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(config.endpoint, { method: 'POST', body });
-                registrationKey = null; ui.amount.value = '0'; ui.proof.value = ''; ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
+                registrationKey = null; ui.amount.value = '0'; await receipt.reset(); ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
                 captureClean();pendingDocumentEdits.clear();await config.registered(response, options);
             } catch (e) { rejected(e, 'registration'); showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment'); }
@@ -298,7 +303,7 @@
         async function selectionChanged(context) {
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
-            if (key !== selectedKey) { ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
+            if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             [doubleInput,indicationInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
             if(byId('indication-record-panel')) byId('indication-record-panel').hidden=true;
@@ -350,11 +355,9 @@
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
-                const body = new FormData(); body.append('payload', JSON.stringify(payload));
-                if (!confirm && root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
-                if (!confirm && ui.proof.files[0]) { body.append('proof', ui.proof.files[0]); }
+                const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
-                paymentKey = null; ui.amount.value = '0'; ui.proof.value = ''; ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);
+                paymentKey = null; ui.amount.value = '0'; if(!confirm)await receipt.reset(); ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);
                 await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
             } catch (e) { rejected(e, 'payment'); showPlaced(e, 'payment'); }
             finally { setWorking(false); }
@@ -391,23 +394,23 @@
         ui['add-documents'].addEventListener('click', async () => {
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
-            if (root.AgendaGuidance.invalidProof(ui.proof.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
+            if (root.AgendaGuidance.invalidProof(documentFile.files[0])) { showPlaced({ message: root.AgendaGuidance.copy.fileInvalid }, 'documents'); return; }
             let pending = [];
             try { pending = model.links(ui.links.value); }
             catch (e) { showPlaced(e, 'documents'); return; }
-            const hasFile = Boolean(ui.proof.files[0]);
+            const hasFile = Boolean(documentFile.files[0]);
             if (!hasFile && pending.length === 0) { showPlaced({ message: root.AgendaGuidance.copy.needDocument }, 'documents'); return; }
             working = true;
             try {
                 if (hasFile) {
-                    const body = new FormData(); body.append('label', 'Comprobante de pago'); body.append('file', ui.proof.files[0]);
-                    await request(base + '/' + id + '/documents', { method: 'POST', body }); ui.proof.value = '';
+                    const body = new FormData(); body.append('label', 'Documento operativo'); body.append('file', documentFile.files[0]);
+                    await request(base + '/' + id + '/documents', { method: 'POST', body }); documentFile.value = '';
                 }
                 for (let i = 0; i < pending.length; i++) {
                     await request(base + '/' + id + '/documents', json('POST', pending[i]));
                     ui.links.value = pending.slice(i + 1).map(l => l.label + ' | ' + l.url).join('\n');
                 }
-                await documents(id);captureClean(['proof','links']);
+                await documents(id);captureClean(['document-file','links']);
                 const saved = hasFile && pending.length ? root.AgendaGuidance.copy.fileSaved + ' ' + root.AgendaGuidance.copy.linkSaved : (hasFile ? root.AgendaGuidance.copy.fileSaved : root.AgendaGuidance.copy.linkSaved);
                 const status = document.getElementById('agenda-op-documents-status');
                 const errorBox = document.getElementById('agenda-op-documents-error');

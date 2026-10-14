@@ -1,0 +1,4 @@
+Tesseract.js 7.0.0 and Tesseract.js-core 7.0.0: Project Naptha, unmodified npm distributions.
+Spanish language data: @tesseract.js-data/spa 1.0.0, 4.0.0_best_int (LSTM). Package metadata declares MIT; upstream traineddata license is Apache-2.0 and is retained in LICENSE.traineddata.
+Sources and checksums: manifest.json; reproducible npm lockfile: tools/appointment-ocr.
+No patient data or receipts are included in these public runtime assets.

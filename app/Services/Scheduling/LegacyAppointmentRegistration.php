@@ -18,7 +18,7 @@ class LegacyAppointmentRegistration
     {
         abort_unless($request->user()->can(C::VIEW) && $request->user()->can(C::CREATE), 403);
         \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
-        $data = $request->validate(\App\Support\Scheduling\AppointmentPriceInput::rules() + [
+        $data = $request->validate(AppointmentPaymentProofs::rules() + \App\Support\Scheduling\AppointmentPriceInput::rules() + [
             'patient_id' => ['required', 'integer', Rule::exists('patients', 'id')->where('estado', 'ACTIVO')],
             'doctor_id' => 'required|integer', 'service_id' => 'required|integer',
             'additional_rate_id' => 'nullable|integer', 'site_id' => 'nullable|integer|exists:sites,id',
@@ -31,7 +31,7 @@ class LegacyAppointmentRegistration
             'numero_operacion' => 'nullable|string|max:120', 'entidad_origen' => 'nullable|string|max:120',
             'es_exonerado' => 'sometimes|boolean', 'autorizado_por' => 'nullable|string|max:255',
             'motivo_consulta' => 'nullable|string|max:2000', 'observaciones' => 'nullable|string|max:2000',
-        ]);
+        ],AppointmentPaymentProofs::messages());
         $mode = $data['mode'] ?? 'RESERVE';
         $amount = $data['total_pagado'] ?? '0';
         if (empty($data['request_key']) && ((float) $amount > 0 || $mode === 'CONFIRM')) {
@@ -61,8 +61,9 @@ class LegacyAppointmentRegistration
             'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
             'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
             'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null,
+            'proof_review'=>$data['proof_review'] ?? null,
             'payment' => ['amount' => (string) $amount, 'method' => strtoupper($data['metodo_pago'] ?? ''),
                 'operation' => $data['numero_operacion'] ?? null, 'origin' => $data['entidad_origen'] ?? null],
-        ], $request->user());
+        ], $request->user(),$request->file('proofs') ?? $request->file('proof'));
     }
 }

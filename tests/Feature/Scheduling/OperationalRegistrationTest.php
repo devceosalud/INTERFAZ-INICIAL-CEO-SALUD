@@ -233,7 +233,7 @@ class OperationalRegistrationTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'proof');
         file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHYsAAAAASUVORK5CYII='));
         try {
-            $payload = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'LOCAL-PROOF-50']];
+            $payload = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'LOCAL-PROOF-50'], 'proof_review'=>['reviewed'=>true,'source'=>'MANUAL']];
             $url = route('scheduling.mvp.agenda.payments', $id);
             for ($i = 0; $i < 2; $i++) {
                 $this->post($url, ['payload' => json_encode($payload), 'proof' => new UploadedFile($path, 'untrusted.exe', null, null, true)], ['Accept' => 'application/json'])
@@ -263,7 +263,7 @@ class OperationalRegistrationTest extends TestCase
             $this->withoutExceptionHandling();
             try {
                 $this->post(route('scheduling.mvp.agenda.payments', $id), ['payload' => json_encode(['request_key' => (string) Str::uuid(), 'confirm' => false,
-                    'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]), 'proof' => new UploadedFile($path, 'proof.png', null, null, true)], ['Accept' => 'application/json']);
+                    'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO'], 'proof_review'=>['reviewed'=>true,'source'=>'MANUAL']]), 'proof' => new UploadedFile($path, 'proof.png', null, null, true)], ['Accept' => 'application/json']);
                 $this->fail('The simulated history failure must propagate.');
             } catch (\RuntimeException $error) { $this->assertSame('QA failure after storage', $error->getMessage()); }
             $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);

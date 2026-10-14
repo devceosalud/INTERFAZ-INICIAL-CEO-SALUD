@@ -254,12 +254,12 @@ class AgendaStabilizationTest extends TestCase
         $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
     }
 
-    public function test_deferred_multiple_proofs_are_rejected_with_laravel_nine_validation(): void
+    public function test_invalid_multiple_proofs_are_rejected_with_laravel_nine_validation(): void
     {
         $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $this->payload(['proofs' => ['unsupported']]))
-            ->assertUnprocessable()->assertJsonValidationErrors('proofs');
+            ->assertUnprocessable()->assertJsonValidationErrors('proofs.0');
         $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload(['proofs' => ['unsupported']]))
-            ->assertUnprocessable()->assertJsonValidationErrors('proofs');
+            ->assertUnprocessable()->assertJsonValidationErrors('proofs.0');
         $this->assertDatabaseCount('appointments', 0);
     }
 }

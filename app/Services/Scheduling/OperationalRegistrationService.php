@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 
 class OperationalRegistrationService
 {
-    public function register(array $data, User $actor, ?UploadedFile $proof = null): Appointment
+    public function register(array $data, User $actor, UploadedFile|array|null $proof = null): Appointment
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
             'No tienes permiso para registrar citas (appointment.create y appointment.view).');
@@ -31,11 +31,14 @@ class OperationalRegistrationService
             ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
             app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
         }
-        unset($data['proof']);
-        $hash = hash('sha256', json_encode($data).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
-        $storedPath = null;
+        $files=AppointmentPaymentProofs::files($proof,$data);
+        unset($data['proof'],$data['proofs']);
+        $hash = hash('sha256', json_encode($data).AppointmentPaymentProofs::fingerprint($files));
+        $storedPaths = [];
         try {
-            return DB::transaction(function () use ($data, $actor, $proof, $hash, &$storedPath) {
+            return DB::transaction(function () use ($data, $actor, $files, $hash, &$storedPaths) {
+                // A deadlock rolls back DB rows; remove only this operation's failed-attempt files before retrying.
+                if($storedPaths){Storage::disk('local')->delete($storedPaths);$storedPaths=[];}
                 // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
                 DB::table('appointment_operations')->upsert([['actor_user_id' => $actor->id,
                     'request_key' => $data['request_key'], 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
@@ -94,7 +97,8 @@ class OperationalRegistrationService
                     abort_unless($actor->can(Capability::CREATE_ADDITIONAL), 403); $a = $creator->createAdditional($create);
                 } elseif ($data['booking_type'] === 'FUERA_HORARIO') { $a = $creator->createOffHours($create); }
                 else { $a = $creator->createPending($create); }
-                $amount = Money::cents($data['payment']['amount'] ?? 0);
+                $amount = Money::cents($data['payment']['amount'] ?? 0); $payment=null;
+                if($files && $amount<1) throw ValidationException::withMessages(['proofs'=>'Adjunta comprobantes al registrar un pago positivo revisado. La imagen no registra dinero.']);
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
                 $expected = ['precio_programado' => Money::cents($a->precio_programado),
                     'saldo_pendiente' => $waived ? 0 : Money::cents($a->precio_programado) - $amount];
@@ -107,7 +111,7 @@ class OperationalRegistrationService
                     abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                     $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                     $v = $tickets->create($a, $shift, $actor->id);
-                    app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,
+                    $payment=app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,
                         $data['payment']['method'] ?? '', $data['payment']['operation'] ?? null, $data['payment']['origin'] ?? null);
                     $v->update(['estado' => $amount === Money::cents($v->total) ? 'PAGADO' : 'PARCIAL']);
                 }
@@ -120,17 +124,18 @@ class OperationalRegistrationService
                     if($data['booking_type']==='REGULAR') app(AppointmentSlotValidator::class)->assertUnoccupied($a->doctor_id, $data['fecha_cita'], $data['hora_cita'], $a->duracion_cita, $a->id);
                     $a->update(['estado_agenda' => 'CONFIRMADA']);
                 }
-                if ($proof) {
-                    $storedPath = app(AppointmentProofStorage::class)->store($a, $actor->id, $proof)->private_path;
-                }
+                if ($files) app(AppointmentPaymentProofs::class)->store($a,$payment,$actor->id,$files,$data['proof_review'],$storedPaths);
                 foreach ($data['links'] ?? [] as $link) { $a->documents()->create(['type' => 'EXTERNAL_LINK', 'label' => $link['label'], 'url' => $link['url'], 'actor_user_id' => $actor->id]); }
                 DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
                 app(AppointmentHistory::class)->record($a, 'REGISTRO_OPERATIVO', $actor->id,
                     ['metadata' => ['mode' => $data['mode'], 'operation_id' => $op->id]]);
                 return $a;
-            });
+            },3);
         } catch (\Throwable $e) {
-            if ($storedPath) { Storage::disk('local')->delete($storedPath); } throw $e;
+            if ($storedPaths) { Storage::disk('local')->delete($storedPaths); }
+            if($e instanceof \Illuminate\Database\DeadlockException || ($e instanceof \Illuminate\Database\QueryException && in_array((int)($e->errorInfo[1]??0),[1205,1213],true)))
+                throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('La operación coincidió con otra escritura. Reintenta usando la misma solicitud; no repitas el cobro con una nueva clave.');
+            throw $e;
         }
     }
     private function owner(User $actor, ?int $selected): ?int

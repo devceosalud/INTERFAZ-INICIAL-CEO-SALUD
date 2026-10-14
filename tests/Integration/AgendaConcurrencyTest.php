@@ -41,13 +41,13 @@ class AgendaConcurrencyTest extends TestCase
             'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $this->catalog['service']->id,
             'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30], $changes);
     }
-    private function race(string $path, array $payloads, array $actors = [], array $paths = []): array
+    private function race(string $path, array $payloads, array $actors = [], array $paths = [], array $proofFixtures = []): array
     {
         $dir = storage_path('app/qa-final/races/'.Str::uuid()); mkdir($dir, 0777, true);
         $release = $dir.'/release'; $processes = [];
         foreach ($payloads as $i => $payload) {
             $input = $dir.'/'.$i.'.input.json'; $output = $dir.'/'.$i.'.output.json';
-            file_put_contents($input, json_encode(['actor' => $actors[$i] ?? $this->actor->id, 'release' => $release, 'path' => $paths[$i] ?? $path, 'payload' => $payload]));
+            file_put_contents($input, json_encode(['actor' => $actors[$i] ?? $this->actor->id, 'release' => $release, 'path' => $paths[$i] ?? $path, 'payload' => $payload, 'proof_fixtures'=>$proofFixtures[$i]??[]]));
             $process = new Process([PHP_BINARY, base_path('tests/Support/agenda-qa-request.php'), $input, $output], base_path(), null, null, 30);
             $process->start(); $processes[] = [$process, $output];
         }
@@ -236,4 +236,25 @@ class AgendaConcurrencyTest extends TestCase
         $this->assertSame(2,Appointment::where('estado_agenda','PENDIENTE_CONFIRMACION')->count());
     }
 
+
+    public function test_identical_proof_cannot_pay_twice_across_independent_operators_and_doctors(): void
+    {
+        $otherActor=$this->agendaReader('COMERCIAL');
+        foreach([C::CREATE,C::SUBMIT_PAYMENT] as $name)$otherActor->givePermissionTo(Permission::findOrCreate($name,'web'));
+        $otherPatient=$this->createPatient($otherActor,['numero_identidad'=>'70008881','historia_clinica'=>'QA-RECEIPT-RACE']);
+        $otherCatalog=$this->createAppointmentCatalog();
+        $box=Cashier::create(['nombre'=>'QA receipt race second box','estado'=>'ACTIVO']);
+        CashierShift::create(['cashier_id'=>$box->id,'user_id'=>$otherActor->id,'monto_apertura'=>0,'abierto_en'=>now(),'estado'=>'ABIERTO']);
+        VoucherSerie::create(['cashier_id'=>$box->id,'tipo_comprobante'=>'TICKET','serie'=>'QA02','correlativo_actual'=>0,'estado'=>'ACTIVO']);
+        $review=['reviewed'=>true,'source'=>'MANUAL'];
+        $a=$this->payload(['proof_review'=>$review,'payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-RACE-A']]);
+        $b=$this->payload(['patient_id'=>$otherPatient->id,'doctor_id'=>$otherCatalog['doctor']->id,'service_id'=>$otherCatalog['service']->id,
+            'hora_cita'=>'08:30','proof_review'=>$review,'payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-RACE-B']]);
+        $filesBefore=count(\Illuminate\Support\Facades\Storage::disk('local')->allFiles('appointment-documents'));
+        $results=$this->race('/scheduling-mvp/agenda/registrations',[$a,$b],[$this->actor->id,$otherActor->id],[],[['yape.png'],['yape.png']]);
+        $this->assertSame([201,422],$this->statuses($results));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointment_documents',1);
+        $this->assertDatabaseCount('appointment_operations',1);$this->assertEquals(20,Payment::sum('monto'));
+        $this->assertSame($filesBefore+1,count(\Illuminate\Support\Facades\Storage::disk('local')->allFiles('appointment-documents')));
+    }
 }

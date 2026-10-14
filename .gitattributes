@@ -8,3 +8,8 @@
 
 /.github export-ignore
 CHANGELOG.md export-ignore
+
+public/vendor/appointment-ocr/** -text linguist-vendored
+public/vendor/appointment-ocr/core/*.wasm.js -diff
+public/vendor/appointment-ocr/lang/*.gz -text
+public/vendor/appointment-ocr/LICENSE* whitespace=-blank-at-eof

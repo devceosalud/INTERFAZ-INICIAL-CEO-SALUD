@@ -34,6 +34,8 @@ class AppointmentDocumentController extends Controller
     private function payload(AppointmentDocument $d): array
     {
         return ['id' => $d->id, 'type' => $d->type, 'purpose'=>$d->purpose, 'label' => $d->label, 'url' => $d->url,
+            'payment_id'=>$d->payment_id,'reviewed_at'=>$d->reviewed_at?->toISOString(),
+            'review_source'=>$d->receipt_review['source']??null,
             'download_url' => $d->private_path ? route('scheduling.mvp.documents.download', [$d->appointment_id, $d->id]) : null];
     }
     public function index(Request $r, int $appointmentId)
@@ -60,13 +62,25 @@ class AppointmentDocumentController extends Controller
         abort_unless($this->canReadEvidence($r,$d),404);
         $rules = ['label' => 'required|string|max:120'];
         if ($d->type === 'EXTERNAL_LINK') { $rules['url'] = 'required|url|max:2048|starts_with:https://'; }
-        $d->update($r->validate($rules)); return response()->json($this->payload($d));
+        $data=$r->validate($rules);
+        return \Illuminate\Support\Facades\DB::transaction(function()use($d,$r,$data){
+            $d->update($data);
+            if($d->payment_id) app(\App\Services\Scheduling\AppointmentHistory::class)->record($d->appointment,'COMPROBANTE_PAGO_ETIQUETADO',$r->user()->id,
+                ['metadata'=>['document_id'=>$d->id,'payment_id'=>$d->payment_id]]);
+            return response()->json($this->payload($d));
+        });
     }
     public function destroy(Request $r, int $appointmentId, int $documentId)
     {
         // Soft delete keeps private evidence for retention/review; user cannot download it anymore.
         $d=$this->appointment($r, $appointmentId, true)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
-        abort_unless($this->canReadEvidence($r,$d),404);$d->delete(); return response()->noContent();
+        abort_unless($this->canReadEvidence($r,$d),404);
+        return \Illuminate\Support\Facades\DB::transaction(function()use($d,$r){
+            $d->delete();
+            if($d->payment_id) app(\App\Services\Scheduling\AppointmentHistory::class)->record($d->appointment,'COMPROBANTE_PAGO_OCULTADO',$r->user()->id,
+                ['metadata'=>['document_id'=>$d->id,'payment_id'=>$d->payment_id,'private_file_retained'=>true]]);
+            return response()->noContent();
+        });
     }
     public function download(Request $r, int $appointmentId, int $documentId)
     {
