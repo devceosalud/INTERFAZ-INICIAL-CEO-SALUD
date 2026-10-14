@@ -10,7 +10,8 @@
         if (!(response.headers.get('content-type') || '').includes('application/json')) {
             throw new Error('No se pudo cargar el usuario. Recarga la página y vuelve a intentarlo.');
         }
-        const body = await response.json();
+        let body;
+        try { body = await response.json(); } catch (error) { throw new Error('No se pudo cargar el usuario. Recarga la página y vuelve a intentarlo.'); }
         if (!response.ok) { throw new Error(response.status === 404 ? 'El usuario ya no está disponible.' : 'No se pudo cargar el usuario.'); }
         return body;
     }

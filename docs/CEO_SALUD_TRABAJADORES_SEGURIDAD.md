@@ -23,11 +23,11 @@ Rama independiente: codex/mvp-trabajadores-seguridad. Base: PR #5 fc4f278. Sin d
 
 - PHP 8.3.35 / SQLite, suite de esta rama: **714 pruebas / 5.285 aserciones aprobadas**.
 - MariaDB 11.8.9 dedicado: **21 pruebas / 204 aserciones aprobadas** (18 funcionales + tres carreras multiproceso reales). Incluye duplicado DNI, reintento de desactivación y desactivación mutua de administradores.
-- JavaScript de esta rama: **211/211 aprobadas**, incluidas respuestas obsoletas de edición y errores de sesión/HTML.
+- JavaScript de esta rama: **212/212 aprobadas**, incluidas respuestas obsoletas de edición y errores de sesión/HTML.
 - Navegador local 8025: login administrador ficticio; edición de DNI heredado sin cambiar contraseña; búsqueda por DNI; desactivación y reactivación con motivo y confirmación; rol ADMISION conservado. La creación por formulario y dispositivos móviles no se probaron manualmente; creación/validación sí tiene pruebas HTTP automatizadas.
 - Sesión real file: cookie antigua rechazada tras reactivar; login nuevo aceptado. Tokens revocados no reviven. Prueba de migración reversible sin uso conserva identidad/hashes/roles/timestamps; rollback después de uso se bloquea.
 - Primer intento de suite general: una expectativa antigua de DTO falló por DNI añadido. Se acotó DTO a campos usados por editor y se actualizó el contrato exacto; la suite final indicada arriba pasó. Logs locales ignorados en storage/app/qa-workers.
-- Integración acumulada con PR #12: PENDIENTE al registrar este checkpoint.
+- Integración acumulada con PR #12 (9bb56ea), en worktree QA sin merge: **PHP 839 pruebas / 6.533 aserciones; MariaDB 11.8.9 332 pruebas / 3.816 aserciones; JavaScript 254/254, todo aprobado**. Aplicación del código sin conflictos; el contexto del arnés IsolatedAgendaQa cambió entre ramas y se insertó únicamente la delegación al runtime workers, preservando los otros tres. No se fusionó ninguna rama ni se modificó main. El ajuste final JavaScript solo oculta errores de JSON inválido y tiene prueba adicional.
 
 ## Publicación supervisada, sin ejecución autorizada aún
 
