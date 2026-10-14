@@ -10,11 +10,22 @@
         if (!(response.headers.get('content-type') || '').includes('application/json')) {
             throw new Error('No se pudo cargar el usuario. Recarga la página y vuelve a intentarlo.');
         }
-        const body = await response.json();
+        let body;
+        try { body = await response.json(); } catch (error) { throw new Error('No se pudo cargar el usuario. Recarga la página y vuelve a intentarlo.'); }
         if (!response.ok) { throw new Error(response.status === 404 ? 'El usuario ya no está disponible.' : 'No se pudo cargar el usuario.'); }
         return body;
     }
-    root.UserEditorApi = { lookup };
+    async function changeState(url,payload,token,fetcher){
+        const response=await fetcher(url,{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify(payload)});
+        if(response.redirected||[401,419].includes(response.status))throw new Error('Inicia sesión nuevamente antes de administrar accesos.');
+        if(response.status===403)throw new Error('No tienes autorización para administrar accesos.');
+        if(!(response.headers.get('content-type')||'').includes('application/json'))throw new Error('No se pudo confirmar el resultado. Actualiza antes de repetir.');
+        let body;try{body=await response.json();}catch(error){throw new Error('No se pudo confirmar el resultado. Actualiza antes de repetir.');}
+        if(!response.ok)throw new Error([409,422].includes(response.status)?Object.values(body.errors||{}).flat()[0]||body.message||'Actualiza el estado del trabajador.':'No se pudo confirmar el resultado. Actualiza antes de repetir.');
+        return body;
+    }
+    function latestLookup(){let version=0;return {cancel(){version++;},async run(work,paint){const current=++version;try{const data=await work();if(current!==version)return false;paint(data);return true;}catch(error){if(current!==version)return false;throw error;}}};}
+    root.UserEditorApi = { lookup, changeState, latestLookup };
     if (typeof module === 'object' && module.exports) { module.exports = root.UserEditorApi; }
 }(typeof window !== 'undefined' ? window : globalThis));
 
@@ -59,7 +70,7 @@ if (typeof window !== 'undefined') window.addEventListener("DOMContentLoaded", f
                         location.reload();
                     });
                     form.reset();
-                    $("#patientModalCreate").modal("hide");
+                    $("#userModalCreate").modal("hide");
                 }
             },
 
@@ -78,14 +89,17 @@ if (typeof window !== 'undefined') window.addEventListener("DOMContentLoaded", f
     });
 
 
+    const editLookup=window.UserEditorApi.latestLookup();
+    $("#userModalEdit").on("hidden.bs.modal",function(){editLookup.cancel();document.getElementById("formUpdateUser").reset();});
+
     //PARA EDITAR AL USUARIO
     $(document).on("click", ".edit-user", async function (e) {
         e.preventDefault();
         let userId = $(this).data("id");
 
         try {
-            const data = await window.UserEditorApi.lookup(`${window.location.origin}/api/admin/user/search`, userId,
-                document.querySelector('meta[name="csrf-token"]').content, window.fetch.bind(window));
+            await editLookup.run(() => window.UserEditorApi.lookup(`${window.location.origin}/api/admin/user/search`, userId,
+                document.querySelector('meta[name="csrf-token"]').content, window.fetch.bind(window)), data => {
 
             if (data.message === "encontrado") {
                 let u = data.user;
@@ -93,11 +107,13 @@ if (typeof window !== 'undefined') window.addEventListener("DOMContentLoaded", f
                 $("#userModalEdit #usuario_id_edit").val(u.id);
                 $("#userModalEdit #nombre_usuario_edit").val(u.name);
                 $("#userModalEdit #email_edit").val(u.email);
+                $("#userModalEdit #dni_edit").val(u.dni || '');
                 $("#userModalEdit input[name=password]").val('');
 
                 //ABRIR MODAL
                 $("#userModalEdit").modal("show");
             }
+            });
         } catch (error) {
             Swal.fire({ icon: 'error', title: 'No se pudo abrir la edición', text: error.message });
         }
@@ -159,5 +175,23 @@ if (typeof window !== 'undefined') window.addEventListener("DOMContentLoaded", f
         });
     });
 
+
+    let changingAccess=false;
+    $(document).on('click','.user-access-state',async function(){
+        if(changingAccess)return;const button=this;const active=button.dataset.active!=='1';
+        if(!window.Swal)return;
+        const decision=await Swal.fire({title:active?'Reactivar trabajador':'Desactivar trabajador',
+            text:button.dataset.worker+': '+(active?'Debe iniciar sesión de nuevo. Se conservan sus roles y permisos.':'Se impedirán nuevas solicitudes y se revocarán sus sesiones y tokens. Se conservan citas, pagos y roles.'),
+            input:'textarea',inputLabel:'Motivo administrativo',inputAttributes:{maxlength:'500'},
+            showCancelButton:true,confirmButtonText:active?'Reactivar':'Desactivar',cancelButtonText:'Volver',
+            inputValidator:value=>!value||value.trim().length<3?'Registra un motivo de al menos 3 caracteres.':undefined});
+        if(!decision.isConfirmed||changingAccess)return;changingAccess=true;button.disabled=true;
+        try{
+            await window.UserEditorApi.changeState(button.dataset.url,{active,expected_version:Number(button.dataset.version),
+                request_key:crypto.randomUUID(),reason:decision.value.trim()},document.querySelector('meta[name="csrf-token"]').content,window.fetch.bind(window));
+            await Swal.fire({icon:'success',title:'Acceso actualizado',text:'Roles e historial conservados. La reactivación exige iniciar sesión de nuevo.'});location.reload();
+        }catch(error){await Swal.fire({icon:'error',title:'No se pudo confirmar el resultado',text:error.message});}
+        finally{changingAccess=false;button.disabled=false;}
+    });
 
 });

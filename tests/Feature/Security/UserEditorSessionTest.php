@@ -30,7 +30,7 @@ class UserEditorSessionTest extends TestCase
         $this->actingAs($admin)->postJson($url, ['id' => $target->id])->assertStatus(419);
         $this->withSession(['_token' => 'test-csrf'])->withHeader('X-CSRF-TOKEN', 'test-csrf')
             ->postJson($url, ['id' => $target->id])->assertOk()->assertExactJson([
-                'message' => 'encontrado', 'user' => ['id' => $target->id, 'name' => 'QA ficticio', 'email' => 'qa@example.invalid']]);
+                'message' => 'encontrado', 'user' => ['id' => $target->id, 'name' => 'QA ficticio', 'email' => 'qa@example.invalid', 'dni' => null]]);
         $this->postJson($url, ['id' => 'invalid'])->assertUnprocessable();
         $this->actingAs($this->createUserWithRole('COMERCIAL'))->postJson($url, ['id' => $target->id])->assertForbidden();
     }

@@ -24,7 +24,12 @@
                         Datos del Usuario
                     </h6>
 
-                    <div class="row g-3">
+                    <div class="row g-3"><div class="col-md-4">
+                        <label class="form-label" for="dni">DNI del trabajador · obligatorio</label>
+                        <input class="form-control" type="text" name="dni" id="dni" inputmode="numeric" maxlength="8" required pattern="[0-9]{8}" autocomplete="off" placeholder="8 dígitos">
+                        <span class="text-danger error-text dni_error"></span>
+
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">Nombre</label>
                             <input type="text" class="form-control" name="nombre_usuario" id="nombre_usuario"
@@ -43,9 +48,9 @@
                         <div class="col-md-4">
                             <label class="form-label">Contraseña</label>
                             <input type="password" name="password" id="password" class="form-control"
-                                placeholder="*****">
+                                placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password">
                         </div>
-                    </div>
+                    </div><span class="text-danger error-text password_error"></span><p class="mt-2">Cambiar la contraseña revoca las sesiones y tokens anteriores del trabajador.</p>
                 </div>
 
                 <!-- FOOTER -->
