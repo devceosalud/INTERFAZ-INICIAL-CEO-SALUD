@@ -1,0 +1,9 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OCR CEO Salud — QA aislado</title><link rel="stylesheet" href="/qa.css"><body><main>
+<h1>OCR de comprobantes · QA ficticio</h1><p>Motor local en navegador. Ningún resultado registra dinero. Esta página aislada no forma parte del ERP.</p>
+<label>Imagen JPG/PNG <input id="receipt-file" type="file" accept="image/png,image/jpeg"></label>
+<label>Fixture sintético <select id="fixture"><option value="yape.png">Yape S/75</option><option value="bcp.jpg">BCP S/250</option><option value="ambiguous.png">Importes ambiguos</option><option value="unreadable.png">Ilegible</option></select></label><button id="load-fixture">Cargar fixture QA</button>
+<button id="read" disabled>Leer imagen</button><button id="cancel">Descartar lectura</button><p id="status" role="status">Sin imagen.</p>
+<img id="preview" alt="Comprobante ficticio seleccionado" hidden>
+<section><h2>Sugerencias para revisión humana</h2><label>Monto <input id="amount"></label><label>Operación <input id="operation"></label><label>Entidad <input id="bank"></label><label>Fecha <input id="date"></label><label>Hora <input id="time"></label>
+<label><input id="reviewed" type="checkbox">Contrasté los datos con la imagen</label><p>No existe botón de cobro en esta prueba.</p><pre id="metrics"></pre></section></main>
+<script src="/vendor/appointment-ocr/tesseract.min.js"></script><script src="/appointment-receipt-ocr.js"></script><script src="/qa.js"></script></body></html>

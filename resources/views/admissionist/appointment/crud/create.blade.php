@@ -16,7 +16,7 @@
 
                 @csrf
                 <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
-                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (no ocupa horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
+                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (con dinero protege horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
                 <p>El precio se calcula en el servidor. Registrar adelanto no confirma automáticamente.</p>
 
                 <div class="modal-body">
@@ -209,6 +209,7 @@
                                 <option value="TARJETA">TARJETA</option>
                                 <option value="YAPE">YAPE</option>
                                 <option value="PLIN">PLIN</option>
+                                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
                             </select>
                         </div>
 
@@ -253,7 +254,7 @@
                                 </svg>
                                 <p class="principal">Arrastra la captura de pago aquí</p>
                                 <p class="secundario">o haz clic para elegir un archivo</p>
-                                <input type="file" id="fileInput" accept="image/*">
+                                <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,application/pdf">
                             </div>
 
                             <div class="preview" id="preview" style="display:none">

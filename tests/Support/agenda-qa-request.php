@@ -12,8 +12,15 @@ while (!file_exists($input['release'])) {
     if (microtime(true) > $deadline) { throw new RuntimeException('QA barrier timeout.'); }
     usleep(5000);
 }
-$request = \Illuminate\Http\Request::create($input['path'], 'POST', [], [], [],
-    ['HTTP_ACCEPT' => 'application/json', 'CONTENT_TYPE' => 'application/json'], json_encode($input['payload']));
+$files=[];
+foreach($input['proof_fixtures']??[] as $name){
+    if(!in_array($name,['yape.png','bcp.jpg','ambiguous.png','unreadable.png'],true))throw new RuntimeException('Fixture no permitido.');
+    $files['proofs'][]=new \Illuminate\Http\UploadedFile(base_path('tests/Fixtures/receipts/'.$name),$name,null,null,true);
+}
+$request = $files
+    ? \Illuminate\Http\Request::create($input['path'],'POST',['payload'=>json_encode($input['payload'])],[],$files,['HTTP_ACCEPT'=>'application/json'])
+    : \Illuminate\Http\Request::create($input['path'], 'POST', [], [], [],
+        ['HTTP_ACCEPT' => 'application/json', 'CONTENT_TYPE' => 'application/json'], json_encode($input['payload']));
 $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
 $response = $kernel->handle($request);
 file_put_contents($argv[2], json_encode(['status' => $response->getStatusCode(), 'body' => json_decode($response->getContent(), true)]));

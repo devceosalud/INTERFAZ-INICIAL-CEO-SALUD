@@ -94,7 +94,10 @@
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
         <!-- TESSERACT -->
-        <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('vendor/appointment-ocr/tesseract.min.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-ocr.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-guidance.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-review.js') }}"></script>
 
         <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/appointment/appointment.js') }}"></script>
         <script src="{{ asset('js/admissionist/schedule/schedule.js') }}"></script>
@@ -105,7 +108,7 @@
         <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
         <script src="{{ asset('js/admissionist/appointment/update.js') }}"></script>
 
-        <script src="{{ asset('js/admissionist/tesseract/tesseract.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/tesseract/tesseract.js') }}"></script>
     @endsection
 
 

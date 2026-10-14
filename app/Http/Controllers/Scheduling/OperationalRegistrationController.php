@@ -27,7 +27,7 @@ class OperationalRegistrationController extends Controller
 
     public function store(OperationalRegistrationRequest $request, OperationalRegistrationService $service)
     {
-        try { $a = $service->register($request->validated(), $request->user(), $request->file('proof')); }
+        try { $a = $service->register($request->validated(), $request->user(), $request->file('proofs') ?? $request->file('proof')); }
         catch (AppointmentSlotUnavailableException $e) { return response()->json(['message' => $e->getMessage()], 409); }
         catch (AppointmentConfigurationException $e) { return response()->json(['message' => $e->getMessage()], 422); }
         return response()->json(['message' => $a->estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'Reserva privada guardada' : 'Cita agendada',
@@ -53,14 +53,14 @@ class OperationalRegistrationController extends Controller
             $payload = json_decode((string) $request->input('payload'), true);
             abort_unless(is_array($payload), 422); $request->merge($payload);
         }
-        $data = $request->validate(['proofs' => 'prohibited', 'proof' => ['nullable', 'file', new \App\Rules\PrivateAppointmentFile(), 'max:8192'], 'request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
+        $data = $request->validate(\App\Services\Scheduling\AppointmentPaymentProofs::rules() + ['request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
             'payment' => 'nullable|array:amount,method,operation,origin',
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', \Illuminate\Validation\Rule::in(\App\Services\Billing\VoucherPaymentRecorder::METHODS)],
-            'payment.operation' => 'nullable|string|max:120', 'payment.origin' => 'nullable|string|max:120']);
+            'payment.operation' => 'nullable|string|max:120', 'payment.origin' => 'nullable|string|max:120'],\App\Services\Scheduling\AppointmentPaymentProofs::messages());
         // Normalize only Laravel-validated boolean representations; omission never requests confirmation.
         if (array_key_exists('confirm', $data)) { $data['confirm'] = (bool) $data['confirm']; }
-        try { $a = $service->submit($appointmentId, $request->user(), $data, $request->file('proof')); }
+        try { $a = $service->submit($appointmentId, $request->user(), $data, $request->file('proofs') ?? $request->file('proof')); }
         catch (AppointmentSlotUnavailableException $e) { return response()->json(['message' => $e->getMessage()], 409); }
         return response()->json(['appointment' => ['appointment_id' => $a->id, 'estado_agenda' => $a->estado_agenda,
             'tipo_agendamiento' => $a->tipo_agendamiento], 'economy' => app(AppointmentEconomicPosition::class)->publicPosition($a)]);

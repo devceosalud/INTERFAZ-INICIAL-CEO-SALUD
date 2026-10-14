@@ -258,11 +258,16 @@ $('#formCreateAppointment').on('submit', function (e) {
 
     if (!legacyQuoteReady) { calcularPrecioCita(); notificacion('warning','Cotización','Espera el precio vigente antes de guardar.',3000,false,false); return; }
     let form = this;
+    const body=new FormData(form);
+    try {
+        if(window.LegacyReceiptReview)window.LegacyReceiptReview.append(body);
+        else if(document.getElementById('fileInput')?.files.length)throw new Error('Actualiza el formulario para revisar los comprobantes antes de registrar.');
+    }catch(error){notificacion('warning','Comprobantes',error.message,4000,false,false);return;}
 
     $.ajax({
         url: $(form).attr('action'),
         method: $(form).attr('method'),
-        data: new FormData(form),
+        data: body,
         processData: false,
         contentType: false,
         dataType: 'json',
@@ -274,7 +279,7 @@ $('#formCreateAppointment').on('submit', function (e) {
 
         success: function (response) {
             let role = document.querySelector('#appointmentModalCreate #rol_user_redirection').value; //VARIABLE ROL DEL USUARIO PARA REDIRECCION
-            console.log('CITA CREADA:', response);
+
 
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {

@@ -230,6 +230,9 @@ test('documentos vacíos y adelanto cero no anuncian un guardado', async () => {
     assert.equal(notices.some((message) => /registrado|guardados/i.test(message)), false);
     document.getElementById('agenda-op-proof').files = [{ type: 'image/png', size: 100 }];
     await document.getElementById('agenda-op-add-documents').listeners.click();
+    assert.equal(requested, false, 'Un comprobante seleccionado no se adjunta como documento ni registra dinero.');
+    document.getElementById('agenda-op-document-file').files = [{ type: 'image/png', size: 100 }];
+    await document.getElementById('agenda-op-add-documents').listeners.click();
     assert.equal(document.getElementById('agenda-op-documents-error').hidden, true);
     assert.equal(document.getElementById('agenda-op-documents-status').textContent, guidance.copy.fileSaved);
 });
@@ -283,4 +286,9 @@ test('la ayuda clickeable reemplaza el símbolo de información en lo obvio', ()
     assert.match(legend, /Citas adicionales y atenciones fuera de horario/);
     assert.match(calendar, /El color indica cuánto del horario regular ya está confirmado con adelantos/);
     assert.match(withdrawal, /No asistió: nunca llegó/);
+});
+
+test('revisión humana y duplicados conservan su motivo junto a documentos',()=>{
+ for(const message of ['Revisa todos los comprobantes y confirma la revisión humana antes de registrar el pago.','Este comprobante ya fue registrado. Revisa la operación antes de cobrar; no se registró otro pago.']){
+ const p=guidance.place(message,422,'payment');assert.equal(p.domain,'documents');assert.equal(p.text,message);}
 });

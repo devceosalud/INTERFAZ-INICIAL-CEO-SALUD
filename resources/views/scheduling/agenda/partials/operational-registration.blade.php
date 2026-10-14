@@ -74,7 +74,10 @@
     </details>
     <details id="agenda-op-documents-panel">
         <summary>Comprobantes y documentos</summary>
-        <label class="agenda-field agenda-upload"><span>+ Subir comprobante · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-proof" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+        <label class="agenda-field agenda-upload"><span>Comprobantes del próximo pago · máximo 5, 8 MB cada uno, 20 MB en total</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"></label>
+        <div id="agenda-op-receipt-review"></div>
+        <p>Adjunta capturas del mismo pago. Cada transferencia distinta se registra por separado, con su importe y operación. Los archivos se guardan con el próximo adelanto después de tu revisión; adjuntar un documento no registra dinero.</p>
+        <label class="agenda-field"><span>Documento operativo · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-document-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
         <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>

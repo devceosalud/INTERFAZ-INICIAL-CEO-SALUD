@@ -102,6 +102,9 @@
         if (/https|links deben|enlace/i.test(text)) {
             return { domain: 'documents', text: copy.linkInvalid, focus: false };
         }
+        if (/revisi[oó]n humana|revisa todos los comprobantes|comprobante ya fue registrado|conjunto de comprobantes|m[aá]ximo 5 comprobantes|revisi[oó]n de comprobantes/i.test(text)) {
+            return { domain: 'documents', text: text, focus: false };
+        }
         if (/jpg|png|pdf|8\s*mb|mime|archivo|comprobante/i.test(text)) {
             return { domain: 'documents', text: copy.fileInvalid, focus: false };
         }
