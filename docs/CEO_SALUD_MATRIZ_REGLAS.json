@@ -193,27 +193,27 @@
   },
   {
     "id": "R17",
-    "status": "FALTANTE",
-    "gap": "User no guarda DNI; verificar entidad trabajador/relación antes de unique para nuevos.",
-    "evidence": "User; admin/master/user/UserController",
-    "dependency": "PR trabajadores; preservar identidades heredadas.",
+    "status": "IMPLEMENTADO",
+    "gap": "DNI nuevo numérico de ocho dígitos y único, conserva ceros; legados sin DNI o sin corrección se conservan. Editor existente protegido, búsqueda por nombre/DNI, sin asignación automática de roles.",
+    "evidence": "UserController; users_worker_dni_unique; WorkerAccessTest; WorkerConcurrencyTest (dos altas con mismo DNI); smoke local edición y búsqueda DNI",
+    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
     "priority": "P1",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#13",
+    "commit": "b2a0121"
   },
   {
     "id": "R18",
-    "status": "FALTANTE",
-    "gap": "Bloqueo global activo y revocación inmediata de sesiones/tokens no acreditados.",
-    "evidence": "User; middleware; UserController",
-    "dependency": "PR trabajadores; todos guards e historial.",
+    "status": "IMPLEMENTADO",
+    "gap": "Desactivar/reactivar exclusivo ADMIN activo, motivo/confirmación/auditoría, época de sesión y remember token rotados, tokens revocados; sesión antigua no revive. Bloquea nuevas solicitudes y responsables inactivos sin alterar historial. No aborta operaciones ya en curso.",
+    "evidence": "UserAccountAccess; Authenticate; AuthController; User::hasPermissionTo; WorkerAccessTest (file/database/Sanctum); carreras reales de reintento y dos administradores; smoke local",
+    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
     "priority": "P1",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#13",
+    "commit": "b2a0121"
   },
   {
     "id": "R19",
