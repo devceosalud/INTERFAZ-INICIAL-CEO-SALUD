@@ -236,8 +236,8 @@
     "priority": "P0",
     "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
     "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PR OCR pendiente de publicación",
-    "commit": "SIGUIENTE COMMIT OCR"
+    "pull_request": "#10",
+    "commit": "f1b3c25"
   },
   {
     "id": "R21",

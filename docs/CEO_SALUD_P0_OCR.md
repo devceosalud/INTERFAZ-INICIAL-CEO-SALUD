@@ -1,5 +1,5 @@
 # CEO Salud — P0-B: OCR y comprobantes de pagos
-14/10/2026. Desarrollo sobre PR #9, rama codex/mvp-pagos-ocr. Sin merge, despliegue, cambios productivos ni modificación de Clarity.
+14/10/2026. [PR Draft #10](https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/10), código f1b3c25, sobre PR #9; rama codex/mvp-pagos-ocr. Sin merge, despliegue, cambios productivos ni modificación de Clarity.
 
 ## Solución elegida y alternativas
 
