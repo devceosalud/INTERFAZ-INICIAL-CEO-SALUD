@@ -64,7 +64,7 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Usuarios</h4>
+                                <div><h4 class="card-title">Usuarios / trabajadores</h4><p class="mb-0">Busca por nombre o DNI en el buscador de la tabla. Los registros heredados sin DNI se conservan.</p></div>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                                     data-bs-toggle="modal" data-bs-target="#userModalCreate">
@@ -86,12 +86,12 @@
                                         </div>
                                     @endif
 
-                                    <table id="example4" class="table table-bordered text-center mb-0" id="datatable">
+                                    <table id="example4" class="table table-bordered text-center mb-0">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
                                                 <th>NOMBRE</th>
-                                                <th>EMAIL</th>
+                                                <th>DNI</th><th>EMAIL</th><th>ACCESO</th>
                                                 <th>ROL</th>
                                                 <th>Acciones</th>
                                             </tr>
@@ -101,7 +101,8 @@
                                                 <tr>
                                                     <td>{{ $user->id }}</td>
                                                     <td>{{ $user->name }}</td>
-                                                    <td>{{ $user->email }}</td>
+                                                    <td>{{ $user->dni ?? 'Heredado · sin DNI' }}</td><td>{{ $user->email }}</td>
+                                                    <td><span class="badge {{ $user->is_active ? 'badge-success' : 'badge-danger' }}">{{ $user->is_active ? 'Activo' : 'Desactivado' }}</span></td>
                                                     <td>
                                                         @forelse ($user->getRoleNames() as $role)
                                                             <span
@@ -111,6 +112,11 @@
                                                         @endforelse
                                                     </td>
                                                     <td>
+                                                        <button type="button" class="btn btn-outline-secondary user-access-state"
+                                                            data-url="{{ route('admin.user.state',$user->id) }}" data-active="{{ $user->is_active ? '1' : '0' }}"
+                                                            data-version="{{ $user->auth_version }}" data-worker="{{ $user->name }}"
+                                                            @disabled($user->id === auth()->id()) title="Confirmación y motivo obligatorios. No altera roles ni historial.">
+                                                            {{ $user->is_active ? 'Desactivar' : 'Reactivar' }}</button>
                                                         <strong>
                                                             <span class="me-3">
                                                                 <a href="#" class="edit-user"
@@ -162,7 +168,7 @@
             <script src="{{ asset('assets/js/custom.min.js') }}"></script>
             <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
-            <script src="{{ asset('js/admin/master/user/user.js') }}"></script>
+            <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admin/master/user/user.js') }}"></script>
         @endsection
 
 

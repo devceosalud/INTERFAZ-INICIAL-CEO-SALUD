@@ -18,8 +18,8 @@ class UserController extends Controller
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'user' => $user->only(['id', 'name', 'email'])
-            ], 200);
+                'user' => $user->only(['id', 'name', 'email', 'dni'])
+            ], 200)->header('Cache-Control','private, no-store');
         }
     }
 }

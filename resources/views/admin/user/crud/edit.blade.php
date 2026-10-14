@@ -25,7 +25,12 @@
                         Datos del Usuario
                     </h6>
 
-                    <div class="row g-3">
+                    <div class="row g-3"><div class="col-md-4">
+                        <label class="form-label" for="dni_edit">DNI del trabajador · opcional para heredados</label>
+                        <input class="form-control" type="text" name="dni_edit" id="dni_edit" inputmode="numeric" maxlength="8"  autocomplete="off" placeholder="8 dígitos">
+                        <span class="text-danger error-text dni_edit_error"></span>
+                        <small>Si corriges un DNI, debe tener 8 dígitos y ser único. No se borrará uno registrado.</small>
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">Nombre</label>
                             <input type="hidden" name="usuario_id_edit" id="usuario_id_edit">
@@ -45,9 +50,9 @@
                         <div class="col-md-4">
                             <label class="form-label">Nueva contraseña</label>
                             <input type="password" name="password" class="form-control"
-                                placeholder="Dejar vacío para mantener la actual">
+                                placeholder="Dejar vacío para mantener la actual" minlength="8" autocomplete="new-password">
                         </div>
-                    </div>
+                    </div><span class="text-danger error-text password_error"></span><p class="mt-2">Cambiar la contraseña revoca las sesiones y tokens anteriores del trabajador.</p>
                 </div>
 
                 <!-- FOOTER -->

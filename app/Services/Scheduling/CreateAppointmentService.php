@@ -160,6 +160,7 @@ class CreateAppointmentService
 
         $responsible = User::query()
             ->whereKey($responsibleUserId)
+            ->where('is_active', true)
             ->whereHas('roles', fn ($query) => $query->whereIn('name', $automaticOwner ? ['COMERCIAL', 'ADMISION'] : ['COMERCIAL']))
             ->first();
 

@@ -25,11 +25,12 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        if (!Auth::attempt($request->only('email', 'password') + ['is_active'=>true], $request->boolean('remember'))) {
             return back()->with('mensaje', 'Tus credenciales estan incorrectas');
         }
 
         $request->session()->regenerate();
+        $request->session()->put('ceosalud_auth_version',(int)Auth::user()->auth_version);
 
         return redirect()->route('admin.dashboard.index');
     }

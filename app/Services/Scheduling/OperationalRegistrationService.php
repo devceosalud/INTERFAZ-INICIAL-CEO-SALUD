@@ -121,7 +121,7 @@ class OperationalRegistrationService
         }
         if ($selected !== null) {
             abort_unless($actor->hasRole('ADMINISTRADOR') && $actor->can(Capability::ASSIGN_RESPONSIBLE), 403);
-            abort_unless(User::whereKey($selected)->whereHas('roles', fn ($q) => $q->where('name', 'COMERCIAL'))->exists(), 422);
+            abort_unless(User::whereKey($selected)->where('is_active',true)->whereHas('roles', fn ($q) => $q->where('name', 'COMERCIAL'))->exists(), 422);
         }
         return $selected;
     }

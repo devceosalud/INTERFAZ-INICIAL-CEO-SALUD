@@ -82,6 +82,7 @@ Route::delete('/admin/role/destroy/{role}', [RoleController::class, 'destroy'])-
 Route::get('/admin/user/index', [UserController::class, 'index'])->name('admin.user.index');
 Route::post('/admin/user/store', [UserController::class, 'store'])->name('admin.user.store');
 Route::put('/admin/user/update/user/list', [UserController::class, 'updateUser'])->name('admin.user.update.list');
+Route::post('/admin/user/{userId}/access-state', [UserController::class, 'state'])->whereNumber('userId')->name('admin.user.state');
 Route::get('/admin/user/edit/{user}', [UserController::class, 'edit'])->name('admin.user.edit');
 Route::put('/admin/user/update/{user}', [UserController::class, 'update'])->name('admin.user.update');
 
