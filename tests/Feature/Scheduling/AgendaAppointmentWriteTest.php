@@ -233,8 +233,7 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->createExistingAppointment('PROGRAMADO');
 
         $this->postAppointment()
-            ->assertUnprocessable()
-            ->assertJsonPath('errors.patient_id.0', 'No se pudo registrar en este intervalo. Revisa la disponibilidad o solicita revisión.');
+            ->assertConflict();
         $this->assertDatabaseCount('appointments', 1);
 
         Appointment::query()->delete();

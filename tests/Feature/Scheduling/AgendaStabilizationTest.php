@@ -201,7 +201,7 @@ class AgendaStabilizationTest extends TestCase
         }
         $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('vouchers', 1);
         $this->assertDatabaseCount('appointment_operations', 2); $this->assertEquals(50, Payment::sum('monto'));
-        $this->assertSame(0, Appointment::consumingRegularSlot()->count());
+        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); // Paid pending protects time without confirming.
         $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => 'true'])->assertUnprocessable()->assertJsonValidationErrors('confirm');
         $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('appointment_operations', 2);
     }
@@ -217,7 +217,7 @@ class AgendaStabilizationTest extends TestCase
     }
     public static function occupiedReservationCases(): array
     {
-        return [[false, '0.00'], [false, '25.00'], [true, '0.00'], [true, '25.00']];
+        return [[false, '0.00'], [true, '0.00']];
     }
     /** @dataProvider occupiedReservationCases */
     public function test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts(bool $additionalPermission, string $paid): void
@@ -239,17 +239,18 @@ class AgendaStabilizationTest extends TestCase
         $amount = $paid === '0.00' ? '50.00' : '25.00';
         $data = ['request_key' => (string) Str::uuid(), 'confirm' => true, 'payment' => ['amount' => $amount, 'method' => 'YAPE', 'operation' => 'QA-CONFLICT', 'origin' => 'YAPE']];
         for ($i = 0; $i < 2; $i++) {
-            $this->postJson($url, $data)->assertConflict()->assertJsonPath('message', 'El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.');
+            $this->postJson($url, $data)->assertConflict()->assertJsonPath('message', \App\Services\Scheduling\RegularReservationAvailability::BLOCKED);
             foreach ($tables as $table) { $this->assertSame($before[$table], \Illuminate\Support\Facades\DB::table($table)->orderBy('id')->get()->toJson(), $table.' changed after rejected confirmation'); }
         }
         $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::findOrFail($id)->estado_agenda);
         $this->assertSame('REGULAR', Appointment::findOrFail($id)->tipo_agendamiento);
         $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
-        // A deliberate payment-only retry remains valid even though the regular interval is occupied.
+        // New policy: payment-only is also rejected; previously received money stays intact.
         $data['request_key'] = (string) Str::uuid(); unset($data['confirm']);
-        $this->postJson($url, $data)->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION');
-        $this->postJson($url, $data)->assertOk();
-        $this->assertEquals(100, Payment::sum('monto')); $this->assertDatabaseCount('payments', $paid === '0.00' ? 2 : 3);
+        $this->postJson($url, $data)->assertConflict();
+        $this->postJson($url, $data)->assertConflict();
+        foreach ($tables as $table) $this->assertSame($before[$table], \Illuminate\Support\Facades\DB::table($table)->orderBy('id')->get()->toJson(), $table);
+        $this->assertEquals(50+(float)$paid, Payment::sum('monto')); $this->assertDatabaseCount('payments', $paid === '0.00' ? 1 : 2);
         $this->assertSame([$occupied], Appointment::consumingRegularSlot()->pluck('id')->all());
     }
 

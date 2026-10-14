@@ -113,11 +113,11 @@ class OperationalRegistrationService
                 }
                 $a->update(['total_pagado' => Money::decimal($amount), 'saldo_pendiente' => $waived ? 0 : Money::decimal(Money::cents($a->precio_programado) - $amount),
                     'estado_pagado' => !$amount ? 'PENDIENTE' : ($amount === Money::cents($a->precio_programado) ? 'PAGADO' : 'PARCIAL')]);
-                if ($data['booking_type'] === 'REGULAR' && $data['mode'] === 'CONFIRM') {
+                if ($data['mode'] === 'CONFIRM') {
                     if (!$waived && !app(AppointmentEconomicPosition::class)->forAppointment($a)['secured']) {
                         throw ValidationException::withMessages(['payment.amount' => 'Para agendar se requiere adelanto real de al menos 50%. Puedes guardar una reserva privada.']);
                     }
-                    app(AppointmentSlotValidator::class)->assertUnoccupied($a->doctor_id, $data['fecha_cita'], $data['hora_cita'], $a->duracion_cita, $a->id);
+                    if($data['booking_type']==='REGULAR') app(AppointmentSlotValidator::class)->assertUnoccupied($a->doctor_id, $data['fecha_cita'], $data['hora_cita'], $a->duracion_cita, $a->id);
                     $a->update(['estado_agenda' => 'CONFIRMADA']);
                 }
                 if ($proof) {

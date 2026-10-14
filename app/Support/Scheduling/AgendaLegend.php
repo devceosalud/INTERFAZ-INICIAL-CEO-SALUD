@@ -43,7 +43,7 @@ final class AgendaLegend
         return [
             'PENDIENTE_CONFIRMACION' => [
                 'clave' => 'PENDIENTE_CONFIRMACION', 'etiqueta' => 'RESERVA PRIVADA', 'glifo' => 'R',
-                'color' => '#52525b', 'fondo' => '#fafafa', 'descripcion' => 'Solo la ve su responsable y no ocupa el horario.',
+                'color' => '#52525b', 'fondo' => '#fafafa', 'descripcion' => 'Pendiente de confirmación. Con adelanto o crédito protege el horario; visibilidad según permisos.',
             ],
             self::AVAILABLE => [
                 'clave' => self::AVAILABLE,

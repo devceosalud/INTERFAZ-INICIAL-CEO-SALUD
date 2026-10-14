@@ -21,9 +21,9 @@ class PilotAppointmentOperationsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['scheduling.enabled' => true]);
+        config(['scheduling.enabled' => true,'scheduling.pilot_payment_without_manual_cash_shift'=>true]);
         $this->actor = $this->createUserWithRole('ADMISION');
-        $this->grant($this->actor, [Capability::MVP_ACCESS, Capability::VIEW, Capability::CREATE, Capability::RESCHEDULE, Capability::CREATE_ADDITIONAL]);
+        $this->grant($this->actor, [Capability::MVP_ACCESS, Capability::VIEW, Capability::CREATE, Capability::RESCHEDULE, Capability::CREATE_ADDITIONAL, Capability::SUBMIT_PAYMENT]);
         $this->patient = $this->createPatient($this->actor);
         $this->catalog = $this->createAppointmentCatalog();
         $this->catalog['rate']->update(['nombre' => 'TARIFA ESTANDAR', 'tipo_tarifa' => 'MONTO_FIJO']);
@@ -103,18 +103,18 @@ class PilotAppointmentOperationsTest extends TestCase
         $this->assertSame('08:00', substr($appointment->fresh()->hora_cita, 0, 5));
     }
 
-    public function test_additional_coexists_is_unpaid_visible_and_does_not_consume_regular_slots(): void
+    public function test_additional_coexists_is_financed_visible_and_does_not_consume_regular_slots(): void
     {
         $regular = $this->normal();
         $extraPatient = $this->createPatient($this->actor, ['numero_identidad' => '70000904', 'historia_clinica' => 'QA-4']);
-        $response = $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), array_replace($this->payload(), ['patient_id' => $extraPatient->id]));
+        $response = $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), array_replace($this->specialPayload(), ['patient_id' => $extraPatient->id]));
         $id = $response->assertCreated()->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL')->json('appointment.appointment_id');
         $additional = Appointment::findOrFail($id);
         $this->assertSame('CONFIRMADA', $additional->estado_agenda);
         $this->assertSame('PROGRAMADO', $additional->estado_cita);
-        $this->assertSame('PENDIENTE', $additional->estado_pagado);
-        $this->assertEquals(0, $additional->total_pagado);
-        $this->assertEquals(100, $additional->saldo_pendiente);
+        $this->assertSame('PARCIAL', $additional->estado_pagado);
+        $this->assertEquals(50, $additional->total_pagado);
+        $this->assertEquals(50, $additional->saldo_pendiente);
         $this->assertSame($extraPatient->id, (int) $additional->patient_id);
         $this->assertSame([$regular->id], Appointment::consumingRegularSlot()->pluck('id')->all());
         $reader = $this->createUserWithRole('ADMISION');
@@ -132,9 +132,9 @@ class PilotAppointmentOperationsTest extends TestCase
     public function test_additional_requires_its_capability_and_a_real_operating_slot(): void
     {
         $this->actor->revokePermissionTo(Capability::CREATE_ADDITIONAL);
-        $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->payload())->assertForbidden();
+        $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->specialPayload())->assertForbidden();
         $this->grant($this->actor, [Capability::CREATE_ADDITIONAL]);
-        $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->payload('13:00'))->assertConflict();
+        $this->actingAs($this->actor)->postJson(route('scheduling.mvp.agenda.appointments.additional'), $this->specialPayload('13:00'))->assertConflict();
         $this->assertDatabaseCount('appointments', 0);
     }
 
@@ -188,6 +188,7 @@ class PilotAppointmentOperationsTest extends TestCase
             \App\Support\Scheduling\CreateAppointmentData::fromValidated($this->payload($time), $this->actor->id));
     }
 
+    private function specialPayload(string $time='08:00'):array {return $this->payload($time)+['request_key'=>(string)\Illuminate\Support\Str::uuid(),'payment'=>['amount'=>'50','method'=>'EFECTIVO']];}
     private function payload(string $time = '08:00'): array
     {
         return ['patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id,

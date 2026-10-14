@@ -90,11 +90,11 @@ class CreateAppointmentService
                         $this->slots->assertUnoccupied($data->doctorId, $data->date, $data->time, $data->duration);
                     } else {
                         $this->slots->assertValid($data->doctorId, $data->date, $data->time,
-                            $data->duration, $data->siteId, null, $pending || $bookingType === AppointmentAgendaLifecycle::ADDITIONAL,
+                            $data->duration, $data->siteId, null, $bookingType === AppointmentAgendaLifecycle::ADDITIONAL,
                             (bool) ($data->operational['legacy_double'] ?? false));
                     }
 
-                    // The doctor lock also serializes private reservations, which do not occupy a slot.
+                    // The doctor lock serializes reservations and their real-money interval protection.
                     if (Appointment::where('patient_id', $data->patientId)->where('doctor_id', $data->doctorId)
                         ->whereDate('fecha_cita', $data->date)->whereRaw('substr(hora_cita, 1, 5) = ?', [substr($data->time, 0, 5)])
                         ->whereNotIn('estado_cita', \App\Support\Scheduling\AppointmentOccupancy::RELEASING_STATES)

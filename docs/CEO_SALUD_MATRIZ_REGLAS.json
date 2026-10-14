@@ -4,188 +4,359 @@
     "status": "IMPLEMENTADO",
     "gap": "Descuento al registrar con CREATE+VIEW, responsable y evento PRECIO_REGISTRADO; probado en ambas entradas.",
     "evidence": "AppointmentDiscount; CreateAppointmentService; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local; no incluye ajuste posterior al cobro."
+    "dependency": "PR precios local; no incluye ajuste posterior al cobro.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#6",
+    "commit": "6f19a47"
   },
   {
     "id": "R02",
     "status": "IMPLEMENTADO",
     "gap": "Importe fijo y porcentaje, cálculo en céntimos y validación de dos decimales.",
     "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local."
+    "dependency": "PR precios local.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#6",
+    "commit": "6f19a47"
   },
   {
     "id": "R03",
     "status": "IMPLEMENTADO",
     "gap": "Rechaza >=100% y redondeo que deje neto cero.",
     "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
-    "dependency": "Exoneración específica separada."
+    "dependency": "Exoneración específica separada.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#6",
+    "commit": "6f19a47"
   },
   {
     "id": "R04",
     "status": "PARCIAL",
-    "gap": "Adelanto mínimo 50% del precio neto probado; reserva, pago y confirmación separados. Crédito general pendiente.",
-    "evidence": "AppointmentEconomicPosition; AppointmentDiscountRegistrationTest; MvpAllRolesFlowTest",
-    "dependency": "PR #5 + precios; R28 general depende ledger."
+    "gap": "50% del neto en REGULAR, ADICIONAL y FUERA_HORARIO; reserva/pago/confirmación separados. Adelanto o crédito real protege intervalo regular aunque sea <50%. Crédito general pendiente.",
+    "evidence": "AppointmentEconomicPosition; FundedReservation; RegularReservationExclusivityTest; AgendaConcurrencyTest; smoke QA ADMIN",
+    "dependency": "PR #5–#8 + rama codex/mvp-p0-agenda; R28 general depende ledger.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#5 / P0",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R05",
     "status": "PARCIAL",
     "gap": "Motor central y UI mínima con indicación escrita acreditada, permiso específico, evidencia privada, referencia diferenciada, uso único concurrente; fechas 0/1/15/16, mismo servicio y otro médico. Reprograma sin dinero; cambio de precio con ticket/pago se bloquea hasta ajustes R25. Cancelación no libera indicación; reasignación explícita pendiente.",
     "evidence": "ReevaluationIndicationService; AppointmentPriceResolver; ReevaluationIndicationTest; AgendaConcurrencyTest; agenda-quote.test.js",
-    "dependency": "PR separado sobre #6; activar mapa de catálogo Quiroz revisado; crear permiso web y asignarlo explícitamente con editor existente; R25 para reprogramación pagada/reasignación."
+    "dependency": "PR separado sobre #6; activar mapa de catálogo Quiroz revisado; crear permiso web y asignarlo explícitamente con editor existente; R25 para reprogramación pagada/reasignación.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#7",
+    "commit": "09becbe"
   },
   {
     "id": "R06",
     "status": "IMPLEMENTADO",
     "gap": "Referido explícito con origen y actor; S/250/S/220 para ambos servicios de Quiroz, S/0 solo con indicación del mismo día; descuento y 50% del neto sin duplicar recargo heredado. No altera otros médicos/catalogo/históricos.",
     "evidence": "AppointmentPriceResolver; ReevaluationIndicationTest::test_referred_discount_confirmation; AppointmentDiscountRegistrationTest",
-    "dependency": "Configuración verificada Quiroz doctor1/service1,3/rates2,3 durante despliegue controlado; no automática en otros entornos."
+    "dependency": "Configuración verificada Quiroz doctor1/service1,3/rates2,3 durante despliegue controlado; no automática en otros entornos.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#7",
+    "commit": "09becbe"
   },
   {
     "id": "R07",
     "status": "IMPLEMENTADO",
     "gap": "Indicador por cita registrado/editado y auditado, sin gratuidad automática.",
     "evidence": "Appointment; AgendaDetailsController; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local; histórica null sin modificación."
+    "dependency": "PR precios local; histórica null sin modificación.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#6",
+    "commit": "6f19a47"
   },
   {
     "id": "R08",
     "status": "IMPLEMENTADO",
     "gap": "Permiso explícito, motivo obligatorio y responsable/evento; sin rol que lo omita.",
     "evidence": "OperationalRegistrationService; CreateAppointmentService; AppointmentDiscountRegistrationTest",
-    "dependency": "Asignación extraordinaria en producción fuera de este desarrollo."
+    "dependency": "Asignación extraordinaria en producción fuera de este desarrollo.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#6",
+    "commit": "6f19a47"
   },
   {
     "id": "R09",
     "status": "IMPLEMENTADO",
     "gap": "Dos intervalos consecutivos reales del mismo médico/bloque/sede; una tarifa, exclusión concurrente y reprogramación por cadencia destino; UI Agenda y editor heredado coherentes.",
     "evidence": "DoubleAppointmentDuration; AgendaDoubleDurationTest; AgendaConcurrencyTest; smoke navegador reserva→pago→confirmación Día/Semana/Mes",
-    "dependency": "PR Agenda sobre #7; migration duration_slots nullable sin backfill."
+    "dependency": "PR Agenda sobre #7; migration duration_slots nullable sin backfill.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#8 / P0",
+    "commit": "a6fcb713"
   },
   {
     "id": "R10",
     "status": "IMPLEMENTADO",
     "gap": "Selector opcional default false, reset por contexto; datos históricos null sin inferir duración.",
     "evidence": "agenda-operational-workspace.js; agenda-quote.test.js; legacy-calendar-safety.test.js",
-    "dependency": "PR Agenda sobre #7."
+    "dependency": "PR Agenda sobre #7.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#8 / P0",
+    "commit": "a6fcb713"
   },
   {
     "id": "R11",
     "status": "FALTANTE",
     "gap": "Figma design24:2 inspeccionado visualmente; negocio Magdalena y hoy definidos. Catálogo productivo sites vacío confirmado; panel aún faltante.",
     "evidence": "Site; rutas/listados heredados; prototipo Figma",
-    "dependency": "Alta real controlada/idempotente propuesta en CEO_SALUD_MAGDALENA_PROPUESTA.md; backend/panel PR separado sin backfill."
+    "dependency": "Alta real controlada/idempotente propuesta en CEO_SALUD_MAGDALENA_PROPUESTA.md; backend/panel PR separado sin backfill.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R12",
     "status": "PARCIAL",
     "gap": "Operaciones unificadas en #5; faltan panel/totales/Excel.",
     "evidence": "MvpAllRolesFlowTest; AppointmentEconomicPosition",
-    "dependency": "PR Admisión; exportación acotada y sin fórmulas inyectadas."
+    "dependency": "PR Admisión; exportación acotada y sin fórmulas inyectadas.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R13",
     "status": "PARCIAL",
     "gap": "Contactos/citas visibles existen; falta proyección administrativa sin clínica y estado receta/informe.",
     "evidence": "OperationalPatientController; AppointmentVisibility",
-    "dependency": "PR Admisión/historial y documentos."
+    "dependency": "PR Admisión/historial y documentos.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R14",
     "status": "PARCIAL",
     "gap": "Evidencia de indicación médica admite subida privada atómica, purpose y permiso específico. Recetas/informes operativos generales y reemplazo versionado siguen pendientes.",
     "evidence": "AppointmentDocumentController; ReevaluationIndicationService; ReevaluationIndicationTest; AppointmentProofStorage",
-    "dependency": "PR documentos; privacidad/autorización."
+    "dependency": "PR documentos; privacidad/autorización.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R15",
     "status": "IMPLEMENTADO",
     "gap": "FK/rutas appointment_id, descarga privada y visibilidad; no mezclar entre citas.",
     "evidence": "AppointmentDocument; AppointmentDocumentController; OperationalRegistrationTest",
-    "dependency": "Reutilizar; aún no certificado en producción."
+    "dependency": "Reutilizar; aún no certificado en producción.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#5 / P0",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R16",
     "status": "PARCIAL",
     "gap": "ADMIN requiere permiso explícito; sus 9 grants no acreditan APPROVE_ZERO_COST.",
     "evidence": "OperationalRegistrationService; LegacyRegistrationParityTest",
-    "dependency": "Asignación extraordinaria productiva aprobada aparte."
+    "dependency": "Asignación extraordinaria productiva aprobada aparte.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#5 / P0",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R17",
     "status": "FALTANTE",
     "gap": "User no guarda DNI; verificar entidad trabajador/relación antes de unique para nuevos.",
     "evidence": "User; admin/master/user/UserController",
-    "dependency": "PR trabajadores; preservar identidades heredadas."
+    "dependency": "PR trabajadores; preservar identidades heredadas.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R18",
     "status": "FALTANTE",
     "gap": "Bloqueo global activo y revocación inmediata de sesiones/tokens no acreditados.",
     "evidence": "User; middleware; UserController",
-    "dependency": "PR trabajadores; todos guards e historial."
+    "dependency": "PR trabajadores; todos guards e historial.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R19",
-    "status": "IMPLEMENTADO",
-    "gap": "Editor existente claro, permisos marcados, revisión concurrente, confirmación/auditoría/Spatie; drag/drop opcional.",
+    "status": "PARCIAL",
+    "gap": "Editor existente con casillas, revisión concurrente, confirmación, auditoría y Spatie. Grant/revoke de ADD en ADMIN ficticio probado en navegador y rechazo HTTP 403 tras retirada. Arrastrar/soltar NO implementado ni aceptado como equivalente.",
     "evidence": "RoleController; user-editor.test.js; MvpPermissionBootstrapTest",
-    "dependency": "PR #5; normalizar cinco guards. Si drag/drop obligatorio, PR UX."
+    "dependency": "PR #5; cinco guards productivos aún por normalizar con autorización. UX de arrastrar/soltar posterior.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#5 / P0 QA",
+    "commit": "fc4f278"
   },
   {
     "id": "R20",
     "status": "PARCIAL",
-    "gap": "OCR heredado Tesseract sugiere operación; faltan monto, revisión explícita y deduplicación de contenido privada. Pagos/adjuntos múltiples existen.",
-    "evidence": "VoucherPaymentRecorder; AppointmentProofStorage; controladores OCR heredados",
-    "dependency": "PR OCR; runtime hosting/formatos/revisión humana."
+    "gap": "OCR heredado es Tesseract.js de navegador vía CDN y solo sugiere operación. Monto, revisión explícita, vínculo pago/adjunto y deduplicación de contenido siguen pendientes. Hostinger sin tesseract en PATH; proc_open CLI SI, PHP web no verificado. Motor de navegador no necesita ese binario.",
+    "evidence": "public/js/admissionist/tesseract/tesseract.js; vistas heredadas; AppointmentProofStorage; evidencia SSH comunicada por usuario",
+    "dependency": "P0-B: recursos OCR fijados y alojados en ERP, QA real de motor/formatos, integración común de pagos y revisión de privacidad. No usar comprobantes reales fuera del ERP.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
+  },
+  {
+    "id": "R21",
+    "priority": "CANCELADO",
+    "status": "CANCELADO",
+    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+    "pull_request": "FUERA DE P0; retirada separada",
+    "commit": "main 1a2c1895"
+  },
+  {
+    "id": "R22",
+    "priority": "CANCELADO",
+    "status": "CANCELADO",
+    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+    "pull_request": "FUERA DE P0; retirada separada",
+    "commit": "main 1a2c1895"
+  },
+  {
+    "id": "R23",
+    "priority": "CANCELADO",
+    "status": "CANCELADO",
+    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+    "pull_request": "FUERA DE P0; retirada separada",
+    "commit": "main 1a2c1895"
   },
   {
     "id": "R24",
     "status": "PARCIAL",
-    "gap": "Aviso antes de cambiar selección/fecha/vista/filtros, cancelación conserva contexto (JS), reset de dinero/contactos/indicación/notas y descarte comprobado en navegador. Cancelación del diálogo nativo en navegador pendiente por interrupción de automatización.",
-    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke navegador",
-    "dependency": "PR Agenda; revisión supervisada de cancelación nativa y ficha modal."
+    "gap": "Diálogo ERP Swal para descarte, esperas asíncronas en selección/fecha/vista/movimiento, reset y bloqueo de respuestas tardías. Cancelar conserva observación/paciente/hora y descartar limpia contexto: verificado en navegador. Casos de ficha modal completa aún pendientes de QA de navegador.",
+    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke QA P0 del 13/10",
+    "dependency": "Rama codex/mvp-p0-agenda sobre #8. Completar smoke de creación/ficha modal durante circuito integrado.",
+    "priority": "P0",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "#5 / P0",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R25",
     "status": "FALTANTE",
     "gap": "Sin ajustes auditados posteriores a pago; no sobrescribir precios/pagos/vouchers históricos.",
     "evidence": "AppointmentEconomicPosition; AppointmentTicketService",
-    "dependency": "PR ledger después de descuentos."
+    "dependency": "PR ledger después de descuentos.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R26",
     "status": "FALTANTE",
     "gap": "Sobrepago se rechaza hoy; falta elección devolución/crédito del excedente.",
     "evidence": "OperationalRegistrationService; ReservationPaymentService",
-    "dependency": "PR ledger; conciliación de registros existentes."
+    "dependency": "PR ledger; conciliación de registros existentes.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R27",
     "status": "PARCIAL",
     "gap": "Solicitar devolución con WITHDRAW no ejecuta dinero; appointment.refund.execute aprobado como capacidad específica, asignación final pendiente.",
     "evidence": "AppointmentWithdrawalService::requestRefund; AppointmentWithdrawalTest",
-    "dependency": "PR devolución: solicitud/autorización/ejecución/evidencia separadas."
+    "dependency": "PR devolución: solicitud/autorización/ejecución/evidencia separadas.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R28",
     "status": "PARCIAL",
-    "gap": "Crédito de cita retirada aplicado con locks; falta crédito general y PAYMENT_SUBMIT en toda aplicación.",
-    "evidence": "AppointmentWithdrawalService::rebook/reserveMoney; AppointmentWithdrawalTest",
-    "dependency": "PR créditos/ledger; no copiar payments."
+    "gap": "Crédito de cita retirada se aplica con locks y exige PAYMENT_SUBMIT; dinero no se copia. Destino pendiente con crédito protege horario. Falta saldo a favor general y su aplicación parcial futura.",
+    "evidence": "AppointmentWithdrawalService::rebook; FundedReservation; RegularReservationExclusivityTest; AppointmentWithdrawalTest",
+    "dependency": "P0 cubre gate faltante; PR créditos/ledger general separado.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R29",
     "status": "PARCIAL",
     "gap": "Crédito de rebook integra secured/50%; falta aplicación general futura.",
     "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
-    "dependency": "Completar R28 y conservar fórmula."
+    "dependency": "Completar R28 y conservar fórmula.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   },
   {
     "id": "R30",
     "status": "PARCIAL",
     "gap": "Regla definida: crédito convertido no admite devolución ordinaria. Falta ledger; excepciones legales requieren procedimiento autorizado específico.",
     "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
-    "dependency": "PR ledger bloquea devolución ordinaria; no implementar excepciones sin definición."
+    "dependency": "PR ledger bloquea devolución ordinaria; no implementar excepciones sin definición.",
+    "priority": "P1",
+    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+    "pull_request": "PENDIENTE / base #5–#8",
+    "commit": "VER PR / SIGUIENTE COMMIT P0"
   }
 ]

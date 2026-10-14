@@ -22,9 +22,9 @@ class AgendaRefinementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['scheduling.enabled' => true]);
+        config(['scheduling.enabled' => true,'scheduling.pilot_payment_without_manual_cash_shift'=>true]);
         $this->actor = $this->agendaReader('ADMISION');
-        foreach ([Capability::CREATE, Capability::RESCHEDULE, Capability::CREATE_ADDITIONAL] as $permission) {
+        foreach ([Capability::CREATE, Capability::RESCHEDULE, Capability::CREATE_ADDITIONAL, Capability::SUBMIT_PAYMENT] as $permission) {
             $this->actor->givePermissionTo(Permission::findOrCreate($permission, 'web'));
         }
         $this->patient = $this->createPatient($this->actor);
@@ -41,8 +41,8 @@ class AgendaRefinementTest extends TestCase
         $this->assertSame([$id], Appointment::occupyingInterval()->pluck('id')->all());
         $this->assertSame([], Appointment::consumingRegularSlot()->pluck('id')->all());
         $this->assertEquals(100, $appointment->precio_programado);
-        $this->assertEquals(0, $appointment->total_pagado);
-        $this->assertSame('PENDIENTE', $appointment->estado_pagado);
+        $this->assertEquals(50, $appointment->total_pagado);
+        $this->assertSame('PARCIAL', $appointment->estado_pagado);
         $this->assertSame($this->actor->id, (int) $appointment->updated_by_user_id);
         $this->postJson(route('scheduling.mvp.agenda.appointments.off-hours'), $this->payload('06:20'))->assertConflict();
         $this->postJson(route('scheduling.mvp.agenda.appointments.off-hours'), $this->payload('06:30'))->assertCreated();
@@ -184,7 +184,7 @@ class AgendaRefinementTest extends TestCase
     {
         return ['patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id,
             'service_id' => $this->catalog['service']->id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita,
-            'hora_cita' => $time, 'duracion_cita' => 30, 'site_id' => null];
+            'hora_cita' => $time, 'duracion_cita' => 30, 'site_id' => null,'request_key'=>(string)\Illuminate\Support\Str::uuid(),'payment'=>['amount'=>'50','method'=>'EFECTIVO']];
     }
     private function feed(string $view)
     {

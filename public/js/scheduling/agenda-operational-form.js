@@ -51,10 +51,10 @@
         let reason = '';
         if (!input.canCreate) { reason = 'No tienes permiso para guardar reservas ni crear citas (appointment.create). Solicita revisión al administrador.'; }
         else if (input.busy) { reason = 'Guardando. Espera el resultado de esta operación.'; }
-        else if (!input.slot) { reason = 'Selecciona un intervalo disponible para confirmar una cita.'; }
+        else if (!input.slot && !input.exception) { reason = 'Selecciona un intervalo disponible para confirmar una cita.'; }
         else if (!input.patient) { reason = 'Busca y selecciona un paciente activo para esta cita.'; }
         else if (!input.service) { reason = 'Selecciona un servicio activo para esta cita.'; }
-        else if (!input.exception) {
+        else {
             try {
                 const price = cents(input.price || '0'), amount = cents(input.amount || '0');
                 if (price <= 0 && !input.automaticFree) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
@@ -68,5 +68,13 @@
         }
         return { allowed: !reason, reason };
     }
-    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness };
+
+    function stateSummary(context) {
+        const c=context||{};
+        const agenda={CONFIRMADA:'CONFIRMADA',PENDIENTE_CONFIRMACION:'RESERVA PENDIENTE',LEGADO:'AGENDA HISTÓRICA'}[c.estado_agenda]||'AGENDA SIN ACREDITAR';
+        const care=String(c.estado_cita||'SIN ESTADO DE ATENCIÓN').replace(/_/g,' ');
+        const payment=String(c.estado_pagado||'SIN ESTADO FINANCIERO');
+        return {agenda,care,payment,description:'Horario: '+agenda+' · Atención: '+care+' · Pago: '+payment};
+    }
+    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness, stateSummary };
 }));

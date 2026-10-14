@@ -51,9 +51,10 @@
     function fromContext(context, siteName) {
         const appointment = context.tipo_contexto === 'cita_existente';
         const offHours = context.tipo_contexto === 'fuera_horario';
+        const occupied = context.tipo_contexto === 'slot_ocupado';
 
         return {
-            mode: appointment ? 'Cita existente' : (offHours ? 'Fuera de horario' : 'Slot libre'),
+            mode: appointment ? 'Cita existente' : (offHours ? 'Fuera de horario' : (occupied ? 'Intervalo ocupado' : 'Slot libre')),
             doctor: valueOrDash(context.doctor),
             specialty: context.especialidad || 'Sin especialidad',
             date: valueOrDash(context.fecha),
@@ -70,11 +71,11 @@
             creator: appointment ? (context.creador || '—') : null,
             status: appointment
                 ? (context.estado_cita || context.etiqueta || 'Ocupada')
-                : (offHours ? 'Fuera de horario' : 'Sin cita'),
+                : (offHours ? 'Fuera de horario' : (occupied ? 'Ocupado' : 'Sin cita')),
             payment: appointment ? valueOrDash(context.estado_pagado) : '—',
             clinicalRecord: appointment ? valueOrDash(context.historia_clinica) : '—',
             showCompleteRegistration: appointment,
-            schedulable: !appointment && !offHours && context.seleccionable === true,
+            schedulable: !appointment && !offHours && !occupied && context.seleccionable === true,
         };
     }
 

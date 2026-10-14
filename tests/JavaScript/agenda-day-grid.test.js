@@ -203,3 +203,24 @@ test('cabecera y filas comparten la única definición de columnas operativas', 
     assert.match(css, /\.agenda-row-head[\s\S]*?grid-template-columns:\s*var\(--agenda-day-columns\)/);
     assert.match(css, /\.agenda-day-entry[\s\S]*?grid-template-columns:\s*var\(--agenda-day-columns\)/);
 });
+
+
+test('reserva pagada ajena se muestra ocupada sin identidad ni modo fuera de horario', () => {
+    const slot={...free('09:00','09:30',30),estado:'OCUPADO',estado_cita:'PROGRAMADO'};
+    const model=build([],[slot]);
+    const row=model.rows.find(r=>r.start==='09:00');
+    assert.equal(row.kind,'occupied');
+    assert.equal(row.context.tipo_contexto,'slot_ocupado');
+    assert.equal(row.context.leyenda,'OCUPADO');
+    assert.equal(row.context.seleccionable,false);
+    assert.equal(row.context.patient_id,null);
+    assert.equal(row.context.appointment_id,null);
+    assert.equal(row.context.paciente,null);
+    assert.equal(row.availableContext,null);
+    const quick=selection.fromContext(row.context,'Sede QA');
+    assert.equal(quick.mode,'Intervalo ocupado');
+    assert.equal(quick.status,'Ocupado');
+    assert.equal(quick.schedulable,false);
+    const actions=require('../../public/js/scheduling/agenda-appointment-actions');
+    assert.equal(actions.reserveIntent(row.context,1,1).post,false);
+});
