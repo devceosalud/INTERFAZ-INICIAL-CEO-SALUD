@@ -27,8 +27,8 @@
             return data;
         }
         let automaticFree=false, indicationRecordKey=null;
-        let quoteReady = true, quoteVersion = 0;
-        const rateSelect = byId('rate'), quoteStatus = byId('quote-status');
+        let quoteReady = true, quoteVersion = 0, activeQuoteRequest = null;
+        const rateSelect = byId('rate'), quoteStatus = byId('quote-status'), quoteRetry = byId('quote-retry');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;
         let capturePatient = null;
@@ -196,29 +196,61 @@
         }
         async function refreshQuote(patientId) {
             const version = ++quoteVersion;
+            if (activeQuoteRequest) activeQuoteRequest.abort();
+            activeQuoteRequest = null;
             if (!config.quoteData || !config.quoteEndpoint || config.context()?.appointment_id) { return; }
             const data = { ...config.quoteData() };
             if (patientId !== undefined) data.patient_id = patientId || 0;
-            if (!data.doctor_id || !data.service_id || !data.fecha_cita) { quoteReady = false; return; }
+            if (!data.doctor_id || !data.service_id || !data.fecha_cita) {
+                quoteReady = false;
+                quoteStatus.hidden = true;
+                if (quoteRetry) quoteRetry.hidden = true;
+                if (config.changed) config.changed();
+                return;
+            }
             if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
             Object.assign(data,medicalPriceInput());
             if (discountInput()) data.discount = discountInput();
-            quoteReady = false; automaticFree=false; quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
+            quoteReady = false; automaticFree = false;
+            quote = balance = 0;
+            ui.price.value = '';
+            ui.price.placeholder = 'Esperando cotización';
+            quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
+            if (quoteRetry) quoteRetry.hidden = true;
             if (config.changed) config.changed();
+
+            const controller = new AbortController();
+            activeQuoteRequest = controller;
+            // Network failures must never leave a misleading "Consultando..." indefinitely.
+            const timeout = setTimeout(() => controller.abort(), 12000);
             try {
-                const result = await request(config.quoteEndpoint, json('POST', data));
+                const result = await request(config.quoteEndpoint, { ...json('POST', data), signal: controller.signal });
                 if (version !== quoteVersion || config.context()?.appointment_id) return;
-                automaticFree=result.pricing_rule==='SAME_DAY_REEVALUATION';
+                if (result.precio_programado === undefined || !Number.isFinite(Number(result.precio_programado))
+                    || Number(result.precio_programado) < 0) {
+                    throw new Error('La respuesta de cotización no contiene un precio válido.');
+                }
+                automaticFree = result.pricing_rule === 'SAME_DAY_REEVALUATION';
                 quote = model.cents(result.precio_programado); balance = quote;
-                if (catalogPrice) catalogPrice.value = result.catalog_price || result.precio_programado;
+                if (catalogPrice) catalogPrice.value = result.catalog_price ?? result.precio_programado;
                 ui.price.value = result.precio_programado; ui.paid.value = '0.00';
                 quoteReady = true; quoteStatus.hidden = true; calculate();
             } catch (error) {
-                if (version !== quoteVersion) return;
-                quoteReady = false; quoteStatus.hidden = false; quoteStatus.textContent = error.message;
+                if (version !== quoteVersion || config.context()?.appointment_id) return;
+                quoteReady = false;
+                ui.price.value = '';
+                quoteStatus.hidden = false;
+                quoteStatus.textContent = error.name === 'AbortError'
+                    ? 'La cotización tardó demasiado. Pulsa Reintentar cotización.'
+                    : 'No se pudo cotizar: ' + error.message;
+                if (quoteRetry) quoteRetry.hidden = false;
                 if (config.changed) config.changed();
+            } finally {
+                clearTimeout(timeout);
+                if (activeQuoteRequest === controller) activeQuoteRequest = null;
             }
         }
+        quoteRetry?.addEventListener('click', () => refreshQuote());
         [indicationInput,referredInput,referralOrigin].forEach(field=>field?.addEventListener('input',()=>refreshQuote()));
         [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
@@ -326,6 +358,10 @@
             [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
             if (postoperative) postoperative.disabled = Boolean(id);
             ++quoteVersion;
+            if (activeQuoteRequest) activeQuoteRequest.abort();
+            activeQuoteRequest = null;
+            if (quoteRetry) quoteRetry.hidden = true;
+            if (quoteStatus) quoteStatus.hidden = true;
             if (rateSelect) rateSelect.disabled = Boolean(id);
             ui.waived.disabled = Boolean(id) || initialFinancialLocks.waived;
             ui.authorized.disabled = Boolean(id) || initialFinancialLocks.authorized;

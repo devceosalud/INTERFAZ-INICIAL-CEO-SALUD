@@ -40,6 +40,7 @@
         </div>
         <small>El descuento se guarda con tu usuario. El adelanto mínimo es el 50% del precio neto. Una gratuidad discrecional requiere exoneración.</small>
         <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
+        <button type="button" id="agenda-op-quote-retry" class="agenda-btn" hidden>Reintentar cotización</button>
         <div class="agenda-patient-form-grid">
             <label class="agenda-field"><span>Precio neto de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Pagado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
@@ -52,6 +53,13 @@
         </div>
         <label class="agenda-field"><span>Motivo de exoneración · obligatorio al exonerar</span><textarea id="agenda-op-exemption-reason" class="agenda-field__input" rows="2" maxlength="2000" @disabled(!$canWaive)></textarea></label>
         <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
+        <section class="agenda-payment-proof" aria-label="Comprobante del adelanto y lectura OCR">
+            <h3 class="agenda-section-title">Adjuntar comprobante y leer con OCR</h3>
+            <p>Para Yape, Plin o transferencia, adjunta la captura y utiliza «Leer imagen con OCR». Verifica el importe y N.º de operación; «Usar sugerencias en el pago» solo completa campos, no registra dinero.</p>
+        <label class="agenda-field agenda-upload"><span>Comprobantes del próximo pago · máximo 5, 8 MB cada uno, 20 MB en total</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"></label>
+        <div id="agenda-op-receipt-review"></div>
+        <p>Adjunta capturas del mismo pago. Cada transferencia distinta se registra por separado, con su importe y operación. Los archivos se guardan con el próximo adelanto después de tu revisión; adjuntar un documento no registra dinero.</p>
+        </section>
         <small>La autorización no registra dinero. Confirmar una cita regular, adicional o fuera de horario exige al menos 50% de adelanto real, salvo exoneración expresamente autorizada.</small>
         <p>En una cita nueva, Guardar reserva guarda también el adelanto ingresado si tienes permiso, sin confirmar el horario. Confirmar cita registra el adelanto ingresado y valida el requisito financiero. En una reserva existente, primero registra el adelanto y luego confirma.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
@@ -75,10 +83,7 @@
         <p id="agenda-op-indication-record-message" role="status"></p>
     </details>
     <details id="agenda-op-documents-panel">
-        <summary>Comprobantes y documentos</summary>
-        <label class="agenda-field agenda-upload"><span>Comprobantes del próximo pago · máximo 5, 8 MB cada uno, 20 MB en total</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"></label>
-        <div id="agenda-op-receipt-review"></div>
-        <p>Adjunta capturas del mismo pago. Cada transferencia distinta se registra por separado, con su importe y operación. Los archivos se guardan con el próximo adelanto después de tu revisión; adjuntar un documento no registra dinero.</p>
+        <summary>Documentos complementarios</summary>
         <label class="agenda-field"><span>Tipo de documento privado</span><select id="agenda-op-document-kind"><option value="ADMINISTRATIVE">Administrativo</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option></select></label>
         <label class="agenda-field"><span>Etiqueta del documento</span><input id="agenda-op-document-label" maxlength="120" value="Documento operativo"></label>
         <label class="agenda-field"><span>Documento operativo · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-document-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>

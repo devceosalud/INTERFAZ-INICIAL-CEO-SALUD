@@ -241,9 +241,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const kind = options && options.bookingType;
             const copy = window.AgendaGuidance.copy;
             result.hidden = false;
-            result.textContent = pendingSaved
+            const savedAppointment = payload.appointment || {};
+            const extendedSaved = Number(savedAppointment.duration_slots) === 2;
+            const savedMessage = pendingSaved
                 ? (options && options.occupiedHour ? copy.reserveSavedHere : copy.reserveSaved)
                 : (kind === 'ADICIONAL' ? copy.additionalSaved : (kind === 'FUERA_HORARIO' ? copy.offHoursSaved : copy.appointmentSaved));
+            const savedId = Number(savedAppointment.appointment_id);
+            result.textContent = savedMessage
+                + (extendedSaved ? ' · Cita extendida: ' + Number(savedAppointment.duracion_cita) + ' min (2 intervalos).' : '')
+                + (Number.isSafeInteger(savedId) && savedId > 0 ? ' · N.º de cita: ' + savedId + '.' : '');
             if (pendingSaved) {
                 el.completeRegistration.hidden = false;
                 el.completeRegistration.disabled = false;
@@ -447,7 +453,10 @@ document.addEventListener('DOMContentLoaded', function () {
             wrapper.appendChild(primary);
             const booking=document.createElement('span');booking.className='agenda-week-event__booking';
             const summary=window.AgendaOperationalForm.stateSummary(context);
-            booking.textContent=summary.agenda+' · '+summary.payment;wrapper.title=summary.description;wrapper.appendChild(booking);
+            const extended = extendedDurationText(context);
+            booking.textContent = summary.agenda + ' · ' + summary.payment + (extended ? ' · ' + extended : '');
+            wrapper.title = summary.description + (extended ? ' · ' + extended : '');
+            wrapper.appendChild(booking);
 
             if (presentation.service) {
                 const service = document.createElement('span');
@@ -811,11 +820,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return node;
     }
 
+    // Stored duration_slots distinguishes an explicitly extended consultation
+    // from an ordinary appointment that happens to last the same number of minutes.
+    function extendedDurationText(context) {
+        return Number(context?.duration_slots) === 2
+            ? 'EXTENDIDA · ' + Number(context.minutos) + ' min · 2 intervalos'
+            : '';
+    }
+
     function dayEntry(row, item) {
         const entry = document.createElement('div');
         const context = item ? item.context : row.context;
         const continuation = item && item.kind === 'continuation';
         const appointment = item && item.kind === 'appointment';
+        const extended = extendedDurationText(context);
         let values;
 
         entry.className = 'agenda-day-entry';
@@ -827,15 +845,15 @@ document.addEventListener('DOMContentLoaded', function () {
             entry.dataset.appointmentId = String(context.appointment_id);
             values = [
                 context.hora_inicio,
-                context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.leyenda === 'ADICIONAL' ? 'ADICIONAL' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda),
+                (context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.leyenda === 'ADICIONAL' ? 'ADICIONAL' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda)) + (extended ? ' · EXTENDIDA' : ''),
                 context.estado_pagado || '—',
                 context.historia_clinica || '—',
-                context.paciente || 'Paciente sin nombre',
+                (context.paciente || 'Paciente sin nombre') + (extended ? ' · ' + extended : ''),
             ];
         } else if (continuation) {
             entry.classList.add('agenda-day-entry--continuation');
             entry.dataset.appointmentId = String(context.appointment_id);
-            values = [row.start, '', '', '', 'Continuación de cita · hasta ' + context.hora_fin];
+            values = [row.start, '', '', '', 'Continuación de ' + (extended ? 'cita extendida' : 'cita') + ' · hasta ' + context.hora_fin];
         } else {
             values = [row.start, context.tipo_contexto === 'fuera_horario' ? 'FH' : (context.tipo_contexto === 'slot_ocupado' ? 'OCUPADO' : ''), '', '', row.items.length && row.availableContext ? 'Slot regular disponible' : ''];
             if (row.items.length && row.availableContext) {
@@ -1127,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (additionalStart) { additionalStart.disabled = true; }
         if (offHoursStart) { offHoursStart.hidden = true; }
         state.selection = null;
-        operationalWorkspace.selectionChanged(null);
+        await operationalWorkspace.selectionChanged(null);
         withdrawalWorkspace.select(null);
         configureServices(null);
         document.querySelectorAll('.agenda-calendar-event--appointment.is-selected, .agenda-day-row.is-selected, .agenda-day-entry.is-selected')
@@ -1177,7 +1195,9 @@ document.addEventListener('DOMContentLoaded', function () {
         state.pendingMode = false;
         state.selection = context;
         if (changed && context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
-        operationalWorkspace.selectionChanged(context);
+        // Wait until the asynchronous workspace reset finishes before loading services
+        // and requesting a quote; otherwise the reset invalidates the quote version.
+        await operationalWorkspace.selectionChanged(context);
         withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Preparar nueva reserva' : 'Guardar reserva'; }
         if (offHoursStart) { offHoursStart.hidden = context.tipo_contexto !== 'fuera_horario'; }
@@ -1224,7 +1244,9 @@ document.addEventListener('DOMContentLoaded', function () {
         el.contextSpecialty.textContent = context.especialidad || '—';
         el.contextDate.textContent = context.fecha || '—';
         el.contextTime.textContent = context.hora_inicio ? context.hora_inicio + ' – ' + context.hora_fin : 'Resumen diario';
-        el.contextDuration.textContent = context.minutos ? context.minutos + ' min' : '—';
+        el.contextDuration.textContent = context.minutos
+            ? context.minutos + ' min' + (Number(context.duration_slots) === 2 ? ' · 2 intervalos' : '')
+            : '—';
         el.contextSite.textContent = siteName(context.site_id);
         el.contextPatient.textContent = context.paciente || '—';
         el.contextPatient.hidden = !context.paciente;
@@ -1989,7 +2011,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     el.patientDraft.addEventListener('submit', function (event) {
         event.preventDefault();
-        savePatient(true);
+        if (state.draft) {
+            el.draftMessage.textContent = 'Para guardar, utiliza «Guardar reserva» o «Guardar y confirmar cita».';
+        }
     });
     el.patientRegister.addEventListener('click', function () {
         const draft = draftModel.open(state.identity, scheduleSnapshot());
@@ -2008,6 +2032,9 @@ document.addEventListener('DOMContentLoaded', function () {
     el.patientModal.querySelector('[data-modal-close]').addEventListener('click', closePatientModal);
     el.draftSave.addEventListener('click', function () {
         savePatient(false);
+    });
+    el.draftSaveSchedule.addEventListener('click', function () {
+        savePatient(true);
     });
     el.appointmentSubmit.addEventListener('click', () => {
         if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }

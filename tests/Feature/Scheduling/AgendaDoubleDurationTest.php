@@ -35,7 +35,12 @@ class AgendaDoubleDurationTest extends TestCase {
  public function test_double_confirms_two_intervals_charges_one_fee_and_retry_is_idempotent(string $entry):void {
   $money=$entry==='legacy'?['total_pagado'=>'50','metodo_pago'=>'EFECTIVO']:['payment'=>['amount'=>'50','method'=>'EFECTIVO']];
   $data=$this->payload($entry,['mode'=>'CONFIRM','cita_doble'=>true,'duracion_cita'=>60]+$money);
-  $id=$this->id($this->postJson($this->url($entry),$data)->assertSuccessful(),$entry);
+  $response = $this->postJson($this->url($entry),$data)->assertSuccessful();
+  $id=$this->id($response,$entry);
+  if($entry==='operational') {
+    $response->assertJsonPath('appointment.duration_slots',2);
+    $response->assertJsonPath('appointment.duracion_cita',60);
+  }
   $this->assertSame($id,$this->id($this->postJson($this->url($entry),$data)->assertSuccessful(),$entry));
   $a=Appointment::findOrFail($id);$this->assertSame(60,(int)$a->duracion_cita);$this->assertSame(2,(int)$a->duration_slots);
   $this->assertEquals(100,$a->precio_programado);$this->assertEquals(100,Voucher::firstOrFail()->total);
@@ -82,6 +87,13 @@ class AgendaDoubleDurationTest extends TestCase {
   $this->assertSame(40,(int)Appointment::find($id)->duracion_cita);$this->assertSame(2,(int)Appointment::find($id)->duration_slots);
   $this->assertEquals(100,Appointment::find($id)->precio_programado);$this->assertDatabaseCount('payments',0);
   foreach(['dia','semana','mes'] as $view)$this->getJson('/scheduling-mvp/agenda/feed?fecha='.$date.'&vista='.$view.'&doctor_id[]='.$this->catalog['doctor']->id)->assertOk();
+  $feed=$this->getJson('/scheduling-mvp/agenda/feed?fecha='.$date.'&vista=dia&doctor_id[]='.$this->catalog['doctor']->id)->assertOk();
+  $event=collect($feed->json('eventos'))->first(fn($event)=>(int)($event['extendedProps']['appointment_id']??0)===$id);
+  $this->assertNotNull($event,'La reserva extendida debe seguir visible en el feed de Agenda');
+  $this->assertSame(2,(int)$event['extendedProps']['duration_slots']);
+  $this->assertSame(40,(int)$event['extendedProps']['minutos']);
+  $this->assertSame('09:40',$event['extendedProps']['hora_fin']);
+
  }
  public function test_double_obeys_create_and_payment_permissions():void {
   $data=$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60,'mode'=>'CONFIRM','payment'=>['amount'=>'50','method'=>'EFECTIVO']]);

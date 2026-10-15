@@ -18,11 +18,15 @@
         <span class="text-danger"><strong>{{ $message }}</strong></span>
     @enderror
 
+    <p class="text-muted small mb-3">Los nombres explican qué permite cada opción. Activar o quitar una casilla modifica los accesos del rol al guardar.</p>
     @foreach ($permissions as $permission)
-        <div>
-            <label>
-                {!! Form::checkbox('permissions[]', $permission->id, isset($role) && $role->permissions->contains('id', $permission->id), ['class' => 'mr-1']) !!}
-                {{ $permission->name }}
+        <div class="mb-3">
+            <label class="d-flex align-items-start gap-2" title="{{ $permission->name }}">
+                {!! Form::checkbox('permissions[]', $permission->id, isset($role) && $role->permissions->contains('id', $permission->id), ['class' => 'mt-1']) !!}
+                <span>
+                    <strong class="d-block">{{ \App\Support\Authorization\PermissionDisplay::label($permission->name) }}</strong>
+                    <small class="text-muted d-block">{{ \App\Support\Authorization\PermissionDisplay::description($permission->name) }}</small>
+                </span>
             </label>
         </div>
     @endforeach
