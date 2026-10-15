@@ -447,7 +447,10 @@ document.addEventListener('DOMContentLoaded', function () {
             wrapper.appendChild(primary);
             const booking=document.createElement('span');booking.className='agenda-week-event__booking';
             const summary=window.AgendaOperationalForm.stateSummary(context);
-            booking.textContent=summary.agenda+' · '+summary.payment;wrapper.title=summary.description;wrapper.appendChild(booking);
+            const extended = extendedDurationText(context);
+            booking.textContent = summary.agenda + ' · ' + summary.payment + (extended ? ' · ' + extended : '');
+            wrapper.title = summary.description + (extended ? ' · ' + extended : '');
+            wrapper.appendChild(booking);
 
             if (presentation.service) {
                 const service = document.createElement('span');
@@ -811,11 +814,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return node;
     }
 
+    // Stored duration_slots distinguishes an explicitly extended consultation
+    // from an ordinary appointment that happens to last the same number of minutes.
+    function extendedDurationText(context) {
+        return Number(context?.duration_slots) === 2
+            ? 'EXTENDIDA · ' + Number(context.minutos) + ' min · 2 intervalos'
+            : '';
+    }
+
     function dayEntry(row, item) {
         const entry = document.createElement('div');
         const context = item ? item.context : row.context;
         const continuation = item && item.kind === 'continuation';
         const appointment = item && item.kind === 'appointment';
+        const extended = extendedDurationText(context);
         let values;
 
         entry.className = 'agenda-day-entry';
@@ -827,15 +839,15 @@ document.addEventListener('DOMContentLoaded', function () {
             entry.dataset.appointmentId = String(context.appointment_id);
             values = [
                 context.hora_inicio,
-                context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.leyenda === 'ADICIONAL' ? 'ADICIONAL' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda),
+                (context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.leyenda === 'ADICIONAL' ? 'ADICIONAL' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda)) + (extended ? ' · EXTENDIDA' : ''),
                 context.estado_pagado || '—',
                 context.historia_clinica || '—',
-                context.paciente || 'Paciente sin nombre',
+                (context.paciente || 'Paciente sin nombre') + (extended ? ' · ' + extended : ''),
             ];
         } else if (continuation) {
             entry.classList.add('agenda-day-entry--continuation');
             entry.dataset.appointmentId = String(context.appointment_id);
-            values = [row.start, '', '', '', 'Continuación de cita · hasta ' + context.hora_fin];
+            values = [row.start, '', '', '', 'Continuación de ' + (extended ? 'cita extendida' : 'cita') + ' · hasta ' + context.hora_fin];
         } else {
             values = [row.start, context.tipo_contexto === 'fuera_horario' ? 'FH' : (context.tipo_contexto === 'slot_ocupado' ? 'OCUPADO' : ''), '', '', row.items.length && row.availableContext ? 'Slot regular disponible' : ''];
             if (row.items.length && row.availableContext) {
@@ -1224,7 +1236,9 @@ document.addEventListener('DOMContentLoaded', function () {
         el.contextSpecialty.textContent = context.especialidad || '—';
         el.contextDate.textContent = context.fecha || '—';
         el.contextTime.textContent = context.hora_inicio ? context.hora_inicio + ' – ' + context.hora_fin : 'Resumen diario';
-        el.contextDuration.textContent = context.minutos ? context.minutos + ' min' : '—';
+        el.contextDuration.textContent = context.minutos
+            ? context.minutos + ' min' + (Number(context.duration_slots) === 2 ? ' · 2 intervalos' : '')
+            : '—';
         el.contextSite.textContent = siteName(context.site_id);
         el.contextPatient.textContent = context.paciente || '—';
         el.contextPatient.hidden = !context.paciente;
