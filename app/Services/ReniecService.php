@@ -6,6 +6,7 @@ use App\Services\Reniec\ApisPeruReniecProvider;
 use App\Services\Reniec\AqpfactReniecProvider;
 use App\Services\Reniec\FactilizaReniecProvider;
 use App\Services\Reniec\ReniecProviderInterface;
+use App\Services\Reniec\InsaludReniecProvider;
 
 class ReniecService
 {
@@ -41,6 +42,10 @@ class ReniecService
     private function provider($timeoutSeconds): ?ReniecProviderInterface
     {
         $selected = config('apidatosperu.reniec_provider');
+
+        if ($selected === 'insalud') {
+            return new InsaludReniecProvider($timeoutSeconds);
+        }
 
         if ($selected === 'factiliza') {
             return new FactilizaReniecProvider(config('apidatosperu.factiliza.base_url'),
