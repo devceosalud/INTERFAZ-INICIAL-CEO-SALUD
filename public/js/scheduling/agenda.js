@@ -1145,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (additionalStart) { additionalStart.disabled = true; }
         if (offHoursStart) { offHoursStart.hidden = true; }
         state.selection = null;
-        operationalWorkspace.selectionChanged(null);
+        await operationalWorkspace.selectionChanged(null);
         withdrawalWorkspace.select(null);
         configureServices(null);
         document.querySelectorAll('.agenda-calendar-event--appointment.is-selected, .agenda-day-row.is-selected, .agenda-day-entry.is-selected')
@@ -1195,7 +1195,9 @@ document.addEventListener('DOMContentLoaded', function () {
         state.pendingMode = false;
         state.selection = context;
         if (changed && context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
-        operationalWorkspace.selectionChanged(context);
+        // Wait until the asynchronous workspace reset finishes before loading services
+        // and requesting a quote; otherwise the reset invalidates the quote version.
+        await operationalWorkspace.selectionChanged(context);
         withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Preparar nueva reserva' : 'Guardar reserva'; }
         if (offHoursStart) { offHoursStart.hidden = context.tipo_contexto !== 'fuera_horario'; }
@@ -2009,7 +2011,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     el.patientDraft.addEventListener('submit', function (event) {
         event.preventDefault();
-        savePatient(true);
+        if (state.draft) {
+            el.draftMessage.textContent = 'Para guardar, utiliza «Guardar reserva» o «Guardar y confirmar cita».';
+        }
     });
     el.patientRegister.addEventListener('click', function () {
         const draft = draftModel.open(state.identity, scheduleSnapshot());
@@ -2028,6 +2032,9 @@ document.addEventListener('DOMContentLoaded', function () {
     el.patientModal.querySelector('[data-modal-close]').addEventListener('click', closePatientModal);
     el.draftSave.addEventListener('click', function () {
         savePatient(false);
+    });
+    el.draftSaveSchedule.addEventListener('click', function () {
+        savePatient(true);
     });
     el.appointmentSubmit.addEventListener('click', () => {
         if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }
