@@ -1,0 +1,49 @@
+name: Agenda RC checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/js/scheduling/agenda.js'
+      - 'public/js/scheduling/agenda-operational-workspace.js'
+      - 'resources/views/scheduling/agenda/**'
+      - 'app/Support/Authorization/PermissionDisplay.php'
+      - 'app/Services/Scheduling/AgendaBoardPresenter.php'
+      - 'app/Services/Scheduling/OperationalAgendaAppointmentService.php'
+      - 'app/Http/Controllers/Scheduling/OperationalRegistrationController.php'
+      - 'tests/JavaScript/**'
+      - 'tests/Unit/PermissionDisplayTest.php'
+      - '.github/workflows/agenda-rc-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-syntax-and-js:
+    name: JS regression + PHP syntax (no DB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check public/js/scheduling/agenda.js
+          node --check public/js/scheduling/agenda-operational-workspace.js
+      - name: Focused Agenda regression tests
+        run: |
+          node --test \
+            tests/JavaScript/agenda-quote-race.test.js \
+            tests/JavaScript/agenda-extended-visibility.test.js \
+            tests/JavaScript/agenda-modal-explicit-actions.test.js \
+            tests/JavaScript/agenda-payment-ocr-placement.test.js
+      - name: PHP syntax only (never touches production DB)
+        run: |
+          php -l app/Http/Controllers/Scheduling/OperationalRegistrationController.php
+          php -l app/Services/Scheduling/AgendaBoardPresenter.php
+          php -l app/Services/Scheduling/OperationalAgendaAppointmentService.php
+          php -l app/Support/Authorization/PermissionDisplay.php
+          php -l tests/Feature/Scheduling/AgendaDoubleDurationTest.php
+          php -l tests/Unit/PermissionDisplayTest.php
