@@ -1,0 +1,392 @@
+{
+  "stage": "bootstrap",
+  "started_at": "2026-10-15T14:15:36.302Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Administrador principal inicia sesión real",
+      "result": "PASS",
+      "ms": 1839
+    },
+    {
+      "name": "ADMIN crea admin2 desde Usuarios",
+      "result": "PASS",
+      "ms": 5358
+    },
+    {
+      "name": "ADMIN crea commercialA desde Usuarios",
+      "result": "PASS",
+      "ms": 5300
+    },
+    {
+      "name": "ADMIN crea commercialB desde Usuarios",
+      "result": "PASS",
+      "ms": 5186
+    },
+    {
+      "name": "ADMIN crea nicole desde Usuarios",
+      "result": "PASS",
+      "ms": 4976
+    },
+    {
+      "name": "ADMIN crea reception desde Usuarios",
+      "result": "PASS",
+      "ms": 5303
+    },
+    {
+      "name": "ADMIN crea cashier desde Usuarios",
+      "result": "PASS",
+      "ms": 5090
+    },
+    {
+      "name": "admin2 mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1377
+    },
+    {
+      "name": "commercialA mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1332
+    },
+    {
+      "name": "commercialB mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1180
+    },
+    {
+      "name": "nicole mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1221
+    },
+    {
+      "name": "reception mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1229
+    },
+    {
+      "name": "cashier mantiene cookie y autenticación independientes",
+      "result": "PASS",
+      "ms": 1296
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/2",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/3",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/3",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/5",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/6",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/6",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/edit/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/user/update/7",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/SingIn",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/user/index",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {
+    "admin2": {
+      "user_id": 2,
+      "independent_context": true
+    },
+    "commercialA": {
+      "user_id": 3,
+      "independent_context": true
+    },
+    "commercialB": {
+      "user_id": 4,
+      "independent_context": true
+    },
+    "nicole": {
+      "user_id": 5,
+      "independent_context": true
+    },
+    "reception": {
+      "user_id": 6,
+      "independent_context": true
+    },
+    "cashier": {
+      "user_id": 7,
+      "independent_context": true
+    }
+  },
+  "finished_at": "2026-10-15T14:16:20.779Z"
+}

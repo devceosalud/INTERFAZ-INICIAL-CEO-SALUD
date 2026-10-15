@@ -172,3 +172,19 @@ La revisión de privacidad de pacientes, captura de sesiones y alcance autorizad
 
 - Reconsulta automática: considerar ATENDIDO únicamente si estado_agenda es LEGADO o CONFIRMADA. Ignorar ATENDIDO + PENDIENTE_CONFIRMACION para propietario y demás trabajadores, conservando esos registros para revisión autorizada. Se elimina la diferencia de precio por trabajador sin ampliar la visibilidad de citas privadas. Su cantidad productiva no ha sido consultada; los ejemplos inconsistentes de QA son ficticios.
 - ADMINISTRADOR: permitir crear, completar y editar fichas desde Agenda mediante la política operativa de pacientes y sus endpoints reutilizados. Se conservan identidad, validaciones, auditoría existente y visibilidad de citas. No implica conceder capacidades de citas, pagos o exoneraciones ni alterar permisos productivos.
+
+## Cierre RC — decisiones vigentes y pendientes al 15/10/2026
+
+Este cierre prevalece sobre preguntas/propuestas históricas cuando contradigan decisiones ya recibidas. No reabre reglas resueltas ni autoriza cambios productivos.
+
+- Confirmado: una sede operativa Magdalena, catálogo productivo vacío. Alta con vista previa/hash/actor/recibo, sin ID fijo ni backfill; roles participantes y ejecución aún requieren autorización.
+- Confirmado: 50% del neto en REGULAR/ADICIONAL/FUERA_HORARIO salvo exoneración autorizada; reserva con dinero protege frente a otra regular; colisión conserva ambas y ADD requiere aceptación/capacidad. Rechazar nuevos solapamientos de horarios, conservar heredados.
+- R05 definitivo: solo indicación del médico acreditada por escrito, mismo servicio, cualquier médico; fecha de atención origen a fecha programada, 0 gratis/1–15 reevaluación/16 consulta. Quiroz referido explícito 250/220 en servicios 1 y 3; catálogo real/mapa opt-in. Uso único y no libera al cancelar. Falta flujo explícito de reasignación cancelada y ajuste pagado R25; evidencia verbal sigue sin aprobación, por tanto no habilitada.
+- R14 operativo completado en RC con permisos privados/versiones; no se incorporaron funciones clínicas nuevas ni se reclasificaron históricos. Grants documentales y de indicación son nominativos, separados de las seis capacidades MVP.
+- R12 Excel y R13 seguimiento documental histórico consolidado pendientes; R19 reutiliza editor auditable, arrastrar/soltar no implementado. No presentar esos alcances como completos.
+- R25–R30 continúan fase posterior. No ejecutar devoluciones por WITHDRAW, ni convertir excedentes automáticamente. Falta asignación final de refund.execute y modelo general; no se concedió ni desarrolló en esta integración.
+- Clarity: mantener instalación por decisión expresa; no modificarla. Privacidad/admisibilidad para datos sensibles requiere resolución del responsable antes de operación real; enmascaramiento no constituye aprobación. R21–R23 cancelados; retirada del mapa interno en PR independiente preservando datos/migraciones.
+- Bloqueo técnico nuevo: audit Composer mantiene cuatro avisos únicos en Laravel 9, uno alto. Dependencias compatibles actualizadas, sin upgrade mayor silencioso. Remediación/compatibilidad pendiente antes de GO productivo.
+- Modo piloto automático por operador sigue sujeto a aprobación/configuración productiva; TICKET interno no constituye SUNAT electrónico. Respaldo/restore productivos, Linux/PHP web, autodespliegue, sesiones, permisos efectivos y smoke pendientes; no acceso Hostinger durante RC.
+
+Detalle y evidencia: RC_CEO_SALUD_RESUMEN.md y CEO_SALUD_MATRIZ_REGLAS.json. Estado **NO-GO productivo**, aunque los flujos locales aprobados son revisables.

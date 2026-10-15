@@ -1,0 +1,187 @@
+{
+    "passed": true,
+    "source_port": 33322,
+    "restore_port": 33323,
+    "version": "11.8.9-MariaDB",
+    "tables_verified": 44,
+    "rows_verified": 324,
+    "retained_document_references": 8,
+    "tables": {
+        "additional_rates": {
+            "count": 4,
+            "sha256": "ef202277ce834c90f068e384d9b46c0df9269dca472f95904e30518039b5be1e"
+        },
+        "agenda_click_events": {
+            "count": 48,
+            "sha256": "5bd7ce6e9eaa9fbdcb73992839367b67d38e9f37e7952264c6cb78c28e9d556c"
+        },
+        "appointment_contingencies": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "appointment_credit_applications": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "appointment_documents": {
+            "count": 8,
+            "sha256": "f29ddf3b2ec8ee128e5ecfa779f67843c7218b95011c0402f4a03438542181b6"
+        },
+        "appointment_events": {
+            "count": 47,
+            "sha256": "36c10ae14c4bb566df714e29ba0e8138aeb4f874a0ad5f243149a031fde61777"
+        },
+        "appointment_operations": {
+            "count": 20,
+            "sha256": "0702506c27d8eff5e06f66662bbd79cf7738f084fe4b19f598616e766c81f17e"
+        },
+        "appointment_pilot_cash_contexts": {
+            "count": 2,
+            "sha256": "b09f895bf0720c036281e3a82a00782d8b860e13e7af04f72b767222706d7318"
+        },
+        "appointment_reevaluation_indications": {
+            "count": 1,
+            "sha256": "bd0d9599813f0e8727dd31bd2d470f9f1318b0b0a631e102a1e5db6f2d73ed7a"
+        },
+        "appointment_refund_requests": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "appointments": {
+            "count": 8,
+            "sha256": "451854999243cc5d5f94cc28fab12daad4f7ba2e0b8e1bd419e6334b0fe45801"
+        },
+        "cash_movements": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "cashier_shifts": {
+            "count": 2,
+            "sha256": "a20fae37e290e20972f4b355985c9844302d5579f6da18928156094c66c65c9e"
+        },
+        "cashiers": {
+            "count": 2,
+            "sha256": "390feefa69548836aae4163ff7dcbfdbc3b7a1e2a93e5437f9ffccebc4096237"
+        },
+        "channels": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "departments": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "districts": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "doctor_schedule_events": {
+            "count": 5,
+            "sha256": "aa277774ccc35618e2ec021a66577e2ed7dc7839a08df6eed7ab24906d0f8ec3"
+        },
+        "doctor_schedules": {
+            "count": 3,
+            "sha256": "def10cd2ef026b845454509115cd5ae2be439f56eeab7cdffd5466c096e0489e"
+        },
+        "doctor_services": {
+            "count": 3,
+            "sha256": "6f1fe98307a5c0cc6d5cbb0fad82acbf153a829e6d5bcfd64567b0a4ec990fb2"
+        },
+        "doctors": {
+            "count": 2,
+            "sha256": "e13a4df4b8252c08c76bcd67272ee83681b483ffa010b2264ace088c1297e95f"
+        },
+        "failed_jobs": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "interaction_media": {
+            "count": 3,
+            "sha256": "2762679f2338840b2a9075c340c1bbc2205dcca1f96f2dd564095cf303e08c3c"
+        },
+        "items": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "migrations": {
+            "count": 48,
+            "sha256": "7a61830949fdc52eca57df2a7ca26d2b314296e4f2740df285943ffdc9a059d5"
+        },
+        "model_has_permissions": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "model_has_roles": {
+            "count": 7,
+            "sha256": "d4d5d4d66b839b7fc212e0737d4f84cd84c71a2ed85b5b0179e4a51a4ae331cc"
+        },
+        "password_resets": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "patients": {
+            "count": 3,
+            "sha256": "6d520b61ad9ca26528f3ee39e5d8cc656258f98472482c3e7a660ef4053b7b6f"
+        },
+        "payments": {
+            "count": 3,
+            "sha256": "7919263cc1c022e2675ab13cc1af1dddf5ac6fb11508d4c4070cd7901e4d38a9"
+        },
+        "permissions": {
+            "count": 23,
+            "sha256": "6569fe5f367443a65536ddb5d1d66bab3913965d175942316c0c89c4500d5e86"
+        },
+        "personal_access_tokens": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "provinces": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "responsibles": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "role_has_permissions": {
+            "count": 43,
+            "sha256": "b2166b1440a8a43c99b53ff7a505f725aadf702505d0cc575fc7fa5b0d22b5c1"
+        },
+        "roles": {
+            "count": 6,
+            "sha256": "4b661da131b3cd638b54e6a077373d5965a2cd205cfc547de5a5e69e696c084b"
+        },
+        "services": {
+            "count": 3,
+            "sha256": "d379eff8b71eda4eea254c09f1741e0a4fdb7e6cefd4c7d8e5a45241f1c51cfa"
+        },
+        "sites": {
+            "count": 1,
+            "sha256": "f6e092474d380a6ab45ec461a3a698dc45dbea8639eb5ba5b200e649ef556e00"
+        },
+        "specialties": {
+            "count": 2,
+            "sha256": "6525ae2fb4f4bcbaaae69175723db5ca9a75dbd9cc14b9b29fb2675cff1f431e"
+        },
+        "user_account_events": {
+            "count": 14,
+            "sha256": "b5ba678e0702d696727dd38fd982a15e4c1519b0943c23f36d50474d2a021b91"
+        },
+        "users": {
+            "count": 7,
+            "sha256": "131dd2ef765ece443025478fc4e248f50fab0cf5c99435310e99f9c0a3990c65"
+        },
+        "voucher_items": {
+            "count": 2,
+            "sha256": "485ec158c6d43b6513a95776fad4b5768930d43f03ad81711993044dcb88c6c6"
+        },
+        "voucher_series": {
+            "count": 2,
+            "sha256": "03bf1e3a7026451299326f0338baf7e5b5d6009202feb9248118446ccf25413d"
+        },
+        "vouchers": {
+            "count": 2,
+            "sha256": "0a28bff11a0cca6210b0978cb0e92bebeec71cdf80233ad85caf6e8b9ee5bc60"
+        }
+    }
+}

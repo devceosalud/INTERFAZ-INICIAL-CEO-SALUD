@@ -1,0 +1,8 @@
+const fs=require('node:fs'),{launch}=require('./browser-harness.cjs'),{helpers}=require('./browser-helpers.cjs');
+(async()=>{const qa=await launch('visibility',{headless:false});try{
+ const {context,page}=await qa.context('nicole');let requests=0;page.on('request',r=>{if(r.url().endsWith('/admission/feed'))requests++;});await page.goto(qa.base+'/scheduling-mvp/admission');await page.locator('#admission-rows tr[data-appointment-id]').first().waitFor();const states=[];
+ await qa.step('Pestaña Chrome realmente oculta detiene polling y al volver revalida',page,async()=>{
+  const other=await context.newPage();await other.goto('about:blank');await other.bringToFront();helpers(qa).save('visibility-observation',{main:await page.evaluate(()=>document.visibilityState),other:await other.evaluate(()=>document.visibilityState)});await page.waitForFunction(()=>document.hidden===true);states.push(await page.evaluate(()=>document.visibilityState));await page.waitForTimeout(600);const before=requests;await page.waitForTimeout(6200);qa.assert.equal(requests,before);
+  await page.bringToFront();await page.waitForFunction(()=>document.hidden===false);states.push(await page.evaluate(()=>document.visibilityState));await page.waitForRequest(r=>r.url().endsWith('/admission/feed'),{timeout:7000});await other.close();
+ });helpers(qa).save('visibility-metrics',{headed:true,actual_visibility_states:states,requests});await qa.finish();
+}catch(e){await qa.fail(e);}})();

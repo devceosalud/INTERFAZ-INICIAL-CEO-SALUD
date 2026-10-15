@@ -1,3 +1,5 @@
+> **Cierre RC 15/10/2026:** el contenido inferior conserva el checkpoint histórico del 14/10; sus casillas/totales no son el estado actual. Se completaron controles de horarios, ADD, jornada, documentos privados/versionado, polling y benchmark. Evidencia vigente: [resumen](RC_CEO_SALUD_RESUMEN.md), [QA](RC_CEO_SALUD_QA.md), [matriz](CEO_SALUD_MATRIZ_REGLAS.md), [liberación](RC_CEO_SALUD_LIBERACION.md). Suites repetidas: 878 PHP/372 MariaDB/261 JS; un ensayo de visibilidad real no acreditado. **NO-GO productivo**, Clarity intacto. Ningún merge GitHub ni operación en Hostinger.
+
 # CEO Salud · candidato de integración · 14/10/2026
 
 Estado de trabajo, no certificación productiva. Rama `codex/rc-integracion-preproductiva`; worktree propio. Main y PR originales sin cambios. Ver HEAD/base de los nueve PR en `evidence/rc/pr-inputs.json`.

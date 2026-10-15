@@ -1,0 +1,37 @@
+{
+  "stage": "overlap",
+  "started_at": "2026-10-15T14:18:47.417Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Alta solapada rechazada en formulario y servidor sin cambiar bloques heredados",
+      "result": "PASS",
+      "ms": 1752
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/overlap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 422
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:18:49.915Z"
+}

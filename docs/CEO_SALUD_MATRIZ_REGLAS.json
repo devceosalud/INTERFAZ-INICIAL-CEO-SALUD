@@ -1,362 +1,1274 @@
 [
   {
     "id": "R01",
+    "rule": "Descuentos por registrador autorizado, motivo y actor",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R01",
+      "status": "IMPLEMENTADO",
+      "gap": "Descuento al registrar con CREATE+VIEW, responsable y evento PRECIO_REGISTRADO; probado en ambas entradas.",
+      "evidence": "AppointmentDiscount; CreateAppointmentService; AppointmentDiscountRegistrationTest",
+      "dependency": "PR precios local; no incluye ajuste posterior al cobro.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#6",
+      "commit": "6f19a47"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Descuento al registrar con CREATE+VIEW, responsable y evento PRECIO_REGISTRADO; probado en ambas entradas.",
-    "evidence": "AppointmentDiscount; CreateAppointmentService; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local; no incluye ajuste posterior al cobro.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#6",
-    "commit": "6f19a47"
+    "files": [
+      "app/Services/Scheduling/AppointmentDiscount.php",
+      "app/Services/Scheduling/CreateAppointmentService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Sin ajuste retroactivo: R25 posterior"
+    ],
+    "pending_dependency": "Sin ajuste retroactivo: R25 posterior",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R02",
+    "rule": "Descuento fijo o porcentual en céntimos",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R02",
+      "status": "IMPLEMENTADO",
+      "gap": "Importe fijo y porcentaje, cálculo en céntimos y validación de dos decimales.",
+      "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
+      "dependency": "PR precios local.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#6",
+      "commit": "6f19a47"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Importe fijo y porcentaje, cálculo en céntimos y validación de dos decimales.",
-    "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#6",
-    "commit": "6f19a47"
+    "files": [
+      "app/Services/Scheduling/AppointmentDiscount.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Catálogo y precios de servidor obligatorios"
+    ],
+    "pending_dependency": "Catálogo y precios de servidor obligatorios",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R03",
+    "rule": "Descuento ordinario menor del 100%; cero discrecional exige exoneración",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R03",
+      "status": "IMPLEMENTADO",
+      "gap": "Rechaza >=100% y redondeo que deje neto cero.",
+      "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
+      "dependency": "Exoneración específica separada.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#6",
+      "commit": "6f19a47"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Rechaza >=100% y redondeo que deje neto cero.",
-    "evidence": "AppointmentDiscount; AppointmentDiscountRegistrationTest",
-    "dependency": "Exoneración específica separada.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#6",
-    "commit": "6f19a47"
+    "files": [
+      "app/Services/Scheduling/AppointmentDiscount.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Exoneración separada"
+    ],
+    "pending_dependency": "Exoneración separada",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R04",
-    "status": "PARCIAL",
-    "gap": "50% del neto en REGULAR, ADICIONAL y FUERA_HORARIO; reserva/pago/confirmación separados. Adelanto o crédito real protege intervalo regular aunque sea <50%. Crédito general pendiente.",
-    "evidence": "AppointmentEconomicPosition; FundedReservation; RegularReservationExclusivityTest; AgendaConcurrencyTest; smoke QA ADMIN",
-    "dependency": "PR #5–#8 + PR #9; R28 general depende ledger.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#5 / #9",
-    "commit": "7c02b44"
+    "rule": "Reserva, cobro y confirmación expresa separados; 50% del neto también en ADD/FUERA_HORARIO",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R04",
+      "status": "PARCIAL",
+      "gap": "50% del neto en REGULAR, ADICIONAL y FUERA_HORARIO; reserva/pago/confirmación separados. Adelanto o crédito real protege intervalo regular aunque sea <50%. Crédito general pendiente.",
+      "evidence": "AppointmentEconomicPosition; FundedReservation; RegularReservationExclusivityTest; AgendaConcurrencyTest; smoke QA ADMIN",
+      "dependency": "PR #5–#8 + PR #9; R28 general depende ledger.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#5 / #9",
+      "commit": "7c02b44"
+    },
+    "status": "IMPLEMENTADO",
+    "files": [
+      "app/Services/Scheduling/ReservationPaymentService.php",
+      "app/Services/Billing/AppointmentEconomicPosition.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/PilotAppointmentOperationsTest.php",
+      "tests/Feature/Scheduling/RegularReservationExclusivityTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-pay.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Crédito general se evalúa en R29, fase posterior"
+    ],
+    "pending_dependency": "Crédito general se evalúa en R29, fase posterior",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R05",
+    "rule": "Indicación escrita acreditada del médico, mismo servicio, cualquier médico; 0 días gratis, 1–15 reevaluación, 16 normal; Quiroz referido explícito 250/220 en servicios 1 y 3",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R05",
+      "status": "PARCIAL",
+      "gap": "Motor central y UI mínima con indicación escrita acreditada, permiso específico, evidencia privada, referencia diferenciada, uso único concurrente; fechas 0/1/15/16, mismo servicio y otro médico. Reprograma sin dinero; cambio de precio con ticket/pago se bloquea hasta ajustes R25. Cancelación no libera indicación; reasignación explícita pendiente.",
+      "evidence": "ReevaluationIndicationService; AppointmentPriceResolver; ReevaluationIndicationTest; AgendaConcurrencyTest; agenda-quote.test.js",
+      "dependency": "PR separado sobre #6; activar mapa de catálogo Quiroz revisado; crear permiso web y asignarlo explícitamente con editor existente; R25 para reprogramación pagada/reasignación.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#7",
+      "commit": "09becbe"
+    },
     "status": "PARCIAL",
-    "gap": "Motor central y UI mínima con indicación escrita acreditada, permiso específico, evidencia privada, referencia diferenciada, uso único concurrente; fechas 0/1/15/16, mismo servicio y otro médico. Reprograma sin dinero; cambio de precio con ticket/pago se bloquea hasta ajustes R25. Cancelación no libera indicación; reasignación explícita pendiente.",
-    "evidence": "ReevaluationIndicationService; AppointmentPriceResolver; ReevaluationIndicationTest; AgendaConcurrencyTest; agenda-quote.test.js",
-    "dependency": "PR separado sobre #6; activar mapa de catálogo Quiroz revisado; crear permiso web y asignarlo explícitamente con editor existente; R25 para reprogramación pagada/reasignación.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#7",
-    "commit": "09becbe"
+    "files": [
+      "app/Services/Scheduling/ReevaluationIndicationService.php",
+      "app/Services/Scheduling/AppointmentPriceResolver.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/ReevaluationIndicationTest.php",
+      "tests/Integration/ReevaluationIndicationMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-reevaluation.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "Falta reasignación explícita tras cancelar; reprogramación pagada que altera precio bloqueada hasta R25; aceptación verbal no aprobada"
+    ],
+    "pending_dependency": "Falta reasignación explícita tras cancelar; reprogramación pagada que altera precio bloqueada hasta R25; aceptación verbal no aprobada",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R06",
+    "rule": "Descuento sobre tarifa referida y mínimo del 50% del nuevo neto",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R06",
+      "status": "IMPLEMENTADO",
+      "gap": "Referido explícito con origen y actor; S/250/S/220 para ambos servicios de Quiroz, S/0 solo con indicación del mismo día; descuento y 50% del neto sin duplicar recargo heredado. No altera otros médicos/catalogo/históricos.",
+      "evidence": "AppointmentPriceResolver; ReevaluationIndicationTest::test_referred_discount_confirmation; AppointmentDiscountRegistrationTest",
+      "dependency": "Configuración verificada Quiroz doctor1/service1,3/rates2,3 durante despliegue controlado; no automática en otros entornos.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#7",
+      "commit": "09becbe"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Referido explícito con origen y actor; S/250/S/220 para ambos servicios de Quiroz, S/0 solo con indicación del mismo día; descuento y 50% del neto sin duplicar recargo heredado. No altera otros médicos/catalogo/históricos.",
-    "evidence": "AppointmentPriceResolver; ReevaluationIndicationTest::test_referred_discount_confirmation; AppointmentDiscountRegistrationTest",
-    "dependency": "Configuración verificada Quiroz doctor1/service1,3/rates2,3 durante despliegue controlado; no automática en otros entornos.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#7",
-    "commit": "09becbe"
+    "files": [
+      "app/Services/Scheduling/AppointmentPriceResolver.php",
+      "app/Services/Scheduling/AppointmentDiscount.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/ReevaluationIndicationTest.php",
+      "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-reevaluation.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Combinaciones referidas acreditadas por PHP/MariaDB; no se ejecutó cada combinación Quiroz en UI"
+    ],
+    "pending_dependency": "Combinaciones referidas acreditadas por PHP/MariaDB; no se ejecutó cada combinación Quiroz en UI",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R07",
+    "rule": "Indicador postoperatorio por cita sin gratuidad automática",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R07",
+      "status": "IMPLEMENTADO",
+      "gap": "Indicador por cita registrado/editado y auditado, sin gratuidad automática.",
+      "evidence": "Appointment; AgendaDetailsController; AppointmentDiscountRegistrationTest",
+      "dependency": "PR precios local; histórica null sin modificación.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#6",
+      "commit": "6f19a47"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Indicador por cita registrado/editado y auditado, sin gratuidad automática.",
-    "evidence": "Appointment; AgendaDetailsController; AppointmentDiscountRegistrationTest",
-    "dependency": "PR precios local; histórica null sin modificación.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#6",
-    "commit": "6f19a47"
+    "files": [
+      "app/Services/Scheduling/CreateAppointmentService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Ningún acceso clínico nuevo"
+    ],
+    "pending_dependency": "Ningún acceso clínico nuevo",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R08",
+    "rule": "Exoneración con permiso explícito, motivo, responsable y auditoría",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R08",
+      "status": "IMPLEMENTADO",
+      "gap": "Permiso explícito, motivo obligatorio y responsable/evento; sin rol que lo omita.",
+      "evidence": "OperationalRegistrationService; CreateAppointmentService; AppointmentDiscountRegistrationTest",
+      "dependency": "Asignación extraordinaria en producción fuera de este desarrollo.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#6",
+      "commit": "6f19a47"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Permiso explícito, motivo obligatorio y responsable/evento; sin rol que lo omita.",
-    "evidence": "OperationalRegistrationService; CreateAppointmentService; AppointmentDiscountRegistrationTest",
-    "dependency": "Asignación extraordinaria en producción fuera de este desarrollo.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#6",
-    "commit": "6f19a47"
+    "files": [
+      "app/Services/Scheduling/CreateAppointmentService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/PilotAppointmentOperationsTest.php",
+      "tests/Feature/Scheduling/LegacyRegistrationParityTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Grant extraordinario nominativo pendiente en producción"
+    ],
+    "pending_dependency": "Grant extraordinario nominativo pendiente en producción",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R09",
+    "rule": "Dos intervalos consecutivos del mismo médico, disponibilidad transaccional, una consulta",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R09",
+      "status": "IMPLEMENTADO",
+      "gap": "Dos intervalos consecutivos reales del mismo médico/bloque/sede; una tarifa, exclusión concurrente y reprogramación por cadencia destino; UI Agenda y editor heredado coherentes.",
+      "evidence": "DoubleAppointmentDuration; AgendaDoubleDurationTest; AgendaConcurrencyTest; smoke navegador reserva→pago→confirmación Día/Semana/Mes",
+      "dependency": "PR Agenda sobre #7; migration duration_slots nullable sin backfill.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#8 / P0",
+      "commit": "a6fcb713"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Dos intervalos consecutivos reales del mismo médico/bloque/sede; una tarifa, exclusión concurrente y reprogramación por cadencia destino; UI Agenda y editor heredado coherentes.",
-    "evidence": "DoubleAppointmentDuration; AgendaDoubleDurationTest; AgendaConcurrencyTest; smoke navegador reserva→pago→confirmación Día/Semana/Mes",
-    "dependency": "PR Agenda sobre #7; migration duration_slots nullable sin backfill.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#8 / P0",
-    "commit": "a6fcb713"
+    "files": [
+      "app/Services/Scheduling/DoubleAppointmentDuration.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AgendaDoubleDurationTest.php",
+      "tests/Integration/AgendaDoubleDurationMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-legacy.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Históricos preservados; cambios con ajuste financiero se bloquean"
+    ],
+    "pending_dependency": "Históricos preservados; cambios con ajuste financiero se bloquean",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R10",
+    "rule": "Doble duración opcional, inicialmente desactivada",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R10",
+      "status": "IMPLEMENTADO",
+      "gap": "Selector opcional default false, reset por contexto; datos históricos null sin inferir duración.",
+      "evidence": "agenda-operational-workspace.js; agenda-quote.test.js; legacy-calendar-safety.test.js",
+      "dependency": "PR Agenda sobre #7.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#8 / P0",
+      "commit": "a6fcb713"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Selector opcional default false, reset por contexto; datos históricos null sin inferir duración.",
-    "evidence": "agenda-operational-workspace.js; agenda-quote.test.js; legacy-calendar-safety.test.js",
-    "dependency": "PR Agenda sobre #7.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#8 / P0",
-    "commit": "a6fcb713"
+    "files": [
+      "public/js/scheduling/agenda.js",
+      "app/Services/Scheduling/DoubleAppointmentDuration.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AgendaDoubleDurationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-reserves.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-legacy.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "El circuito ordinario usa un intervalo; legacy doble explícito"
+    ],
+    "pending_dependency": "El circuito ordinario usa un intervalo; legacy doble explícito",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R11",
-    "status": "PARCIAL",
-    "gap": "Panel de Nicole implementado según Figma, hoy Lima, sede real por catálogo, seis KPIs aprobados, filtros coherentes, tabla y detalle lateral. Reservas privadas pendientes y tres estados desactivados se distinguen; no reescribe estados. QA escritorio y circuito integrado aprobados; QA móvil y alta productiva de Magdalena pendientes.",
-    "evidence": "AdmissionBoardService; AdmissionStatus; AdmissionBoardTest; AdmissionBoardMariaDbTest; admission-board.js; smoke navegador ADMIN con paciente/adelanto/OCR/seguimiento",
-    "dependency": "PR #12 sobre #10; catálogo supervisado PR #11 (9d1eb29). Horarios/citas NULL se conservan; configurar futuros horarios con sede explícita. Privacidad y despliegue pendientes.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#11 / #12",
-    "commit": "9d1eb29 / 2270eb5"
+    "rule": "Nicole inicia en día Lima y Magdalena del catálogo, sin ID fijo",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R11",
+      "status": "PARCIAL",
+      "gap": "Panel de Nicole implementado según Figma, hoy Lima, sede real por catálogo, seis KPIs aprobados, filtros coherentes, tabla y detalle lateral. Reservas privadas pendientes y tres estados desactivados se distinguen; no reescribe estados. QA escritorio y circuito integrado aprobados; QA móvil y alta productiva de Magdalena pendientes.",
+      "evidence": "AdmissionBoardService; AdmissionStatus; AdmissionBoardTest; AdmissionBoardMariaDbTest; admission-board.js; smoke navegador ADMIN con paciente/adelanto/OCR/seguimiento",
+      "dependency": "PR #12 sobre #10; catálogo supervisado PR #11 (9d1eb29). Horarios/citas NULL se conservan; configurar futuros horarios con sede explícita. Privacidad y despliegue pendientes.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#11 / #12",
+      "commit": "9d1eb29 / 2270eb5"
+    },
+    "status": "IMPLEMENTADO",
+    "files": [
+      "app/Services/Scheduling/AdmissionBoardService.php",
+      "app/Support/Scheduling/MagdalenaSiteSetup.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AdmissionBoardTest.php",
+      "tests/Integration/MagdalenaSiteSetupMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-mobile.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Sede productiva ausente: alta controlada y horarios futuros pendientes"
+    ],
+    "pending_dependency": "Sede productiva ausente: alta controlada y horarios futuros pendientes",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R12",
+    "rule": "Panel reutiliza citas/pagos, seis KPI, filtros y operaciones autorizadas",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R12",
+      "status": "PARCIAL",
+      "gap": "Panel con totales del conjunto filtrado, métodos y pagos atribuidos, llegada/llamado/inicio/fin auditados; acciones de cita/pago/OCR usan Agenda con referencia exacta, sin motor financiero duplicado. Excel pendiente, no bloquea circuito P0.",
+      "evidence": "AdmissionBoardService; AdmissionCareService; AppointmentEconomicPosition; AdmissionBoardTest; smoke Nicole → Agenda → OCR → Nicole",
+      "dependency": "PR #12 depende de #10; exportación futura acotada, autorizada y sin fórmulas inyectadas.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#12",
+      "commit": "2270eb5"
+    },
     "status": "PARCIAL",
-    "gap": "Panel con totales del conjunto filtrado, métodos y pagos atribuidos, llegada/llamado/inicio/fin auditados; acciones de cita/pago/OCR usan Agenda con referencia exacta, sin motor financiero duplicado. Excel pendiente, no bloquea circuito P0.",
-    "evidence": "AdmissionBoardService; AdmissionCareService; AppointmentEconomicPosition; AdmissionBoardTest; smoke Nicole → Agenda → OCR → Nicole",
-    "dependency": "PR #12 depende de #10; exportación futura acotada, autorizada y sin fórmulas inyectadas.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#12",
-    "commit": "2270eb5"
+    "files": [
+      "app/Services/Scheduling/AdmissionBoardService.php",
+      "app/Services/Scheduling/AdmissionCareService.php",
+      "public/js/scheduling/admission-board.js"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AdmissionBoardTest.php",
+      "tests/Integration/AdmissionBoardMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-polling.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-documents-poll.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "Exportación Excel pendiente; no se presenta como terminada"
+    ],
+    "pending_dependency": "Exportación Excel pendiente; no se presenta como terminada",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R13",
+    "rule": "Historial administrativo visible hasta 20 citas, contacto, médico y situación económica; sin diagnósticos",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R13",
+      "status": "PARCIAL",
+      "gap": "Detalle administrativo con contactos, responsable, hasta 20 citas visibles, médicos/servicios y situación económica, sin diagnósticos, motivos históricos, observaciones ni contenido médico. Seguimiento específico de recetas/informes pendiente.",
+      "evidence": "AdmissionBoardService::detail; AdmissionBoardTest privacidad/históricos; AppointmentVisibility",
+      "dependency": "PR #12; R14 para documentos operativos y estados de recetas/informes.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#12",
+      "commit": "2270eb5"
+    },
     "status": "PARCIAL",
-    "gap": "Detalle administrativo con contactos, responsable, hasta 20 citas visibles, médicos/servicios y situación económica, sin diagnósticos, motivos históricos, observaciones ni contenido médico. Seguimiento específico de recetas/informes pendiente.",
-    "evidence": "AdmissionBoardService::detail; AdmissionBoardTest privacidad/históricos; AppointmentVisibility",
-    "dependency": "PR #12; R14 para documentos operativos y estados de recetas/informes.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#12",
-    "commit": "2270eb5"
+    "files": [
+      "app/Services/Scheduling/AdmissionBoardService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AdmissionBoardTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-documents.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "No hay seguimiento consolidado de documentos de todas las atenciones anteriores"
+    ],
+    "pending_dependency": "No hay seguimiento consolidado de documentos de todas las atenciones anteriores",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R14",
-    "status": "PARCIAL",
-    "gap": "Evidencia de indicación médica admite subida privada atómica, purpose y permiso específico. Recetas/informes operativos generales y reemplazo versionado siguen pendientes.",
-    "evidence": "AppointmentDocumentController; ReevaluationIndicationService; ReevaluationIndicationTest; AppointmentProofStorage",
-    "dependency": "PR documentos; privacidad/autorización.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "rule": "Subir y reemplazar receta/informe operativo privado, con permisos y versiones; sin contenido clínico en Nicole",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R14",
+      "status": "PARCIAL",
+      "gap": "Evidencia de indicación médica admite subida privada atómica, purpose y permiso específico. Recetas/informes operativos generales y reemplazo versionado siguen pendientes.",
+      "evidence": "AppointmentDocumentController; ReevaluationIndicationService; ReevaluationIndicationTest; AppointmentProofStorage",
+      "dependency": "PR documentos; privacidad/autorización.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
+    "status": "IMPLEMENTADO",
+    "files": [
+      "app/Services/Scheduling/ReplaceAppointmentDocument.php",
+      "app/Support/Scheduling/AppointmentDocumentAccess.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/OperationalDocumentsTest.php",
+      "tests/Integration/OperationalDocumentsMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-documents.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-documents-poll.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Solo versión vigente descargable; historial conservado para auditoría/backup; grants explícitos"
+    ],
+    "pending_dependency": "Solo versión vigente descargable; historial conservado para auditoría/backup; grants explícitos",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R15",
+    "rule": "Documento vinculado a su cita; comprobantes y evidencia médica protegidos de sustitución genérica",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R15",
+      "status": "IMPLEMENTADO",
+      "gap": "FK/rutas appointment_id, descarga privada y visibilidad; no mezclar entre citas.",
+      "evidence": "AppointmentDocument; AppointmentDocumentController; OperationalRegistrationTest",
+      "dependency": "Reutilizar; aún no certificado en producción.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#5 / #9",
+      "commit": "7c02b44"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "FK/rutas appointment_id, descarga privada y visibilidad; no mezclar entre citas.",
-    "evidence": "AppointmentDocument; AppointmentDocumentController; OperationalRegistrationTest",
-    "dependency": "Reutilizar; aún no certificado en producción.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#5 / #9",
-    "commit": "7c02b44"
+    "files": [
+      "app/Support/Scheduling/AppointmentDocumentAccess.php",
+      "app/Services/Scheduling/ReplaceAppointmentDocument.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/OperationalDocumentsTest.php",
+      "tests/Feature/Scheduling/AppointmentPaymentProofsTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-documents.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-documents-poll.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "No se reclasifican documentos heredados automáticamente"
+    ],
+    "pending_dependency": "No se reclasifican documentos heredados automáticamente",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R16",
-    "status": "PARCIAL",
-    "gap": "ADMIN requiere permiso explícito; sus 9 grants no acreditan APPROVE_ZERO_COST.",
-    "evidence": "OperationalRegistrationService; LegacyRegistrationParityTest",
-    "dependency": "Asignación extraordinaria productiva aprobada aparte.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#5 / #9",
-    "commit": "7c02b44"
+    "rule": "ADMIN exoneración solo con permiso Spatie específico",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R16",
+      "status": "PARCIAL",
+      "gap": "ADMIN requiere permiso explícito; sus 9 grants no acreditan APPROVE_ZERO_COST.",
+      "evidence": "OperationalRegistrationService; LegacyRegistrationParityTest",
+      "dependency": "Asignación extraordinaria productiva aprobada aparte.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#5 / #9",
+      "commit": "7c02b44"
+    },
+    "status": "IMPLEMENTADO",
+    "files": [
+      "app/Services/Scheduling/CreateAppointmentService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/LegacyRegistrationParityTest.php",
+      "tests/Feature/Scheduling/PilotAppointmentOperationsTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-prices.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Rol ADMIN por sí solo no otorga capacidad financiera"
+    ],
+    "pending_dependency": "Rol ADMIN por sí solo no otorga capacidad financiera",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R17",
+    "rule": "DNI nuevo de trabajador de ocho dígitos y único; heredados conservados",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R17",
+      "status": "IMPLEMENTADO",
+      "gap": "DNI nuevo numérico de ocho dígitos y único, conserva ceros; legados sin DNI o sin corrección se conservan. Editor existente protegido, búsqueda por nombre/DNI, sin asignación automática de roles.",
+      "evidence": "UserController; users_worker_dni_unique; WorkerAccessTest; WorkerConcurrencyTest (dos altas con mismo DNI); smoke local edición y búsqueda DNI",
+      "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#13",
+      "commit": "b2a0121"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "DNI nuevo numérico de ocho dígitos y único, conserva ceros; legados sin DNI o sin corrección se conservan. Editor existente protegido, búsqueda por nombre/DNI, sin asignación automática de roles.",
-    "evidence": "UserController; users_worker_dni_unique; WorkerAccessTest; WorkerConcurrencyTest (dos altas con mismo DNI); smoke local edición y búsqueda DNI",
-    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#13",
-    "commit": "b2a0121"
+    "files": [
+      "app/Http/Controllers/Api/user/UserController.php",
+      "app/Http/Controllers/admin/master/user/UserController.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Auth/WorkerAccessTest.php",
+      "tests/Integration/WorkerConcurrencyTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-bootstrap.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "No regulariza identidad histórica por operación masiva"
+    ],
+    "pending_dependency": "No regulariza identidad histórica por operación masiva",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R18",
+    "rule": "Desactivar con motivo revoca sesiones/tokens; reactivar no revive cookie anterior; protege último admin",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R18",
+      "status": "IMPLEMENTADO",
+      "gap": "Desactivar/reactivar exclusivo ADMIN activo, motivo/confirmación/auditoría, época de sesión y remember token rotados, tokens revocados; sesión antigua no revive. Bloquea nuevas solicitudes y responsables inactivos sin alterar historial. No aborta operaciones ya en curso.",
+      "evidence": "UserAccountAccess; Authenticate; AuthController; User::hasPermissionTo; WorkerAccessTest (file/database/Sanctum); carreras reales de reintento y dos administradores; smoke local",
+      "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#13",
+      "commit": "b2a0121"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Desactivar/reactivar exclusivo ADMIN activo, motivo/confirmación/auditoría, época de sesión y remember token rotados, tokens revocados; sesión antigua no revive. Bloquea nuevas solicitudes y responsables inactivos sin alterar historial. No aborta operaciones ya en curso.",
-    "evidence": "UserAccountAccess; Authenticate; AuthController; User::hasPermissionTo; WorkerAccessTest (file/database/Sanctum); carreras reales de reintento y dos administradores; smoke local",
-    "dependency": "PR independiente sobre #5; migración aditiva y guard ADMINISTRADOR web normalizado; publicación coordinada, sin grants financieros.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#13",
-    "commit": "b2a0121"
+    "files": [
+      "app/Http/Controllers/Api/user/UserController.php",
+      "app/Http/Controllers/admin/master/user/UserController.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Auth/WorkerAccessTest.php",
+      "tests/Integration/WorkerConcurrencyTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-security.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Persistencia de sesiones/configuración web productiva pendiente"
+    ],
+    "pending_dependency": "Persistencia de sesiones/configuración web productiva pendiente",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R19",
+    "rule": "Editor existente asigna/revoca permisos y roles con auditoría; revocación efectiva en backend",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R19",
+      "status": "PARCIAL",
+      "gap": "Editor existente con casillas, revisión concurrente, confirmación, auditoría y Spatie. Grant/revoke de ADD en ADMIN ficticio probado en navegador y rechazo HTTP 403 tras retirada. Arrastrar/soltar NO implementado ni aceptado como equivalente.",
+      "evidence": "RoleController; user-editor.test.js; MvpPermissionBootstrapTest",
+      "dependency": "PR #5; cinco guards productivos aún por normalizar con autorización. UX de arrastrar/soltar posterior.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#5 / P0 QA",
+      "commit": "fc4f278"
+    },
     "status": "PARCIAL",
-    "gap": "Editor existente con casillas, revisión concurrente, confirmación, auditoría y Spatie. Grant/revoke de ADD en ADMIN ficticio probado en navegador y rechazo HTTP 403 tras retirada. Arrastrar/soltar NO implementado ni aceptado como equivalente.",
-    "evidence": "RoleController; user-editor.test.js; MvpPermissionBootstrapTest",
-    "dependency": "PR #5; cinco guards productivos aún por normalizar con autorización. UX de arrastrar/soltar posterior.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#5 / P0 QA",
-    "commit": "fc4f278"
+    "files": [
+      "app/Http/Controllers/admin/master/role/RoleController.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Auth/WorkerAccessTest.php",
+      "tests/Feature/Security/ScheduleAuthorizationTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-permissions-schedules.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-security.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-documents-poll.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "No implementado arrastrar/soltar; interfaz existente de selección reutilizada"
+    ],
+    "pending_dependency": "No implementado arrastrar/soltar; interfaz existente de selección reutilizada",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R20",
-    "status": "PARCIAL",
-    "gap": "OCR local Tesseract.js 7 probado en navegador con Yape/BCP sintéticos, ambiguo e ilegible; sugerencias editables, uso y revisión expresos. Pagos y múltiples adjuntos privados vinculados, hash único + operación bancaria, auditoría e idempotencia; carrera real corregida. Pendiente smoke Hostinger equivalente y muestras adicionales ficticias; no validación bancaria automática. Circuito nuevo paciente/descuento/reserva/OCR/pago/confirmación/seguimiento de Nicole verificado en navegador; pago único e histórico intacto por SELECT de QA.",
-    "evidence": "AppointmentPaymentProofs; AppointmentProofStorage; AppointmentPaymentProofsTest; AgendaConcurrencyTest; appointment-receipt-ocr/review; smoke Agenda y Admisión + readback QA",
-    "dependency": "PR OCR sobre #9; migración aditiva de appointment_documents y recursos estáticos locales. Privacidad Clarity antes de datos reales; sin requerir Tesseract nativo ni proc_open web.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#10 / #12",
-    "commit": "f1b3c25"
+    "rule": "OCR local navegador Yape/BCP/BBVA, sugerencias editables y revisión humana; adjuntos privados múltiples y deduplicación",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R20",
+      "status": "PARCIAL",
+      "gap": "OCR local Tesseract.js 7 probado en navegador con Yape/BCP sintéticos, ambiguo e ilegible; sugerencias editables, uso y revisión expresos. Pagos y múltiples adjuntos privados vinculados, hash único + operación bancaria, auditoría e idempotencia; carrera real corregida. Pendiente smoke Hostinger equivalente y muestras adicionales ficticias; no validación bancaria automática. Circuito nuevo paciente/descuento/reserva/OCR/pago/confirmación/seguimiento de Nicole verificado en navegador; pago único e histórico intacto por SELECT de QA.",
+      "evidence": "AppointmentPaymentProofs; AppointmentProofStorage; AppointmentPaymentProofsTest; AgendaConcurrencyTest; appointment-receipt-ocr/review; smoke Agenda y Admisión + readback QA",
+      "dependency": "PR OCR sobre #9; migración aditiva de appointment_documents y recursos estáticos locales. Privacidad Clarity antes de datos reales; sin requerir Tesseract nativo ni proc_open web.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#10 / #12",
+      "commit": "f1b3c25"
+    },
+    "status": "IMPLEMENTADO",
+    "files": [
+      "app/Services/Scheduling/AppointmentPaymentProofs.php",
+      "app/Services/Scheduling/AppointmentProofStorage.php",
+      "public/js/scheduling/appointment-receipt-ocr.js"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentPaymentProofsTest.php",
+      "tests/Integration/AppointmentPaymentProofsMariaDbTest.php"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-pay.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-ocr-negative.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "CSP/WASM/límites PHP web Hostinger pendientes; no certifica transferencia bancaria"
+    ],
+    "pending_dependency": "CSP/WASM/límites PHP web Hostinger pendientes; no certifica transferencia bancaria",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R21",
-    "priority": "CANCELADO",
+    "rule": "Mapa de calor propio cancelado; retirada independiente",
+    "status_previous": "CANCELADO",
+    "previous_evidence": {
+      "id": "R21",
+      "priority": "CANCELADO",
+      "status": "CANCELADO",
+      "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+      "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+      "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+      "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+      "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+      "pull_request": "FUERA DE P0; retirada separada",
+      "commit": "main 1a2c1895"
+    },
     "status": "CANCELADO",
-    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
-    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
-    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
-    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
-    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
-    "pull_request": "FUERA DE P0; retirada separada",
-    "commit": "main 1a2c1895"
+    "files": [],
+    "automated_tests": [],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CANCELADO",
+    "risks": [
+      "Clarity instalado, privacidad pendiente"
+    ],
+    "pending_dependency": "Clarity instalado, privacidad pendiente",
+    "rc_eligibility": "FUERA DEL ALCANCE FUNCIONAL RC",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R22",
-    "priority": "CANCELADO",
+    "rule": "Visor/telemetría propios cancelados; no se amplían",
+    "status_previous": "CANCELADO",
+    "previous_evidence": {
+      "id": "R22",
+      "priority": "CANCELADO",
+      "status": "CANCELADO",
+      "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+      "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+      "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+      "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+      "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+      "pull_request": "FUERA DE P0; retirada separada",
+      "commit": "main 1a2c1895"
+    },
     "status": "CANCELADO",
-    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
-    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
-    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
-    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
-    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
-    "pull_request": "FUERA DE P0; retirada separada",
-    "commit": "main 1a2c1895"
+    "files": [],
+    "automated_tests": [],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CANCELADO",
+    "risks": [
+      "Preservar migraciones y datos hasta entrega independiente"
+    ],
+    "pending_dependency": "Preservar migraciones y datos hasta entrega independiente",
+    "rc_eligibility": "FUERA DEL ALCANCE FUNCIONAL RC",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R23",
-    "priority": "CANCELADO",
+    "rule": "Demostraciones/mapa propio cancelados",
+    "status_previous": "CANCELADO",
+    "previous_evidence": {
+      "id": "R23",
+      "priority": "CANCELADO",
+      "status": "CANCELADO",
+      "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
+      "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
+      "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
+      "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
+      "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
+      "pull_request": "FUERA DE P0; retirada separada",
+      "commit": "main 1a2c1895"
+    },
     "status": "CANCELADO",
-    "gap": "Mapa de calor interno descartado por negocio. Clarity instalado e intacto. Retirada del heatmap heredado será PR independiente.",
-    "evidence": "Decisión explícita del usuario; instalación en resources/views/layouts/app.blade.php",
-    "dependency": "Privacidad y admisibilidad de Clarity pendientes antes de datos reales.",
-    "production": "CLARITY INSTALADO; PRIVACIDAD PENDIENTE",
-    "evidence_level": "PRODUCCION_CONFIRMADA_POR_USUARIO",
-    "pull_request": "FUERA DE P0; retirada separada",
-    "commit": "main 1a2c1895"
+    "files": [],
+    "automated_tests": [],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CANCELADO",
+    "risks": [
+      "No instalar otro mapa; Clarity intacto"
+    ],
+    "pending_dependency": "No instalar otro mapa; Clarity intacto",
+    "rc_eligibility": "FUERA DEL ALCANCE FUNCIONAL RC",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R24",
+    "rule": "Contexto limpio al cambiar selección, aviso si hay cambios, protección de respuestas obsoletas",
+    "status_previous": "IMPLEMENTADO",
+    "previous_evidence": {
+      "id": "R24",
+      "status": "IMPLEMENTADO",
+      "gap": "Swal de descarte con esperas, reset de contexto y protección de respuestas tardías. Navegador: conserva motivo al cancelar, limpia motivo/descuento/importe/archivo al descartar y permite cambiar vistas sin advertencia si está limpio. Alta completa de paciente desde modal verificada en circuito Nicole/Agenda/OCR.",
+      "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke QA integrado del 14/10: nuevo paciente, descarte/conservación y Día/Semana/Mes",
+      "dependency": "PR #9 reutilizado en #12; verificación productiva pendiente.",
+      "priority": "P0",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "#9 / #12",
+      "commit": "7c02b44 / 2270eb5"
+    },
     "status": "IMPLEMENTADO",
-    "gap": "Swal de descarte con esperas, reset de contexto y protección de respuestas tardías. Navegador: conserva motivo al cancelar, limpia motivo/descuento/importe/archivo al descartar y permite cambiar vistas sin advertencia si está limpio. Alta completa de paciente desde modal verificada en circuito Nicole/Agenda/OCR.",
-    "evidence": "agenda.js; agenda-operational-workspace.js; agenda-quote.test.js; smoke QA integrado del 14/10: nuevo paciente, descarte/conservación y Día/Semana/Mes",
-    "dependency": "PR #9 reutilizado en #12; verificación productiva pendiente.",
-    "priority": "P0",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "#9 / #12",
-    "commit": "7c02b44 / 2270eb5"
+    "files": [
+      "public/js/scheduling/agenda.js",
+      "public/js/scheduling/agenda-operational-workspace.js"
+    ],
+    "automated_tests": [
+      "tests/JavaScript/agenda-quote.test.js",
+      "tests/JavaScript/agenda-details-workspace.test.js",
+      "tests/JavaScript/legacy-registration-context.test.js"
+    ],
+    "browser_evidence": [
+      {
+        "file": "docs/evidence/rc/final/browser-jornada-reserves.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-mobile.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      },
+      {
+        "file": "docs/evidence/rc/final/browser-legacy.json",
+        "result": "PASS",
+        "scope": "Ver casos concretos del reporte; no implica probar todas las combinaciones de la regla"
+      }
+    ],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "IMPLEMENTADO Y PROBADO EN DESARROLLO",
+    "risks": [
+      "Casos de respuestas tardías cubiertos además por suites JS"
+    ],
+    "pending_dependency": "Casos de respuestas tardías cubiertos además por suites JS",
+    "rc_eligibility": "INCLUIBLE EN RC LOCAL; NO-GO PRODUCTIVO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R25",
+    "rule": "Ajuste económico posterior al pago debe ser movimiento auditable",
+    "status_previous": "FALTANTE",
+    "previous_evidence": {
+      "id": "R25",
+      "status": "FALTANTE",
+      "gap": "Sin ajustes auditados posteriores a pago; no sobrescribir precios/pagos/vouchers históricos.",
+      "evidence": "AppointmentEconomicPosition; AppointmentTicketService",
+      "dependency": "PR ledger después de descuentos.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "FALTANTE",
-    "gap": "Sin ajustes auditados posteriores a pago; no sobrescribir precios/pagos/vouchers históricos.",
-    "evidence": "AppointmentEconomicPosition; AppointmentTicketService",
-    "dependency": "PR ledger después de descuentos.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Billing/AppointmentEconomicPosition.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/ReevaluationIndicationTest.php",
+      "tests/Feature/Scheduling/LegacyRegistrationParityTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "NO IMPLEMENTADO; límites seguros existentes probados",
+    "risks": [
+      "Fase posterior: no hay ledger de ajustes; bloquea cambio incompatible sin sobrescribir dinero"
+    ],
+    "pending_dependency": "Fase posterior: no hay ledger de ajustes; bloquea cambio incompatible sin sobrescribir dinero",
+    "rc_eligibility": "FUERA DEL ALCANCE FUNCIONAL RC",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R26",
+    "rule": "Excedente requiere elección devolución o crédito, sin conversión automática",
+    "status_previous": "FALTANTE",
+    "previous_evidence": {
+      "id": "R26",
+      "status": "FALTANTE",
+      "gap": "Sobrepago se rechaza hoy; falta elección devolución/crédito del excedente.",
+      "evidence": "OperationalRegistrationService; ReservationPaymentService",
+      "dependency": "PR ledger; conciliación de registros existentes.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "FALTANTE",
-    "gap": "Sobrepago se rechaza hoy; falta elección devolución/crédito del excedente.",
-    "evidence": "OperationalRegistrationService; ReservationPaymentService",
-    "dependency": "PR ledger; conciliación de registros existentes.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_EXISTENTE_NO_CUMPLE",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Scheduling/ReservationPaymentService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/PilotAppointmentPaymentTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "NO IMPLEMENTADO; límites seguros existentes probados",
+    "risks": [
+      "Fase posterior: sobrepago se rechaza; navegador ocr-negative comprueba rechazo sin escritura"
+    ],
+    "pending_dependency": "Fase posterior: sobrepago se rechaza; navegador ocr-negative comprueba rechazo sin escritura",
+    "rc_eligibility": "FUERA DEL ALCANCE FUNCIONAL RC",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R27",
+    "rule": "Solicitud de devolución no ejecuta dinero; permiso exclusivo de ejecución pendiente de flujo",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R27",
+      "status": "PARCIAL",
+      "gap": "Solicitar devolución con WITHDRAW no ejecuta dinero; appointment.refund.execute aprobado como capacidad específica, asignación final pendiente.",
+      "evidence": "AppointmentWithdrawalService::requestRefund; AppointmentWithdrawalTest",
+      "dependency": "PR devolución: solicitud/autorización/ejecución/evidencia separadas.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "PARCIAL",
-    "gap": "Solicitar devolución con WITHDRAW no ejecuta dinero; appointment.refund.execute aprobado como capacidad específica, asignación final pendiente.",
-    "evidence": "AppointmentWithdrawalService::requestRefund; AppointmentWithdrawalTest",
-    "dependency": "PR devolución: solicitud/autorización/ejecución/evidencia separadas.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Scheduling/AppointmentWithdrawalService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentWithdrawalTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "Fase posterior: no ejecutar devoluciones ni asignar refund.execute automáticamente"
+    ],
+    "pending_dependency": "Fase posterior: no ejecutar devoluciones ni asignar refund.execute automáticamente",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R28",
+    "rule": "Aplicar crédito con permiso de pago, locks e idempotencia",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R28",
+      "status": "PARCIAL",
+      "gap": "Crédito de cita retirada se aplica con locks y exige PAYMENT_SUBMIT; dinero no se copia. Destino pendiente con crédito protege horario. Falta saldo a favor general y su aplicación parcial futura.",
+      "evidence": "AppointmentWithdrawalService::rebook; FundedReservation; RegularReservationExclusivityTest; AppointmentWithdrawalTest",
+      "dependency": "P0 cubre gate faltante; PR créditos/ledger general separado.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "PARCIAL",
-    "gap": "Crédito de cita retirada se aplica con locks y exige PAYMENT_SUBMIT; dinero no se copia. Destino pendiente con crédito protege horario. Falta saldo a favor general y su aplicación parcial futura.",
-    "evidence": "AppointmentWithdrawalService::rebook; FundedReservation; RegularReservationExclusivityTest; AppointmentWithdrawalTest",
-    "dependency": "P0 cubre gate faltante; PR créditos/ledger general separado.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Scheduling/AppointmentWithdrawalService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentWithdrawalTest.php",
+      "tests/Feature/Scheduling/RegularReservationExclusivityTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "Solo crédito de reubicación existente; saldo general y aplicación parcial posterior pendientes"
+    ],
+    "pending_dependency": "Solo crédito de reubicación existente; saldo general y aplicación parcial posterior pendientes",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R29",
+    "rule": "Crédito aplicado computa al 50%",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R29",
+      "status": "PARCIAL",
+      "gap": "Crédito de rebook integra secured/50%; falta aplicación general futura.",
+      "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
+      "dependency": "Completar R28 y conservar fórmula.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "PARCIAL",
-    "gap": "Crédito de rebook integra secured/50%; falta aplicación general futura.",
-    "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
-    "dependency": "Completar R28 y conservar fórmula.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Billing/AppointmentEconomicPosition.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentWithdrawalTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "Limitado a reubicación existente; crédito general pendiente de R28"
+    ],
+    "pending_dependency": "Limitado a reubicación existente; crédito general pendiente de R28",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   },
   {
     "id": "R30",
+    "rule": "Crédito convertido no tiene devolución ordinaria posterior",
+    "status_previous": "PARCIAL",
+    "previous_evidence": {
+      "id": "R30",
+      "status": "PARCIAL",
+      "gap": "Regla definida: crédito convertido no admite devolución ordinaria. Falta ledger; excepciones legales requieren procedimiento autorizado específico.",
+      "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
+      "dependency": "PR ledger bloquea devolución ordinaria; no implementar excepciones sin definición.",
+      "priority": "P1",
+      "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
+      "evidence_level": "CODIGO_Y_QA_DESARROLLO",
+      "pull_request": "PENDIENTE / base #5–#8",
+      "commit": "7c02b44"
+    },
     "status": "PARCIAL",
-    "gap": "Regla definida: crédito convertido no admite devolución ordinaria. Falta ledger; excepciones legales requieren procedimiento autorizado específico.",
-    "evidence": "AppointmentEconomicPosition; AppointmentWithdrawalTest",
-    "dependency": "PR ledger bloquea devolución ordinaria; no implementar excepciones sin definición.",
-    "priority": "P1",
-    "production": "PENDIENTE DE DESPLIEGUE Y VERIFICACION",
-    "evidence_level": "CODIGO_Y_QA_DESARROLLO",
-    "pull_request": "PENDIENTE / base #5–#8",
-    "commit": "7c02b44"
+    "files": [
+      "app/Services/Scheduling/AppointmentWithdrawalService.php"
+    ],
+    "automated_tests": [
+      "tests/Feature/Scheduling/AppointmentWithdrawalTest.php"
+    ],
+    "browser_evidence": [],
+    "database_evidence": "docs/evidence/rc/final/final-db.json + suites MariaDB (ficticios)",
+    "tested_application_commit": "b388bd3f4816e30506e913aec33234518949db5b",
+    "application_sha256": "a95709f76233b2e83b9e603581af47d8877c9b7a0bb355aff9f2c3f75b550ed5",
+    "result": "CUMPLIMIENTO PARCIAL; ver pendiente",
+    "risks": [
+      "No hay ledger general; excepciones legales/ejecución fuera de esta fase"
+    ],
+    "pending_dependency": "No hay ledger general; excepciones legales/ejecución fuera de esta fase",
+    "rc_eligibility": "SOLO ALCANCE EXISTENTE/DECLARADO",
+    "production": "NO-GO: seguridad Laravel, privacidad Clarity y verificaciones productivas pendientes"
   }
 ]

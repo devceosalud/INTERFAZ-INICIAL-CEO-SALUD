@@ -1,0 +1,212 @@
+{
+  "stage": "reevaluation",
+  "started_at": "2026-10-15T14:18:50.533Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Nicole acredita indicación escrita del médico en atención realizada y conserva evidencia privada",
+      "result": "PASS",
+      "ms": 994
+    },
+    {
+      "name": "Cotización HTTP autoritativa: días 0,1,15,16 y ausencia de indicación",
+      "result": "PASS",
+      "ms": 864
+    },
+    {
+      "name": "Agenda aplica tarifa médica S0 sin exoneración discrecional ni pago y vincula uso único",
+      "result": "PASS",
+      "ms": 5247
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/economy",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/appointments/2/reevaluation-indications",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/patient-lookup",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/7/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/7/economy",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 422
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/7/documents",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:19:00.381Z"
+}

@@ -1,0 +1,35 @@
+{
+  "size": 2000,
+  "started_at": "2026-10-15T14:34:20.648Z",
+  "users": 8,
+  "http_workers": 2,
+  "mode": "Sequential unchanged feed + selected detail revalidation, 8 independent sessions, real HTTP/CSRF; excludes availability, assets, TLS",
+  "results": [
+    {
+      "load": "unloaded",
+      "samples": 20,
+      "p50_ms": 455.913,
+      "p95_ms": 504.26,
+      "max_sql_per_cycle": 54,
+      "max_bytes_per_cycle": 192,
+      "peak_mib": 40
+    },
+    {
+      "load": "8 simultaneous users",
+      "samples": 80,
+      "p50_ms": 1689.922,
+      "p95_ms": 2265.736,
+      "max_sql_per_cycle": 54,
+      "max_bytes_per_cycle": 192,
+      "peak_mib": 40
+    }
+  ],
+  "proposed_targets": {
+    "p95_unloaded_ms": 1800,
+    "p95_burst_ms": 4500,
+    "max_sql_per_cycle": 80,
+    "max_bytes_per_cycle": 200000
+  },
+  "meets_proposed_targets": true,
+  "finished_at": "2026-10-15T14:34:57.159Z"
+}

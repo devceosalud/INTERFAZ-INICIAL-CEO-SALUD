@@ -8,10 +8,10 @@ const base='http://127.0.0.1:8026';
 const workers=[['admin2','ADMIN SECUNDARIO QA','ADMINISTRADOR'],['commercialA','COMERCIAL A QA','COMERCIAL'],['commercialB','COMERCIAL B QA','COMERCIAL'],['nicole','NICOLE ADMISION QA','ADMISION'],['reception','RECEPCION QA','RECEPCION'],['cashier','CAJA QA','CAJA']].map(([key,name,role],i)=>({key,name,role,dni:String(91000001+i),email:'rc-'+key.toLowerCase()+'@example.invalid'}));
 function readback(){return JSON.parse(cp.execFileSync(php,['tests/Support/rc-readback.php'],{cwd:rcRoot,encoding:'utf8'}));}
 function redact(text){return String(text).split(secret.password).join('[REDACTED]');}
-async function launch(stage){
+async function launch(stage,options={}){
  const archive=path.join(out,'attempts',stage+'-'+Date.now());
  for(const name of ['browser-'+stage+'.json','failure-'+stage+'.png','failure-'+stage+'-visible.txt']){const previous=path.join(out,name);if(fs.existsSync(previous)){fs.mkdirSync(archive,{recursive:true});fs.copyFileSync(previous,path.join(archive,name));}}
- const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-background-networking','--disable-component-update','--disable-sync','--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
+ const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:options.headless??true,ignoreDefaultArgs:options.headless===false?["--disable-backgrounding-occluded-windows","--disable-renderer-backgrounding","--disable-background-timer-throttling"]:[],args:['--disable-background-networking','--disable-component-update','--disable-sync','--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
  const report={stage,started_at:new Date().toISOString(),browser:browser.version(),cases:[],requests:[],blocked_external_hosts:[],contexts:{}};
  const contexts=new Map();let activePage;
  const save=()=>fs.writeFileSync(path.join(out,'browser-'+stage+'.json'),JSON.stringify(report,null,2));

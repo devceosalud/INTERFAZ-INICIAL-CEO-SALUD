@@ -1,0 +1,147 @@
+{
+  "stage": "legacy",
+  "started_at": "2026-10-15T14:19:23.683Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "ADMIN configura un horario futuro ficticio por interfaz para el flujo heredado",
+      "result": "PASS",
+      "ms": 3126
+    },
+    {
+      "name": "Calendario heredado utiliza recursos locales y carga sin dependencias externas",
+      "result": "PASS",
+      "ms": 39
+    },
+    {
+      "name": "Formulario heredado reserva doble duración con precio único calculado y sin dinero",
+      "result": "PASS",
+      "ms": 3478
+    },
+    {
+      "name": "Reprogramación heredada conserva indicación de duración y exige destino válido sin alterar pagos",
+      "result": "PASS",
+      "ms": 7335
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/overlap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/appointment",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/reservation/list-calendar",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/patient/show",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/doctor/specialty",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/schedule/available-hours",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/service/doctor",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/calculated",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/schedule/available-hours",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/appointment/store",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/doctor/specialty",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/reservation/list-calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/appointment",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/reservation/list-calendar",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/schedule/available-hours",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/appointment/service/doctor",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/schedule/update",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/appointment",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:19:38.878Z"
+}

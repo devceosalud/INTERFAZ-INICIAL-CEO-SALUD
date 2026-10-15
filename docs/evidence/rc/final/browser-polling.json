@@ -1,0 +1,122 @@
+{
+  "stage": "polling",
+  "started_at": "2026-10-15T14:24:56.654Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Sondeo real mantiene filtros y selección con intervalos de cinco segundos",
+      "result": "PASS",
+      "ms": 11551
+    },
+    {
+      "name": "Respuesta lenta no provoca sondeos simultáneos",
+      "result": "PASS",
+      "ms": 10650
+    },
+    {
+      "name": "Error transitorio conserva filas y totales y se recupera",
+      "result": "PASS",
+      "ms": 9961
+    },
+    {
+      "name": "Confirmación abierta pausa sondeos; cancelar preserva atención y dinero",
+      "result": "PASS",
+      "ms": 8318
+    },
+    {
+      "name": "Filtros sin aplicar y salida del módulo no generan consultas innecesarias",
+      "result": "PASS",
+      "ms": 13739
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/patient",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "page_errors": [
+    {
+      "url": "/admissionist/patient",
+      "error": "TypeError: e(...).selectpicker is not a function\n    at http://127.0.0.1:8026/assets/js/custom.min.js:1:8665\n    at dispatch (http://127.0.0.1:8026/assets/vendor/global/global.min.js:2:39997)\n    at v.handle (http://127.0.0.1:8026/assets/vendor/global/global.min.js:2:37968)"
+    },
+    {
+      "url": "/admissionist/patient",
+      "error": "TypeError: t.selectpicker is not a function\n    at g (http://127.0.0.1:8026/assets/js/custom.min.js:1:5386)\n    at Object.init (http://127.0.0.1:8026/assets/js/custom.min.js:1:8303)\n    at HTMLDocument.<anonymous> (http://127.0.0.1:8026/assets/js/custom.min.js:1:8422)\n    at e (http://127.0.0.1:8026/assets/vendor/global/global.min.js:2:26990)\n    at t (http://127.0.0.1:8026/assets/vendor/global/global.min.js:2:27292)"
+    }
+  ],
+  "finished_at": "2026-10-15T14:25:52.925Z"
+}

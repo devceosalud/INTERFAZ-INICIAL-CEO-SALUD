@@ -1,0 +1,62 @@
+{
+  "size": 500,
+  "started_at": "2026-10-15T14:30:41.761Z",
+  "users": 8,
+  "http_workers": 2,
+  "rounds": 10,
+  "mode": "8 independent cookie jars; simultaneous bursts; real loopback HTTP, fresh PHP request bootstrap and CSRF; no TLS",
+  "proposed_targets": {
+    "p95_unloaded_ms": 1500,
+    "p95_burst_ms": 4000,
+    "max_body_bytes": 100000,
+    "max_sql": 40
+  },
+  "results": [
+    {
+      "mode": "full",
+      "load": "unloaded",
+      "samples": 20,
+      "p50_ms": 188.347,
+      "p95_ms": 216.336,
+      "max_ms": 221.454,
+      "max_sql": 25,
+      "max_bytes": 23469,
+      "peak_mib": 28
+    },
+    {
+      "mode": "full",
+      "load": "8 simultaneous users",
+      "samples": 80,
+      "p50_ms": 415.251,
+      "p95_ms": 798.765,
+      "max_ms": 820.978,
+      "max_sql": 25,
+      "max_bytes": 23469,
+      "peak_mib": 28
+    },
+    {
+      "mode": "unchanged",
+      "load": "unloaded",
+      "samples": 20,
+      "p50_ms": 205.273,
+      "p95_ms": 227.225,
+      "max_ms": 242.29,
+      "max_sql": 25,
+      "max_bytes": 96,
+      "peak_mib": 28
+    },
+    {
+      "mode": "unchanged",
+      "load": "8 simultaneous users",
+      "samples": 80,
+      "p50_ms": 441.638,
+      "p95_ms": 830.712,
+      "max_ms": 858.124,
+      "max_sql": 25,
+      "max_bytes": 96,
+      "peak_mib": 28
+    }
+  ],
+  "meets_proposed_targets": true,
+  "finished_at": "2026-10-15T14:31:10.949Z"
+}
