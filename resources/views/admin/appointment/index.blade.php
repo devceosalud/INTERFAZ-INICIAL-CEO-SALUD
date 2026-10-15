@@ -102,8 +102,8 @@
         <script src="{{ asset('js/admissionist/filtro-calendario/filtro-calendario.js') }}"></script>
         <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/calendario/calendario.js') }}"></script>
 
-        <script src="{{ asset('js/admissionist/appointment/editar-cita.js') }}"></script>
-        <script src="{{ asset('js/admissionist/appointment/update.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/appointment/editar-cita.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/appointment/update.js') }}"></script>
 
         <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admissionist/tesseract/tesseract.js') }}"></script>
     @endsection

@@ -47,7 +47,13 @@ class AdmissionBoardController extends Controller
 
     public function detail(Request $r, int $appointmentId, AdmissionBoardService $board)
     {
-        return response()->json($board->detail($appointmentId,$r->user()))->header('Cache-Control','private, no-store');
+        $input=$r->validate(['revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
+        // Visibility and current permissions are checked before acknowledging a client revision.
+        $payload=$board->detail($appointmentId,$r->user());
+        $revision=hash_hmac('sha256',json_encode([$r->user()->id,$payload]),config('app.key'));
+        return response()->json(isset($input['revision'])&&hash_equals($revision,$input['revision'])
+            ? ['unchanged'=>true,'revision'=>$revision] : $payload+['revision'=>$revision])
+            ->header('Cache-Control','private, no-store');
     }
 
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)

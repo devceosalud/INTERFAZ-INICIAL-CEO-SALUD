@@ -66,12 +66,29 @@
             for(const[key,label]of Object.entries(labels))totals.appendChild(description(label,money(payload.totals[key])));
             if(payload.totals.requieren_revision)totals.appendChild(description('Atribución pendiente',payload.totals.requieren_revision+' citas'));
         }
-        async function select(id,background=false){if(busy||confirming)return;const scroll=$('detail').scrollTop;
-            const expanded=Array.from($('detail').querySelectorAll('details[open]')).map(n=>n.querySelector('summary')?.textContent);
-            selected=id;if(!background){detail=null;$('detail').replaceChildren(node('p','Consultando cita…','admission-empty'));}
+        async function select(id,background=false){
+            if(busy||confirming)return;
+            selected=id;
+            if(!background){detail=null;$('detail').replaceChildren(node('p','Consultando cita…','admission-empty'));}
             board.querySelectorAll('tr[data-appointment-id]').forEach(tr=>tr.classList.toggle('is-selected',Number(tr.dataset.appointmentId)===id));
-            try{await detailRequest.run(signal=>request(board.dataset.base+'/'+id,{signal}),payload=>{if(selected!==id||busy||confirming)return;detail=payload;renderDetail(payload);if(background){$('detail').querySelectorAll('details').forEach(n=>{n.open=expanded.includes(n.querySelector('summary')?.textContent);});$('detail').scrollTop=scroll;}});}catch(error){if(background)notice('No se pudo actualizar el detalle. '+error.message);else $('detail').replaceChildren(node('p',error.message,'admission-empty'));}
+            const url=board.dataset.base+'/'+id+(background&&detail?.revision?'?revision='+encodeURIComponent(detail.revision):'');
+            try{
+                await detailRequest.run(signal=>request(url,{signal}),payload=>{
+                    if(selected!==id||busy||confirming||(background&&editing())||payload.unchanged)return;
+                    const scroll=$('detail').scrollTop;
+                    const expanded=Array.from($('detail').querySelectorAll('details[open]')).map(n=>n.querySelector('summary')?.textContent);
+                    detail=payload;renderDetail(payload);
+                    if(background){
+                        $('detail').querySelectorAll('details').forEach(n=>{n.open=expanded.includes(n.querySelector('summary')?.textContent);});
+                        $('detail').scrollTop=scroll;
+                    }
+                });
+            }catch(error){
+                if(background)notice('No se pudo actualizar el detalle. '+error.message);
+                else $('detail').replaceChildren(node('p',error.message,'admission-empty'));
+            }
         }
+
         function renderDetail(payload){const root=$('detail'),a=payload.appointment;root.replaceChildren();
             const head=section('CITA '+a.numero);append(head,node('h3',a.patient),tag(careLabels[a.estado_cita]||a.estado_cita,a.grupo==='desactivadas'?'inactive':''),node('p',bookingLabel(a.estado_agenda)),node('p',a.fecha+' · '+a.hora),node('small',a.doctor+' · '+a.servicio),node('small',a.sede||'Sede sin registrar; no se ha reasignado'));root.appendChild(head);
             const contact=section('Contacto y responsable');append(contact,node('p',payload.contact.telefono||'Teléfono sin registrar'),node('small',payload.contact.telefono_secundario||''),node('p','Responsable: '+(a.responsable||'—')),node('small','Canal: '+(payload.contact.canal||'—')+' · Medio: '+(payload.contact.medio||'—')));root.appendChild(contact);
@@ -108,7 +125,7 @@
             if(!background){revision='';clearDetail();availabilityRequest.cancel();$('rows').replaceChildren();$('totals').replaceChildren();$('count').textContent='';$('reservations').textContent='';$('availability').replaceChildren();$('scope').textContent='Consultando los filtros seleccionados…';board.querySelectorAll('[data-kpi]').forEach(el=>el.textContent='—');$('prev').disabled=true;$('next').disabled=true;notice('Consultando conjunto filtrado…');$('create').href=agendaUrl(filters.doctor_id,filters.fecha);}
             try{await listRequest.run(signal=>request(board.dataset.feed,{method:'POST',signal,body:JSON.stringify(filters)}),async payload=>{
                 if(snapshot!==JSON.stringify(data())||(background&&(busy||editing()||doc.hidden)))return;
-                if(payload.unchanged){notice('');return;}revision=payload.revision;filtersSnapshot=snapshot;renderRows(payload);notice('');
+                if(payload.unchanged){notice('');if(reselect&&selected===reselect)await select(reselect,true);return;}revision=payload.revision;filtersSnapshot=snapshot;renderRows(payload);notice('');
                 $('scope').textContent='Indicadores y totales: '+payload.total+' citas visibles del '+filters.fecha+' al '+filters.hasta+'. Incluyen todos los resultados de estos filtros, no solo esta página.';
                 availability(filters);if(reselect&&(!background?payload.rows.some(a=>a.id===reselect):selected===reselect))await select(reselect,background);
             });}catch(error){notice(background?'Actualización pendiente; se conservan los datos anteriores. '+error.message:error.message);

@@ -188,4 +188,25 @@ class AdmissionBoardTest extends TestCase
         $r=$this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('totals.pagos_reales','50.00')->assertJsonPath('totals.pagado_historico','75.00')->assertJsonPath('totals.saldo','75.00');
         $this->assertStringNotContainsString('QA-NICOLE-1',$this->detail($id)->getContent());
     }
+    public function test_selected_detail_revision_changes_for_private_documents_and_revoked_permission_even_when_rows_do_not():void
+    {
+        $a=$this->appointment();
+        $this->actor->givePermissionTo(Permission::findOrCreate('appointment.documents.view','web'));
+        $feed=$this->feed()->assertOk()->json('revision');
+        $url=route('scheduling.mvp.admission.detail',$a->id);
+        $first=$this->getJson($url)->assertOk()->json('revision');
+        $this->assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/',$first);
+        $this->getJson($url.'?revision='.$first)->assertExactJson(['unchanged'=>true,'revision'=>$first]);
+        $a->documents()->create(['type'=>'OTHER','document_kind'=>'REPORT','label'=>'INFORME FICTICIO QA',
+            'private_path'=>'appointment-documents/ficticio.png','mime'=>'image/png','actor_user_id'=>$this->actor->id]);
+        $this->feed(['revision'=>$feed])->assertExactJson(['unchanged'=>true,'revision'=>$feed]);
+        $changed=$this->getJson($url.'?revision='.$first)->assertOk()->assertJsonCount(1,'operational_documents')->json('revision');
+        $this->assertNotSame($first,$changed);
+        $this->actor->revokePermissionTo('appointment.documents.view');
+        $this->getJson($url.'?revision='.$changed)->assertOk()->assertJsonCount(0,'operational_documents')
+            ->assertJsonPath('can_view_operational_documents',false)->assertJsonMissingPath('unchanged');
+        $a->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$this->actor->id]);
+        $this->actingAs($this->agendaReader('COMERCIAL'))->getJson($url.'?revision='.$changed)->assertNotFound();
+        $this->assertDatabaseCount('payments',0);
+    }
 }

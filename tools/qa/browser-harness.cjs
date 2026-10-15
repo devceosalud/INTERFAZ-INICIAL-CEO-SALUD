@@ -22,7 +22,9 @@ async function launch(stage){
   await context.route('**/*',route=>{const url=new URL(route.request().url());if(['127.0.0.1','localhost'].includes(url.hostname)||['data:','blob:'].includes(url.protocol))return route.continue();report.blocked_external_hosts=[...new Set([...report.blocked_external_hosts,url.hostname])];return route.abort('blockedbyclient');});
   context.on('response',response=>{const request=response.request();if(!['127.0.0.1','localhost'].includes(new URL(response.url()).hostname))return;
    const pathname=new URL(response.url()).pathname;if(!/\.(js|css|png|jpg|svg|woff2?|wasm|gz)$/.test(pathname))report.requests.push({method:request.method(),path:pathname,status:response.status()});});
-  const page=await context.newPage();page.on('pageerror',error=>{report.page_errors??=[];report.page_errors.push({url:new URL(page.url()).pathname,error:redact(error.stack||error.message)});});
+  const page=await context.newPage();
+  const waitForResponse=page.waitForResponse.bind(page);
+  page.waitForResponse=(predicate,options={})=>{const pending=waitForResponse(predicate,{timeout:45000,...options});pending.catch(()=>{});return pending;};page.on('pageerror',error=>{report.page_errors??=[];report.page_errors.push({url:new URL(page.url()).pathname,error:redact(error.stack||error.message)});});
   contexts.set(key,{context,page,stateFile});return {context,page};
  }
  async function step(name,page,work){activePage=page;const start=Date.now();try{const result=await work();report.cases.push({name,result:'PASS',ms:Date.now()-start});save();console.log('PASS '+name);return result;}catch(error){report.cases.push({name,result:'FAIL',ms:Date.now()-start,error:redact(error.message)});if(page){await page.screenshot({path:path.join(out,'failure-'+stage+'.png'),fullPage:true}).catch(()=>{});fs.writeFileSync(path.join(out,'failure-'+stage+'-visible.txt'),redact(await page.locator('body').innerText().catch(()=>'')));}save();throw error;}}
