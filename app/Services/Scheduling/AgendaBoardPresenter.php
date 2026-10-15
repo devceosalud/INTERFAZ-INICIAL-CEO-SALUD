@@ -328,6 +328,7 @@ class AgendaBoardPresenter
                 'hora_inicio' => $start,
                 'hora_fin' => $end,
                 'minutos' => $minutes,
+                'duration_slots' => (int) ($appointment->duration_slots ?: 1),
                 'estado' => AvailabilitySlot::STATUS_OCCUPIED,
                 'estado_cita' => $state,
                 'estado_agenda' => $appointment->estado_agenda,
