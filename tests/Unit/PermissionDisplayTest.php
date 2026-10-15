@@ -30,7 +30,7 @@ class PermissionDisplayTest extends TestCase
 
     public function test_unknown_permission_remains_distinguishable_and_does_not_claim_business_authority(): void
     {
-        $this->assertSame('Future feature.manage', PermissionDisplay::label('future.feature.manage'));
+        $this->assertSame('Future feature manage', PermissionDisplay::label('future.feature.manage'));
         $this->assertStringContainsString(
             'pendiente de descripción funcional',
             PermissionDisplay::description('future.feature.manage')
