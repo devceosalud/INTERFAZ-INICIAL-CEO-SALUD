@@ -47,3 +47,23 @@ jobs:
           php -l app/Support/Authorization/PermissionDisplay.php
           php -l tests/Feature/Scheduling/AgendaDoubleDurationTest.php
           php -l tests/Unit/PermissionDisplayTest.php
+
+  php-isolated-tests:
+    name: Laravel PHPUnit (SQLite in memory, no production access)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - name: Install dependencies (CI isolated)
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Permission label unit tests
+        run: php artisan test --filter=PermissionDisplayTest
+      - name: Extended appointments feature tests
+        run: php artisan test --filter=AgendaDoubleDurationTest
+      - name: Reservation visibility regression
+        run: php artisan test --filter=AppointmentVisibilityTest
