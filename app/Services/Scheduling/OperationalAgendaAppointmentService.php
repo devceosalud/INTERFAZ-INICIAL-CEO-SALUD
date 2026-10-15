@@ -39,6 +39,7 @@ class OperationalAgendaAppointmentService
                 'fecha_cita',
                 'hora_cita',
                 'duracion_cita',
+                'duration_slots',
                 'precio_programado',
                 'estado_cita',
                 'estado_agenda',
