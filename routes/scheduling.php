@@ -78,6 +78,7 @@ Route::middleware([
             ->name('scheduling.mvp.agenda.patient-lookup');
 
         Route::post('/scheduling-mvp/agenda/reniec-lookup', AgendaReniecLookupController::class)
+            ->middleware('throttle:30,1')
             ->name('scheduling.mvp.agenda.reniec-lookup');
 
         Route::get('/scheduling-mvp/schedule-overlap', ScheduleOverlapWarningController::class)
