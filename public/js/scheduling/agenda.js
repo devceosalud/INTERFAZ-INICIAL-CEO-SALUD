@@ -1535,6 +1535,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function paintDraft(draft) {
         const opening = !state.draft && Boolean(draft && draft.open);
+        // Return keyboard focus to a visible control before hiding an open dialog.
+        if ((!draft || !draft.open) && el.patientModal.contains(document.activeElement)) {
+            el.documentNumber.focus({ preventScroll: true });
+        }
         state.draft = draft && draft.open ? draft : null;
         el.patientModal.hidden = !state.draft;
         document.getElementById(state.draft ? 'agenda-op-modal-host' : 'agenda-op-workspace-host').prepend(document.getElementById('agenda-operational-fields'));
@@ -1642,12 +1646,28 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || state.draft.tipo === 'SIN DOCUMENTOS';
     }
 
+    let closingPatientModal = false;
     async function closePatientModal() {
-        if(state.appointmentBusy)return;
-        if(draftChanged() && !await operationalWorkspace.confirmDiscard('Hay cambios sin guardar en la ficha. ¿Descartarlos?'))return;
-        paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
-        el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
-        el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
+        if (state.appointmentBusy || closingPatientModal || !state.draft) return;
+        closingPatientModal = true;
+        try {
+            if (draftChanged()) {
+                // SweetAlert2 applies aria-hidden to the ERP while its confirmation is open.
+                // Unfocus the triggering button first, then restore it if the user keeps the draft.
+                const trigger = el.patientModal.contains(document.activeElement) ? document.activeElement : null;
+                if (trigger && typeof trigger.blur === 'function') trigger.blur();
+                const discard = await operationalWorkspace.confirmDiscard('Hay cambios sin guardar en la ficha. ¿Descartarlos?');
+                if (!discard) {
+                    if (state.draft && trigger?.isConnected) trigger.focus({ preventScroll: true });
+                    return;
+                }
+            }
+            paintDraft(draftModel.cancel(state.draft, scheduleSnapshot()));
+            el.patientRegister.hidden = !(state.identity && state.identity.showRegister);
+            el.patientRegister.disabled = !(state.identity && state.identity.showRegister);
+        } finally {
+            closingPatientModal = false;
+        }
     }
 
     function patientValidationMessage(payload) {
