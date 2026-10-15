@@ -35,7 +35,12 @@ class AgendaDoubleDurationTest extends TestCase {
  public function test_double_confirms_two_intervals_charges_one_fee_and_retry_is_idempotent(string $entry):void {
   $money=$entry==='legacy'?['total_pagado'=>'50','metodo_pago'=>'EFECTIVO']:['payment'=>['amount'=>'50','method'=>'EFECTIVO']];
   $data=$this->payload($entry,['mode'=>'CONFIRM','cita_doble'=>true,'duracion_cita'=>60]+$money);
-  $id=$this->id($this->postJson($this->url($entry),$data)->assertSuccessful(),$entry);
+  $response = $this->postJson($this->url($entry),$data)->assertSuccessful();
+  $id=$this->id($response,$entry);
+  if($entry==='operational') {
+    $response->assertJsonPath('appointment.duration_slots',2);
+    $response->assertJsonPath('appointment.duracion_cita',60);
+  }
   $this->assertSame($id,$this->id($this->postJson($this->url($entry),$data)->assertSuccessful(),$entry));
   $a=Appointment::findOrFail($id);$this->assertSame(60,(int)$a->duracion_cita);$this->assertSame(2,(int)$a->duration_slots);
   $this->assertEquals(100,$a->precio_programado);$this->assertEquals(100,Voucher::firstOrFail()->total);
