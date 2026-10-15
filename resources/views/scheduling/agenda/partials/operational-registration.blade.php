@@ -82,7 +82,7 @@
         <p id="agenda-op-indication-record-message" role="status"></p>
     </details>
     <details id="agenda-op-documents-panel">
-        <summary>Comprobantes y documentos</summary>
+        <summary>Documentos complementarios</summary>
 
         <label class="agenda-field"><span>Tipo de documento privado</span><select id="agenda-op-document-kind"><option value="ADMINISTRATIVE">Administrativo</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option></select></label>
         <label class="agenda-field"><span>Etiqueta del documento</span><input id="agenda-op-document-label" maxlength="120" value="Documento operativo"></label>
