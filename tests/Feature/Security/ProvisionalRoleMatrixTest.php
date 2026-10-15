@@ -63,12 +63,12 @@ class ProvisionalRoleMatrixTest extends TestCase
 
     public function test_commercial_reaches_the_operational_write_routes(): void
     {
-        $this->actingAs($this->createUserWithRole('COMERCIAL'))
+        $this->actingAs($this->scheduleManager('COMERCIAL'))
             ->postJson('/admissionist/doctor-schedule/store', [])
             ->assertOk()
             ->assertJsonPath('code', 0);
 
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->postJson('/admissionist/doctor-schedule/store', [])
             ->assertOk()
             ->assertJsonPath('code', 0);

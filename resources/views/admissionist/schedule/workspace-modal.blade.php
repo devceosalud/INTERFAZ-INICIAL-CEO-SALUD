@@ -14,6 +14,7 @@
                 <div class="modal-body">
                     <div class="schedule-form-error" id="schedule-form-error" role="alert" hidden></div>
                     <input type="hidden" id="schedule-id" name="doctor_schedule_id_edit">
+                    <input type="hidden" id="schedule-version" name="expected_version">
                     <input type="hidden" id="schedule-recurrence">
                     <input type="hidden" id="schedule-date" name="fecha_cita">
 

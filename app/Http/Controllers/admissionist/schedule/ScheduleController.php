@@ -258,6 +258,7 @@ class ScheduleController extends Controller
     //PARA GUARDAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function store(Request $request)
     {
+        \App\Support\Scheduling\DoctorScheduleAccess::authorize($request->user());
         $request->merge(['scope' => $request->input('scope', 'single')]);
 
         $validator = Validator::make($request->all(), [
@@ -311,8 +312,9 @@ class ScheduleController extends Controller
         }
 
         $created = DB::transaction(function () use ($request, $targets) {
+            Doctor::whereKey($request->doctor_id)->lockForUpdate()->firstOrFail();
             return $targets->map(function (array $target) use ($request) {
-                return DoctorSchedule::create([
+                $row=DoctorSchedule::create([
                     'doctor_id' => $request->doctor_id,
                     'site_id' => $request->site_id ?: null,
                     'dia_semana' => $target['weekday'],
@@ -322,6 +324,8 @@ class ScheduleController extends Controller
                     'duracion_cita' => $request->duracion_cita,
                     'estado' => 'ACTIVO',
                 ]);
+                app(\App\Services\Scheduling\DoctorScheduleMutation::class)->created($row,$request->user()->id);
+                return $row;
             });
         });
 
@@ -358,6 +362,7 @@ class ScheduleController extends Controller
 
         try {
             $created = DB::transaction(function () use ($request, $targets, $detector) {
+                Doctor::whereKey($request->doctor_id)->lockForUpdate()->firstOrFail();
                 $conflicts = [];
 
                 foreach ($targets as $target) {
@@ -378,7 +383,7 @@ class ScheduleController extends Controller
                 }
 
                 return $targets->map(function (array $target) use ($request) {
-                    return DoctorSchedule::create([
+                    $row=DoctorSchedule::create([
                         'doctor_id' => $request->doctor_id,
                         'site_id' => $request->site_id ?: null,
                         'dia_semana' => $target['weekday'],
@@ -388,6 +393,8 @@ class ScheduleController extends Controller
                         'duracion_cita' => $request->duracion_cita,
                         'estado' => 'ACTIVO',
                     ]);
+                    app(\App\Services\Scheduling\DoctorScheduleMutation::class)->created($row,$request->user()->id);
+                    return $row;
                 });
             });
         } catch (ConcreteScheduleConflict $exception) {
@@ -425,8 +432,10 @@ class ScheduleController extends Controller
     //PARA ACTUALIZAR LOS DATOS DEL HORARIO DEL DOCTOR
     public function updateDoctorSchedule(Request $request)
     {
+        \App\Support\Scheduling\DoctorScheduleAccess::authorize($request->user());
         $validator = Validator::make($request->all(), [
             'doctor_schedule_id_edit' => 'required|exists:doctor_schedules,id',
+            'expected_version' => 'required|string|regex:/\A[a-f0-9]{64}\z/',
             'doctor_id_edit' => 'required|exists:doctors,id',
             'dia_semana_edit' => 'nullable|integer|between:1,7',
             'fecha_cita_edit' => 'nullable|date',
@@ -482,7 +491,8 @@ class ScheduleController extends Controller
             $cambios['site_id'] = $request->site_id_edit ?: null;
         }
 
-        $exito = $doctor_schedule->update($cambios);
+        app(\App\Services\Scheduling\DoctorScheduleMutation::class)->update((int)$doctor_schedule->id,$request->user(),$cambios,$request->expected_version);
+        $exito=true;
 
         if ($exito) {
             return response()->json([
@@ -500,14 +510,15 @@ class ScheduleController extends Controller
     //PARA DESACTIVAR EL HOARIO DEL DOCTOR
     public function deleteDoctorSchedule(Request $request)
     {
+        \App\Support\Scheduling\DoctorScheduleAccess::authorize($request->user());
         $data = $request->validate([
             'id' => 'required|integer|exists:doctor_schedules,id',
+            'expected_version' => 'required|string|regex:/\A[a-f0-9]{64}\z/',
         ]);
 
         $doctor_schedule = DoctorSchedule::findOrFail($data['id']);
-        $exito = $doctor_schedule->update([
-            'estado' => 'INACTIVO'
-        ]);
+        app(\App\Services\Scheduling\DoctorScheduleMutation::class)->update((int)$doctor_schedule->id,$request->user(),['estado'=>'INACTIVO'],$data['expected_version']);
+        $exito=true;
 
         if ($exito) {
             return response()->json([

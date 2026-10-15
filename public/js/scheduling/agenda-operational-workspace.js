@@ -86,7 +86,7 @@
         function reservationConfirmation() {
             const pending = config.context()?.estado_agenda === 'PENDIENTE_CONFIRMACION';
             return { allowed: Boolean(pending && !working && config.canCreate && lastPosition
-                && lastPosition.reservation_slot_available !== false && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
+                && lastPosition.can_confirm_additional !== false && lastPosition.reservation_slot_available !== false && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
                 reason: working ? 'Guardando. Espera el resultado de esta operaci\u00f3n.' :
                     !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     !pending ? 'La cita seleccionada no tiene una confirmaci\u00f3n pendiente.' :
@@ -99,11 +99,15 @@
         }
         function confirmation(position) {
             const reason = byId('confirmation-reason');
-            const allowed = config.canCreate && position.reservation_slot_available!==false && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
+            const allowed = config.canCreate && position.can_confirm_additional!==false && position.reservation_slot_available!==false && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
             ui['confirm-reservation'].disabled = working || !allowed;
             ui['submit-payment'].disabled = working || position.reservation_slot_available===false || ui.amount.disabled;
+            const conversion = byId('convert-additional'), explanation = byId('conversion-reason'), offer = position.additional_conversion;
+            if (conversion) { conversion.hidden = !offer?.available; conversion.disabled = working || !offer?.can_convert; }
+            if (explanation) { explanation.hidden = !offer?.available; explanation.textContent = offer ? offer.reason + ' Precio conservado: S/ ' + offer.price + '. Adelanto mínimo: S/ ' + offer.minimum_advance + '. La conversión no registra dinero ni confirma la cita.' : ''; }
             if (reason) {
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
+                    position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
                     !allowed ? 'Para confirmar se requiere al menos 50% de pago real o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el médico.';
@@ -305,6 +309,9 @@
             if(key===selectedKey && hasUnsavedChanges())return;
             if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
+            if (byId('convert-additional')) byId('convert-additional').hidden=true;
+            if (byId('conversion-reason')) byId('conversion-reason').hidden=true;
+            conversionKey=null;
             [doubleInput,indicationInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
             if(byId('indication-record-panel')) byId('indication-record-panel').hidden=true;
             [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
@@ -390,6 +397,26 @@
             config.notice(placed.text, true);
         }
         ui['submit-payment'].addEventListener('click', () => submitPayment(false));
+        let conversionKey = null;
+        byId('convert-additional')?.addEventListener('click', async () => {
+            const id = config.context()?.appointment_id, version = detailsVersion;
+            if (!id || working) return;
+            setWorking(true);
+            try {
+                const url = base + '/' + id + '/additional-conversion', offer = await request(url);
+                if (version !== detailsVersion || String(config.context()?.appointment_id) !== String(id)) return;
+                if (!offer.available || !offer.can_convert) throw new Error(offer.reason);
+                const answer = await root.Swal.fire({title:'¿Conservar esta reserva como ADICIONAL?',
+                    text:'Misma cita. Precio: S/ '+offer.price+'. Adelanto mínimo: S/ '+offer.minimum_advance+'. No registra dinero ni confirma. La duración se conserva. Requiere confirmación posterior expresa.',
+                    icon:'warning',showCancelButton:true,confirmButtonText:'Convertir a ADICIONAL',cancelButtonText:'Mantener pendiente'});
+                if (!answer.isConfirmed || version !== detailsVersion || String(config.context()?.appointment_id) !== String(id)) return;
+                conversionKey = conversionKey || root.crypto.randomUUID();
+                const response = await request(url, json('POST', {request_key:conversionKey,expected_version:offer.expected_version,confirmed:true}));
+                conversionKey = null; ++detailsVersion;
+                await config.paymentUpdated(response); config.notice('Reserva conservada como ADICIONAL. No se registró dinero ni se confirmó.');
+            } catch (e) { if ([400,403,404,409,422].includes(e.status)) conversionKey=null; config.notice(e.message,true); }
+            finally { setWorking(false); }
+        });
         ui['confirm-reservation'].addEventListener('click', () => submitPayment(true));
         ui['add-documents'].addEventListener('click', async () => {
             const id = config.context()?.appointment_id;

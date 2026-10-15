@@ -50,13 +50,11 @@ class AdmissionBoardService
                     });
                 });
             })
-            ->with(['patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
-                'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
-                'responsibleUser:id,name','user:id,name','site:id,nombre'])
             ->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
         if (!empty($filters['grupo'])) $rows = $rows->filter(fn ($a) => AdmissionStatus::group($a) === $filters['grupo'])->values();
-        $positions = $this->economics->forAppointments($rows);
+        $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
+        $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
         $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0];
         $totals = ['precio'=>0,'pagos_reales'=>0,'pagado_historico'=>0,'credito'=>0,'saldo'=>0,'requieren_revision'=>0];
         foreach ($rows as $a) {
@@ -67,9 +65,13 @@ class AdmissionBoardService
             $totals['credito'] += $p['credit_cents']; $totals['saldo'] += $p['balance_cents'];
         }
         foreach (['precio','pagos_reales','pagado_historico','credito','saldo'] as $key) $totals[$key] = Money::decimal($totals[$key]);
-        $page = max(1,(int)($filters['page'] ?? 1));
-        return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,
-            'rows'=>$rows->slice(($page-1)*30,30)->map(fn ($a) => $this->row($a,$positions[$a->id]))->values()->all()];
+        // Only the visible page needs identity and label relations; totals use minimal rows.
+        $pageRows=$rows->slice(($page-1)*30,30);
+        $pageRows->load(['patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
+            'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
+            'responsibleUser:id,name','user:id,name','site:id,nombre']);
+        return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
+            'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id]))->values()->all()];
     }
 
     private function row(Appointment $a, array $p): array

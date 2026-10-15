@@ -152,6 +152,7 @@
                                                                             <a href="#"
                                                                                 class="delete-doctor-schedule btn btn-sm btn-danger"
                                                                                 data-id="{{ $horario->id }}"
+                                                                                data-version="{{ \App\Services\Scheduling\DoctorScheduleMutation::version($horario) }}"
                                                                                 aria-label="Inactivar horario">
                                                                                 <i class="fa fa-trash fs-18"></i>
                                                                             </a>

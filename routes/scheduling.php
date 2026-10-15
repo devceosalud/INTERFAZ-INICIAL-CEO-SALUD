@@ -92,6 +92,10 @@ Route::middleware([
     Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/payments', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'payment'])
         ->whereNumber('appointmentId')->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])
         ->name('scheduling.mvp.agenda.payments');
+    Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/additional-conversion', [\App\Http\Controllers\Scheduling\AdditionalReservationConversionController::class, 'preview'])
+        ->name('scheduling.mvp.agenda.additional-conversion.preview');
+    Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/additional-conversion', [\App\Http\Controllers\Scheduling\AdditionalReservationConversionController::class, 'store'])
+        ->name('scheduling.mvp.agenda.additional-conversion.store');
 
     Route::post('/scheduling-mvp/agenda/off-hours-appointments', [AgendaAppointmentController::class, 'offHours'])
         ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])

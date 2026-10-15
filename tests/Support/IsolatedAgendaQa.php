@@ -14,6 +14,7 @@ final class IsolatedAgendaQa
     public static function boot(bool $browser = false)
     {
         if(getenv('AGENDA_QA_RUNTIME')==='workers-11.8.9')return IsolatedWorkerQa::boot($browser);
+        if(getenv('AGENDA_QA_RUNTIME')==='rc-11.8.9')return IsolatedRcQa::boot($browser);
         $root = dirname(__DIR__, 2);
         // Three concrete disposable runtimes only; no arbitrary environment connection is accepted.
         $equivalent = getenv('AGENDA_QA_RUNTIME') === 'equivalent-11.8.9';

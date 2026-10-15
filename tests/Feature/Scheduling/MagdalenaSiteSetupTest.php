@@ -92,6 +92,15 @@ class MagdalenaSiteSetupTest extends TestCase
         $this->fails(fn()=>$this->service()->apply('MAGDALENA',$p['plan_hash'],$this->admin->id,'QA-APROBADO'),'guard web');
         $this->assertDatabaseCount('sites',0);
     }
+    public function test_inactive_administrator_cannot_apply_or_reverse_catalogue_setup():void {
+        $this->admin->forceFill(['is_active'=>false])->save();$before=$this->snapshot();
+        $this->fails(fn()=>$this->apply(),'activo');$this->assertDatabaseCount('sites',0);$this->assertSame($before,$this->snapshot());
+        $this->admin->forceFill(['is_active'=>true])->save();$r=$this->apply();
+        $this->admin->forceFill(['is_active'=>false])->save();
+        $this->fails(fn()=>$this->service()->rollback($r['id'],$r['after']['state_hash'],$this->admin->id,'QA-REVERSA'),'activo');
+        $this->assertDatabaseCount('sites',1);
+        $this->assertSame('APPLIED',json_decode(Storage::disk('local')->get($this->path($r)),true)['status']);
+    }
     public function test_tampered_receipt_cannot_delete_a_site():void {
         $r=$this->apply();$data=json_decode(Storage::disk('local')->get($this->path($r)),true);$data['site_id']=999;
         Storage::disk('local')->put($this->path($r),json_encode($data));

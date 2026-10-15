@@ -34,7 +34,7 @@ class ScheduleAuthorizationTest extends TestCase
 
     public function test_authenticated_user_can_read_and_manage_schedule_with_current_contract(): void
     {
-        $user = $this->createUserWithRole('ADMISION');
+        $user = $this->scheduleManager('ADMISION');
         $catalog = $this->createAppointmentCatalog();
         $schedule = $catalog['schedule'];
 
@@ -49,6 +49,7 @@ class ScheduleAuthorizationTest extends TestCase
         $this->actingAs($user)
             ->putJson('/admissionist/doctor-schedule/update', [
                 'doctor_schedule_id_edit' => $schedule->id,
+                'expected_version' => $this->scheduleVersion((int)$schedule->id),
                 'doctor_id_edit' => $catalog['doctor']->id,
                 'fecha_cita_edit' => $schedule->fecha_cita,
                 'hora_inicio_edit' => '09:00',
@@ -57,7 +58,7 @@ class ScheduleAuthorizationTest extends TestCase
             ])->assertOk()->assertJsonPath('code', 1);
 
         $this->actingAs($user)
-            ->postJson('/admissionist/doctor-schedule/delete', ['id' => $schedule->id])
+            ->postJson('/admissionist/doctor-schedule/delete', ['id' => $schedule->id, 'expected_version' => $this->scheduleVersion((int)$schedule->id)])
             ->assertOk()->assertJsonPath('code', 1);
 
         $this->assertDatabaseHas('doctor_schedules', [

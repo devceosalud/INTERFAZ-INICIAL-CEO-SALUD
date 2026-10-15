@@ -34,13 +34,14 @@ Route::middleware(['auth', 'role:ADMISION|COMERCIAL'])->group(function () {
     Route::put('/admissionist/responsible/update', [ResponsibleController::class, 'update'])->name('admissionit.responsible.update');
     Route::post('/admissionist/responsible/delete', [ResponsibleController::class, 'delete'])->name('admissionit.responsible.delete');
 
-    Route::post('/admissionist/doctor-schedule/store', [ScheduleController::class, 'store'])->name('admissionit.doctor.schedule.store');
-    Route::put('/admissionist/doctor-schedule/update', [ScheduleController::class, 'updateDoctorSchedule'])->name('admissionit.doctor.schedule.update');
-    Route::post('/admissionist/doctor-schedule/delete', [ScheduleController::class, 'deleteDoctorSchedule'])->name('admissionit.doctor.schedule.delete');
 });
 
 // Appointment adapters enforce effective capabilities and financial checks, including administrators.
 Route::middleware(['auth'])->group(function () {
+    // Controller checks both the explicit capability and the three approved manager roles.
+    Route::post('/admissionist/doctor-schedule/store', [ScheduleController::class, 'store'])->name('admissionit.doctor.schedule.store');
+    Route::put('/admissionist/doctor-schedule/update', [ScheduleController::class, 'updateDoctorSchedule'])->name('admissionit.doctor.schedule.update');
+    Route::post('/admissionist/doctor-schedule/delete', [ScheduleController::class, 'deleteDoctorSchedule'])->name('admissionit.doctor.schedule.delete');
     Route::post('/admissionist/appointment/store', [AppointmentController::class, 'store'])->name('admissionit.appointment.store');
     Route::post('/admissionist/appointment/update', [AppointmentController::class, 'update'])->name('admissionit.appointment.update');
     Route::post('/admissionist/schedule/update', [ScheduleController::class, 'update'])->name('admissionit.schedule.update');

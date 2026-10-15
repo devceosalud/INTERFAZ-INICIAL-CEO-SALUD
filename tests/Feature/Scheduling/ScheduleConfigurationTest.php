@@ -151,7 +151,7 @@ class ScheduleConfigurationTest extends TestCase
     {
         $site = $this->createSite();
 
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->postJson(self::STORE_URI, [
                 'doctor_id' => $this->catalog['doctor']->id,
                 'fecha_cita' => $this->date,
@@ -171,7 +171,7 @@ class ScheduleConfigurationTest extends TestCase
      */
     public function test_a_block_created_without_a_site_keeps_none(): void
     {
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->postJson(self::STORE_URI, [
                 'doctor_id' => $this->catalog['doctor']->id,
                 'fecha_cita' => $this->date,
@@ -187,7 +187,7 @@ class ScheduleConfigurationTest extends TestCase
 
     public function test_an_unknown_site_is_rejected(): void
     {
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->postJson(self::STORE_URI, [
                 'doctor_id' => $this->catalog['doctor']->id,
                 'fecha_cita' => $this->date,
@@ -213,9 +213,10 @@ class ScheduleConfigurationTest extends TestCase
         $block = $this->block('08:00:00', '12:00:00');
         $block->update(['site_id' => $site->id]);
 
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->putJson(self::UPDATE_URI, [
                 'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id),
                 'doctor_id_edit' => $this->catalog['doctor']->id,
                 'fecha_cita_edit' => $this->date,
                 'hora_inicio_edit' => '09:00',
@@ -234,9 +235,10 @@ class ScheduleConfigurationTest extends TestCase
         $block = $this->block('08:00:00', '12:00:00');
         $block->update(['site_id' => $site->id]);
 
-        $this->actingAs($this->createUserWithRole('ADMISION'))
+        $this->actingAs($this->scheduleManager('ADMISION'))
             ->putJson(self::UPDATE_URI, [
                 'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id),
                 'doctor_id_edit' => $this->catalog['doctor']->id,
                 'fecha_cita_edit' => $this->date,
                 'hora_inicio_edit' => '09:00',
@@ -262,7 +264,7 @@ class ScheduleConfigurationTest extends TestCase
         $this->block('08:00:00', '12:00:00')->update(['site_id' => $site->id]);
         $this->block('15:00:00', '18:00:00');
 
-        $user = $this->createUserWithRole('ADMISION');
+        $user = $this->scheduleManager('ADMISION');
 
         $this->actingAs($user)
             ->get('/admissionist/doctor-schedule')

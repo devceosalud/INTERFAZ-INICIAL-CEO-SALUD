@@ -14,7 +14,8 @@ final class RegularReservationAvailability
     public function assertAvailable(Appointment $appointment): void
     {
         if ($appointment->estado_agenda !== Lifecycle::PENDING_CONFIRMATION) return;
-        if (!in_array($appointment->tipo_agendamiento,[null,Lifecycle::REGULAR],true)
+        $additional=$appointment->tipo_agendamiento===Lifecycle::ADDITIONAL;
+        if (!in_array($appointment->tipo_agendamiento,[null,Lifecycle::REGULAR,Lifecycle::ADDITIONAL],true)
             || !Doctor::whereKey($appointment->doctor_id)->where('estado','ACTIVO')->exists()) {
             throw new AppointmentSlotUnavailableException(self::BLOCKED);
         }
@@ -22,7 +23,7 @@ final class RegularReservationAvailability
             app(AppointmentSlotValidator::class)->assertValid((int)$appointment->doctor_id,
                 substr($appointment->fecha_cita,0,10),substr($appointment->hora_cita,0,5),
                 (int)$appointment->duracion_cita,$appointment->site_id ? (int)$appointment->site_id : null,
-                (int)$appointment->id,false,true);
+                (int)$appointment->id,$additional,true);
         } catch (AppointmentSlotUnavailableException $e) {
             throw new AppointmentSlotUnavailableException(self::BLOCKED);
         }

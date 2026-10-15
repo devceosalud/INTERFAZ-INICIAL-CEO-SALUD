@@ -16,7 +16,7 @@ class AppointmentEconomicPosition
     public function forAppointment(Appointment $a): array { return $this->forAppointments(collect([$a]))[$a->id]; }
 
     /** Fixed query count across a day/month; each Payment is counted once in its ticket family. */
-    public function forAppointments(Collection $appointments): array
+    public function forAppointments(Collection $appointments,?array $detailAppointmentIds=null): array
     {
         if ($appointments->isEmpty()) { return []; }
         $ids = $appointments->pluck('id');
@@ -27,20 +27,34 @@ class AppointmentEconomicPosition
                 ->whereColumn('source.patient_id','i.patient_id')->whereColumn('source.service_id','i.service_id')->whereColumn('source.doctor_id','i.doctor_id')
                 ->whereRaw('DATE(source.fecha_cita) = i.attended_on')->whereDate('source.fecha_cita','<=',now(config('scheduling.clinic_timezone'))->toDateString())->get(['i.*'])->keyBy('bound_appointment_id') : collect();
 
-        $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->get();
+        $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->toBase()->get(['item_id','voucher_id']);
         $directIds = $links->pluck('voucher_id')->unique();
-        $vouchers = Voucher::whereIn('id', $directIds)->orWhereIn('parent_voucher_id', $directIds)->get()->keyBy('id');
-        $items = VoucherItem::whereIn('voucher_id', $vouchers->keys())->get()->groupBy('voucher_id');
-        $payments = Payment::whereIn('voucher_id', $vouchers->keys())->get()->groupBy('voucher_id');
+        $vouchers = Voucher::whereIn('id', $directIds)->orWhereIn('parent_voucher_id', $directIds)->toBase()->get(['id','parent_voucher_id','tipo_comprobante','estado'])->keyBy('id');
+        $items = VoucherItem::whereIn('voucher_id', $vouchers->keys())->toBase()->get(['voucher_id','item_type','item_id'])->groupBy('voucher_id');
+        $payments = Payment::whereIn('voucher_id', $vouchers->keys())->toBase()->get(['id','voucher_id','monto','metodo_pago','created_at'])->groupBy('voucher_id');
         $credits = Schema::hasTable('appointment_credit_applications')
             ? DB::table('appointment_credit_applications')->whereIn('source_appointment_id', $ids)->orWhereIn('destination_appointment_id', $ids)->get() : collect();
         $refunds = Schema::hasTable('appointment_refund_requests')
             ? DB::table('appointment_refund_requests')->whereIn('appointment_id', $ids)->where('status', 'SOLICITADA')->get() : collect();
+        // Index fetched rows once. Scanning all vouchers/credits for each appointment was quadratic.
+        $linksByAppointment=$links->groupBy('item_id');
+        $families=[];$voucherOrder=[];$order=0;
+        foreach($vouchers as $v){
+            $voucherOrder[$v->id]=$order++;$families[$v->id][$v->id]=$v;
+            if($v->parent_voucher_id)$families[$v->parent_voucher_id][$v->id]=$v;
+        }
+        $incomingByAppointment=$credits->groupBy('destination_appointment_id');
+        $outgoingByAppointment=$credits->groupBy('source_appointment_id');
+        $refundsByAppointment=$refunds->groupBy('appointment_id');
+        $detailLookup=$detailAppointmentIds===null?null:array_fill_keys($detailAppointmentIds,true);
         $result = [];
         foreach ($appointments as $a) {
-            $linked = $links->where('item_id', $a->id)->pluck('voucher_id')->unique();
+            $linked = $linksByAppointment->get($a->id,collect())->pluck('voucher_id')->unique();
+            $relevant=[];
+            foreach($linked as $voucherId)foreach($families[$voucherId]??[] as $id=>$v)$relevant[$id]=$v;
+            uasort($relevant,fn($left,$right)=>$voucherOrder[$left->id]<=>$voucherOrder[$right->id]);
             $cash = []; $ambiguous = false; $seen = []; $paymentDetails = [];
-            foreach ($vouchers as $v) {
+            foreach ($relevant as $v) {
                 if (!$linked->contains($v->id) && !$linked->contains($v->parent_voucher_id)) { continue; }
                 if (!in_array($v->tipo_comprobante, ['TICKET', 'BOLETA', 'FACTURA'], true) || $v->estado === 'ANULADO') { continue; }
                 if ($v->parent_voucher_id && !$vouchers->has($v->parent_voucher_id)) { $ambiguous = true; }
@@ -52,20 +66,21 @@ class AppointmentEconomicPosition
                     ? $v->parent_voucher_id : $v->id;
                 foreach ($payments->get($v->id, collect()) as $p) {
                     if (!isset($seen[$p->id])) { $cash[$root] = ($cash[$root] ?? 0) + (int) round((float) $p->monto * 100); $seen[$p->id] = true;
-                        $paymentDetails[] = ['id'=>(int)$p->id,'amount'=>Money::decimal((int)round((float)$p->monto*100)),
-                            'method'=>$p->metodo_pago,'recorded_at'=>$p->created_at?->toISOString()];
+                        if($detailLookup===null||isset($detailLookup[$a->id]))$paymentDetails[] = ['id'=>(int)$p->id,'amount'=>Money::decimal((int)round((float)$p->monto*100)),
+                            'method'=>$p->metodo_pago,'recorded_at'=>$p->created_at?\Carbon\Carbon::parse($p->created_at,config('app.timezone'))->toISOString():null];
                     }
                 }
             }
             $paid = array_sum($cash);
-            $incoming = $credits->where('destination_appointment_id', $a->id);
-            $outgoing = $credits->where('source_appointment_id', $a->id);
+            $incoming = $incomingByAppointment->get($a->id,collect());
+            $outgoing = $outgoingByAppointment->get($a->id,collect());
+            $appointmentRefunds=$refundsByAppointment->get($a->id,collect());
             $credit = $incoming->sum(fn ($r) => Money::cents($r->amount));
             $used = $outgoing->sum(fn ($r) => Money::cents($r->amount));
-            $reserved = $refunds->where('appointment_id', $a->id)->sum(fn ($r) => Money::cents($r->amount));
+            $reserved = $appointmentRefunds->sum(fn ($r) => Money::cents($r->amount));
             foreach ($incoming as $r) { $cash[$r->voucher_id] = ($cash[$r->voucher_id] ?? 0) + Money::cents($r->amount); }
             foreach ($outgoing as $r) { $cash[$r->voucher_id] = ($cash[$r->voucher_id] ?? 0) - Money::cents($r->amount); }
-            foreach ($refunds->where('appointment_id', $a->id) as $r) { $cash[$r->voucher_id] = ($cash[$r->voucher_id] ?? 0) - Money::cents($r->amount); }
+            foreach ($appointmentRefunds as $r) { $cash[$r->voucher_id] = ($cash[$r->voucher_id] ?? 0) - Money::cents($r->amount); }
             $fallback = $linked->isEmpty() && $incoming->isEmpty() && ($a->economic_source ?? 'LEGACY') === 'LEGACY' && $a->estado_agenda !== 'PENDIENTE_CONFIRMACION';
             if ($fallback) { $paid = Money::cents($a->total_pagado ?? 0); }
             $price = Money::cents($a->precio_programado); $effective = max(0, $paid + $credit - $used - $reserved);

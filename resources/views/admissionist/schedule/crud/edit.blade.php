@@ -29,6 +29,7 @@
 
                     <div class="row g-3">
                         <input type="hidden" name="doctor_schedule_id_edit" id="doctor_schedule_id_edit">
+                        <input type="hidden" name="expected_version" id="doctor_schedule_version_edit">
 
                         <div class="col-md-12">
                             <label class="form-label text-primary">Doctor</label>

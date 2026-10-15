@@ -1296,6 +1296,7 @@
             form.reset();
             clearError();
             document.getElementById('schedule-id').value = '';
+            document.getElementById('schedule-version').value = '';
             document.getElementById('schedule-recurrence').value = 'DATE';
             document.getElementById('schedule-editor-title').textContent = 'Nuevo horario';
             document.getElementById('schedule-date').value = context.date;
@@ -1339,6 +1340,7 @@
             form.reset();
             clearError();
             document.getElementById('schedule-id').value = props.schedule_id;
+            document.getElementById('schedule-version').value = props.version || '';
             document.getElementById('schedule-recurrence').value = props.recurrence;
             document.getElementById('schedule-editor-title').textContent = 'Modificar horario de ' + props.doctor_name;
             document.getElementById('schedule-doctor').value = props.doctor_id;
@@ -1421,7 +1423,7 @@
                 impact.message + ' Las citas no serán eliminadas ni modificadas.'
             );
             if (!accepted) return;
-            await send(host.dataset.delete, 'POST', { id: Number(scheduleId) });
+            await send(host.dataset.delete, 'POST', { id: Number(scheduleId),expected_version:document.getElementById('schedule-version').value });
         }
 
         function createPayload() {
@@ -1452,6 +1454,7 @@
             const date = document.getElementById('schedule-date').value;
             return {
                 doctor_schedule_id_edit: Number(document.getElementById('schedule-id').value),
+                expected_version: document.getElementById('schedule-version').value,
                 doctor_id_edit: Number(document.getElementById('schedule-doctor').value),
                 site_id_edit: nullableNumber(document.getElementById('schedule-site').value),
                 fecha_cita_edit: date,
@@ -1472,6 +1475,7 @@
             };
             const payload = {
                 doctor_schedule_id_edit: props.schedule_id,
+                expected_version: props.version,
                 doctor_id_edit: props.doctor_id,
                 site_id_edit: props.site_id,
                 fecha_cita_edit: proposal.date,

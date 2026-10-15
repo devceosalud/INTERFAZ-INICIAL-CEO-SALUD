@@ -59,6 +59,8 @@
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
         <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
         <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
+        <button id="agenda-op-convert-additional" class="agenda-btn" type="button" hidden>Resolver como ADICIONAL</button>
+        <p id="agenda-op-conversion-reason" class="agenda-guidance" hidden></p>
     </details>
     <details id="agenda-op-indication-record-panel" hidden>
         <summary>Registrar indicación escrita del médico tratante</summary>

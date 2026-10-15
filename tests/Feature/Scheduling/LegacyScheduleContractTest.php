@@ -48,7 +48,7 @@ class LegacyScheduleContractTest extends TestCase
         $this->catalog = $this->createAppointmentCatalog();
         DoctorSchedule::query()->delete();
 
-        $this->reader = $this->createUserWithRole('ADMISION');
+        $this->reader = $this->scheduleManager('ADMISION');
 
         // A future date: the inherited calendar deliberately never generates availability in
         // the past, so characterizing it requires looking forward.

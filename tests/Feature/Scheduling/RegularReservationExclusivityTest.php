@@ -217,6 +217,52 @@ class RegularReservationExclusivityTest extends TestCase
         $this->assertSame($before,$this->snapshot());$this->assertSame([$destination],Appointment::occupyingInterval()->pluck('id')->all());
         $this->assertEquals(20,Payment::sum('monto'));
     }
+    public function test_colliding_reservation_requires_explicit_additional_conversion_without_money_or_new_appointment():void {
+        $a=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload())->assertCreated()->json('appointment.appointment_id');
+        $b=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['patient_id'=>$this->other->id]))->assertCreated()->json('appointment.appointment_id');
+        $this->postJson('/scheduling-mvp/agenda/appointments/'.$a.'/payments',['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'20','method'=>'EFECTIVO']])->assertOk();
+        $url='/scheduling-mvp/agenda/appointments/'.$b.'/additional-conversion';
+        $offer=$this->getJson($url)->assertOk()->assertJsonPath('available',true)->assertJsonPath('can_convert',false)->json();
+        $data=['request_key'=>(string)Str::uuid(),'expected_version'=>$offer['expected_version'],'confirmed'=>true];
+        $before=$this->snapshot();$this->postJson($url,$data)->assertForbidden();$this->assertSame($before,$this->snapshot());
+        foreach([C::UPDATE,C::CREATE_ADDITIONAL] as $cap)$this->actor->givePermissionTo(Permission::findOrCreate($cap,'web'));
+        $this->postJson($url,array_replace($data,['confirmed'=>false]))->assertUnprocessable();$this->assertSame($before,$this->snapshot());
+        $this->postJson($url,$data+['price'=>1])->assertUnprocessable();$this->assertSame($before,$this->snapshot());
+        $this->postJson($url,$data)->assertOk()->assertJsonPath('appointment.appointment_id',$b)->assertJsonPath('appointment.tipo_agendamiento','ADICIONAL')->assertJsonPath('appointment.estado_agenda','PENDIENTE_CONFIRMACION');
+        $after=$this->snapshot();$this->postJson($url,$data)->assertOk();$this->assertSame($after,$this->snapshot());
+        $this->assertDatabaseCount('appointments',2);$this->assertDatabaseCount('payments',1);$this->assertEquals(20,Payment::sum('monto'));
+        $this->assertEquals(100,Appointment::find($b)->precio_programado);
+        $pay='/scheduling-mvp/agenda/appointments/'.$b.'/payments';
+        $this->postJson($pay,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertUnprocessable();
+        $this->postJson($pay,['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'50','method'=>'EFECTIVO']])->assertOk();
+        $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::find($b)->estado_agenda);
+        $this->postJson($pay,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
+        $this->assertSame('CONFIRMADA',Appointment::find($b)->estado_agenda);$this->assertEquals(70,Payment::sum('monto'));
+        $this->actor->revokePermissionTo(C::CREATE_ADDITIONAL);$this->postJson($url,$data)->assertForbidden();
+    }
+
+    public function test_additional_offer_never_leaks_foreign_private_reservation_and_stale_or_noncolliding_conversion_is_rejected():void {
+        $id=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload())->assertCreated()->json('appointment.appointment_id');
+        foreach([C::UPDATE,C::CREATE_ADDITIONAL] as $cap)$this->actor->givePermissionTo(Permission::findOrCreate($cap,'web'));
+        $url='/scheduling-mvp/agenda/appointments/'.$id.'/additional-conversion';
+        $offer=$this->getJson($url)->assertOk()->assertJsonPath('available',false)->json();$before=$this->snapshot();
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'expected_version'=>$offer['expected_version'],'confirmed'=>true])->assertConflict();
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'expected_version'=>str_repeat('0',64),'confirmed'=>true])->assertConflict();$this->assertSame($before,$this->snapshot());
+        $peer=$this->agendaReader('COMERCIAL');foreach([C::CREATE,C::UPDATE,C::CREATE_ADDITIONAL] as $cap)$peer->givePermissionTo(Permission::findOrCreate($cap,'web'));
+        $this->actingAs($peer);$this->getJson($url)->assertNotFound();
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'expected_version'=>$offer['expected_version'],'confirmed'=>true])->assertNotFound();$this->assertSame($before,$this->snapshot());
+    }
+
+    public function test_current_payment_permission_is_required_even_for_a_successful_operation_retry():void {
+        $registration=$this->payload(['payment'=>['amount'=>'20','method'=>'EFECTIVO']]);
+        $id=$this->postJson('/scheduling-mvp/agenda/registrations',$registration)->assertCreated()->json('appointment.appointment_id');
+        $payment=['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'10','method'=>'EFECTIVO']];
+        $url='/scheduling-mvp/agenda/appointments/'.$id.'/payments';$this->postJson($url,$payment)->assertOk();
+        $before=$this->snapshot();$this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);
+        $this->postJson($url,$payment)->assertForbidden();
+        $this->postJson('/scheduling-mvp/agenda/registrations',$registration)->assertForbidden();$this->assertSame($before,$this->snapshot());
+    }
+
     private function occupiedAttempt():void {
         $this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['patient_id'=>$this->other->id,'mode'=>'CONFIRM',
             'payment'=>['amount'=>'50','method'=>'EFECTIVO']]))->assertConflict();

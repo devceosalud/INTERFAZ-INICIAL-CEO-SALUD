@@ -13,6 +13,7 @@ final class IsolatedWorkerQa
 {
     public static function boot(bool $browser=false)
     {
+        if(getenv('AGENDA_QA_RUNTIME')==='rc-11.8.9')return IsolatedRcQa::boot($browser);
         $root=dirname(__DIR__,2);
         if(file_exists($root.'/.env'))throw new \RuntimeException('QA requires a separate checkout without .env.');
         $env=['APP_ENV'=>'testing','APP_DEBUG'=>'false','APP_URL'=>'http://127.0.0.1:8025',

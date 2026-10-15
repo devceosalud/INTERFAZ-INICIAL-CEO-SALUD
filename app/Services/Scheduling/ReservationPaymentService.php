@@ -19,7 +19,9 @@ class ReservationPaymentService
     public function submit(int $id, User $actor, array $data, \Illuminate\Http\UploadedFile|array|null $proof = null): Appointment
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403);
+        if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
+        if(($data['confirm']??false)===true&&$original->tipo_agendamiento==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
         $indication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
         $files=AppointmentPaymentProofs::files($proof,$data);
         unset($data['proof'],$data['proofs']); $storedPaths = [];
@@ -75,7 +77,7 @@ class ReservationPaymentService
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
                 // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.
-                $slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
+                if($a->tipo_agendamiento!=='ADICIONAL')$slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
                 $a->update(['estado_agenda' => 'CONFIRMADA']);
             }
             if ($files) app(AppointmentPaymentProofs::class)->store($a,$payment,$actor->id,$files,$data['proof_review'],$storedPaths);

@@ -43,6 +43,27 @@ class AdmissionBoardTest extends TestCase
         $this->get(route('scheduling.mvp.admission'))->assertOk()->assertViewHas('defaultSite',fn($s)=>$s->id===$site->id);
         $this->assertDatabaseCount('sites',2);
     }
+    public function test_poll_revision_is_actor_scoped_reauthorized_and_changes_when_data_changes():void
+    {
+        $a=$this->appointment();$revision=$this->feed()->assertOk()->json('revision');
+        $this->assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/',$revision);
+        $this->feed(['revision'=>$revision])->assertOk()->assertExactJson(['unchanged'=>true,'revision'=>$revision]);
+        $a->update(['estado_cita'=>'EN_ESPERA']);
+        $changed=$this->feed(['revision'=>$revision])->assertOk()->assertJsonPath('kpis.en_espera',1)->assertJsonMissingPath('unchanged');
+        $this->assertNotSame($revision,$changed->json('revision'));
+        $other=$this->agendaReader('ADMISION');$this->actingAs($other);
+        $this->feed(['revision'=>$changed->json('revision')])->assertOk()->assertJsonMissingPath('unchanged');
+        $other->revokePermissionTo(C::VIEW);
+        $this->feed(['revision'=>$changed->json('revision')])->assertForbidden();
+        $this->assertDatabaseCount('payments',0);
+    }
+    public function test_page_is_clamped_after_results_shrink_without_changing_totals():void
+    {
+        for($i=0;$i<31;$i++)$this->appointment();
+        $this->feed(['page'=>999])->assertOk()->assertJsonPath('page',2)->assertJsonPath('total',31)->assertJsonCount(1,'rows');
+        Appointment::where('id','>',1)->update(['estado_cita'=>'CANCELADO']);
+        $this->feed(['page'=>2,'grupo'=>'por_llegar'])->assertOk()->assertJsonPath('page',1)->assertJsonPath('total',1)->assertJsonCount(1,'rows');
+    }
     public function test_all_approved_groups_preserve_states_and_expose_inactive_subtypes():void
     {
         foreach(AdmissionStatus::STATES as $state)$this->appointment(['estado_cita'=>$state]);

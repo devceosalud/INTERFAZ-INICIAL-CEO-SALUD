@@ -27,6 +27,10 @@ class OperationalRegistrationService
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
             'No tienes permiso para registrar citas (appointment.create y appointment.view).');
+        // Current authorization precedes replaying a completed UUID as well as new writes.
+        if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
+        if(($data['booking_type']??null)==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
+        if(!empty($data['es_exonerado']))abort_unless($actor->can(Capability::APPROVE_ZERO_COST),403);
         if(!empty($data['reevaluation_indication_id']) && !DB::table('appointment_operations')->where('actor_user_id',$actor->id)
             ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
             app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);

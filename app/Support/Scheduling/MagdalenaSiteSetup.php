@@ -113,11 +113,12 @@ final class MagdalenaSiteSetup
 
     private function actor(int $id): void
     {
-        $actor = User::whereKey($id)->lockForUpdate()->first();
-        if (!$actor || !$actor->hasRole('ADMINISTRADOR','web')) throw new \RuntimeException('Se requiere un responsable ADMINISTRADOR con guard web normalizado.');
         // Stable lock exists even when sites is empty, including READ COMMITTED and distinct administrators.
+        // Same role -> user lock order as UserAccountAccess, including account deactivation.
         $roles=DB::table('roles')->where('name','ADMINISTRADOR')->where('guard_name','web')->lockForUpdate()->get();
-        if($roles->count()!==1)throw new \RuntimeException('Rol ADMINISTRADOR web ambiguo; no se modifica el catálogo.');
+        if($roles->count()!==1)throw new \RuntimeException('Se requiere un rol ADMINISTRADOR con guard web normalizado y único.');
+        $actor = User::whereKey($id)->lockForUpdate()->first();
+        if (!$actor || !$actor->is_active || !$actor->hasRole('ADMINISTRADOR','web')) throw new \RuntimeException('Se requiere un responsable ADMINISTRADOR activo con guard web normalizado.');
     }
 
     private function schema(bool $lock): void
