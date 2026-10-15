@@ -20,7 +20,7 @@ final class AppointmentVisibility
             AppointmentAgendaLifecycle::LEGACY,
             AppointmentAgendaLifecycle::CONFIRMED,
         ], true) || ($agendaState === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
-            && ($responsibleId ?? $creatorId) === $actorId);
+            && ($creatorId === $actorId || $responsibleId === $actorId));
     }
 
     /**
@@ -41,9 +41,11 @@ final class AppointmentVisibility
             ])->orWhere(function ($private) use ($actorId, $table): void {
                 $private->where($table.'.estado_agenda', AppointmentAgendaLifecycle::PENDING_CONFIRMATION)
                     ->where(function ($owner) use ($actorId, $table): void {
-                        // Null-safe even when Voucher negates this predicate in a correlated subquery.
-                        $owner->where(fn ($assigned) => $assigned->whereNotNull($table.'.responsible_user_id')->where($table.'.responsible_user_id', $actorId))
-                            ->orWhere(fn ($fallback) => $fallback->whereNull($table.'.responsible_user_id')->where($table.'.user_id', $actorId));
+                        // Creator keeps read access after assigning a commercial owner;
+                        // the assigned owner can also read the private reservation.
+                        // Everyone else remains excluded, irrespective of role.
+                        $owner->where($table.'.user_id', $actorId)
+                            ->orWhere($table.'.responsible_user_id', $actorId);
                     });
             });
         });
