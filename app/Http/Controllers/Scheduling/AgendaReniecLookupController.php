@@ -38,13 +38,17 @@ class AgendaReniecLookupController extends Controller
         if (!is_array($result)) {
             return response()->json([
                 'status' => 'unavailable',
-                'message' => 'No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.',
+                'message' => config('apidatosperu.reniec_provider') === 'insalud'
+                    ? 'No se pudieron obtener datos de INSALUD. Puede continuar con el registro manual.'
+                    : 'No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.',
             ]);
         }
 
         return response()->json([
             'status' => 'prefilled',
-            'message' => 'Datos encontrados en RENIEC. Revise y complete antes de continuar.',
+            'message' => config('apidatosperu.reniec_provider') === 'insalud'
+                ? 'Nombres encontrados en INSALUD. Revise antes de continuar.'
+                : 'Datos encontrados en RENIEC. Revise y complete antes de continuar.',
             'identity' => [
                 'nombre' => $result['nombre'] ?? null,
                 'apellido_paterno' => $result['apellido_paterno'] ?? null,
