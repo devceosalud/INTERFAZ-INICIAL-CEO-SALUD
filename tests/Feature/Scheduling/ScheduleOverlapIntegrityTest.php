@@ -23,7 +23,8 @@ class ScheduleOverlapIntegrityTest extends TestCase
     {
         $c = $this->createAppointmentCatalog(); $b = $c['schedule'];
         $b->update(['hora_inicio' => '08:00', 'hora_fin' => '10:00', 'duracion_cita' => 30]);
-        DoctorSchedule::create(array_merge($b->only(['doctor_id','site_id','fecha_cita','dia_semana','duracion_cita','estado']), ['hora_inicio'=>'08:30','hora_fin'=>'09:30']));
+        // Imported inherited overlap, not a new write through the now-blocking model.
+        \Illuminate\Support\Facades\DB::table('doctor_schedules')->insert(array_merge($b->only(['doctor_id','site_id','fecha_cita','dia_semana','duracion_cita','estado']), ['hora_inicio'=>'08:30','hora_fin'=>'09:30']));
         $date = Carbon::parse($b->fecha_cita); $id = (int) $b->doctor_id;
         $day = app(DoctorAvailabilityService::class)->forDay(new AvailabilityQuery($id,$date));
         $this->assertSame(['08:00','08:30','09:00','09:30'],$day->availableStartTimes());
@@ -42,10 +43,11 @@ class ScheduleOverlapIntegrityTest extends TestCase
         foreach ([['duracion_cita'=>20],['site_id'=>$site->id],['hora_inicio'=>'08:10']] as $change) {
             $attributes=array_merge($b->only(['doctor_id','site_id','fecha_cita','dia_semana','duracion_cita','estado']),['hora_inicio'=>'08:30','hora_fin'=>'09:30'],$change);
             try { DoctorSchedule::create($attributes); $this->fail('Accepted incompatible schedule'); }
-            catch (ValidationException $e) { $this->assertStringContainsString('Admisión debe revisar',$e->getMessage()); }
+            catch (ValidationException $e) { $this->assertStringContainsString('se superpone',$e->getMessage()); }
         }
         $this->assertSame(1,DoctorSchedule::count());
-        $compatible=DoctorSchedule::create(array_merge($b->only(['doctor_id','site_id','fecha_cita','dia_semana','duracion_cita','estado']),['hora_inicio'=>'08:30','hora_fin'=>'09:30']));
+        $legacyId=\Illuminate\Support\Facades\DB::table('doctor_schedules')->insertGetId(array_merge($b->only(['doctor_id','site_id','fecha_cita','dia_semana','duracion_cita','estado']),['hora_inicio'=>'08:30','hora_fin'=>'09:30']));
+        $compatible=DoctorSchedule::findOrFail($legacyId);
         try { $compatible->update(['duracion_cita'=>20]); $this->fail('Accepted incompatible edit'); }
         catch (ValidationException $e) { $this->assertSame(30,(int)$compatible->fresh()->duracion_cita); }
         $compatible->fresh()->update(['estado'=>'INACTIVO']);

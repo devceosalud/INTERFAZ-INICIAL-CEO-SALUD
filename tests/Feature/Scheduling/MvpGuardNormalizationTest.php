@@ -21,7 +21,10 @@ class MvpGuardNormalizationTest extends TestCase
     use RefreshDatabase, BuildsAgendaLifecycleData, BuildsLegacyMvpGuards;
     protected function setUp(): void
     {
-        parent::setUp(); Storage::fake('local'); $this->buildLegacyMvpGuards();
+        parent::setUp(); Storage::fake('local');
+        // Reproduce the pre-RC minimal legacy catalogue; the new schedule definition is not part of it.
+        Permission::whereIn('name',['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage'])->delete();
+        $this->buildLegacyMvpGuards();
     }
     private function snapshot(): array
     {

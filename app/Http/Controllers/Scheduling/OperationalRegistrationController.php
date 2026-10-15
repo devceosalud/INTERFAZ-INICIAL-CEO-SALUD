@@ -39,9 +39,7 @@ class OperationalRegistrationController extends Controller
     public function economy(Request $request, int $appointmentId, AppointmentEconomicPosition $position)
     {
         $a = Appointment::visibleToAgendaUser($request->user()->id)->whereKey($appointmentId)->firstOr(fn () => abort(404));
-        $canEdit = $request->user()->can(\App\Support\Scheduling\SchedulingCapability::UPDATE)
-            || ($request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE)
-                && (int) ($a->responsible_user_id ?? $a->user_id) === (int) $request->user()->id);
+        $canEdit = $request->user()->can(\App\Support\Scheduling\SchedulingCapability::UPDATE);
         return response()->json($position->publicPosition($a) + app(\App\Services\Scheduling\RegularReservationAvailability::class)->describe($a) + [
             'additional_conversion'=>app(\App\Services\Scheduling\AdditionalReservationConversion::class)->offer($a,$request->user()),
             'can_confirm_additional'=>$a->tipo_agendamiento!=='ADICIONAL'||$request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE_ADDITIONAL),

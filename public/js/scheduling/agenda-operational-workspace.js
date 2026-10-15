@@ -12,6 +12,8 @@
                     if(ui.proof.files?.length) throw new Error('No se cargó la revisión de comprobantes. Actualiza Agenda antes de adjuntar; puedes registrar un pago manual sin imagen.');},
                 reset:async()=>{ui.proof.value='';},hasChanges:()=>Boolean(ui.proof.files?.length)};
         const documentFile=byId('document-file');
+        let replacementDocument=null,replacementKey=null;
+        function clearReplacement(){replacementDocument=null;replacementKey=null;byId('replacement-panel').hidden=true;byId('replacement-file').value='';byId('replacement-reason').value='';captureClean(['replacement-file','replacement-reason']);}
         const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
         const catalogPrice = byId('catalog-price'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
         function discountInput() { return discountType?.value ? { type: discountType.value, value: discountValue.value || '0', reason: discountReason.value || null } : null; }
@@ -34,7 +36,7 @@
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
             'rate','discount-type','discount-value','discount-reason','postoperative','exemption-reason','double','indication','referred','referral-origin',
             'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
-            'document-file','proof-reviewed','receipt-date','receipt-time'];
+            'document-file','document-kind','document-label','replacement-file','replacement-reason','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
         let cleanExtra='',detailsVersion=0,documentsVersion=0;
         function fieldValue(name) {const f=byId(name);return f?JSON.stringify([f.value||'',Boolean(f.checked),Array.from(f.files||[]).map(v=>[v.name||'',v.size||0])]):'';}
@@ -279,13 +281,15 @@
             const version=++documentsVersion;
             const result = await request(base + '/' + id + '/documents');
             if (version!==documentsVersion || String(config.context()?.appointment_id) !== String(id)) { return; }
+            ['document-file','document-kind','document-label','links','add-documents'].forEach(name=>byId(name).disabled=!result.can_upload_private);
             ui.documents.replaceChildren();
             const orderDocument=byId('indication-document'); if(orderDocument) orderDocument.replaceChildren();
             (result.documents || []).forEach(d => {
                 if(orderDocument && d.download_url) {const option=document.createElement('option');option.value=String(d.id);option.textContent=d.label;orderDocument.appendChild(option);}
-                const row = document.createElement('div'); row.className = 'agenda-document-row';
+                const row = document.createElement('div'); row.className = 'agenda-document-row'; row.dataset.documentId=String(d.id);
                 const link = document.createElement('a'); link.textContent = d.label; link.href = d.url || d.download_url;
                 link.target = '_blank'; link.rel = 'noopener noreferrer'; row.appendChild(link);
+                const kind=document.createElement('small');kind.textContent=' · '+({PRESCRIPTION:'Receta',REPORT:'Informe',ADMINISTRATIVE:'Administrativo'}[d.document_kind]||'Sin clasificar');row.appendChild(kind);
                 const label = document.createElement('input'); label.value = d.label; label.maxLength = 120; label.setAttribute('aria-label', 'Etiqueta del documento');
                 const url = document.createElement('input'); url.value = d.url || ''; url.setAttribute('aria-label', 'Link HTTPS del documento');
                 const pending=pendingDocumentEdits.get(d.id);if(pending){label.value=pending.label;url.value=pending.url;}
@@ -300,13 +304,18 @@
                     try { await request(base + '/' + id + '/documents/' + d.id, { method: 'DELETE' }); await documents(id); }
                     catch (e) { showPlaced(e, 'documents'); }
                 });
-                if (result.can_write) { const edit = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = 'Editar'; edit.append(summary, label); if (d.url) { edit.append(url); } edit.append(save, remove); row.append(edit); }
+                if (result.can_write && (d.payment_id || d.can_replace)) { const edit = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = 'Editar'; edit.append(summary, label); if (d.url) { edit.append(url); } edit.append(save, remove); row.append(edit); }
+                if(d.can_replace){const replace=document.createElement('button');replace.type='button';replace.className='agenda-btn';replace.textContent='Reemplazar archivo';replace.addEventListener('click',()=>{
+                    if(working || replacementDocument)return;
+                    replacementDocument=d;replacementKey=null;byId('replacement-title').textContent='Reemplazar: '+d.label;byId('replacement-panel').hidden=false;
+                });row.appendChild(replace);}
                 ui.documents.appendChild(row);
             });captureClean(['indication-document']);
         }
         async function selectionChanged(context) {
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
+            if(key!==selectedKey){clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
             if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
@@ -323,6 +332,7 @@
             if (exemptionReason) exemptionReason.disabled = Boolean(id) || initialFinancialLocks.exemption;
             if (id) { quoteReady = true; if (quoteStatus) quoteStatus.hidden = true; }
             ui['submit-payment'].hidden = !id || !config.canCreate; ui['add-documents'].hidden = !id;
+            ['document-file','document-kind','document-label','links','add-documents'].forEach(name=>byId(name).disabled=true);
             ui['confirm-reservation'].hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION';
             ui['confirm-reservation'].disabled = true; lastPosition = null;
             const confirmationReason = byId('confirmation-reason');
@@ -430,14 +440,14 @@
             working = true;
             try {
                 if (hasFile) {
-                    const body = new FormData(); body.append('label', 'Documento operativo'); body.append('file', documentFile.files[0]);
+                    const body = new FormData(); body.append('label', byId('document-label').value); body.append('document_kind',byId('document-kind').value); body.append('file', documentFile.files[0]);
                     await request(base + '/' + id + '/documents', { method: 'POST', body }); documentFile.value = '';
                 }
                 for (let i = 0; i < pending.length; i++) {
-                    await request(base + '/' + id + '/documents', json('POST', pending[i]));
+                    await request(base + '/' + id + '/documents', json('POST', {...pending[i],document_kind:byId('document-kind').value}));
                     ui.links.value = pending.slice(i + 1).map(l => l.label + ' | ' + l.url).join('\n');
                 }
-                await documents(id);captureClean(['document-file','links']);
+                await documents(id);captureClean(['document-file','document-kind','document-label','links']);
                 const saved = hasFile && pending.length ? root.AgendaGuidance.copy.fileSaved + ' ' + root.AgendaGuidance.copy.linkSaved : (hasFile ? root.AgendaGuidance.copy.fileSaved : root.AgendaGuidance.copy.linkSaved);
                 const status = document.getElementById('agenda-op-documents-status');
                 const errorBox = document.getElementById('agenda-op-documents-error');
@@ -446,6 +456,20 @@
                 else { config.notice(saved); }
             } catch (e) { showPlaced(e, 'documents'); }
             finally { working = false; }
+        });
+        byId('replacement-cancel').addEventListener('click',()=>{if(!working)clearReplacement();});
+        byId('replacement-save').addEventListener('click',async()=>{
+            const id=config.context()?.appointment_id,d=replacementDocument,file=byId('replacement-file').files[0];
+            if(!id||!d||working)return;
+            if(!file||root.AgendaGuidance.invalidProof(file)){showPlaced({message:root.AgendaGuidance.copy.fileInvalid},'documents');return;}
+            if(byId('replacement-reason').value.trim().length<3){showPlaced({message:'Indica el motivo del reemplazo (mínimo 3 caracteres).'},'documents');return;}
+            setWorking(true);
+            try{
+                replacementKey=replacementKey||root.crypto.randomUUID();const body=new FormData();
+                Object.entries({request_key:replacementKey,expected_version:d.version,label:d.label,document_kind:d.document_kind==='UNCLASSIFIED'?'ADMINISTRATIVE':d.document_kind,reason:byId('replacement-reason').value}).forEach(([k,v])=>body.append(k,v));body.append('file',file);
+                await request(base+'/'+id+'/documents/'+d.id+'/replace',{method:'POST',body});clearReplacement();await documents(id);config.notice('Nueva versión guardada. La anterior se conserva para auditoría.');
+            }catch(e){if([400,403,404,413,422].includes(e.status))replacementKey=null;showPlaced(e,'documents');}
+            finally{setWorking(false);}
         });
         const recordIndication=byId('record-indication');
         recordIndication?.addEventListener('click',async()=>{

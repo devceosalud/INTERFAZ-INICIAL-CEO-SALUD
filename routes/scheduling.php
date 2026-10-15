@@ -58,6 +58,7 @@ Route::middleware([
             $controller = \App\Http\Controllers\Scheduling\AppointmentDocumentController::class;
             Route::get('/', [$controller, 'index'])->name('scheduling.mvp.documents.index');
             Route::post('/', [$controller, 'store'])->name('scheduling.mvp.documents.store');
+            Route::post('/{documentId}/replace', [$controller, 'replace'])->whereNumber('documentId')->name('scheduling.mvp.documents.replace');
             Route::get('/{documentId}', [$controller, 'download'])->whereNumber('documentId')->name('scheduling.mvp.documents.download');
             Route::put('/{documentId}', [$controller, 'update'])->whereNumber('documentId')->name('scheduling.mvp.documents.update');
             Route::delete('/{documentId}', [$controller, 'destroy'])->whereNumber('documentId')->name('scheduling.mvp.documents.destroy');

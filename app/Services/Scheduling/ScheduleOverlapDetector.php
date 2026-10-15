@@ -10,10 +10,8 @@ use Illuminate\Support\Collection;
 /**
  * Finds operating blocks of the same professional that overlap in time.
  *
- * Read-only and advisory on purpose. Inherited data may already contain overlaps, so
- * rejecting them on save could stop real work; until that is measured in production the
- * system may warn but must not block. The rule lives here alone, expressed with TimeRange, so
- * the warning, the audit and any future validation cannot drift apart.
+ * Read-only detector shared by warnings, historical audits and the blocking write validator.
+ * Approved 14/10/2026: reject new overlapping writes; inherited rows are not rewritten.
  */
 class ScheduleOverlapDetector
 {

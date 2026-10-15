@@ -212,6 +212,8 @@ class AppointmentPaymentProofsTest extends TestCase
         $id=$this->create($this->payload(['payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-HIDE-ORIGIN'],'proof_review'=>$this->review()]),[$this->file()])
             ->assertCreated()->json('appointment.appointment_id');
         $d=AppointmentDocument::first();
+        $this->putJson(route('scheduling.mvp.documents.update',[$id,$d->id]),['label'=>'No autorizado'])->assertForbidden();
+        $this->actor->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
         $this->putJson(route('scheduling.mvp.documents.update',[$id,$d->id]),['label'=>'Referencia ficticia corregida'])->assertOk();
         $this->deleteJson(route('scheduling.mvp.documents.destroy',[$id,$d->id]))->assertNoContent();
         $this->assertSoftDeleted('appointment_documents',['id'=>$d->id]);
@@ -221,5 +223,14 @@ class AppointmentPaymentProofsTest extends TestCase
         $this->pay($id,['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-HIDE-REUSE'],'proof_review'=>$this->review()],[$this->file()])
             ->assertUnprocessable()->assertJsonValidationErrors('proofs');
         $this->assertDatabaseCount('payments',1);$this->assertEquals(20,Payment::sum('monto'));
+    }
+
+    public function test_operational_document_permissions_never_allow_replacing_a_ledger_linked_proof():void
+    {
+        $id=$this->create($this->payload(['payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-KEEP-PROOF'],'proof_review'=>$this->review()]),[$this->file()])->assertCreated()->json('appointment.appointment_id');
+        foreach([C::UPDATE,'appointment.documents.view','appointment.documents.manage'] as $p)$this->actor->givePermissionTo(Permission::findOrCreate($p,'web'));
+        $d=$this->getJson(route('scheduling.mvp.documents.index',$id))->assertOk()->json('documents.0');$this->assertFalse($d['can_replace']);
+        $this->post(route('scheduling.mvp.documents.replace',[$id,$d['id']]),['request_key'=>(string)Str::uuid(),'expected_version'=>$d['version'],'label'=>'Intento QA','document_kind'=>'REPORT','reason'=>'No debe permitirse','file'=>$this->file()],['Accept'=>'application/json'])->assertUnprocessable();
+        $this->assertDatabaseCount('appointment_documents',1);$this->assertDatabaseCount('payments',1);$this->assertEquals(20,Payment::sum('monto'));
     }
 }

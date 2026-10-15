@@ -42,8 +42,13 @@ class DoctorScheduleMutation
                 &&!\App\Models\Site::activo()->whereKey($changes['site_id'])->exists())
                 throw ValidationException::withMessages(['site_id_edit'=>'La sede destino debe estar activa.']);
             $before=self::snapshot($s);$version=self::version($s);
-            $candidates=Appointment::where('doctor_id',$s->doctor_id)->whereDate('fecha_cita','>=',now('America/Lima')->toDateString())
-                ->where('estado_cita','<>','ATENDIDO')->occupyingInterval()->get(['id','doctor_id','site_id','fecha_cita','hora_cita','duracion_cita']);
+            $candidates=Appointment::where('doctor_id',$s->doctor_id)->whereDate('fecha_cita','>=',now(config('scheduling.operational_timezone','America/Lima'))->toDateString())
+                ->whereNotIn('estado_cita',['ATENDIDO','CANCELADO','NO_ASISTIO','RETIRO'])
+                ->where(fn($q)=>$q->whereNull('tipo_agendamiento')->orWhere('tipo_agendamiento','<>','FUERA_HORARIO'))
+                ->where(function($q){$q->whereIn('estado_agenda',['LEGADO','CONFIRMADA'])->orWhere(function($pending){
+                    // Structural coverage also protects funded ADD reservations; exclusivity remains regular-only.
+                    \App\Support\Scheduling\FundedReservation::apply($pending,'appointments',false);
+                });})->get(['id','doctor_id','site_id','fecha_cita','hora_cita','duracion_cita']);
             $protected=$candidates->filter(fn($a)=>$this->covers($before,$a));
             $s->forceFill($changes+['lock_version'=>(int)$s->lock_version+1])->save();
             $remaining=DoctorSchedule::where('doctor_id',$before['doctor_id'])->where('estado','ACTIVO')->get()->map(fn($b)=>self::snapshot($b));

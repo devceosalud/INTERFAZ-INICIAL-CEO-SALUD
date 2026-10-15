@@ -55,9 +55,7 @@ class AgendaDetailsController extends Controller
         return DB::transaction(function () use ($request, $appointmentId) {
             $appointment = Appointment::visibleToAgendaUser($request->user()->id)
                 ->whereKey($appointmentId)->lockForUpdate()->firstOr(fn () => abort(404));
-            abort_unless($request->user()->can(Capability::UPDATE)
-                || ($request->user()->can(Capability::CREATE)
-                    && (int) ($appointment->responsible_user_id ?? $appointment->user_id) === (int) $request->user()->id), 403);
+            abort_unless($request->user()->can(Capability::UPDATE), 403);
             $data = $request->validate([
                 'motivo_consulta' => 'sometimes|nullable|string|max:2000',
                 'observaciones' => 'sometimes|nullable|string|max:2000',

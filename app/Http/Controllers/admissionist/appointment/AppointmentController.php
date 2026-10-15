@@ -32,29 +32,21 @@ class AppointmentController extends Controller
 
     public function index()
     {
-        $day = Date('Y-m-d');
+        $day = now(config('scheduling.operational_timezone','America/Lima'))->toDateString();
         $specialties = Specialty::where('estado', 'ACTIVO')->get();
         $channels  = Channel::where('estado', 'ACTIVO')->get();
         $interaction_media  = InteractionMedium::where('estado', 'ACTIVO')->get();
         $additional_rates = AdditionalRate::where('estado', 'ACTIVO')->get();
 
         //CITAS DE HOY
-        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->addMonth()->endOfMonth()
-        ])
-            ->where('fecha_cita', 'LIKE', '%' . $day . '%')
+        $appointments = Appointment::visibleToAgendaUser((int) auth()->id())->where('fecha_cita',$day)
             ->whereNotIn('estado_cita', ['NO_ASISTIO', 'CANCELADO', 'RETIRO', 'REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
         //DESC : DE MAYOR A MENOR
         //ASC : DE MENOR A MAYOR
 
         //REEVALUACION DE HOY
-        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->whereBetween('fecha_cita', [
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->addMonth()->endOfMonth()
-        ])
-            ->where('fecha_cita', 'LIKE', '%' . $day . '%')
+        $reevaluaciones = Appointment::visibleToAgendaUser((int) auth()->id())->where('fecha_cita',$day)
             ->whereIn('estado_cita', ['REEVALUACION'])
             ->orderBy('hora_cita', 'ASC')->get();
 
@@ -64,6 +56,7 @@ class AppointmentController extends Controller
             'interaction_media' => $interaction_media,
             'additional_rates' => $additional_rates,
             'appointments' => $appointments,
+            'operationalToday' => $day,
             'reevaluaciones' => $reevaluaciones
         ]);
     }

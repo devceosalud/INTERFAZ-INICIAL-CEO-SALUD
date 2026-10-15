@@ -194,6 +194,7 @@ class OperationalRegistrationTest extends TestCase
     }
     public function test_private_proof_download_and_external_links_reject_pii_exposure_and_unsafe_content(): void
     {
+        foreach ([C::UPDATE,'appointment.documents.view','appointment.documents.manage'] as $p) $this->actor->givePermissionTo(Permission::findOrCreate($p,'web'));
         Storage::fake('local');
         $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
         $route = route('scheduling.mvp.documents.store', $id);

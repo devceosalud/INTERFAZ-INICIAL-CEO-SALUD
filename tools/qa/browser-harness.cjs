@@ -9,6 +9,8 @@ const workers=[['admin2','ADMIN SECUNDARIO QA','ADMINISTRADOR'],['commercialA','
 function readback(){return JSON.parse(cp.execFileSync(php,['tests/Support/rc-readback.php'],{cwd:rcRoot,encoding:'utf8'}));}
 function redact(text){return String(text).split(secret.password).join('[REDACTED]');}
 async function launch(stage){
+ const archive=path.join(out,'attempts',stage+'-'+Date.now());
+ for(const name of ['browser-'+stage+'.json','failure-'+stage+'.png','failure-'+stage+'-visible.txt']){const previous=path.join(out,name);if(fs.existsSync(previous)){fs.mkdirSync(archive,{recursive:true});fs.copyFileSync(previous,path.join(archive,name));}}
  const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-background-networking','--disable-component-update','--disable-sync','--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
  const report={stage,started_at:new Date().toISOString(),browser:browser.version(),cases:[],requests:[],blocked_external_hosts:[],contexts:{}};
  const contexts=new Map();let activePage;
@@ -16,7 +18,7 @@ async function launch(stage){
  async function context(key,options={}){
   const stateFile=path.join(out,'private-session-'+key+'.json');
   const context=await browser.newContext({viewport:{width:1366,height:900},timezoneId:'America/Lima',...(fs.existsSync(stateFile)?{storageState:stateFile}:{}),...options});
-  context.setDefaultTimeout(15000);
+  context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(45000);
   await context.route('**/*',route=>{const url=new URL(route.request().url());if(['127.0.0.1','localhost'].includes(url.hostname)||['data:','blob:'].includes(url.protocol))return route.continue();report.blocked_external_hosts=[...new Set([...report.blocked_external_hosts,url.hostname])];return route.abort('blockedbyclient');});
   context.on('response',response=>{const request=response.request();if(!['127.0.0.1','localhost'].includes(new URL(response.url()).hostname))return;
    const pathname=new URL(response.url()).pathname;if(!/\.(js|css|png|jpg|svg|woff2?|wasm|gz)$/.test(pathname))report.requests.push({method:request.method(),path:pathname,status:response.status()});});

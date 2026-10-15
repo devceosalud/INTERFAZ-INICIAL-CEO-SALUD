@@ -1,6 +1,9 @@
 <?php
 require dirname(__DIR__,2).'/vendor/autoload.php';
-$app=\Tests\Support\IsolatedRcQa::boot();
+if(!in_array('--reset-owned', $argv,true))throw new RuntimeException('Explicit --reset-owned is required; do not reset the browser jornada.');
+$suite=in_array('--suite',$argv,true);
+$app=$suite?\Tests\Support\IsolatedRcSuiteQa::boot():\Tests\Support\IsolatedRcQa::boot();
+set_exception_handler(static function(\Throwable $e){fwrite(STDERR,'QA benchmark failed: '.get_class($e).' at '.basename($e->getFile()).':'.$e->getLine().PHP_EOL);exit(1);});
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Appointment;
@@ -57,7 +60,8 @@ $percentile=function(array $values,float $p){sort($values);return round($values[
 $report=['environment'=>['php'=>PHP_VERSION,'os'=>PHP_OS_FAMILY,'mariadb'=>DB::selectOne('SELECT VERSION() version')->version,'samples'=>30,'warmups'=>3,'transport'=>'HTTP kernel in one warm PHP CLI process; no browser/network/TLS time','opcache_cli'=>ini_get('opcache.enable_cli'),'dataset'=>'20 doctors, 5 days, distinct patients, one attributed S/50 payment per S/100 appointment; synthetic only'],
     'proposed_local_targets'=>['p95_ms'=>1000,'max_sql_count'=>30,'max_response_bytes'=>100000,'php_peak_mib'=>256], 'datasets'=>[]];
 $current=1;
-foreach([100,500,2000] as $size){
+$sizes=[100,500,2000];foreach($argv as $option)if(str_starts_with($option,'--size=')){$sizes=[(int)substr($option,7)];if(!in_array($sizes[0],[100,500,2000],true))throw new RuntimeException('Unsupported bounded fixture size');}
+foreach($sizes as $size){
     $batches=array_fill_keys(array_keys($templates),[]);
     for($i=$current;$i<$size;$i++){
         foreach($templates as $table=>$template){
@@ -72,6 +76,20 @@ foreach([100,500,2000] as $size){
     }
     foreach($batches as $table=>$rows)foreach(array_chunk($rows,100) as $chunk)DB::table($table)->insert($chunk);
     $current=$size;
+    if(in_array('--prepare-http',$argv,true)){
+        if(!$suite)throw new RuntimeException('HTTP load fixtures require the separate suite runtime.');
+        $secret=json_decode(preg_replace('/^\xEF\xBB\xBF/','',file_get_contents(storage_path('app/qa-rc/browser-private.json'))),true,512,JSON_THROW_ON_ERROR);
+        $accounts=[];
+        for($userIndex=1;$userIndex<=8;$userIndex++){
+            $user=$userIndex===1?$actor:\App\Models\User::factory()->create();
+            $user->forceFill(['email'=>'bench-'.$userIndex.'@example.invalid','password'=>\Illuminate\Support\Facades\Hash::make($secret['password'])])->save();
+            foreach([C::MVP_ACCESS,C::VIEW] as $cap)$user->givePermissionTo(Permission::findOrCreate($cap,'web'));
+            $accounts[]=['id'=>$user->id,'email'=>$user->email];
+        }
+        file_put_contents(storage_path('app/qa-rc/benchmark-accounts.json'),json_encode(['size'=>$size,'accounts'=>$accounts]));
+        echo 'Prepared bounded HTTP fixture size '.$size.'; no browser-jornada database changed.'.PHP_EOL;
+        exit;
+    }
     $payload=json_decode($request($filters)->getContent(),true,512,JSON_THROW_ON_ERROR);
     if($payload['total']!==$size||$payload['totals']['pagos_reales']!==number_format($size*50,2,'.',''))throw new RuntimeException('Benchmark fixture total mismatch.');
     foreach(['full','unchanged'] as $mode){

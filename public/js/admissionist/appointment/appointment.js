@@ -1,4 +1,11 @@
 //SCRIPT PARA LEER LOS DATOS DEL SELECT
+let legacyPatientVersion=0,legacyDoctorVersion=0,legacyServiceVersion=0,legacyHoursVersion=0;
+function invalidateLegacyQuote(){
+    ++legacyQuoteVersion;legacyQuoteReady=false;
+    for(const id of ['precio_programado','precio_programado_hidden','saldo_pendiente','saldo_pendiente_hidden']){
+        const field=document.querySelector('#appointmentModalCreate #'+id);if(field)field.value='';
+    }
+}
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDDO CITAS');
 
@@ -75,9 +82,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 //PARA BUSCAR PACIENTE FORMULARIO PACIENTE
 async function buscarPacienteCita(event) {
+    const version=++legacyPatientVersion;
+    document.querySelector('#appointmentModalCreate #patient_id').value='';
+    document.querySelector('#appointmentModalCreate #nombre_paciente').value='';
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || ''; //para desaparacer los datos sin espacio
-    console.log('NUMERO DE DOC: ', valor);
     if (!valor) return;
 
     try {
@@ -97,11 +107,12 @@ async function buscarPacienteCita(event) {
         }
 
         const data = await res.json();
-        console.log('BUSCAR PACIENTE CITA:', data);
+        if(version!==legacyPatientVersion || document.querySelector('#appointmentModalCreate #documento_paciente').value.trim()!==valor)return;
 
         if (data.message === "encontrado") {
             document.querySelector('#appointmentModalCreate #nombre_paciente').value = data.patient.nombre + ' ' + data.patient.apellido_paterno + ' ' + data.patient.apellido_materno;
             document.querySelector('#appointmentModalCreate #patient_id').value = data.patient.id;
+            calcularPrecioCita();
         }
 
     } catch (error) {
@@ -113,6 +124,10 @@ async function buscarPacienteCita(event) {
 
 //LLENAMOS LOS DOCTORES CON LA ESPECIALIDAD SELECCIONADA
 async function buscarMedicoPorEspecialidadCita(event) {
+    const version=++legacyDoctorVersion;++legacyServiceVersion;
+    document.querySelector('#appointmentModalCreate #doctor_id').replaceChildren(new Option('Seleccione',''));
+    document.querySelector('#appointmentModalCreate #service_id').replaceChildren(new Option('Seleccione',''));
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -130,7 +145,7 @@ async function buscarMedicoPorEspecialidadCita(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE DOCTORES', data);
+        if(version!==legacyDoctorVersion || document.querySelector('#appointmentModalCreate #specialty_id').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -156,6 +171,9 @@ async function buscarMedicoPorEspecialidadCita(event) {
 
 //LLENAMOS LOS SERVICIOS POR MEDICO SELECCIONADO
 async function buscarServicioPorMedicoCita(event) {
+    const version=++legacyServiceVersion;
+    document.querySelector('#appointmentModalCreate #service_id').replaceChildren(new Option('Seleccione',''));
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -173,7 +191,7 @@ async function buscarServicioPorMedicoCita(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+        if(version!==legacyServiceVersion || document.querySelector('#appointmentModalCreate #doctor_id').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -331,6 +349,7 @@ $('#formCreateAppointment').on('submit', function (e) {
 
 //PARA CARGAR HORARIOS
 async function cargarHorariosCita() {
+    const version=++legacyHoursVersion;
 
     let doctor_id = $('#appointmentModalCreate #doctor_id').val();
     let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
@@ -354,7 +373,7 @@ async function cargarHorariosCita() {
         });
 
         const data = await res.json();
-        console.log("DATOS HORARIOS DOCTOR:", data);
+        if(version!==legacyHoursVersion || $('#appointmentModalCreate #doctor_id').val()!==doctor_id || $('#appointmentModalCreate #fecha_cita').val()!==fecha_cita || $('#appointmentModalCreate #cita_doble').is(':checked')!==cita_doble)return;
         generarHorariosCita(data.slots, cita_doble);
     } catch (error) {
         console.error(error);
@@ -365,7 +384,13 @@ async function cargarHorariosCita() {
 function generarHorariosCita(slots, cita_doble) {
 
     let select = document.querySelector("#appointmentModalCreate #hora_cita");
-    select.innerHTML = '<option value="">Seleccione una hora</option>';
+    const field=select;
+    if(field.tagName==='INPUT'){
+        let list=document.getElementById('legacy-create-available-hours');
+        if(!list){list=document.createElement('datalist');list.id='legacy-create-available-hours';field.after(list);}
+        field.setAttribute('list',list.id);select=list;select.replaceChildren();
+        if(!(slots||[]).some(s=>s.inicio===field.value))field.value='';
+    }else select.innerHTML = '<option value="">Seleccione una hora</option>';
 
     (slots || []).forEach(slot => {
         const opcion = document.createElement('option');
@@ -394,5 +419,6 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 
 //FUNCION QUE SE RESTAURA LOS SELECT
 function initSelectCreate() {
-    $('#appointmentModalCreate #hora_cita').selectpicker('refresh');
+    const field=document.querySelector('#appointmentModalCreate #hora_cita');
+    if(field.tagName==='SELECT' && $.fn.selectpicker)$(field).selectpicker('refresh');
 }

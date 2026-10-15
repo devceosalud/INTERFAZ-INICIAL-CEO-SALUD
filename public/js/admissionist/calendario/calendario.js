@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar');
     // Obtener la fecha actual en formato ISO (YYYY-MM-DD)
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = calendarEl.dataset.operationalToday;
 
     window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
         initialView: 'dayGridMonth', // timeGridWeek : vista de semana

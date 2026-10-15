@@ -28,7 +28,7 @@
         {{-- CALENDARIO CITAS --}}
         <div class="col-xl-12 col-xxl-12 mt-2">
             <div class="calendar-container">
-                <div id="calendar"></div>
+                <div id="calendar" data-operational-today="{{ now(config('scheduling.operational_timezone', 'America/Lima'))->toDateString() }}"></div>
             </div>
         </div>
         {{-- CALENDARIO CITAS --}}

@@ -79,11 +79,21 @@
         <label class="agenda-field agenda-upload"><span>Comprobantes del próximo pago · máximo 5, 8 MB cada uno, 20 MB en total</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"></label>
         <div id="agenda-op-receipt-review"></div>
         <p>Adjunta capturas del mismo pago. Cada transferencia distinta se registra por separado, con su importe y operación. Los archivos se guardan con el próximo adelanto después de tu revisión; adjuntar un documento no registra dinero.</p>
+        <label class="agenda-field"><span>Tipo de documento privado</span><select id="agenda-op-document-kind"><option value="ADMINISTRATIVE">Administrativo</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option></select></label>
+        <label class="agenda-field"><span>Etiqueta del documento</span><input id="agenda-op-document-label" maxlength="120" value="Documento operativo"></label>
         <label class="agenda-field"><span>Documento operativo · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-document-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
         <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-documents-error" class="agenda-field-error" role="alert" hidden></p>
         <div id="agenda-op-documents" aria-live="polite"></div>
+        <div id="agenda-op-replacement-panel" hidden>
+            <p id="agenda-op-replacement-title"></p>
+            <label class="agenda-field"><span>Nueva versión privada · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-replacement-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+            <label class="agenda-field"><span>Motivo obligatorio del reemplazo</span><input id="agenda-op-replacement-reason" minlength="3" maxlength="500"></label>
+            <button id="agenda-op-replacement-save" type="button" class="agenda-btn">Guardar nueva versión</button>
+            <button id="agenda-op-replacement-cancel" type="button" class="agenda-btn">Cancelar reemplazo</button>
+            <p>La versión anterior y su archivo se conservan para auditoría. Esto no modifica pagos ni acredita una indicación médica.</p>
+        </div>
     </details>
 </div>

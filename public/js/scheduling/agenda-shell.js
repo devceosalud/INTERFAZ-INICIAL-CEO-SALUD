@@ -3,7 +3,7 @@
 (function (root) {
     root.addEventListener('load', function () {
         if (root.jQuery && root.jQuery.fn.selectpicker) {
-            root.jQuery('#agenda-board select, #admission-board select').selectpicker('destroy');
+            root.jQuery('#agenda-board select, #admission-board select, #schedule-workspace select, #schedule-editor select').selectpicker('destroy');
         }
     });
 }(window));

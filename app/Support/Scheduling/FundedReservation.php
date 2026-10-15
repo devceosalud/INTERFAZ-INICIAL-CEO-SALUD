@@ -11,11 +11,11 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  */
 final class FundedReservation
 {
-    public static function apply(EloquentBuilder|QueryBuilder $query, string $table): void
+    public static function apply(EloquentBuilder|QueryBuilder $query, string $table, bool $regularOnly=true): void
     {
-        $query->where($table.'.estado_agenda', AppointmentAgendaLifecycle::PENDING_CONFIRMATION)
-            ->where(fn ($q) => $q->whereNull($table.'.tipo_agendamiento')->orWhere($table.'.tipo_agendamiento', AppointmentAgendaLifecycle::REGULAR))
-            ->where(function ($money) use ($table): void {
+        $query->where($table.'.estado_agenda', AppointmentAgendaLifecycle::PENDING_CONFIRMATION);
+        if($regularOnly)$query->where(fn ($q) => $q->whereNull($table.'.tipo_agendamiento')->orWhere($table.'.tipo_agendamiento', AppointmentAgendaLifecycle::REGULAR));
+        $query->where(function ($money) use ($table): void {
                 $money->whereExists(function ($payment) use ($table): void {
                     $payment->selectRaw('1')->from('voucher_items as hold_item')
                         ->join('vouchers as hold_root','hold_root.id','=','hold_item.voucher_id')

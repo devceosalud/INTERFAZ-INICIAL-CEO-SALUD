@@ -236,7 +236,9 @@ class SchedulingMvpFoundationTest extends TestCase
 
         $this->assertSame($capabilities, array_values(array_unique($capabilities)));
         $this->assertFalse(Role::query()->where('name', 'COMERCIAL')->exists());
-        $this->assertSame(0, Permission::query()->count());
+        $this->assertSame(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage'],Permission::query()->orderBy('id')->pluck('name')->all());
+        $this->assertDatabaseCount('role_has_permissions',0);
+        $this->assertDatabaseCount('model_has_permissions',0);
     }
 
     private function createPermission(string $name): Permission

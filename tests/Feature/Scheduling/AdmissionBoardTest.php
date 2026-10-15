@@ -59,9 +59,9 @@ class AdmissionBoardTest extends TestCase
     }
     public function test_page_is_clamped_after_results_shrink_without_changing_totals():void
     {
-        for($i=0;$i<31;$i++)$this->appointment();
+        $kept=null;for($i=0;$i<31;$i++){$a=$this->appointment();$kept=$kept??$a->id;}
         $this->feed(['page'=>999])->assertOk()->assertJsonPath('page',2)->assertJsonPath('total',31)->assertJsonCount(1,'rows');
-        Appointment::where('id','>',1)->update(['estado_cita'=>'CANCELADO']);
+        Appointment::where('id','<>',$kept)->update(['estado_cita'=>'CANCELADO']);
         $this->feed(['page'=>2,'grupo'=>'por_llegar'])->assertOk()->assertJsonPath('page',1)->assertJsonPath('total',1)->assertJsonCount(1,'rows');
     }
     public function test_all_approved_groups_preserve_states_and_expose_inactive_subtypes():void

@@ -60,5 +60,12 @@ class DoctorScheduleSafetyTest extends TestCase
         $r=$this->putJson('/admissionist/doctor-schedule/update',$this->updateData(['hora_inicio_edit'=>'09:00']))->assertUnprocessable();
         $this->assertStringNotContainsString($a->patient->numero_identidad,$r->getContent());$this->assertStringNotContainsString('appointment_id',$r->getContent());
         $this->assertSame($before,$a->fresh()->getAttributes());$this->assertDatabaseCount('payments',1);$this->assertEquals(20,\App\Models\Payment::sum('monto'));$this->assertDatabaseCount('doctor_schedule_events',0);
+        $a->update(['tipo_agendamiento'=>'ADICIONAL']);$addBefore=$a->fresh()->getAttributes();
+        $this->putJson('/admissionist/doctor-schedule/update',$this->updateData(['hora_inicio_edit'=>'09:00']))->assertUnprocessable();
+        $this->assertSame($addBefore,$a->fresh()->getAttributes());$owner->givePermissionTo(Permission::findOrCreate(C::CREATE_ADDITIONAL,'web'));
+        $this->actingAs($owner)->postJson('/scheduling-mvp/agenda/appointments/'.$a->id.'/payments',['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'30','method'=>'EFECTIVO']])->assertOk();
+        $this->assertSame('CONFIRMADA',$a->fresh()->estado_agenda);$confirmed=$a->fresh()->getAttributes();$this->actingAs($this->actor);
+        $this->putJson('/admissionist/doctor-schedule/update',$this->updateData(['hora_inicio_edit'=>'09:00']))->assertUnprocessable();
+        $this->assertSame($confirmed,$a->fresh()->getAttributes());$this->assertDatabaseCount('payments',2);$this->assertEquals(50,\App\Models\Payment::sum('monto'));$this->assertDatabaseCount('doctor_schedule_events',0);
     }
 }

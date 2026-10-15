@@ -13,13 +13,15 @@ while (!file_exists($input['release'])) {
     usleep(5000);
 }
 $files=[];
+$method=$input['method']??'POST';
+if(!in_array($method,['POST','PUT','PATCH','DELETE'],true))throw new RuntimeException('QA method refused.');
 foreach($input['proof_fixtures']??[] as $name){
     if(!in_array($name,['yape.png','bcp.jpg','ambiguous.png','unreadable.png'],true))throw new RuntimeException('Fixture no permitido.');
     $files['proofs'][]=new \Illuminate\Http\UploadedFile(base_path('tests/Fixtures/receipts/'.$name),$name,null,null,true);
 }
 $request = $files
     ? \Illuminate\Http\Request::create($input['path'],'POST',['payload'=>json_encode($input['payload'])],[],$files,['HTTP_ACCEPT'=>'application/json'])
-    : \Illuminate\Http\Request::create($input['path'], 'POST', [], [], [],
+    : \Illuminate\Http\Request::create($input['path'], $method, [], [], [],
         ['HTTP_ACCEPT' => 'application/json', 'CONTENT_TYPE' => 'application/json'], json_encode($input['payload']));
 $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
 $response = $kernel->handle($request);

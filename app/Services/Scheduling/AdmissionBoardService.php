@@ -112,10 +112,20 @@ class AdmissionBoardService
         $documents = $a->documents()->whereNotNull('payment_id')->get(['id','appointment_id','payment_id','reviewed_at'])
             ->map(fn ($d) => ['id'=>$d->id,'payment_id'=>$d->payment_id,'reviewed_at'=>$d->reviewed_at?->toISOString(),
                 'download_url'=>route('scheduling.mvp.documents.download',[$a->id,$d->id])]);
+        // Appointment-bound operational files only; no clinical narrative or medical-order evidence.
+        $operationalDocuments = $actor->can(\App\Support\Scheduling\AppointmentDocumentAccess::VIEW)
+            ? $a->documents()->whereNull('payment_id')->whereIn('document_kind',\App\Support\Scheduling\AppointmentDocumentAccess::KINDS)
+                ->where(fn($q)=>$q->whereNull('purpose')->orWhere('purpose','<>','REEVALUATION_ORDER'))
+                ->whereNotIn('id',\App\Models\AppointmentReevaluationIndication::select('evidence_document_id')->whereNotNull('evidence_document_id'))
+                ->get(['id','appointment_id','document_kind','label','url','private_path'])->map(fn($d)=>[
+                    'id'=>$d->id,'kind'=>$d->document_kind,'label'=>$d->label,
+                    'url'=>$d->url?:route('scheduling.mvp.documents.download',[$a->id,$d->id])])
+            : collect();
         return ['appointment'=>$this->row($a,$positions[$a->id]),'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
-            'events'=>$events,'history'=>$history,'documents'=>$documents,'payments'=>$positions[$a->id]['payment_details'],
+            'events'=>$events,'history'=>$history,'documents'=>$documents,'operational_documents'=>$operationalDocuments,
+            'can_view_operational_documents'=>$actor->can(\App\Support\Scheduling\AppointmentDocumentAccess::VIEW),'payments'=>$positions[$a->id]['payment_details'],
             'care_actions'=>$this->careActions($a,$actor),
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];

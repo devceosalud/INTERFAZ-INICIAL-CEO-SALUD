@@ -10,9 +10,7 @@
     {{-- <link href="{{ asset('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet"> --}}
 
     <!-- STYLESHEETS CALENDAR-->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/skeleton.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/theme.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/palettes/purple.css' rel='stylesheet' />
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
 
     <link href="{{ asset('css/tesseract.css') }}" rel="stylesheet">
 @endsection
@@ -83,9 +81,8 @@
             <script src="{{ asset('assets/js/plugins-init/fullcalendar-init.js') }}"></script> --}}
 
         <!-- STANDARD JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/all/global.js"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
         <!-- THEME JS -->
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.1/themes/monarch/global.js"></script>
 
         <!-- Datatable -->
         <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
