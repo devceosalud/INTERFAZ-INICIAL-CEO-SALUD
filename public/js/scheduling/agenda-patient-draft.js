@@ -178,7 +178,8 @@
                 next[field] = value;
             }
         });
-        next.message = 'Datos encontrados en RENIEC. Revise y complete antes de continuar.';
+        next.message = typeof response.message === 'string' && response.message.trim()
+            ? response.message : 'Datos encontrados en la consulta de DNI. Revise y complete antes de continuar.';
 
         return next;
     }

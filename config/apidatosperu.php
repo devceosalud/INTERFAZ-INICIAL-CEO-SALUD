@@ -4,6 +4,9 @@ return [
 
     'reniec_provider' => env('RENIEC_PROVIDER', 'aqpfact'),
 
+    // Optional override only for the Agenda patient form; other lookups retain RENIEC_PROVIDER.
+    'agenda_dni_provider' => env('AGENDA_DNI_PROVIDER'),
+
     'factiliza' => [
         'base_url' => env('FACTILIZA_BASE_URL', 'https://api.factiliza.com/v1'),
         'token' => env('FACTILIZA_TOKEN'),
