@@ -26,7 +26,8 @@ class InsaludReniecProviderTest extends TestCase
     {
         parent::setUp();
         config()->set('scheduling.enabled', true);
-        config()->set('apidatosperu.reniec_provider', 'insalud');
+        config()->set('apidatosperu.reniec_provider', 'aqpfact');
+        config()->set('apidatosperu.agenda_dni_provider', 'insalud');
         Http::preventStrayRequests();
     }
 
