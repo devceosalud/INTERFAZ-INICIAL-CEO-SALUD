@@ -1,0 +1,267 @@
+{
+  "stage": "permissions-schedules",
+  "started_at": "2026-10-15T14:16:23.673Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Comercial sin CREATE: interfaz bloqueada y petición directa 403, cero dinero",
+      "result": "PASS",
+      "ms": 623
+    },
+    {
+      "name": "Horarios: comercial sin capacidad recibe 403 en crear, editar e inactivar",
+      "result": "PASS",
+      "ms": 575
+    },
+    {
+      "name": "ADMIN concede CREATE, UPDATE y gestión de horarios mediante editor existente",
+      "result": "PASS",
+      "ms": 1327
+    },
+    {
+      "name": "Sesión comercial existente recibe capacidades nuevas al refrescar sin evadir validaciones",
+      "result": "PASS",
+      "ms": 1871
+    },
+    {
+      "name": "Comercial crea horario desde formulario real con sede, médico y cadencia",
+      "result": "PASS",
+      "ms": 4233
+    },
+    {
+      "name": "Calendarios de horarios Día, Semana y Mes representan el bloque persistido",
+      "result": "PASS",
+      "ms": 121
+    },
+    {
+      "name": "ADMIN revoca horarios y CREATE; misma sesión rechazada en backend",
+      "result": "PASS",
+      "ms": 2079
+    },
+    {
+      "name": "ADMIN restituye únicamente CREATE para continuar la jornada",
+      "result": "PASS",
+      "ms": 1194
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/admissionist/doctor-schedule/update",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/delete",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 422
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/overlap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/admissionist/doctor-schedule/store",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:16:42.029Z"
+}

@@ -27,6 +27,7 @@ class AppointmentReaderPrivacyTest extends TestCase
         $this->owner = $this->agendaReader();
         $this->other = $this->agendaReader();
         $this->catalog = $this->createAppointmentCatalog();
+        $this->catalog['rate']->update(['nombre' => 'TARIFA ESTANDAR', 'tipo_tarifa' => 'MONTO_FIJO']);
         $this->catalog['schedule']->update([
             'fecha_cita' => now()->toDateString(), 'dia_semana' => now()->dayOfWeekIso,
         ]);
@@ -163,9 +164,10 @@ class AppointmentReaderPrivacyTest extends TestCase
     public function test_hidden_and_missing_appointment_ids_return_the_same_404(string $uri): void
     {
         $writer = $this->agendaReader('ADMISION');
+        foreach (['appointment.create', 'appointment.update'] as $p) $writer->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($p, 'web'));
         $hidden = $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => Lifecycle::PENDING_CONFIRMATION]);
         $payload = [
-            'appointment_id' => $hidden->id, 'estado_cita' => 'CONFIRMADO',
+            'appointment_id' => $hidden->id, 'estado_cita' => 'PROGRAMADO',
             'doctor_id_edit' => $this->catalog['doctor']->id,
             'service_id_edit' => $this->catalog['doctorService']->id,
             'fecha_cita_edit' => now()->toDateString(), 'hora_cita_edit' => '09:00',
@@ -189,13 +191,14 @@ class AppointmentReaderPrivacyTest extends TestCase
     public function test_private_rows_do_not_disclose_themselves_through_the_duplicate_message(): void
     {
         $writer = $this->agendaReader('ADMISION');
+        foreach (['appointment.create', 'appointment.update'] as $p) $writer->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($p, 'web'));
         $patient = $this->createPatient($this->owner);
         $payload = ['patient_id' => $patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'fecha_cita' => now()->toDateString()];
-        $before = $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertOk()->json();
+        $before = $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->json();
         $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => Lifecycle::PENDING_CONFIRMATION], $patient);
-        $this->assertSame($before, $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertOk()->json());
+        $this->assertSame($before, $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->json());
         $this->lifecycleAppointment($this->owner, $this->catalog, [], $patient);
-        $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertOk()->assertJsonPath('code', 2);
+        $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->assertJsonPath('code', 0);
     }
 
     public function test_schedule_impact_filters_before_count_truncation_ids_and_messages(): void
@@ -214,7 +217,7 @@ class AppointmentReaderPrivacyTest extends TestCase
         $this->assertEqualsCanonicalizing([$legacy->id, $confirmed->id], collect($response->json('appointments'))->pluck('appointment_id')->all());
     }
 
-    public function test_price_and_type_for_the_same_economic_history_do_not_depend_on_the_reader(): void
+    public function test_shared_history_prices_match_but_private_attendance_is_not_disclosed(): void
     {
         foreach ([Lifecycle::PENDING_CONFIRMATION, Lifecycle::LEGACY, Lifecycle::CONFIRMED] as $state) {
             $patient = $this->createPatient($this->owner, [
@@ -225,8 +228,10 @@ class AppointmentReaderPrivacyTest extends TestCase
             $before = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->json();
             $this->assertSame($before, $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json());
             $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => $state, 'estado_cita' => 'ATENDIDO'], $patient);
-            $after = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->assertJsonPath('tipo', 'RECONSULTA')->json();
-            $this->assertSame($after, $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json());
+            $after = $this->actingAs($this->owner)->postJson('/api/appointment/calculated', $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA')->json();
+            $otherQuote = $this->actingAs($this->other)->postJson('/api/appointment/calculated', $payload)->assertOk()->json();
+            $this->assertSame($after, $otherQuote);
+            $this->assertSame($before, $after);
         }
     }
 

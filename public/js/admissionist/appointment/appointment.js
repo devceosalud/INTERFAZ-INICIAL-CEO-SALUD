@@ -1,4 +1,11 @@
 //SCRIPT PARA LEER LOS DATOS DEL SELECT
+let legacyPatientVersion=0,legacyDoctorVersion=0,legacyServiceVersion=0,legacyHoursVersion=0;
+function invalidateLegacyQuote(){
+    ++legacyQuoteVersion;legacyQuoteReady=false;
+    for(const id of ['precio_programado','precio_programado_hidden','saldo_pendiente','saldo_pendiente_hidden']){
+        const field=document.querySelector('#appointmentModalCreate #'+id);if(field)field.value='';
+    }
+}
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDDO CITAS');
 
@@ -9,6 +16,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const service_id = document.querySelector('#appointmentModalCreate #service_id');
     const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id');
     const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado');
+
+    $('#formCreateAppointment select').on('change', function () {
+        if ($.fn.selectpicker) { $(this).selectpicker('refresh'); }
+    });
 
     //PARA LLENAR DINAMICAMENTE EL PRECIO
     let precio_programado = document.querySelector('#precio_programado');
@@ -63,6 +74,7 @@ window.addEventListener('DOMContentLoaded', () => {
     //REFREZCAR SI HAY CAMBIOS EN LA FECHA
     $('#appointmentModalCreate #fecha_cita').on('change', function () {
         cargarHorariosCita();
+        calcularPrecioCita();
     })
 
 });
@@ -70,9 +82,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 //PARA BUSCAR PACIENTE FORMULARIO PACIENTE
 async function buscarPacienteCita(event) {
+    const version=++legacyPatientVersion;
+    document.querySelector('#appointmentModalCreate #patient_id').value='';
+    document.querySelector('#appointmentModalCreate #nombre_paciente').value='';
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || ''; //para desaparacer los datos sin espacio
-    console.log('NUMERO DE DOC: ', valor);
     if (!valor) return;
 
     try {
@@ -92,11 +107,12 @@ async function buscarPacienteCita(event) {
         }
 
         const data = await res.json();
-        console.log('BUSCAR PACIENTE CITA:', data);
+        if(version!==legacyPatientVersion || document.querySelector('#appointmentModalCreate #documento_paciente').value.trim()!==valor)return;
 
         if (data.message === "encontrado") {
             document.querySelector('#appointmentModalCreate #nombre_paciente').value = data.patient.nombre + ' ' + data.patient.apellido_paterno + ' ' + data.patient.apellido_materno;
             document.querySelector('#appointmentModalCreate #patient_id').value = data.patient.id;
+            calcularPrecioCita();
         }
 
     } catch (error) {
@@ -108,6 +124,10 @@ async function buscarPacienteCita(event) {
 
 //LLENAMOS LOS DOCTORES CON LA ESPECIALIDAD SELECCIONADA
 async function buscarMedicoPorEspecialidadCita(event) {
+    const version=++legacyDoctorVersion;++legacyServiceVersion;
+    document.querySelector('#appointmentModalCreate #doctor_id').replaceChildren(new Option('Seleccione',''));
+    document.querySelector('#appointmentModalCreate #service_id').replaceChildren(new Option('Seleccione',''));
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -125,7 +145,7 @@ async function buscarMedicoPorEspecialidadCita(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE DOCTORES', data);
+        if(version!==legacyDoctorVersion || document.querySelector('#appointmentModalCreate #specialty_id').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -151,6 +171,9 @@ async function buscarMedicoPorEspecialidadCita(event) {
 
 //LLENAMOS LOS SERVICIOS POR MEDICO SELECCIONADO
 async function buscarServicioPorMedicoCita(event) {
+    const version=++legacyServiceVersion;
+    document.querySelector('#appointmentModalCreate #service_id').replaceChildren(new Option('Seleccione',''));
+    invalidateLegacyQuote();
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -168,7 +191,7 @@ async function buscarServicioPorMedicoCita(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+        if(version!==legacyServiceVersion || document.querySelector('#appointmentModalCreate #doctor_id').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -197,61 +220,48 @@ async function buscarServicioPorMedicoCita(event) {
 
 
 //PARA CALCULAR EL PRECIO
+let legacyQuoteVersion = 0, legacyQuoteReady = false;
 async function calcularPrecioCita() {
-
-    //ACCEDIENDO A LOS DATOS QUE SE ELIGIO PARA CALCULAR EL PRECIO PARA LA API
-    const patient_id = document.querySelector('#appointmentModalCreate #patient_id').value;
-    const service_id = document.querySelector('#appointmentModalCreate #service_id').value; //id de  pero de la tabla DoctorServices
-    const additional_rate_id = document.querySelector('#appointmentModalCreate #additional_rate_id').value;
-    const es_exonerado = document.querySelector('#appointmentModalCreate #es_exonerado').checked;
-
-    if (!service_id || !patient_id) {
-        return;
-    }
-
+    const version = ++legacyQuoteVersion, modal = document.getElementById('appointmentModalCreate');
+    const field = id => modal.querySelector('#' + id);
+    const patient_id=field('patient_id').value, service_id=field('service_id').value;
+    legacyQuoteReady=false;
+    const status=field('legacy-quote-status');
+    if(status) status.textContent='Consultando precio neto vigente…';
+    if(!patient_id || !service_id) return;
+    const data={patient_id,service_id,additional_rate_id:field('additional_rate_id').value,
+        fecha_cita:field('fecha_cita').value || undefined,es_exonerado:field('es_exonerado').checked};
+    if(field('reevaluation_indication_id')?.value) data.reevaluation_indication_id=Number(field('reevaluation_indication_id').value);
+    if(field('referral_attested')?.checked) data.referral={origin:field('referral_origin').value,attested:true};
+    if(field('discount_type')?.value) data.discount={type:field('discount_type').value,value:field('discount_value').value || '0',reason:field('discount_reason').value || null};
     try {
-        const res = await fetch(`${window.location.origin}/api/appointment/calculated`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                patient_id,
-                service_id,
-                additional_rate_id,
-                es_exonerado
-            })
-        });
-
-        if (!res.ok) {
-            const textoError = await res.text();
-            throw new Error(`Servidor respondió con código ${res.status}. Revisa el log de Laravel.`);
-        }
-
-        const data = await res.json();
-        console.log('Data Precio:', data);
-
-        //ASIGNAMOS LOS DATOS YA CALCULADOS  
-        document.querySelector('#precio_programado').value = data.precio_programado;
-        document.querySelector('#precio_programado_hidden').value = data.precio_programado;
-        if (data.tipo === 'EXONERADO') {
-            document.querySelector('#total_pagado').value = data.total_pagado;
-        }
-
-        //FUNCION CALCULAR SALDO FINAL
+        const res=await fetch(window.location.origin+'/api/appointment/calculated',{method:'POST',
+            headers:{'Content-Type':'application/json',Accept:'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content || ''},
+            body:JSON.stringify(data)});
+        const result=await res.json();
+        if(version!==legacyQuoteVersion)return;
+        if(!res.ok)throw Error(result.message || 'No se pudo cotizar.');
+        field('precio_programado').value=result.precio_programado;
+        field('precio_programado_hidden').value=result.precio_programado;
+        legacyQuoteReady=true;
+        if(status)status.textContent='Precio neto vigente: S/ '+Number(result.precio_programado).toFixed(2)+'. Adelanto mínimo 50%.';
         calcularSaldoCita();
-
-    } catch (error) {
-        console.error('Error:', error);
-        console.error('Error al consultar paciente: ' + error.message);
+    } catch(error) {
+        if(version!==legacyQuoteVersion)return;
+        legacyQuoteReady=false;if(status)status.textContent=error.message;
     }
 }
+$('#reevaluation_indication_id,#referral_origin').on('input',calcularPrecioCita);
+$('#referral_attested').on('change',function(){ $('#referral_origin').prop('disabled',!this.checked);calcularPrecioCita(); });
+$('#discount_value').on('input',calcularPrecioCita);
+$('#discount_type').on('change',calcularPrecioCita);
+$('#fecha_cita').on('change',calcularPrecioCita);
 
 //PARA CALCULAR EL SALDO
 function calcularSaldoCita() {
     let precio = parseFloat(document.querySelector('#precio_programado_hidden').value) || 0;
     let pagado = parseFloat(document.querySelector('#total_pagado').value) || 0;
-    let saldo = precio - pagado;
+    let saldo = document.querySelector('#appointmentModalCreate #es_exonerado').checked ? 0 : precio - pagado;
     if (saldo < 0) {
         saldo = 0;
     }
@@ -264,12 +274,18 @@ function calcularSaldoCita() {
 $('#formCreateAppointment').on('submit', function (e) {
     e.preventDefault();
 
+    if (!legacyQuoteReady) { calcularPrecioCita(); notificacion('warning','Cotización','Espera el precio vigente antes de guardar.',3000,false,false); return; }
     let form = this;
+    const body=new FormData(form);
+    try {
+        if(window.LegacyReceiptReview)window.LegacyReceiptReview.append(body);
+        else if(document.getElementById('fileInput')?.files.length)throw new Error('Actualiza el formulario para revisar los comprobantes antes de registrar.');
+    }catch(error){notificacion('warning','Comprobantes',error.message,4000,false,false);return;}
 
     $.ajax({
         url: $(form).attr('action'),
         method: $(form).attr('method'),
-        data: new FormData(form),
+        data: body,
         processData: false,
         contentType: false,
         dataType: 'json',
@@ -281,7 +297,7 @@ $('#formCreateAppointment').on('submit', function (e) {
 
         success: function (response) {
             let role = document.querySelector('#appointmentModalCreate #rol_user_redirection').value; //VARIABLE ROL DEL USUARIO PARA REDIRECCION
-            console.log('CITA CREADA:', response);
+
 
             if (response.code == 0) {
                 $.each(response.error, function (prefix, val) {
@@ -297,12 +313,14 @@ $('#formCreateAppointment').on('submit', function (e) {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    if (role == 'ADMISION') {
+                    if (role == 'ADMISION' || role == 'COMERCIAL') {
                         window.location.href = "/admissionist/appointment";
                     } else if (role == 'RECEPCION') {
                         window.location.href = "/receptionist/appointment";
                     } else if(role == 'ADMINISTRADOR') {
                         window.location.href = "/admin/appointment";
+                    } else {
+                        window.location.href = "/admissionist/appointment";
                     }
                 });
 
@@ -331,6 +349,7 @@ $('#formCreateAppointment').on('submit', function (e) {
 
 //PARA CARGAR HORARIOS
 async function cargarHorariosCita() {
+    const version=++legacyHoursVersion;
 
     let doctor_id = $('#appointmentModalCreate #doctor_id').val();
     let fecha_cita = $('#appointmentModalCreate #fecha_cita').val();
@@ -354,7 +373,7 @@ async function cargarHorariosCita() {
         });
 
         const data = await res.json();
-        console.log("DATOS HORARIOS DOCTOR:", data);
+        if(version!==legacyHoursVersion || $('#appointmentModalCreate #doctor_id').val()!==doctor_id || $('#appointmentModalCreate #fecha_cita').val()!==fecha_cita || $('#appointmentModalCreate #cita_doble').is(':checked')!==cita_doble)return;
         generarHorariosCita(data.slots, cita_doble);
     } catch (error) {
         console.error(error);
@@ -365,7 +384,13 @@ async function cargarHorariosCita() {
 function generarHorariosCita(slots, cita_doble) {
 
     let select = document.querySelector("#appointmentModalCreate #hora_cita");
-    select.innerHTML = '<option value="">Seleccione una hora</option>';
+    const field=select;
+    if(field.tagName==='INPUT'){
+        let list=document.getElementById('legacy-create-available-hours');
+        if(!list){list=document.createElement('datalist');list.id='legacy-create-available-hours';field.after(list);}
+        field.setAttribute('list',list.id);select=list;select.replaceChildren();
+        if(!(slots||[]).some(s=>s.inicio===field.value))field.value='';
+    }else select.innerHTML = '<option value="">Seleccione una hora</option>';
 
     (slots || []).forEach(slot => {
         const opcion = document.createElement('option');
@@ -394,5 +419,6 @@ function notificacion(icon, title, text, timer, showConfirmButton, recargar) {
 
 //FUNCION QUE SE RESTAURA LOS SELECT
 function initSelectCreate() {
-    $('#appointmentModalCreate #hora_cita').selectpicker('refresh');
+    const field=document.querySelector('#appointmentModalCreate #hora_cita');
+    if(field.tagName==='SELECT' && $.fn.selectpicker)$(field).selectpicker('refresh');
 }

@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::middleware(['internal-api', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])->group(function () {
+Route::middleware(['internal-api', 'mvp-operational'])->group(function () {
     Route::post('/patient/show', [PatientController::class, 'show'])->name('api.patient.show');
     Route::post('/patient/show/search', [PatientController::class, 'search'])->name('api.patient.search');
 

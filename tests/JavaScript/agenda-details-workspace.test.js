@@ -49,7 +49,7 @@ test('guardar contacto y notas usa PATCH contextual, conserva vacíos y nunca cr
     assert.equal(writes[0].url, '/patients/2/agenda-contact');
     assert.deepEqual(JSON.parse(writes[0].options.body), { telefono: '999000009', appointment_id: 7 });
     assert.equal(writes[1].url, '/appointments/7/notes');
-    assert.deepEqual(JSON.parse(writes[1].options.body), { motivo_consulta: 'Control' });
+    assert.deepEqual(JSON.parse(writes[1].options.body), { motivo_consulta: 'Control', is_postoperative: false });
     assert.equal(qa.field('note').value, 'Seguimiento');
     assert.equal(qa.field('patient-status').textContent, 'Datos del paciente guardados.');
     assert.equal(qa.field('notes-status').textContent, 'Motivo y observación guardados.');

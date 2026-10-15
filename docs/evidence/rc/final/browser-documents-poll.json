@@ -1,0 +1,197 @@
+{
+  "stage": "documents-poll",
+  "started_at": "2026-10-15T14:25:53.510Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Documento subido por Comercial aparece en el detalle de Nicole sin recargar ni cambiar filas",
+      "result": "PASS",
+      "ms": 1365
+    },
+    {
+      "name": "Versión reemplazada actualiza el enlace vigente mediante sondeo",
+      "result": "PASS",
+      "ms": 5703
+    },
+    {
+      "name": "Revocar VIEW retira documentos del panel abierto con la siguiente revalidación autorizada",
+      "result": "PASS",
+      "ms": 6801
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/economy",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents/7/replace",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/2",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/2",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:26:14.410Z"
+}

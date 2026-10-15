@@ -1,0 +1,142 @@
+{
+  "stage": "mobile",
+  "started_at": "2026-10-15T14:19:15.062Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Nicole móvil: viewport CSS 390 y navegación real sin desbordar el documento",
+      "result": "PASS",
+      "ms": 2084
+    },
+    {
+      "name": "Agenda móvil: viewport CSS 390 y navegación real sin desbordar el documento",
+      "result": "PASS",
+      "ms": 3991
+    },
+    {
+      "name": "Horarios móvil: viewport CSS 390 y navegación real sin desbordar el documento",
+      "result": "PASS",
+      "ms": 1753
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/admission/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/availability",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/admission/appointments/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admissionist/doctor-schedule/calendar",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:19:23.024Z"
+}

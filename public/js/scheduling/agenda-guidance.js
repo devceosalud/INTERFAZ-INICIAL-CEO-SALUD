@@ -6,9 +6,9 @@
     'use strict';
 
     const copy = {
-        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada.',
+        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.',
         insufficientAdvance: 'Para confirmar registra al menos el 50%. Si aún no pagó, usa Guardar reserva.',
-        reserveSaved: 'Reserva guardada. Pendiente de adelanto.',
+        reserveSaved: 'Reserva guardada. Pendiente de confirmación.',
         reserveSavedHere: 'Reserva guardada para esta hora.',
         appointmentSaved: 'Cita confirmada.',
         additionalSaved: 'Cita adicional creada.',
@@ -41,7 +41,7 @@
         permissionWithdraw: 'No tienes permiso para registrar el retiro.',
         completeChart: 'Completa los datos del paciente. Luego puedes volver a Agenda.',
         resolveNote: 'Indica qué ocurrió: nueva hora, no contesta, no desea reprogramar…',
-        legendPrivate: 'Solo la ve su responsable y no ocupa el horario.',
+        legendPrivate: 'Pendiente de confirmación. Con adelanto o crédito protege el horario; visibilidad según permisos.',
         legendAdditional: 'Paciente extra en una hora que ya tiene una cita regular.',
         legendOffHours: 'Atención excepcional fuera del horario configurado del médico.',
         miniCalendar: 'El color indica cuánto del horario regular ya está confirmado con adelantos.',
@@ -101,6 +101,9 @@
         }
         if (/https|links deben|enlace/i.test(text)) {
             return { domain: 'documents', text: copy.linkInvalid, focus: false };
+        }
+        if (/revisi[oó]n humana|revisa todos los comprobantes|comprobante ya fue registrado|conjunto de comprobantes|m[aá]ximo 5 comprobantes|revisi[oó]n de comprobantes/i.test(text)) {
+            return { domain: 'documents', text: text, focus: false };
         }
         if (/jpg|png|pdf|8\s*mb|mime|archivo|comprobante/i.test(text)) {
             return { domain: 'documents', text: copy.fileInvalid, focus: false };

@@ -14,10 +14,12 @@
         <p id="agenda-op-patient-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-patient-error" class="agenda-field-error" role="alert" hidden></p>
     </details>
+    <label><input id="agenda-op-double" type="checkbox"> Cita extendida · dos intervalos consecutivos, una sola consulta</label>
     <details id="agenda-op-notes-panel">
         <summary>Motivo y observación · opcional</summary>
         <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label class="agenda-field"><span>Observación operativa</span><textarea id="agenda-op-note" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
+        <label><input id="agenda-op-postoperative" type="checkbox"> Cita postoperatoria · no implica gratuidad</label>
         <button id="agenda-op-save-notes" class="agenda-btn" type="button" hidden>Guardar motivo y observación</button>
         <small id="agenda-op-notes-tip">Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.</small>
         <p id="agenda-op-notes-status" class="agenda-action-notice" role="status" hidden></p>
@@ -26,7 +28,20 @@
     <details id="agenda-op-payment-panel">
         <summary>Registrar adelanto</summary>
         <div class="agenda-patient-form-grid">
-            <label class="agenda-field"><span>Precio de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
+            <label class="agenda-field"><span>N.º de indicación médica acreditada · opcional</span><input id="agenda-op-indication" class="agenda-field__input" type="number" min="1" step="1"><small>Sin una indicación registrada, se cotiza consulta normal. La indicación autoriza una sola cita.</small></label>
+            <label class="agenda-field"><span><input id="agenda-op-referred" type="checkbox"> Referido acreditado del Dr. Julio Quiroz</span><input id="agenda-op-referral-origin" class="agenda-field__input" maxlength="255" placeholder="Origen verificable del referido"><small>Solo Traumatología y Pie Diabético. Registrar el origen es obligatorio.</small></label>
+        </div>
+        <label class="agenda-field"><span>Tarifa</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Tarifa estándar</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
+        <div class="agenda-patient-form-grid">
+            <label class="agenda-field"><span>Descuento opcional</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
+            <label class="agenda-field"><span>Valor del descuento</span><input id="agenda-op-discount-value" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canCreateAppointments)></label>
+            <label class="agenda-field"><span>Referencia del descuento · opcional</span><input id="agenda-op-discount-reason" class="agenda-field__input" maxlength="500" @disabled(!$canCreateAppointments)></label>
+            <label class="agenda-field"><span>Precio antes de descuento</span><input id="agenda-op-catalog-price" class="agenda-field__input" readonly value="0.00"></label>
+        </div>
+        <small>El descuento se guarda con tu usuario. El adelanto mínimo es el 50% del precio neto. Una gratuidad discrecional requiere exoneración.</small>
+        <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
+        <div class="agenda-patient-form-grid">
+            <label class="agenda-field"><span>Precio neto de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Pagado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Adelanto</span><input id="agenda-op-amount" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canSubmitPayment)></label>
             <label class="agenda-field"><span>Saldo pendiente</span><input id="agenda-op-balance" class="agenda-field__input" value="0.00" readonly></label>
@@ -35,22 +50,50 @@
             <label class="agenda-field"><span>Banco / billetera</span><input id="agenda-op-origin" class="agenda-field__input" maxlength="120" placeholder="BCP, BBVA…" @disabled(!$canSubmitPayment)></label>
             <label class="agenda-field"><span>Autorizado por</span><input id="agenda-op-authorized" class="agenda-field__input" maxlength="255" @disabled(!$canAuthorize)></label>
         </div>
+        <label class="agenda-field"><span>Motivo de exoneración · obligatorio al exonerar</span><textarea id="agenda-op-exemption-reason" class="agenda-field__input" rows="2" maxlength="2000" @disabled(!$canWaive)></textarea></label>
         <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
-        <small>La autorización no registra dinero. Confirmar una cita regular exige al menos 50% de adelanto real, salvo exoneración expresamente autorizada.</small>
+        <small>La autorización no registra dinero. Confirmar una cita regular, adicional o fuera de horario exige al menos 50% de adelanto real, salvo exoneración expresamente autorizada.</small>
         <p>En una cita nueva, Guardar reserva guarda también el adelanto ingresado si tienes permiso, sin confirmar el horario. Confirmar cita registra el adelanto ingresado y valida el requisito financiero. En una reserva existente, primero registra el adelanto y luego confirma.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
         @unless($canSubmitPayment)<p>No tienes permiso para registrar adelantos (appointment.payment.submit). Con appointment.create puedes guardar una reserva sin pago. Solicita revisión al administrador y a Caja.</p>@endunless
         <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
         <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
         <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
+        <button id="agenda-op-convert-additional" class="agenda-btn" type="button" hidden>Resolver como ADICIONAL</button>
+        <p id="agenda-op-conversion-reason" class="agenda-guidance" hidden></p>
+    </details>
+    <details id="agenda-op-indication-record-panel" hidden>
+        <summary>Registrar indicación escrita del médico tratante</summary>
+        <p>La indicación pertenece al médico de esta atención realizada. Sube su orden escrita en esta operación o selecciona evidencia ya privada; no se admite evidencia verbal ni una solicitud del paciente.</p>
+        <label class="agenda-field"><span>Subir evidencia privada · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-indication-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+        <label class="agenda-field"><span>O usar documento privado de esta cita</span><select id="agenda-op-indication-document" class="agenda-field__input"></select></label>
+        <label class="agenda-field"><span>Tipo de evidencia</span><select id="agenda-op-indication-evidence" class="agenda-field__input"><option value="WRITTEN_ORDER">Orden escrita</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option><option value="AUTHENTICATED_DOCTOR_RECORD">Registro autenticado del médico</option></select></label>
+        <label class="agenda-field"><span>Referencia operativa de la indicación · folio / número, sin diagnóstico</span><input id="agenda-op-indication-reference" class="agenda-field__input" maxlength="120"></label>
+        <label class="agenda-field"><span>Fecha de la indicación</span><input id="agenda-op-indication-date" class="agenda-field__input" type="date"></label>
+        <label><input id="agenda-op-indication-attested" type="checkbox"> Acredito que el documento contiene la indicación del médico tratante.</label>
+        <button id="agenda-op-record-indication" class="agenda-btn" type="button">Registrar indicación</button>
+        <p id="agenda-op-indication-record-message" role="status"></p>
     </details>
     <details id="agenda-op-documents-panel">
         <summary>Comprobantes y documentos</summary>
-        <label class="agenda-field agenda-upload"><span>+ Subir comprobante · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-proof" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+        <label class="agenda-field agenda-upload"><span>Comprobantes del próximo pago · máximo 5, 8 MB cada uno, 20 MB en total</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"></label>
+        <div id="agenda-op-receipt-review"></div>
+        <p>Adjunta capturas del mismo pago. Cada transferencia distinta se registra por separado, con su importe y operación. Los archivos se guardan con el próximo adelanto después de tu revisión; adjuntar un documento no registra dinero.</p>
+        <label class="agenda-field"><span>Tipo de documento privado</span><select id="agenda-op-document-kind"><option value="ADMINISTRATIVE">Administrativo</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option></select></label>
+        <label class="agenda-field"><span>Etiqueta del documento</span><input id="agenda-op-document-label" maxlength="120" value="Documento operativo"></label>
+        <label class="agenda-field"><span>Documento operativo · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-document-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
         <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-documents-error" class="agenda-field-error" role="alert" hidden></p>
         <div id="agenda-op-documents" aria-live="polite"></div>
+        <div id="agenda-op-replacement-panel" hidden>
+            <p id="agenda-op-replacement-title"></p>
+            <label class="agenda-field"><span>Nueva versión privada · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-replacement-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
+            <label class="agenda-field"><span>Motivo obligatorio del reemplazo</span><input id="agenda-op-replacement-reason" minlength="3" maxlength="500"></label>
+            <button id="agenda-op-replacement-save" type="button" class="agenda-btn">Guardar nueva versión</button>
+            <button id="agenda-op-replacement-cancel" type="button" class="agenda-btn">Cancelar reemplazo</button>
+            <p>La versión anterior y su archivo se conservan para auditoría. Esto no modifica pagos ni acredita una indicación médica.</p>
+        </div>
     </details>
 </div>

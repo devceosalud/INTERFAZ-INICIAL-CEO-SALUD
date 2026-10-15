@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\AdditionalRate;
+namespace App\Http\Controllers\Api\AdditionalRate;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdditionalRate;

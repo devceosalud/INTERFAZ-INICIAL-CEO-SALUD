@@ -8,6 +8,7 @@ use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\AgendaRange;
 use App\Support\Scheduling\AppointmentOccupancy;
+use App\Support\Scheduling\TimeRange;
 use App\Support\Scheduling\AppointmentAgendaLifecycle;
 use App\Support\Scheduling\AvailabilitySlot;
 use App\Support\Scheduling\DayAvailability;
@@ -84,7 +85,8 @@ class AgendaBoardPresenter
                 $professionals,
                 $range,
                 $compareProfessionals,
-                $appointments
+                $appointments,
+                $appointments->isEmpty() ? collect() : $appointments->whereIn('id',Appointment::whereIn('id',$appointments->pluck('id'))->occupyingInterval()->pluck('id'))
             ),
             'leyenda' => AgendaLegend::ordered(),
             'resumen' => $this->totals($professionals->pluck('resumen')),
@@ -183,7 +185,8 @@ class AgendaBoardPresenter
         Collection $professionals,
         AgendaRange $range,
         bool $comparing,
-        Collection $appointments
+        Collection $appointments,
+        Collection $visibleOccupants
     ): array {
         $events = collect();
 
@@ -200,6 +203,14 @@ class AgendaBoardPresenter
                         // occupied cells when the underlying block advances every 15 minutes.
                         if ($slot['estado'] === AvailabilitySlot::STATUS_AVAILABLE) {
                             $events->push($this->slotEvent($professional, $day, $slot, $comparing));
+                        } else {
+                            $slotRange=new TimeRange(Carbon::parse($day['fecha'].' '.$slot['inicio']),Carbon::parse($day['fecha'].' '.$slot['fin']));
+                            $represented=$visibleOccupants->contains(function ($a) use ($professional,$day,$slotRange): bool {
+                                if ((int)$a->doctor_id!==(int)$professional['id'] || substr($a->fecha_cita,0,10)!==$day['fecha']) return false;
+                                $start=Carbon::parse($day['fecha'].' '.$a->hora_cita);
+                                return $slotRange->overlaps(TimeRange::fromMinutes($start,$this->appointmentMinutes($a,$professional,$day['fecha'],substr($a->hora_cita,0,5))));
+                            });
+                            if (!$represented) $events->push($this->slotEvent($professional,$day,$slot,$comparing));
                         }
                     }
 
@@ -230,7 +241,7 @@ class AgendaBoardPresenter
      */
     protected function slotEvent(array $professional, array $day, array $slot, bool $comparing): array
     {
-        $legend = AgendaLegend::of($slot['leyenda']);
+        $legend = AgendaLegend::of($slot['estado']===AvailabilitySlot::STATUS_AVAILABLE ? $slot['leyenda'] : AgendaLegend::BUSY);
         $prefix = $comparing ? $professional['nombre'].' · ' : '';
 
         return [
@@ -255,7 +266,7 @@ class AgendaBoardPresenter
                 'estado' => $slot['estado'],
                 'site_id' => $slot['site_id'],
                 'seleccionable' => $slot['estado'] === AvailabilitySlot::STATUS_AVAILABLE,
-                'tipo_contexto' => 'slot_libre',
+                'tipo_contexto' => $slot['estado']===AvailabilitySlot::STATUS_AVAILABLE ? 'slot_libre' : 'slot_ocupado',
                 'appointment_id' => null,
                 'patient_id' => null,
                 'paciente' => null,

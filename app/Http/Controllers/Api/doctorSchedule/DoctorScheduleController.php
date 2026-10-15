@@ -48,7 +48,7 @@ class DoctorScheduleController extends Controller
         } else {
             return response()->json([
                 'message' => 'encontrado',
-                'doctor_schedule' => $doctor_schedule
+                'doctor_schedule' => $doctor_schedule->toArray()+['expected_version'=>\App\Services\Scheduling\DoctorScheduleMutation::version($doctor_schedule)]
             ], 200);
         }
     }

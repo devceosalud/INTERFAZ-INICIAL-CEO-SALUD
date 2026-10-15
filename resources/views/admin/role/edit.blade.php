@@ -69,7 +69,7 @@
                                 @endif
 
                                 <div class="col-lg-12 table-responsive mb-5">
-                                    {!! Form::model($role, ['route' => ['admin.permissions.update', $role], 'method' => 'put']) !!}
+                                    {!! Form::model($role, ['route' => ['admin.permissions.update', $role], 'method' => 'put', 'onsubmit' => "return confirm('¿Confirmar la asignación o retirada de los permisos seleccionados?');"]) !!}
 
                                     @include('admin.role.partials.form')
 

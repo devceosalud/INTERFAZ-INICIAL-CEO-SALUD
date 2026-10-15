@@ -2103,9 +2103,11 @@ body.agenda-modal-open {
 .agenda-kpis .agenda-help { margin-left: 1px; }
 .agenda-op-workspace-host { min-width: 0; }
 .agenda-document-row { display: flex; flex-wrap: wrap; align-items: start; gap: 6px; padding: 7px 0; }
-.agenda-document-row > a { flex: 1; overflow-wrap: anywhere; }
+.agenda-document-row > a { flex: 1 1 100%; min-width: 0; overflow-wrap: anywhere; }
 .agenda-document-row details { max-width: 100%; }
 .agenda-document-row details input { max-width: 100%; }
+/* Keep receipt controls inside their own paint/hit-test area in the scrolling workspace. */
+#agenda-op-receipt-review { position: relative; contain: layout paint; }
 .agenda-fast-success { color: #196349; background: #edf8f1; border-radius: 8px; padding: 9px 12px; }
 .agenda-patient-more { padding: 10px 0; margin: 10px 0; color: #526274; }
 .agenda-patient-more summary { margin-bottom: 10px; cursor: pointer; }

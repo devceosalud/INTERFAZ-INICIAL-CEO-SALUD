@@ -159,3 +159,32 @@ Para cada decisión se recomienda registrar:
 6. reportes o alertas esperados.
 
 No deben diseñarse migrations definitivas hasta que las decisiones 1–8 tengan respuesta o una exclusión explícita de alcance.
+
+## Decisión de producto aprobada — 12/10/2026: cancelar mapa de calor interno
+
+CEO Salud cancela el desarrollo y uso del mapa de calor propio. Microsoft Clarity ya fue instalado por decisión de negocio en main, commit 1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4, en resources/views/layouts/app.blade.php. PR #5 conserva esa instalación sin modificarla; la retirada del módulo interno queda fuera de esta entrega financiera.
+
+La retirada será una entrega independiente para enlaces, pantallas, rutas, captura de eventos, JavaScript y pruebas exclusivas del mapa de calor. Debe preservar las migraciones históricas y los datos productivos; no autoriza DROP, borrado de eventos ni modificaciones productivas. El código actual permanece hasta aprobar y ejecutar esa entrega.
+
+La revisión de privacidad de pacientes, captura de sesiones y alcance autorizado sigue pendiente de validación. Esta revisión no modifica el script ni la configuración de Clarity ya aprobados; integrar main conserva exactamente su instalación.
+
+## Precisiones aprobadas para PR #5 — 12/10/2026
+
+- Reconsulta automática: considerar ATENDIDO únicamente si estado_agenda es LEGADO o CONFIRMADA. Ignorar ATENDIDO + PENDIENTE_CONFIRMACION para propietario y demás trabajadores, conservando esos registros para revisión autorizada. Se elimina la diferencia de precio por trabajador sin ampliar la visibilidad de citas privadas. Su cantidad productiva no ha sido consultada; los ejemplos inconsistentes de QA son ficticios.
+- ADMINISTRADOR: permitir crear, completar y editar fichas desde Agenda mediante la política operativa de pacientes y sus endpoints reutilizados. Se conservan identidad, validaciones, auditoría existente y visibilidad de citas. No implica conceder capacidades de citas, pagos o exoneraciones ni alterar permisos productivos.
+
+## Cierre RC — decisiones vigentes y pendientes al 15/10/2026
+
+Este cierre prevalece sobre preguntas/propuestas históricas cuando contradigan decisiones ya recibidas. No reabre reglas resueltas ni autoriza cambios productivos.
+
+- Confirmado: una sede operativa Magdalena, catálogo productivo vacío. Alta con vista previa/hash/actor/recibo, sin ID fijo ni backfill; roles participantes y ejecución aún requieren autorización.
+- Confirmado: 50% del neto en REGULAR/ADICIONAL/FUERA_HORARIO salvo exoneración autorizada; reserva con dinero protege frente a otra regular; colisión conserva ambas y ADD requiere aceptación/capacidad. Rechazar nuevos solapamientos de horarios, conservar heredados.
+- R05 definitivo: solo indicación del médico acreditada por escrito, mismo servicio, cualquier médico; fecha de atención origen a fecha programada, 0 gratis/1–15 reevaluación/16 consulta. Quiroz referido explícito 250/220 en servicios 1 y 3; catálogo real/mapa opt-in. Uso único y no libera al cancelar. Falta flujo explícito de reasignación cancelada y ajuste pagado R25; evidencia verbal sigue sin aprobación, por tanto no habilitada.
+- R14 operativo completado en RC con permisos privados/versiones; no se incorporaron funciones clínicas nuevas ni se reclasificaron históricos. Grants documentales y de indicación son nominativos, separados de las seis capacidades MVP.
+- R12 Excel y R13 seguimiento documental histórico consolidado pendientes; R19 reutiliza editor auditable, arrastrar/soltar no implementado. No presentar esos alcances como completos.
+- R25–R30 continúan fase posterior. No ejecutar devoluciones por WITHDRAW, ni convertir excedentes automáticamente. Falta asignación final de refund.execute y modelo general; no se concedió ni desarrolló en esta integración.
+- Clarity: mantener instalación por decisión expresa; no modificarla. Privacidad/admisibilidad para datos sensibles requiere resolución del responsable antes de operación real; enmascaramiento no constituye aprobación. R21–R23 cancelados; retirada del mapa interno en PR independiente preservando datos/migraciones.
+- Bloqueo técnico nuevo: audit Composer mantiene cuatro avisos únicos en Laravel 9, uno alto. Dependencias compatibles actualizadas, sin upgrade mayor silencioso. Remediación/compatibilidad pendiente antes de GO productivo.
+- Modo piloto automático por operador sigue sujeto a aprobación/configuración productiva; TICKET interno no constituye SUNAT electrónico. Respaldo/restore productivos, Linux/PHP web, autodespliegue, sesiones, permisos efectivos y smoke pendientes; no acceso Hostinger durante RC.
+
+Detalle y evidencia: RC_CEO_SALUD_RESUMEN.md y CEO_SALUD_MATRIZ_REGLAS.json. Estado **NO-GO productivo**, aunque los flujos locales aprobados son revisables.

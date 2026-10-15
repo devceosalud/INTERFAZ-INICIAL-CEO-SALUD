@@ -14,10 +14,8 @@ use Tests\TestCase;
 /**
  * READ-ONLY audit of overlapping operating blocks.
  *
- * MVP-2B deliberately does NOT reject an overlapping block on save: the inherited data may
- * already contain overlaps and refusing them now could stop real work. What this test does is
- * pin down the rule and the detection query, so the future increment that enables validation
- * starts from a measured baseline instead of an assumption.
+ * New overlapping writes are rejected by the approved 14/10 policy. Existing overlapping
+ * fixtures represent inherited records and remain readable without automatic repair.
  */
 class DoctorScheduleOverlapAuditTest extends TestCase
 {
@@ -39,15 +37,27 @@ class DoctorScheduleOverlapAuditTest extends TestCase
      * Current behaviour, not desired behaviour: two blocks of the same professional on the
      * same date can overlap and nothing stops it.
      */
-    public function test_overlapping_blocks_are_still_accepted_today(): void
+    public function test_new_overlapping_blocks_are_rejected_without_changing_the_original(): void
     {
         $date = Carbon::today()->addDays(5)->toDateString();
 
         $this->block($date, '08:00:00', '12:00:00');
-        $this->block($date, '11:00:00', '15:00:00');
+        $before=DoctorSchedule::first()->getAttributes();
+        try{$this->block($date, '11:00:00', '15:00:00');$this->fail('New overlap was accepted');}
+        catch(\Illuminate\Validation\ValidationException $e){$this->assertArrayHasKey('hora_inicio',$e->errors());}
+        $this->assertCount(1, DoctorSchedule::all());$this->assertSame($before,DoctorSchedule::first()->getAttributes());
+        $this->assertCount(0, $this->overlappingPairs());
+    }
 
-        $this->assertCount(2, DoctorSchedule::all());
-        $this->assertCount(1, $this->overlappingPairs());
+    public function test_inherited_overlaps_are_detected_and_preserved_when_a_new_overlap_is_rejected():void{
+        $first=$this->block(Carbon::today()->addDays(5)->toDateString(),'08:00:00','12:00:00');
+        // Test-only import of a legacy row; never use the normal write path to manufacture history.
+        $legacy=$first->getAttributes();unset($legacy['id']);$legacy['hora_inicio']='11:00:00';$legacy['hora_fin']='15:00:00';
+        \Illuminate\Support\Facades\DB::table('doctor_schedules')->insert($legacy);
+        $before=DoctorSchedule::orderBy('id')->get()->map->getAttributes()->all();$this->assertCount(1,$this->overlappingPairs());
+        try{$this->block($first->fecha_cita,'10:00:00','14:00:00');$this->fail('New overlap was accepted');}
+        catch(\Illuminate\Validation\ValidationException $e){$this->assertArrayHasKey('hora_inicio',$e->errors());}
+        $this->assertSame($before,DoctorSchedule::orderBy('id')->get()->map->getAttributes()->all());
     }
 
     public function test_adjacent_blocks_do_not_overlap(): void

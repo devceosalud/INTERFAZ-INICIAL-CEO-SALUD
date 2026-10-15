@@ -35,7 +35,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
         config()->set('scheduling.enabled', true);
         $this->catalog = $this->createAppointmentCatalog();
         DoctorSchedule::query()->delete();
-        $this->admission = $this->createUserWithRole('ADMISION');
+        $this->admission = $this->scheduleManager('ADMISION');
         $this->monday = Carbon::parse('next monday')->startOfDay();
     }
 
@@ -263,6 +263,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->actingAs($this->admission)
             ->putJson(self::UPDATE, [
                 'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id),
                 'doctor_id_edit' => $this->catalog['doctor']->id,
                 'fecha_cita_edit' => $this->monday->toDateString(),
                 'hora_inicio_edit' => '10:00',
@@ -284,7 +285,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
             ->assertJsonPath('profesionales.0.dias.0.slots.0.minutos', 30);
     }
 
-    public function test_changing_a_schedule_only_warns_and_never_modifies_existing_appointments(): void
+    public function test_changing_a_schedule_cannot_leave_an_existing_occupied_appointment_without_coverage(): void
     {
         $block = $this->block($this->monday, ['hora_inicio' => '09:00:00', 'hora_fin' => '13:00:00']);
         $appointment = $this->appointment('09:20:00');
@@ -305,15 +306,18 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->actingAs($this->admission)
             ->putJson(self::UPDATE, [
                 'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id),
                 'doctor_id_edit' => $this->catalog['doctor']->id,
                 'fecha_cita_edit' => $this->monday->toDateString(),
                 'hora_inicio_edit' => '10:00',
                 'hora_fin_edit' => '13:00',
                 'duracion_edit_cita' => 20,
-            ])->assertOk();
+            ])->assertUnprocessable();
 
         $this->assertSame('09:20:00', $appointment->fresh()->hora_cita);
         $this->assertSame('PROGRAMADO', $appointment->fresh()->estado_cita);
+        $this->assertSame('09:00',substr($block->fresh()->hora_inicio,0,5));
+        $this->assertDatabaseCount('doctor_schedule_events',0);
     }
 
     public function test_a_pending_reservation_survives_schedule_changes_and_inactivation_without_automatic_cancellation(): void
@@ -323,12 +327,13 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $appointment->update(['estado_agenda' => 'PENDIENTE_CONFIRMACION', 'tipo_agendamiento' => 'REGULAR']);
         $before = $appointment->fresh()->getAttributes();
         $this->actingAs($this->admission)->putJson(self::UPDATE, [
-            'doctor_schedule_id_edit' => $block->id, 'doctor_id_edit' => $this->catalog['doctor']->id,
+            'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id), 'doctor_id_edit' => $this->catalog['doctor']->id,
             'fecha_cita_edit' => $this->monday->toDateString(), 'hora_inicio_edit' => '10:00',
             'hora_fin_edit' => '13:00', 'duracion_edit_cita' => 20,
         ])->assertOk()->assertJsonPath('code', 1);
         $this->assertSame($before, $appointment->fresh()->getAttributes());
-        $this->postJson('/admissionist/doctor-schedule/delete', ['id' => $block->id])->assertOk()->assertJsonPath('code', 1);
+        $this->postJson('/admissionist/doctor-schedule/delete', ['id' => $block->id, 'expected_version' => $this->scheduleVersion((int)$block->id)])->assertOk()->assertJsonPath('code', 1);
         $this->assertSame('INACTIVO', $block->fresh()->estado);
         $this->assertSame($before, $appointment->fresh()->getAttributes());
     }
@@ -514,7 +519,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
 
     public function test_commercial_can_create_and_edit_schedules_and_admission_keeps_access(): void
     {
-        $commercial = $this->createUserWithRole('COMERCIAL');
+        $commercial = $this->scheduleManager('COMERCIAL');
 
         $this->actingAs($commercial)
             ->get(self::PAGE)
@@ -530,6 +535,7 @@ class DoctorScheduleWorkspaceTest extends TestCase
         $this->actingAs($commercial)
             ->putJson(self::UPDATE, [
                 'doctor_schedule_id_edit' => $block->id,
+                'expected_version' => $this->scheduleVersion((int)$block->id),
                 'doctor_id_edit' => $this->catalog['doctor']->id,
                 'fecha_cita_edit' => $this->monday->toDateString(),
                 'hora_inicio_edit' => '10:00',

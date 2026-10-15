@@ -1,8 +1,11 @@
+function legacyCalendarText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
 document.addEventListener('DOMContentLoaded', function () {
 
     var calendarEl = document.getElementById('calendar');
     // Obtener la fecha actual en formato ISO (YYYY-MM-DD)
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = calendarEl.dataset.operationalToday;
 
     window.calendar = new FullCalendar.Calendar(calendarEl, { //window : PARA HACERLO GLOBAL
         initialView: 'dayGridMonth', // timeGridWeek : vista de semana
@@ -41,46 +44,46 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="calendar-popover">
             <div class="border-bottom pb-2 mb-2">
                 <h6 class="mb-0 text-primary">
-                    👤 ${info.event.title}
+                    👤 ${legacyCalendarText(info.event.title)}
                 </h6>
                 <small class="text-muted">
-                    ${info.timeText}
+                    ${legacyCalendarText(info.timeText)}
                 </small>
             </div>
 
             <div class="mb-2">
                 <span class="badge bg-success">
-                    ${info.event.extendedProps.estado_cita}
+                    ${legacyCalendarText(info.event.extendedProps.estado_cita)}
                 </span>
                 <span class="badge bg-success">
-                    ${info.event.extendedProps.estado_pagado}
+                    ${legacyCalendarText(info.event.extendedProps.estado_pagado)}
                 </span>
             </div>
 
             <table class="display">
                 <tr>
                     <td><strong>👤 DR(a):</strong></td>
-                    <td>S/. ${info.event.extendedProps.nombre_doctor}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.nombre_doctor)}</td>
                 </tr>
                 <tr>
                     <td><strong>💼 Servicio:</strong></td>
-                    <td>S/. ${info.event.extendedProps.nombre_servicio}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.nombre_servicio)}</td>
                 </tr>
                 <tr>
                     <td><strong>💰 Pago:</strong></td>
-                    <td>S/. ${info.event.extendedProps.total_pagado}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.total_pagado)}</td>
                 </tr>
                 <tr>
                     <td><strong>💵 Pendiente:</strong></td>
-                    <td>S/. ${info.event.extendedProps.saldo_pendiente}</td>
+                    <td>S/. ${legacyCalendarText(info.event.extendedProps.saldo_pendiente)}</td>
                 </tr>
                 <tr>
                     <td><strong>📝 Motivo:</strong></td>
-                    <td>${info.event.extendedProps.motivo_consulta}</td>
+                    <td>${legacyCalendarText(info.event.extendedProps.motivo_consulta)}</td>
                 </tr>
                 <tr>
                     <td><strong>📋 Obs:</strong></td>
-                    <td>${info.event.extendedProps.observaciones}</td>
+                    <td>${legacyCalendarText(info.event.extendedProps.observaciones)}</td>
                 </tr>
             </table>
         </div>
@@ -90,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html: true,
                 trigger: 'hover',
                 placement: 'auto',
-                sanitize: false,
+                sanitize: true,
                 container: 'body',
                 title: '<strong>Información de la cita</strong>',
                 content: contenido
@@ -120,7 +123,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (eventComun.tipo === 'disponible') {
                 $('#appointmentModalCreate input[name="fecha_cita"]').val(eventComun.fecha_cita);
                 $('#appointmentModalCreate input[name="hora_cita"]').val(eventComun.hora_cita);
-                $('#appointmentModalCreate select[name="doctor_id"]').val(eventComun.doctor_id).trigger('change');
+                const sourceDoctor = document.querySelector('#filtro-calendar_doctor_id option[value="' + eventComun.doctor_id + '"]');
+                const createDoctor = document.querySelector('#appointmentModalCreate select[name="doctor_id"]');
+                if (sourceDoctor) { createDoctor.replaceChildren(sourceDoctor.cloneNode(true)); }
+                $('#appointmentModalCreate #specialty_id').val($('#filtro-calendar_specialty_id').val());
+                $(createDoctor).val(eventComun.doctor_id).selectpicker('refresh');
+                createDoctor.dispatchEvent(new Event('change', { bubbles: true }));
+                $('#appointmentModalCreate #specialty_id').selectpicker('refresh');
                 $('#appointmentModalCreate').modal('show');
                 return;
             }
@@ -137,13 +146,16 @@ document.addEventListener('DOMContentLoaded', function () {
             let nombre_especialidad = eventComun.nombre_especialidad;
             let doctor_id = eventComun.doctor_id;
             let nombre_doctor = eventComun.nombre_doctor;
-            let servicio_id = eventComun.service_id;
+            let servicio_id = eventComun.doctor_service_id;
             let nombre_servicio = eventComun.nombre_servicio;
             let fecha_cita = eventComun.fecha_cita;
             let hora_cita = eventComun.hora_cita;
             let estado_cita = eventComun.estado_cita
 
             // DATOS COMUNES SETEADOS
+            const durationChoice=document.querySelector('#appointmentModalEdit #cita_doble_edit');
+            durationChoice.checked=Number(eventComun.duration_slots)===2;
+            durationChoice.disabled=true;
             $('#appointmentModalEdit #appointment_id').val(id);
             $('#appointmentModalEdit #documento_paciente_edit').val(documento_paciente);
             $('#appointmentModalEdit #nombre_paciente_edit').val(title);
@@ -166,10 +178,18 @@ document.addEventListener('DOMContentLoaded', function () {
             option_servicio.value = servicio_id;
             option_servicio.textContent = nombre_servicio;
             selectServicio.appendChild(option_servicio);
+            $(selectDoctor).val(doctor_id);
+            $(selectServicio).val(servicio_id || '');
+            $('#appointmentModalEdit #expected_fecha_cita').val(fecha_cita);
+            $('#appointmentModalEdit #expected_hora_cita').val(String(hora_cita).substring(0, 5));
+            const currentHour = document.createElement('option');
+            currentHour.value = String(hora_cita).substring(0, 5);
+            currentHour.textContent = currentHour.value;
+            document.querySelector('#appointmentModalEdit #hora_cita_edit').replaceChildren(currentHour);
 
             //DATOS DE LA CITA MEDICA
             $('#appointmentModalEdit #fecha_cita_edit').val(fecha_cita);
-            $('#appointmentModalEdit #hora_cita_edit').val(hora_cita);
+            $('#appointmentModalEdit #hora_cita_edit').val(String(hora_cita).substring(0, 5));
             $('#appointmentModalEdit #estado_cita').val(estado_cita);
 
             initSelectEdit();

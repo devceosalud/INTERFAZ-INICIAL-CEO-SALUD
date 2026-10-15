@@ -19,3 +19,8 @@ test('HTML, sesión vencida y permisos no se intentan interpretar como JSON', as
         assert.equal(parsed, false);
     }
 });
+
+test('JSON inválido del editor no muestra fragmentos privados del servidor', async () => {
+    await assert.rejects(api.lookup('/api/admin/user/search',1,'csrf',async()=>({ok:true,status:200,headers:{get:()=>'application/json'},
+        json:async()=>{throw new SyntaxError('PRIVATE SERVER RESPONSE');}})),error=>!error.message.includes('PRIVATE')&&/No se pudo cargar el usuario/.test(error.message));
+});

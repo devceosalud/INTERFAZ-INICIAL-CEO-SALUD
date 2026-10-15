@@ -24,6 +24,8 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+        // Spatie also denies permissions on inactive users; this covers non-permission policies.
+        Gate::before(fn (\App\Models\User $user) => $user->is_active ? null : false);
 
         //
     }

@@ -50,7 +50,7 @@
         integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 
     <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('vendor/ceosalud-alerts/sweetalert2.all.min.js') }}"></script>
 
     <style>
         .bg-primary {

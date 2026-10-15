@@ -35,7 +35,7 @@ class ScheduleCalendarRangeAndDurationTest extends TestCase
 
         $this->catalog = $this->createAppointmentCatalog();
         DoctorSchedule::query()->delete();
-        $this->reader = $this->createUserWithRole('ADMISION');
+        $this->reader = $this->scheduleManager('ADMISION');
     }
 
     /*

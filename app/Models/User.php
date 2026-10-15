@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasRoles;
+    use HasRoles { hasPermissionTo as private inheritedHasPermissionTo; }
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -20,6 +20,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'dni',
         'name',
         'email',
         'password',
@@ -33,6 +34,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'dni',
+        'auth_version',
+        'is_active',
     ];
 
     /**
@@ -42,6 +46,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_active'=>'boolean', 'auth_version'=>'integer',
     ];
 
 
@@ -59,6 +64,13 @@ class User extends Authenticatable
     public function responsibleAppointments()
     {
         return $this->hasMany(Appointment::class, 'responsible_user_id');
+    }
+
+    protected $attributes = ['is_active'=>true,'auth_version'=>0];
+
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        return $this->is_active && $this->inheritedHasPermissionTo($permission,$guardName);
     }
 
     //METODO PARA REDIRECCION DE RUTAS POR ROLES

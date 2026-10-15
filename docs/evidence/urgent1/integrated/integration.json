@@ -1,0 +1,36 @@
+{
+  "tested_commit": "1f2a00b07492c55454a4d5ff0fe1da4b6eb83365",
+  "corrections_commit": "b6c1fc148860205e9ddb98f1764068901cccc2fb",
+  "merged_main": "1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4",
+  "published_history_preserved": "2fe10c9bb757b4f0d7f92cd27897b6ec469dcc48",
+  "merge_conflicts": 0,
+  "clarity_layout_blob_head_and_main": "2eb1124b96ad44e4133e3f8dc754d89311fb2a69",
+  "php": {
+    "command": "C:/xampp/php/php.exe vendor/phpunit/phpunit/phpunit",
+    "exit_code": 0,
+    "tests": 643,
+    "passed": 642,
+    "skipped": 1,
+    "assertions": 3909
+  },
+  "javascript": {
+    "command": "node --test tests/JavaScript/*.test.js",
+    "exit_code": 0,
+    "passed": 205,
+    "failed": 0,
+    "skipped": 0
+  },
+  "mariadb": {
+    "command": "C:/xampp/php/php.exe vendor/phpunit/phpunit/phpunit --configuration phpunit.agenda-mariadb.xml",
+    "exit_code": 0,
+    "version": "10.4.32",
+    "port": 33318,
+    "tests": 139,
+    "assertions": 1144
+  },
+  "limitations": [
+    "No QA on Hostinger or MariaDB 11.8.9",
+    "No manual browser QA repeated after integration",
+    "No remote Clarity script execution or session capture/privacy verification"
+  ]
+}

@@ -1,0 +1,1810 @@
+[
+  {
+    "status": "M",
+    "file": ".gitattributes"
+  },
+  {
+    "status": "A",
+    "file": "app/Console/Commands/BootstrapMvpPermissions.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Console/Commands/DiagnoseCommercialPilot.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Console/Commands/NormalizeMvpGuards.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Console/Commands/SetupMagdalenaSite.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Api/AdditionalRate/AdditionalRateController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Api/appointment/AppointmentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Api/doctorSchedule/DoctorScheduleController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Api/user/UserController.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Http/Controllers/Scheduling/AdditionalReservationConversionController.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Http/Controllers/Scheduling/AdmissionBoardController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/AgendaAppointmentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/AgendaBoardController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/AgendaDetailsController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/AppointmentDocumentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/DoctorScheduleWorkspaceController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Http/Controllers/Scheduling/ReevaluationIndicationController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/admin/appointment/AppointmentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/admin/master/role/RoleController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/admin/master/user/UserController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/admissionist/appointment/AppointmentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/admissionist/schedule/ScheduleController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/authenticator/auth/AuthController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Controllers/receptionist/appointment/AppointmentController.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Kernel.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Middleware/Authenticate.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Http/Middleware/EnsureMvpOperationalAccess.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Requests/Scheduling/OperationalRegistrationRequest.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Requests/Scheduling/StoreAdditionalAppointmentRequest.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Http/Requests/Scheduling/StoreAgendaAppointmentRequest.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Models/Appointment.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Models/AppointmentDocument.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Models/AppointmentReevaluationIndication.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Models/User.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Models/UserAccountEvent.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Providers/AuthServiceProvider.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Billing/AppointmentEconomicPosition.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Billing/PilotAppointmentCashContext.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AdditionalReservationConversion.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AdmissionBoardService.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AdmissionCareService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/AgendaBoardPresenter.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AppointmentDiscount.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AppointmentPaymentProofs.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/AppointmentPriceResolver.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/AppointmentProofStorage.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/AppointmentWithdrawalService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/CreateAppointmentService.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/DoctorScheduleMutation.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/DoubleAppointmentDuration.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/LegacyAppointmentMutation.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/LegacyAppointmentRegistration.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/OperationalAgendaAppointmentService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/OperationalRegistrationService.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/ReevaluationIndicationService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/RegularCapacityService.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/RegularReservationAvailability.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/Scheduling/ReplaceAppointmentDocument.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/RescheduleAppointmentService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/ReservationPaymentService.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/ScheduleCompatibilityValidator.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Services/Scheduling/ScheduleOverlapDetector.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Services/UserAccountAccess.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Support/Patients/PatientWriteAccess.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/AdmissionStatus.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Support/Scheduling/AgendaLegend.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Support/Scheduling/AgendaPermissionPlan.php"
+  },
+  {
+    "status": "M",
+    "file": "app/Support/Scheduling/AppointmentAgendaLifecycle.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/AppointmentDocumentAccess.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/AppointmentPriceInput.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/DoctorScheduleAccess.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/FundedReservation.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/MagdalenaSiteSetup.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/MvpGuardNormalization.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/MvpOperationalAccess.php"
+  },
+  {
+    "status": "A",
+    "file": "app/Support/Scheduling/MvpPermissionBootstrap.php"
+  },
+  {
+    "status": "M",
+    "file": "composer.lock"
+  },
+  {
+    "status": "M",
+    "file": "config/scheduling.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_13_180000_add_appointment_price_snapshot.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_13_190000_create_reevaluation_indications.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_13_200000_add_appointment_duration_slots.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_14_080000_link_reviewed_payment_proofs.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_14_170000_add_worker_identity_and_access_state.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_14_200000_audit_schedule_mutations.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_14_210000_define_schedule_management_capability.php"
+  },
+  {
+    "status": "A",
+    "file": "database/migrations/2026_10_14_220000_version_private_appointment_documents.php"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_ADMISION_NICOLE.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_AGENDA_DURACION_CONTEXTO.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_CATALOGOS_SOLO_LECTURA.sql"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_CLARITY_REVISION_PENDIENTE.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MAGDALENA_PROPUESTA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MATRIZ_REGLAS.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MATRIZ_REGLAS.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MVP_DESPLIEGUE_PR5.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MVP_GUARDS_PR5.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MVP_GUARDS_SELECT.sql"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_MVP_PREFLIGHT_SELECT.sql"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_P0_AGENDA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_P0_OCR.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_PRECIOS_AGENDA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_PRUEBAS_PRECIOS.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_R05_ORIGEN_EVIDENCIA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_REEVALUACIONES_INDICADAS.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_SEDE_MAGDALENA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/CEO_SALUD_TRABAJADORES_SEGURIDAD.md"
+  },
+  {
+    "status": "M",
+    "file": "docs/DECISIONES_NEGOCIO_PENDIENTES.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/ENTREGA_URGENTE_1_CONTROLES_HEREDADOS.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_JORNADA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_LIBERACION.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_QA.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_RENDIMIENTO.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_RESUMEN.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_CEO_SALUD_SEGURIDAD.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/RC_INTEGRACION_PLAN.md"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/authorization-audit-summary.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/backup-result.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-bootstrap.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-documents-poll.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-documents.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-jornada-confirm-care.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-jornada-conversion.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-jornada-pay.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-jornada-reserves.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-jornada-security.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-legacy.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-mobile.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-ocr-negative.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-overlap.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-permissions-schedules.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-polling.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-prices.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-reevaluation.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-schedule-edit.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/browser-visibility.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/changed-files.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/composer-audit-security-update.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/composer-platform-final.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/composer-psr4-strict.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/documents-poll-metrics.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/environment.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/failed-attempts.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/final-db.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/full-js-candidate.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/full-mariadb-candidate.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/full-php-candidate.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/index-evidence.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/mobile-agenda.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/mobile-horarios.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/mobile-nicole.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/nicole-poll-jornada.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/performance-candidate.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/performance-cycle-2000.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/performance-http-100.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/performance-http-2000.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/performance-http-500.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/polling-metrics.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/rc-mobile-agenda-viewport.png"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/rc-mobile-horarios-viewport.png"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/rc-mobile-nicole-viewport.png"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/release-summary.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/restoration-result.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/static-rc.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/final/visibility-observation.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/rc/pr-inputs.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/admision-rechazo.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/authorized/javascript.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/authorized/mariadb.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/authorized/php-targeted.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/authorized/php.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/browser-check.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/dia.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/mariadb1189.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/php83.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/targeted-mariadb1189.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/verification.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/web-extraordinary-mariadb1189.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/web-extraordinary-php83.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/guards/web-extraordinary-verification.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/integrated/integration.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/integrated/javascript.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/integrated/mariadb.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/integrated/php.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/javascript.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mariadb.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mes.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mvp/environment.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mvp/javascript.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mvp/mariadb1189.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mvp/permission-bootstrap.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/mvp/php83.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/php.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/browser-check.json"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/dia.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/javascript.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/mariadb.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/mes.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/php-targeted.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/php.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/reconsulta.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/reproduction-before-fix.txt"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/review/semana.jpg"
+  },
+  {
+    "status": "A",
+    "file": "docs/evidence/urgent1/semana.jpg"
+  },
+  {
+    "status": "A",
+    "file": "phpunit.agenda-equivalent.xml"
+  },
+  {
+    "status": "M",
+    "file": "phpunit.agenda-mariadb.xml"
+  },
+  {
+    "status": "A",
+    "file": "phpunit.rc-suite.xml"
+  },
+  {
+    "status": "A",
+    "file": "phpunit.rc.xml"
+  },
+  {
+    "status": "A",
+    "file": "phpunit.rules.xml"
+  },
+  {
+    "status": "A",
+    "file": "phpunit.workers.xml"
+  },
+  {
+    "status": "A",
+    "file": "public/css/scheduling/admission-board.css"
+  },
+  {
+    "status": "M",
+    "file": "public/css/scheduling/agenda-layout.css"
+  },
+  {
+    "status": "M",
+    "file": "public/css/scheduling/agenda.css"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admin/master/user/user.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/appointment/appointment.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/appointment/editar-cita.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/appointment/update.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/calendario/calendario.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/schedule/schedule.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/admissionist/tesseract/tesseract.js"
+  },
+  {
+    "status": "A",
+    "file": "public/js/scheduling/admission-board.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-appointment-actions.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-day-grid.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-guidance.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-operational-form.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-operational-workspace.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-selection.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda-shell.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/agenda.js"
+  },
+  {
+    "status": "A",
+    "file": "public/js/scheduling/appointment-receipt-ocr.js"
+  },
+  {
+    "status": "A",
+    "file": "public/js/scheduling/appointment-receipt-review.js"
+  },
+  {
+    "status": "M",
+    "file": "public/js/scheduling/schedule-workspace.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/LICENSE.tesseract.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/LICENSE.tesseract.js-core"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/LICENSE.traineddata"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/NOTICE.txt"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core-lstm.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core-relaxedsimd.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core-simd-lstm.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core-simd.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/core/tesseract-core.wasm.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/lang/spa.traineddata.gz"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/manifest.json"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/spa-package.json"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/tesseract.min.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/appointment-ocr/worker.min.js"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/ceosalud-alerts/LICENSE"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/ceosalud-alerts/manifest.json"
+  },
+  {
+    "status": "A",
+    "file": "public/vendor/ceosalud-alerts/sweetalert2.all.min.js"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/appointment/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/available-schedule/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/patient/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/role/edit.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/role/partials/form.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/user/crud/create.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/user/crud/edit.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admin/user/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/appointment/crud/create.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/appointment/crud/edit.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/appointment/crud/update.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/appointment/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/available-schedule/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/patient/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/patient/modal/appointment.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/schedule/crud/edit.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/schedule/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/admissionist/schedule/workspace-modal.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/components/utils/appointments.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/components/utils/calendar.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/components/utils/reevaluations.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/components/utils/schedules.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/layouts/app.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/patients/operational.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/receptionist/appointment/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/receptionist/available-schedule/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/receptionist/patient/index.blade.php"
+  },
+  {
+    "status": "A",
+    "file": "resources/views/scheduling/admission/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/scheduling/agenda/index.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/scheduling/agenda/partials/operational-registration.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/scheduling/agenda/partials/patient-modal.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/scheduling/agenda/partials/quick-registration.blade.php"
+  },
+  {
+    "status": "A",
+    "file": "resources/views/templates/nav/mvp.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "resources/views/templates/sidebar.blade.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/administrador.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/admision.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/api.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/patients.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/scheduling.php"
+  },
+  {
+    "status": "M",
+    "file": "routes/web.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Concerns/BuildsBaselineData.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Concerns/BuildsLegacyMvpGuards.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Auth/WorkerAccessTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Baseline/PatientAndAppointmentSmokeTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Patients/OperationalPatientModuleTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/AdmissionBoardTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaAppointmentWriteTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaBoardTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaDetailsTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/AgendaDoubleDurationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaPermissionPlanTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaRefinementTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AgendaStabilizationTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AppointmentEndingTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/AppointmentPaymentProofsTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/AppointmentReaderPrivacyTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/DoctorScheduleOverlapAuditTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/DoctorScheduleSafetyTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/DoctorScheduleWorkspaceTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/LegacyGuardsMvpFlowTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/LegacyRegistrationParityTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/LegacyScheduleContractTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/MagdalenaSiteSetupTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/MvpAllRolesFlowTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/MvpGuardNormalizationTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/MvpPermissionBootstrapTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/OperationalDateTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/OperationalDocumentsTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/OperationalRegistrationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/PilotAppointmentOperationsTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/PilotAppointmentPaymentTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/ReevaluationIndicationTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Scheduling/RegularReservationExclusivityTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/ScheduleCalendarRangeAndDurationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/ScheduleConfigurationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/ScheduleOverlapIntegrityTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Scheduling/SchedulingMvpFoundationTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Feature/Security/MvpRoleEditorTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Security/ProvisionalRoleMatrixTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Security/ScheduleAuthorizationTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Feature/Security/UserEditorSessionTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/ambiguous.png"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/bcp.jpg"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/bcp50.png"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/unreadable.png"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/yape-detail.png"
+  },
+  {
+    "status": "A",
+    "file": "tests/Fixtures/receipts/yape.png"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/AdmissionBoardMariaDbTest.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Integration/AgendaConcurrencyTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/AgendaDoubleDurationMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/AppointmentDiscountMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/AppointmentPaymentProofsMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/DoctorScheduleSafetyMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/LegacyGuardsMvpFlowMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/LegacyRegistrationMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/MagdalenaSiteSetupMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/MvpAllRolesMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/MvpGuardNormalizationMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/OperationalDocumentsMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/RcConcurrencyTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/ReevaluationIndicationMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/RegularReservationExclusivityMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/WorkerAccessMariaDbTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Integration/WorkerConcurrencyTest.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/admission-board.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/admission-polling.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-appointment-actions.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-assets.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-day-grid.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-details-workspace.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/agenda-discounts.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-guidance.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/agenda-operational-form.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/agenda-quote.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/appointment-receipt-ocr.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/appointment-receipt-review.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/legacy-calendar-safety.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/legacy-registration-context.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/JavaScript/user-editor.test.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/JavaScript/worker-access.test.js"
+  },
+  {
+    "status": "M",
+    "file": "tests/Support/IsolatedAgendaQa.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/IsolatedRcQa.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/IsolatedRcSuiteQa.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/IsolatedWorkerQa.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Support/agenda-qa-browser-seed.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/Support/agenda-qa-request.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/ocr-browser-qa-router.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/ocr-browser-qa.css"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/ocr-browser-qa.html"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/ocr-browser-qa.js"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-browser-router.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-browser-seed.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-index-evidence.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-load-router.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-maintenance.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-nicole-benchmark.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-readback.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/rc-restore-rehearsal.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/urgent-browser-check.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/urgent-review-browser-check.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/urgent-review-browser-seed.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/worker-qa-browser-router.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/worker-qa-browser-seed.php"
+  },
+  {
+    "status": "A",
+    "file": "tests/Support/worker-qa-request.php"
+  },
+  {
+    "status": "M",
+    "file": "tests/TestCase.php"
+  },
+  {
+    "status": "A",
+    "file": "tools/alerts/.gitignore"
+  },
+  {
+    "status": "A",
+    "file": "tools/alerts/build.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/alerts/package-lock.json"
+  },
+  {
+    "status": "A",
+    "file": "tools/alerts/package.json"
+  },
+  {
+    "status": "A",
+    "file": "tools/appointment-ocr/.gitignore"
+  },
+  {
+    "status": "A",
+    "file": "tools/appointment-ocr/package-lock.json"
+  },
+  {
+    "status": "A",
+    "file": "tools/appointment-ocr/package.json"
+  },
+  {
+    "status": "A",
+    "file": "tools/appointment-ocr/vendor-assets.mjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/audit-rc.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/backup-restore-rc.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-bootstrap.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-confirm-existing.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-document-layout.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-documents-poll.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-documents.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-harness.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-helpers.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-inspect.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-jornada-confirm-care.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-jornada-conversion.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-jornada-pay.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-jornada-reserves.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-jornada-security.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-legacy.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-lima-schedule.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-mobile.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-ocr-negative.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-overlap.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-permissions-schedules.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-polling.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-prices.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-probe-ocr.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-reevaluation.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-runtime-probe.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-schedule-edit.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/browser-visibility.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/build-release-addendum.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/build-release-report.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/configure-rc.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/local-autoload.php"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/nicole-http-cycle.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/nicole-http-load.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/prepare-rc-suite.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/prepare-rc.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/preserve-pending.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/rehearse-owned-rc.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/resume-rc-runtime.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/run-browser.cjs"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/run-js.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/run-nicole-http.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/show-lines.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/snapshot-projection.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/start-rc-browser.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/start-rc-load.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/stop-baseline.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/update-schedule-fixtures.ps1"
+  },
+  {
+    "status": "A",
+    "file": "tools/qa/update-schedule-versions.ps1"
+  }
+]

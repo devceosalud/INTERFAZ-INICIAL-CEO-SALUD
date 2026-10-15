@@ -21,7 +21,15 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        $admission = \App\Http\Controllers\Scheduling\AdmissionBoardController::class;
+        Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
+        Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
+        Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
+            ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
+            ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');
         Route::get('/scheduling-mvp/agenda/heatmap/preview', [\App\Http\Controllers\Scheduling\AgendaHeatmapController::class, 'preview'])
             ->name('scheduling.mvp.agenda.heatmap.preview');
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/cancel', [$workflow, 'cancel'])
@@ -44,10 +52,13 @@ Route::middleware([
             ->whereNumber('id')->name('scheduling.mvp.agenda.contingencies.update');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
+        Route::post('/scheduling-mvp/agenda/quote', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'quote'])
+            ->name('scheduling.mvp.agenda.quote');
         Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/documents')->whereNumber('appointmentId')->group(function () {
             $controller = \App\Http\Controllers\Scheduling\AppointmentDocumentController::class;
             Route::get('/', [$controller, 'index'])->name('scheduling.mvp.documents.index');
             Route::post('/', [$controller, 'store'])->name('scheduling.mvp.documents.store');
+            Route::post('/{documentId}/replace', [$controller, 'replace'])->whereNumber('documentId')->name('scheduling.mvp.documents.replace');
             Route::get('/{documentId}', [$controller, 'download'])->whereNumber('documentId')->name('scheduling.mvp.documents.download');
             Route::put('/{documentId}', [$controller, 'update'])->whereNumber('documentId')->name('scheduling.mvp.documents.update');
             Route::delete('/{documentId}', [$controller, 'destroy'])->whereNumber('documentId')->name('scheduling.mvp.documents.destroy');
@@ -82,6 +93,10 @@ Route::middleware([
     Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/payments', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'payment'])
         ->whereNumber('appointmentId')->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])
         ->name('scheduling.mvp.agenda.payments');
+    Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/additional-conversion', [\App\Http\Controllers\Scheduling\AdditionalReservationConversionController::class, 'preview'])
+        ->name('scheduling.mvp.agenda.additional-conversion.preview');
+    Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/additional-conversion', [\App\Http\Controllers\Scheduling\AdditionalReservationConversionController::class, 'store'])
+        ->name('scheduling.mvp.agenda.additional-conversion.store');
 
     Route::post('/scheduling-mvp/agenda/off-hours-appointments', [AgendaAppointmentController::class, 'offHours'])
         ->middleware(['permission:'.SchedulingCapability::VIEW, 'permission:'.SchedulingCapability::CREATE])

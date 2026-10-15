@@ -55,12 +55,11 @@ class AgendaDetailsController extends Controller
         return DB::transaction(function () use ($request, $appointmentId) {
             $appointment = Appointment::visibleToAgendaUser($request->user()->id)
                 ->whereKey($appointmentId)->lockForUpdate()->firstOr(fn () => abort(404));
-            abort_unless($request->user()->can(Capability::UPDATE)
-                || ($request->user()->can(Capability::CREATE)
-                    && (int) ($appointment->responsible_user_id ?? $appointment->user_id) === (int) $request->user()->id), 403);
+            abort_unless($request->user()->can(Capability::UPDATE), 403);
             $data = $request->validate([
                 'motivo_consulta' => 'sometimes|nullable|string|max:2000',
                 'observaciones' => 'sometimes|nullable|string|max:2000',
+                'is_postoperative'=>'sometimes|boolean', 'discount'=>'prohibited',
             ]);
             $data = array_filter($data, fn ($value) => $value !== null && $value !== '');
             if ($data) {
@@ -69,7 +68,7 @@ class AgendaDetailsController extends Controller
                     ['metadata' => ['fields' => array_keys($data)]]);
             }
             return response()->json(['message' => 'Motivo y observación guardados.']
-                + $appointment->only(['motivo_consulta', 'observaciones']));
+                + $appointment->only(['motivo_consulta', 'observaciones', 'is_postoperative']));
         });
     }
 }

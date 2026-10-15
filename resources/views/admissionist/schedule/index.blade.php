@@ -88,7 +88,7 @@
 
                     @unless ($canManageSchedules)
                         <div class="schedule-readonly" role="status">
-                            Solo consulta. Admisión y Comercial administran los horarios.
+                            Solo consulta. Gestionar requiere doctor.schedule.manage y rol Administrador, Admisión o Comercial.
                         </div>
                     @endunless
 
@@ -143,9 +143,11 @@
 @section('script_data')
     @include('telemetry.collector')
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-shell.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
     <script src="{{ asset('assets/vendor/fullcalendar/js/main.min.js') }}"></script>
     <script src="{{ asset('js/scheduling/schedule-time.js') }}"></script>
-    <script src="{{ asset('js/scheduling/schedule-workspace.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/schedule-workspace.js') }}"></script>
 @endsection

@@ -20,7 +20,8 @@ class PilotAppointmentCashContext
         // Called only by Agenda, inside its appointment/operation transaction.
         $actor = User::whereKey($actorId)->lockForUpdate()->firstOrFail();
         abort_unless(config('scheduling.pilot_payment_without_manual_cash_shift')
-            && $actor->hasAnyRole(['COMERCIAL', 'ADMISION', 'ADMINISTRADOR']) && $actor->can(C::SUBMIT_PAYMENT), 403);
+            && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW)
+            && $actor->can(C::CREATE) && $actor->can(C::SUBMIT_PAYMENT), 403);
         if (!Schema::hasTable('appointment_pilot_cash_contexts')) {
             throw ValidationException::withMessages(['payment' => 'El contexto financiero del piloto todavía no está preparado.']);
         }

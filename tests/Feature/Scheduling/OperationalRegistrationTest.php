@@ -68,7 +68,7 @@ class OperationalRegistrationTest extends TestCase
     {
         $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
         Appointment::find($id)->update(['hora_cita' => '08:00:00']);
-        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'Este paciente ya tiene una cita o reserva en esta hora.');
+        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'No se pudo registrar en este intervalo. Revisa la disponibilidad o solicita revisión.');
         $this->assertDatabaseCount('appointments', 1);
         foreach (['RETIRO', 'CANCELADO', 'NO_ASISTIO'] as $released) {
             // Isolated historical state fixture; withdrawal mutation itself is tested through its workflow.
@@ -91,7 +91,7 @@ class OperationalRegistrationTest extends TestCase
         $this->create($this->payload(['responsible_user_id' => $other->id]))->assertForbidden();
         $this->actingAs($other)->getJson(route('scheduling.mvp.agenda.economy', $id))->assertNotFound();
         $this->getJson(route('scheduling.mvp.agenda.economy', 999999))->assertNotFound();
-        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'Este paciente ya tiene una cita o reserva en esta hora.');
+        $this->create($this->payload())->assertUnprocessable()->assertJsonPath('message', 'No se pudo registrar en este intervalo. Revisa la disponibilidad o solicita revisión.');
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000902', 'historia_clinica' => 'QA-2']);
         $this->create($this->payload(['patient_id' => $otherPatient->id]))->assertCreated(); $this->assertDatabaseCount('appointments', 2);
     }
@@ -111,7 +111,7 @@ class OperationalRegistrationTest extends TestCase
     public function test_real_ticket_payment_is_idempotent_and_cash_does_not_invent_operation_number(): void
     {
         $this->shift($this->actor);
-        $p = $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO'], 'precio_programado' => 1]);
+        $p = $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO'], 'precio_programado' => 100]);
         $id = $this->create($p)->assertCreated()->assertJsonPath('economy.pago_real', '50.00')->assertJsonPath('economy.saldo', '50.00')->json('appointment.appointment_id');
         $this->create($p)->assertCreated();
         $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('vouchers', 1);
@@ -133,19 +133,21 @@ class OperationalRegistrationTest extends TestCase
         $this->pay($id, $payment)->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->pay($id, $payment)->assertOk(); $this->assertEquals(50, Payment::sum('monto')); $this->assertDatabaseCount('payments', 2);
     }
-    public function test_two_paid_regular_reservations_never_convert_implicitly_even_with_additional_permission(): void
+    public function test_paid_regular_reservation_prevents_another_worker_even_with_additional_permission(): void
     {
         $this->shift($this->actor); $other = $this->actor('COMERCIAL'); $this->shift($other);
-        $payment = ['amount' => '50.00', 'method' => 'EFECTIVO'];
+        $payment = ['amount' => '20.00', 'method' => 'EFECTIVO'];
         $one = $this->create($this->payload(['payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000903', 'historia_clinica' => 'QA-3']);
-        $two = $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertCreated()->json('appointment.appointment_id');
-        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertOk()->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR');
-        $before = Appointment::findOrFail($two)->getAttributes();
-        $this->actingAs($other)->pay($two, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertConflict();
-        $this->assertSame($before, Appointment::findOrFail($two)->getAttributes());
-        $this->assertDatabaseCount('payments', 2);
-        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(100, Payment::sum('monto'));
+        $before=Appointment::findOrFail($one)->getAttributes();
+        $this->actingAs($other)->create($this->payload(['patient_id' => $otherPatient->id, 'payment' => $payment]))->assertConflict();
+        $this->assertSame($before, Appointment::findOrFail($one)->getAttributes());
+        $this->assertDatabaseCount('appointments',1); $this->assertDatabaseCount('payments',1);
+        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(20, Payment::sum('monto'));
+        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
+        $this->pay($one,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'30','method'=>'EFECTIVO']])
+            ->assertOk()->assertJsonPath('appointment.tipo_agendamiento','REGULAR');
+        $this->assertEquals(50,Payment::sum('monto'));
     }
     public function test_missing_shift_operation_or_insufficient_confirmation_rolls_back_every_write(): void
     {
@@ -157,7 +159,7 @@ class OperationalRegistrationTest extends TestCase
     }
     public function test_authorization_is_not_money_and_requires_explicit_capability(): void
     {
-        $p = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'autorizado_por' => 'DR QUIROZ']);
+        $p = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'DR QUIROZ']);
         $this->create($p)->assertForbidden();
         $this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST, 'web'));
         $this->create($p)->assertCreated()->assertJsonPath('economy.pago_real', '0.00')->assertJsonPath('economy.saldo', '0.00')->assertJsonPath('economy.asegurada', false);
@@ -192,6 +194,7 @@ class OperationalRegistrationTest extends TestCase
     }
     public function test_private_proof_download_and_external_links_reject_pii_exposure_and_unsafe_content(): void
     {
+        foreach ([C::UPDATE,'appointment.documents.view','appointment.documents.manage'] as $p) $this->actor->givePermissionTo(Permission::findOrCreate($p,'web'));
         Storage::fake('local');
         $id = $this->create($this->payload())->assertCreated()->json('appointment.appointment_id');
         $route = route('scheduling.mvp.documents.store', $id);
@@ -231,7 +234,7 @@ class OperationalRegistrationTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'proof');
         file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHYsAAAAASUVORK5CYII='));
         try {
-            $payload = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'LOCAL-PROOF-50']];
+            $payload = ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'LOCAL-PROOF-50'], 'proof_review'=>['reviewed'=>true,'source'=>'MANUAL']];
             $url = route('scheduling.mvp.agenda.payments', $id);
             for ($i = 0; $i < 2; $i++) {
                 $this->post($url, ['payload' => json_encode($payload), 'proof' => new UploadedFile($path, 'untrusted.exe', null, null, true)], ['Accept' => 'application/json'])
@@ -261,7 +264,7 @@ class OperationalRegistrationTest extends TestCase
             $this->withoutExceptionHandling();
             try {
                 $this->post(route('scheduling.mvp.agenda.payments', $id), ['payload' => json_encode(['request_key' => (string) Str::uuid(), 'confirm' => false,
-                    'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]), 'proof' => new UploadedFile($path, 'proof.png', null, null, true)], ['Accept' => 'application/json']);
+                    'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO'], 'proof_review'=>['reviewed'=>true,'source'=>'MANUAL']]), 'proof' => new UploadedFile($path, 'proof.png', null, null, true)], ['Accept' => 'application/json']);
                 $this->fail('The simulated history failure must propagate.');
             } catch (\RuntimeException $error) { $this->assertSame('QA failure after storage', $error->getMessage()); }
             $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);
@@ -292,6 +295,7 @@ class OperationalRegistrationTest extends TestCase
 
     public function test_an_additional_booking_stays_confirmed_without_consuming_the_regular_slot(): void
     {
+        $this->shift($this->actor);
         $this->create($this->payload())->assertCreated();
         $other = $this->createPatient($this->actor, [
             'historia_clinica' => 'HC-ADICIONAL-B',
@@ -302,6 +306,7 @@ class OperationalRegistrationTest extends TestCase
             'patient_id' => $other->id,
             'mode' => 'CONFIRM',
             'booking_type' => 'ADICIONAL',
+            'payment'=>['amount'=>'50','method'=>'EFECTIVO'],
         ]));
         $created->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA')->assertJsonPath('appointment.tipo_agendamiento', 'ADICIONAL');
         $this->assertSame($other->id, (int) Appointment::findOrFail($created->json('appointment.appointment_id'))->patient_id);

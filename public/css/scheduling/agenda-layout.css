@@ -218,3 +218,6 @@
 .agenda-board .agenda-calendar.fc .fc-daygrid-event .agenda-event__state { font-size: 9px; }
 
 .agenda-board .agenda-calendar.fc .fc-view { margin: 0; }
+
+.agenda-day-attention { display:block; font-size:10px; line-height:1.25; font-weight:500; }
+.agenda-week-event__booking { font-size:9px; font-weight:700; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

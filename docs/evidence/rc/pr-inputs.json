@@ -1,0 +1,97 @@
+{
+  "verified_at": "2026-10-14",
+  "main": "1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4",
+  "pull_requests": [
+    {
+      "number": 13,
+      "head": "codex/mvp-trabajadores-seguridad",
+      "head_sha": "b2a01218b2035198fefa3ce38cd06937baac9652",
+      "base": "codex/entrega-urgente-1-controles-heredados",
+      "base_sha": "fc4f278cd142824183ee6f99e8b8519a3f58098e",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/13"
+    },
+    {
+      "number": 12,
+      "head": "codex/mvp-admision-nicole",
+      "head_sha": "33d2097c320530aba202c8fb7795e7c41f763a68",
+      "base": "codex/mvp-pagos-ocr",
+      "base_sha": "52dc9d30351b7a438b9b79db506d7b148bcd14ef",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/12"
+    },
+    {
+      "number": 11,
+      "head": "codex/mvp-sede-magdalena",
+      "head_sha": "9d1eb295313ec8710238c7890fce507231a98f0c",
+      "base": "codex/entrega-urgente-1-controles-heredados",
+      "base_sha": "fc4f278cd142824183ee6f99e8b8519a3f58098e",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/11"
+    },
+    {
+      "number": 10,
+      "head": "codex/mvp-pagos-ocr",
+      "head_sha": "52dc9d30351b7a438b9b79db506d7b148bcd14ef",
+      "base": "codex/mvp-p0-agenda",
+      "base_sha": "7c02b4461fc4862550ebfc00b59a0c5c8eecae97",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/10"
+    },
+    {
+      "number": 9,
+      "head": "codex/mvp-p0-agenda",
+      "head_sha": "7c02b4461fc4862550ebfc00b59a0c5c8eecae97",
+      "base": "codex/mvp-agenda-duracion-contexto",
+      "base_sha": "a6fcb713cea5385dabfc923bda1abe7a949e4fbc",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/9"
+    },
+    {
+      "number": 8,
+      "head": "codex/mvp-agenda-duracion-contexto",
+      "head_sha": "a6fcb713cea5385dabfc923bda1abe7a949e4fbc",
+      "base": "codex/mvp-reevaluaciones-indicadas",
+      "base_sha": "09becbe9603bf4e296359229349b9a8d66719fdc",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/8"
+    },
+    {
+      "number": 7,
+      "head": "codex/mvp-reevaluaciones-indicadas",
+      "head_sha": "09becbe9603bf4e296359229349b9a8d66719fdc",
+      "base": "codex/mvp-precios-agenda",
+      "base_sha": "6f19a47cf418c7f052e76726334821316c495752",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/7"
+    },
+    {
+      "number": 6,
+      "head": "codex/mvp-precios-agenda",
+      "head_sha": "6f19a47cf418c7f052e76726334821316c495752",
+      "base": "codex/entrega-urgente-1-controles-heredados",
+      "base_sha": "fc4f278cd142824183ee6f99e8b8519a3f58098e",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/6"
+    },
+    {
+      "number": 5,
+      "head": "codex/entrega-urgente-1-controles-heredados",
+      "head_sha": "fc4f278cd142824183ee6f99e8b8519a3f58098e",
+      "base": "main",
+      "base_sha": "1a2c1895c5ab65d35928fc7244d3cb57e6b4adc4",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/5"
+    }
+  ],
+  "reverified_at": "2026-10-15"
+}

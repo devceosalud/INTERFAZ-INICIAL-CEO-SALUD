@@ -254,7 +254,7 @@
                             @if ($canWritePatients)
                                 Los datos maestros compatibles con el esquema actual se guardan de forma explícita.
                             @else
-                                Acceso de solo lectura. Completar o corregir la ficha corresponde a Admisión, Recepción y Comercial.
+                                Acceso de solo lectura. Completar o corregir la ficha corresponde a Administrador, Admisión, Recepción y Comercial.
                             @endif
                         </div>
 

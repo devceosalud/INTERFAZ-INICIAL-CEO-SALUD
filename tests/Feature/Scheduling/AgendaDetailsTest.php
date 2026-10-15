@@ -33,7 +33,7 @@ class AgendaDetailsTest extends TestCase
         $this->patchJson($url, ['interaction_medium_id' => $medium->id])->assertUnprocessable();
     }
 
-    public function test_contact_write_is_denied_to_read_only_role_and_hidden_appointment_context(): void
+    public function test_contact_write_is_denied_without_patient_write_role_and_for_hidden_appointment_context(): void
     {
         config(['scheduling.enabled' => true]);
         $owner = $this->agendaReader(); $other = $this->agendaReader();
@@ -41,7 +41,11 @@ class AgendaDetailsTest extends TestCase
         $appointment = $this->lifecycleAppointment($owner, $this->createAppointmentCatalog(), ['estado_agenda' => 'PENDIENTE_CONFIRMACION'], $patient);
         $url = route('patients.operational.agenda-contact', $patient->id);
         $this->actingAs($other)->patchJson($url, ['appointment_id' => $appointment->id, 'telefono' => '+51999000003'])->assertNotFound();
-        $this->actingAs($this->agendaReader('ADMINISTRADOR'))->patchJson($url, ['telefono' => '+51999000003'])->assertForbidden();
+        $reader = $this->createUser();
+        foreach ([C::MVP_ACCESS, C::VIEW] as $permission) {
+            $reader->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+        }
+        $this->actingAs($reader)->patchJson($url, ['telefono' => '+51999000003'])->assertForbidden();
         $this->assertNull($patient->fresh()->telefono);
     }
 
@@ -49,6 +53,7 @@ class AgendaDetailsTest extends TestCase
     {
         config(['scheduling.enabled' => true]);
         $owner = $this->agendaReader(); $owner->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
+        $owner->givePermissionTo(Permission::findOrCreate(C::UPDATE, 'web'));
         $appointment = $this->lifecycleAppointment($owner, $this->createAppointmentCatalog(),
             ['estado_agenda' => 'PENDIENTE_CONFIRMACION', 'motivo_consulta' => 'Anterior', 'observaciones' => 'Conservar']);
         $before = $appointment->fresh()->only(['patient_id', 'doctor_id', 'service_id', 'fecha_cita', 'hora_cita', 'precio_programado', 'total_pagado', 'estado_agenda']);
@@ -62,6 +67,12 @@ class AgendaDetailsTest extends TestCase
         $appointment->update(['es_exonerado' => false]);
         $this->getJson(route('scheduling.mvp.agenda.economy', $appointment->id))->assertOk()
             ->assertJsonPath('can_edit_notes', true)->assertJsonPath('es_exonerado', false);
+        $beforeRevoke=$appointment->fresh()->getAttributes();$events=\Illuminate\Support\Facades\DB::table('appointment_events')->count();
+        $owner->revokePermissionTo(C::UPDATE);
+        $this->patchJson($url,['observaciones'=>'Retirado UPDATE, conserva CREATE'])->assertForbidden();
+        $this->getJson(route('scheduling.mvp.agenda.economy',$appointment->id))->assertOk()->assertJsonPath('can_edit_notes',false);
+        $this->assertSame($beforeRevoke,$appointment->fresh()->getAttributes());
+        $this->assertSame($events,\Illuminate\Support\Facades\DB::table('appointment_events')->count());
     }
 
     public function test_notes_hide_private_ids_and_enforce_write_capability_for_public_appointments(): void

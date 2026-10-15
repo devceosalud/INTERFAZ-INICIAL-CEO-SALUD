@@ -23,28 +23,54 @@ use Illuminate\Validation\ValidationException;
 
 class OperationalRegistrationService
 {
-    public function register(array $data, User $actor, ?UploadedFile $proof = null): Appointment
+    public function register(array $data, User $actor, UploadedFile|array|null $proof = null): Appointment
     {
-        unset($data['proof']);
-        $hash = hash('sha256', json_encode($data).($proof ? hash_file('sha256', $proof->getRealPath()) : ''));
-        $storedPath = null;
+        abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
+            'No tienes permiso para registrar citas (appointment.create y appointment.view).');
+        // Current authorization precedes replaying a completed UUID as well as new writes.
+        if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
+        if(($data['booking_type']??null)==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
+        if(!empty($data['es_exonerado']))abort_unless($actor->can(Capability::APPROVE_ZERO_COST),403);
+        if(!empty($data['reevaluation_indication_id']) && !DB::table('appointment_operations')->where('actor_user_id',$actor->id)
+            ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
+            app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
+        }
+        $files=AppointmentPaymentProofs::files($proof,$data);
+        unset($data['proof'],$data['proofs']);
+        $hash = hash('sha256', json_encode($data).AppointmentPaymentProofs::fingerprint($files));
+        $storedPaths = [];
         try {
-            return DB::transaction(function () use ($data, $actor, $proof, $hash, &$storedPath) {
+            return DB::transaction(function () use ($data, $actor, $files, $hash, &$storedPaths) {
+                // A deadlock rolls back DB rows; remove only this operation's failed-attempt files before retrying.
+                if($storedPaths){Storage::disk('local')->delete($storedPaths);$storedPaths=[];}
                 // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
                 DB::table('appointment_operations')->upsert([['actor_user_id' => $actor->id,
                     'request_key' => $data['request_key'], 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
                 $op = DB::table('appointment_operations')->where('actor_user_id', $actor->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
                 abort_unless(hash_equals($op->payload_hash, $hash), 409, 'Esta operación ya fue usada con datos diferentes.');
                 if ($op->appointment_id) { return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404)); }
+                if(!empty($data['reevaluation_indication_id'])) {
+                    app(ReevaluationIndicationService::class)->eligible((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),
+                        (int)$data['service_id'],$data['fecha_cita'],$actor->id,null,true,(int)$data['doctor_id']);
+                }
                 Doctor::whereKey($data['doctor_id'])->lockForUpdate()->firstOrFail();
                 if ($data['mode'] === 'RESERVE' && $data['booking_type'] !== 'REGULAR') {
                     throw ValidationException::withMessages(['booking_type' => 'La reserva privada utiliza un intervalo regular.']);
+                }
+                if(!empty($data['cita_doble'])) {
+                    if($data['booking_type']!=='REGULAR') throw ValidationException::withMessages(['cita_doble'=>'La cita extendida requiere dos intervalos regulares consecutivos.']);
+                    $double=app(DoubleAppointmentDuration::class)->resolve((int)$data['doctor_id'],$data['fecha_cita'],$data['hora_cita'],$data['site_id']??null);
+                    if((int)$data['duracion_cita']!==$double['minutes']) throw ValidationException::withMessages(['duracion_cita'=>'La duración no coincide con dos intervalos vigentes. Actualiza la Agenda.']);
+                    $data['_legacy_double']=true;
                 }
                 $owner = $this->owner($actor, $data['responsible_user_id'] ?? null);
                 $waived = (bool) ($data['es_exonerado'] ?? false);
                 if (!empty($data['autorizado_por']) || $waived) {
                     abort_unless($actor->can($waived ? Capability::APPROVE_ZERO_COST : Capability::OVERRIDE_DOWN_PAYMENT), 403);
                     if (trim($data['autorizado_por'] ?? '') === '') { throw ValidationException::withMessages(['autorizado_por' => 'Indica quién autorizó la exoneración.']); }
+                }
+                if ($waived && trim((string)($data['motivo_exoneracion'] ?? '')) === '') {
+                    throw ValidationException::withMessages(['motivo_exoneracion'=>'Registra el motivo de la exoneración.']);
                 }
                 $patientId = $data['patient_id'] ?? null;
                 if (isset($data['patient'])) {
@@ -65,42 +91,55 @@ class OperationalRegistrationService
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
-                        'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER']);
+                        'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
+                        'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
+                        'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
+                        'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),
+                        'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null]);
                 $creator = app(CreateAppointmentService::class);
                 if ($data['booking_type'] === 'ADICIONAL') {
                     abort_unless($actor->can(Capability::CREATE_ADDITIONAL), 403); $a = $creator->createAdditional($create);
                 } elseif ($data['booking_type'] === 'FUERA_HORARIO') { $a = $creator->createOffHours($create); }
                 else { $a = $creator->createPending($create); }
-                $amount = Money::cents($data['payment']['amount'] ?? 0);
+                $amount = Money::cents($data['payment']['amount'] ?? 0); $payment=null;
+                if($files && $amount<1) throw ValidationException::withMessages(['proofs'=>'Adjunta comprobantes al registrar un pago positivo revisado. La imagen no registra dinero.']);
                 if ($amount > Money::cents($a->precio_programado)) { throw ValidationException::withMessages(['payment.amount' => 'El adelanto supera el precio de la cita.']); }
+                $expected = ['precio_programado' => Money::cents($a->precio_programado),
+                    'saldo_pendiente' => $waived ? 0 : Money::cents($a->precio_programado) - $amount];
+                foreach ($expected as $field => $value) {
+                    if (isset($data[$field]) && Money::cents($data[$field]) !== $value) {
+                        throw ValidationException::withMessages([$field => 'El precio o saldo enviado no coincide con el cálculo del servidor. Actualiza la cotización.']);
+                    }
+                }
                 if ($amount > 0) {
                     abort_unless($actor->can(Capability::SUBMIT_PAYMENT), 403, 'No tienes permiso para registrar adelantos (appointment.payment.submit). Puedes guardar una reserva sin pago.');
                     $tickets = app(AppointmentTicketService::class); $shift = $tickets->agendaShift($actor->id);
                     $v = $tickets->create($a, $shift, $actor->id);
-                    app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,
+                    $payment=app(VoucherPaymentRecorder::class)->record($v, $shift, $actor->id, $amount,
                         $data['payment']['method'] ?? '', $data['payment']['operation'] ?? null, $data['payment']['origin'] ?? null);
                     $v->update(['estado' => $amount === Money::cents($v->total) ? 'PAGADO' : 'PARCIAL']);
                 }
                 $a->update(['total_pagado' => Money::decimal($amount), 'saldo_pendiente' => $waived ? 0 : Money::decimal(Money::cents($a->precio_programado) - $amount),
                     'estado_pagado' => !$amount ? 'PENDIENTE' : ($amount === Money::cents($a->precio_programado) ? 'PAGADO' : 'PARCIAL')]);
-                if ($data['booking_type'] === 'REGULAR' && $data['mode'] === 'CONFIRM') {
+                if ($data['mode'] === 'CONFIRM') {
                     if (!$waived && !app(AppointmentEconomicPosition::class)->forAppointment($a)['secured']) {
                         throw ValidationException::withMessages(['payment.amount' => 'Para agendar se requiere adelanto real de al menos 50%. Puedes guardar una reserva privada.']);
                     }
-                    app(AppointmentSlotValidator::class)->assertUnoccupied($a->doctor_id, $data['fecha_cita'], $data['hora_cita'], $a->duracion_cita, $a->id);
+                    if($data['booking_type']==='REGULAR') app(AppointmentSlotValidator::class)->assertUnoccupied($a->doctor_id, $data['fecha_cita'], $data['hora_cita'], $a->duracion_cita, $a->id);
                     $a->update(['estado_agenda' => 'CONFIRMADA']);
                 }
-                if ($proof) {
-                    $storedPath = app(AppointmentProofStorage::class)->store($a, $actor->id, $proof)->private_path;
-                }
+                if ($files) app(AppointmentPaymentProofs::class)->store($a,$payment,$actor->id,$files,$data['proof_review'],$storedPaths);
                 foreach ($data['links'] ?? [] as $link) { $a->documents()->create(['type' => 'EXTERNAL_LINK', 'label' => $link['label'], 'url' => $link['url'], 'actor_user_id' => $actor->id]); }
                 DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
                 app(AppointmentHistory::class)->record($a, 'REGISTRO_OPERATIVO', $actor->id,
                     ['metadata' => ['mode' => $data['mode'], 'operation_id' => $op->id]]);
                 return $a;
-            });
+            },3);
         } catch (\Throwable $e) {
-            if ($storedPath) { Storage::disk('local')->delete($storedPath); } throw $e;
+            if ($storedPaths) { Storage::disk('local')->delete($storedPaths); }
+            if($e instanceof \Illuminate\Database\DeadlockException || ($e instanceof \Illuminate\Database\QueryException && in_array((int)($e->errorInfo[1]??0),[1205,1213],true)))
+                throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('La operación coincidió con otra escritura. Reintenta usando la misma solicitud; no repitas el cobro con una nueva clave.');
+            throw $e;
         }
     }
     private function owner(User $actor, ?int $selected): ?int
@@ -111,7 +150,7 @@ class OperationalRegistrationService
         }
         if ($selected !== null) {
             abort_unless($actor->hasRole('ADMINISTRADOR') && $actor->can(Capability::ASSIGN_RESPONSIBLE), 403);
-            abort_unless(User::whereKey($selected)->whereHas('roles', fn ($q) => $q->where('name', 'COMERCIAL'))->exists(), 422);
+            abort_unless(User::whereKey($selected)->where('is_active',true)->whereHas('roles', fn ($q) => $q->where('name', 'COMERCIAL'))->exists(), 422);
         }
         return $selected;
     }

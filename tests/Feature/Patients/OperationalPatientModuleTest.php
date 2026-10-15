@@ -334,7 +334,7 @@ class OperationalPatientModuleTest extends TestCase
         ]);
     }
 
-    public function test_admission_reception_and_commercial_can_create_and_update_patients(): void
+    public function test_operational_roles_including_administrator_can_create_and_update_patients(): void
     {
         $admission = $this->createUserWithRole('ADMISION');
         $channel = Channel::create(['nombre' => 'WhatsApp', 'estado' => 'ACTIVO']);
@@ -379,7 +379,7 @@ class OperationalPatientModuleTest extends TestCase
         $this->assertEquals($admission->id, $patient->user_id);
         $this->assertSame('01-73378485', $patient->historia_clinica);
 
-        foreach (['RECEPCION' => '70000011', 'COMERCIAL' => '70000012'] as $role => $document) {
+        foreach (['RECEPCION' => '70000011', 'COMERCIAL' => '70000012', 'ADMINISTRADOR' => '70000013'] as $role => $document) {
             $writer = $this->createUserWithRole($role);
             $created = $this->actingAs($writer)->postJson('/patients', [
                 'tipo_identificacion' => 'DNI',
@@ -401,8 +401,8 @@ class OperationalPatientModuleTest extends TestCase
         }
 
         $administrator = $this->createUserWithRole('ADMINISTRADOR');
-        $this->actingAs($administrator)->postJson('/patients', [])->assertForbidden();
-        $this->actingAs($administrator)->putJson('/patients/'.$patient->id, [])->assertForbidden();
+        $this->actingAs($administrator)->postJson('/patients', [])->assertUnprocessable();
+        $this->actingAs($administrator)->putJson('/patients/'.$patient->id, [])->assertUnprocessable();
     }
 
     public function test_patient_write_validation_prevents_duplicates_and_undocumented_fake_identifiers(): void
@@ -442,15 +442,15 @@ class OperationalPatientModuleTest extends TestCase
             ->assertDontSee('id="patient-save" disabled', false);
     }
 
-    public function test_an_administrator_renders_the_save_control_disabled(): void
+    public function test_an_administrator_renders_the_save_control_enabled(): void
     {
         $administrator = $this->createUserWithRole('ADMINISTRADOR');
 
         $this->actingAs($administrator)->get('/admin/patient')
             ->assertOk()
-            ->assertSee('data-can-write="0"', false)
-            ->assertSee('id="patient-save" disabled', false)
-            ->assertSee('Acceso de solo lectura');
+            ->assertSee('data-can-write="1"', false)
+            ->assertDontSee('id="patient-save" disabled', false)
+            ->assertDontSee('Acceso de solo lectura');
     }
 
     public function test_the_patient_table_has_no_double_click_open_handler(): void

@@ -41,8 +41,9 @@ $("#formUpdateAppointmentState").on("submit", function (e) {
         },
 
         error: function (xhr) {
-            console.log(xhr.responseText);
-            notificacion("error", "Error", xhr.responseText, 4000, false, false);
+            const message=xhr.status===403?'No tienes permiso para esta operación.':
+                (xhr.responseJSON?.message||'No se pudo actualizar. Consulta de nuevo el estado de la cita.');
+            notificacion("error", "Error", message, 4000, false, false);
         },
 
         complete: function () {

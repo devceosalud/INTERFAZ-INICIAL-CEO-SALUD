@@ -10,8 +10,8 @@ final class AgendaPermissionPlan
     public function forUser(User $user, string $profile): array
     {
         if (!in_array($profile, ['reserve', 'advance'], true)) { throw new \InvalidArgumentException('Perfil válido: reserve o advance.'); }
-        if (!$user->hasAnyRole(['COMERCIAL', 'ADMISION', 'ADMINISTRADOR'])) {
-            throw new \InvalidArgumentException('El usuario debe conservar un rol operativo autorizado: COMERCIAL, ADMISION o ADMINISTRADOR.');
+        if (!$user->roles()->where('guard_name', 'web')->exists()) {
+            throw new \InvalidArgumentException('El usuario debe conservar al menos un rol web existente.');
         }
         $required = [SchedulingCapability::MVP_ACCESS, SchedulingCapability::VIEW, SchedulingCapability::CREATE];
         if ($profile === 'advance') { $required[] = SchedulingCapability::SUBMIT_PAYMENT; }

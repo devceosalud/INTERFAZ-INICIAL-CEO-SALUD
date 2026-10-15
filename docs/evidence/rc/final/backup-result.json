@@ -1,0 +1,6 @@
+{
+    "scope":  "Fictitious owned local data only; not a production backup",
+    "files_verified":  30,
+    "dump_sha256":  "CD1F5D37E301403717D29E68BB8490B31E3EA471C337E10464A9C8D2741B157D",
+    "passed":  true
+}

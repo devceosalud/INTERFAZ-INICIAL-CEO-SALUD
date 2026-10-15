@@ -27,8 +27,7 @@ class OperationalAgendaAppointmentService
             return collect();
         }
 
-        return Appointment::query()
-            ->visibleToAgendaUser($actorId)
+        return $this->rangeQuery($query, $actorId)
             ->select([
                 'id',
                 'user_id',
@@ -52,19 +51,19 @@ class OperationalAgendaAppointmentService
                 'responsibleUser:id,name',
                 'user:id,name',
             ])
-            ->whereIn('doctor_id', $query->doctorIds())
-            ->whereBetween('fecha_cita', [
-                $query->start()->toDateString(),
-                $query->end()->toDateString(),
-            ])
             ->whereNotIn('estado_cita', AppointmentOccupancy::RELEASING_STATES)
-            ->when($query->siteId() !== null, function (Builder $builder) use ($query) {
-                $builder->where(function (Builder $site) use ($query) {
-                    $site->where('site_id', $query->siteId())->orWhereNull('site_id');
-                });
-            })
             ->orderBy('fecha_cita')
             ->orderBy('hora_cita')
             ->get();
+    }
+    /** Shared authenticated range; callers decide whether to include released care states. */
+    public function rangeQuery(AgendaQuery $query, int $actorId): Builder
+    {
+        return Appointment::visibleToAgendaUser($actorId)
+            ->whereIn('doctor_id', $query->doctorIds())
+            ->whereBetween('fecha_cita', [$query->start()->toDateString(), $query->end()->toDateString()])
+            ->when($query->siteId() !== null, function (Builder $builder) use ($query) {
+                $builder->where(fn (Builder $site) => $site->where('site_id', $query->siteId())->orWhereNull('site_id'));
+            });
     }
 }

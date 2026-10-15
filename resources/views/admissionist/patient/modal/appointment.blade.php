@@ -15,6 +15,9 @@
             <form id="formCreateAppointment" action="{{ route('admissionit.appointment.store') }}" method="POST">
 
                 @csrf
+                <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
+                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (con dinero protege horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
+                <p>El precio se calcula en el servidor. Registrar adelanto no confirma automáticamente.</p>
 
                 <div class="modal-body">
 
@@ -100,7 +103,7 @@
                                         class="text-danger">*</span></label>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="cita_doble">
+                                    <input class="form-check-input" type="checkbox" name="cita_doble" value="1" id="cita_doble">
 
                                     <label class="form-check-label" for="cita_doble">
                                         Generar turno doble
@@ -155,6 +158,23 @@
                     </div>
 
                     <hr>
+
+
+                    <div class="row g-3">
+                        <div class="col-md-12">
+    <label>Indicación médica acreditada · número opcional</label>
+    <input id="reevaluation_indication_id" name="reevaluation_indication_id" type="number" min="1" step="1" class="form-control">
+    <small>Sin indicación escrita registrada se cobra consulta normal; una indicación autoriza una sola cita.</small>
+    <label><input id="referral_attested" name="referral[attested]" type="checkbox" value="1"> Referido acreditado del Dr. Julio Quiroz</label>
+    <input id="referral_origin" name="referral[origin]" class="form-control" maxlength="255" placeholder="Origen verificable del referido" disabled>
+</div>
+<div class="col-md-4"><label for="discount_type">Descuento opcional</label><select id="discount_type" name="discount[type]" class="form-control"><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></div>
+                        <div class="col-md-4"><label for="discount_value">Valor de descuento</label><input id="discount_value" name="discount[value]" class="form-control" type="number" min="0" step="0.01" value="0"></div>
+                        <div class="col-md-4"><label for="discount_reason">Referencia · opcional</label><input id="discount_reason" name="discount[reason]" class="form-control" maxlength="500"></div>
+                        <div class="col-md-12"><label><input name="is_postoperative" type="checkbox" value="1"> Cita postoperatoria · no implica gratuidad</label></div>
+                        <div class="col-md-12"><label for="motivo_exoneracion">Motivo de exoneración</label><textarea id="motivo_exoneracion" name="motivo_exoneracion" class="form-control" maxlength="2000"></textarea></div>
+                    </div>
+                    <p id="legacy-quote-status" role="status">El precio y descuento se validan en servidor. Confirmar requiere el 50% neto.</p>
 
                     <!-- ================= PAGO ================= -->
                     <h6 class="fw-bold mb-3">Información de Pago</h6>

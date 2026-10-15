@@ -1,4 +1,5 @@
 //SCRIPT PARA LEER LOS DATOS DEL SELECT
+let legacyEditDoctorVersion=0,legacyEditServiceVersion=0,legacyEditHoursVersion=0;
 window.addEventListener('DOMContentLoaded', () => {
     console.log('CARGANDDO EDITAR CITAS');
 
@@ -63,8 +64,9 @@ $("#formUpdateSchedule").on("submit", function (e) { //formUpdateSchedule
         },
 
         error: function (xhr) {
-            console.log(xhr.responseText);
-            notificacion("error", "Error", xhr.responseText, 4000, false, false);
+            const message=xhr.status===403?'No tienes permiso para esta operación.':
+                (xhr.responseJSON?.message||'No se pudo reprogramar. Actualiza la cita y revisa el destino.');
+            notificacion("error", "Error", message, 4000, false, false);
         },
 
         complete: function () {
@@ -77,6 +79,9 @@ $("#formUpdateSchedule").on("submit", function (e) { //formUpdateSchedule
 
 //LLENAMOS LOS DOCTORES CON LA ESPECIALIDAD SELECCIONADA
 async function buscarMedicoPorEspecialidadEditarCita(event) {
+    const version=++legacyEditDoctorVersion;++legacyEditServiceVersion;
+    document.querySelector('#appointmentModalEdit #doctor_id_edit').replaceChildren(new Option('Seleccione',''));
+    document.querySelector('#appointmentModalEdit #service_id_edit').replaceChildren(new Option('Seleccione',''));
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -94,7 +99,7 @@ async function buscarMedicoPorEspecialidadEditarCita(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE DOCTORES', data);
+        if(version!==legacyEditDoctorVersion || document.querySelector('#appointmentModalEdit #specialty_id_edit').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -124,6 +129,8 @@ async function buscarMedicoPorEspecialidadEditarCita(event) {
 
 //LLENAMOS LOS SERVICIOS POR MEDICO SELECCIONADO
 async function buscarServicioPorMedicoCalendario(event) {
+    const version=++legacyEditServiceVersion;
+    document.querySelector('#appointmentModalEdit #service_id_edit').replaceChildren(new Option('Seleccione',''));
 
     const valor = event?.target?.value?.trim() || '';
     if (!valor) return;
@@ -141,7 +148,7 @@ async function buscarServicioPorMedicoCalendario(event) {
         });
 
         const data = await res.json();
-        console.log('RESPUESTA LISTA DE SERVICIOS POR DOCTOR', data);
+        if(version!==legacyEditServiceVersion || document.querySelector('#appointmentModalEdit #doctor_id_edit').value!==valor)return;
         if (data.code === 0) {
             notificacion("warning", "Precaución", data.message, 4000, false, false);
         }
@@ -174,6 +181,7 @@ async function buscarServicioPorMedicoCalendario(event) {
 
 //PARA CARGAR HORARIOS
 async function cargarHorariosEditarCita() {
+    const version=++legacyEditHoursVersion;
 
     let doctor_id = $('#appointmentModalEdit #doctor_id_edit').val();
     let fecha_cita = $('#appointmentModalEdit #fecha_cita_edit').val();
@@ -197,7 +205,7 @@ async function cargarHorariosEditarCita() {
         });
 
         const data = await res.json();
-        console.log("DATOS HORARIOS DOCTOR:", data);
+        if(version!==legacyEditHoursVersion || $('#appointmentModalEdit #doctor_id_edit').val()!==doctor_id || $('#appointmentModalEdit #fecha_cita_edit').val()!==fecha_cita || $('#appointmentModalEdit #cita_doble_edit').is(':checked')!==cita_doble)return;
         generarHorariosEditarCita(data.slots, cita_doble);
     } catch (error) {
         console.error(error);

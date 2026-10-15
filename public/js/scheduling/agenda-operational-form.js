@@ -40,7 +40,7 @@
         else {
             try {
                 const price = cents(input.price || '0'), amount = cents(input.amount || '0');
-                if (price <= 0) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
+                if (price <= 0 && !input.automaticFree) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
                 else if (amount > price) { reason = 'El adelanto supera el precio de la cita.'; }
                 else if (amount > 0 && !input.canPay) { reason = 'Guardar con adelanto requiere appointment.payment.submit. Puedes guardar la reserva con importe cero.'; }
             } catch (e) { reason = e.message; }
@@ -51,15 +51,15 @@
         let reason = '';
         if (!input.canCreate) { reason = 'No tienes permiso para guardar reservas ni crear citas (appointment.create). Solicita revisión al administrador.'; }
         else if (input.busy) { reason = 'Guardando. Espera el resultado de esta operación.'; }
-        else if (!input.slot) { reason = 'Selecciona un intervalo disponible para confirmar una cita.'; }
+        else if (!input.slot && !input.exception) { reason = 'Selecciona un intervalo disponible para confirmar una cita.'; }
         else if (!input.patient) { reason = 'Busca y selecciona un paciente activo para esta cita.'; }
         else if (!input.service) { reason = 'Selecciona un servicio activo para esta cita.'; }
-        else if (!input.exception) {
+        else {
             try {
                 const price = cents(input.price || '0'), amount = cents(input.amount || '0');
-                if (price <= 0) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
+                if (price <= 0 && !input.automaticFree) { reason = 'El servicio necesita un precio válido. Revisa el catálogo.'; }
                 else if (amount > price) { reason = 'El adelanto supera el precio de la cita.'; }
-                else if (!input.canPay && (!input.waived || amount > 0)) {
+                else if (!input.canPay && ((!input.waived && !input.automaticFree) || amount > 0)) {
                     reason = 'Puedes guardar una reserva sin pago. Registrar el adelanto requiere autorización (appointment.payment.submit) y revisión de Caja.';
                 } else if (!input.waived && amount * 2 < price) {
                     reason = 'Para confirmar registra al menos S/ ' + decimal(Math.ceil(price / 2)) + ' (50%). Puedes guardar una reserva sin confirmar.';
@@ -68,5 +68,13 @@
         }
         return { allowed: !reason, reason };
     }
-    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness };
+
+    function stateSummary(context) {
+        const c=context||{};
+        const agenda={CONFIRMADA:'CONFIRMADA',PENDIENTE_CONFIRMACION:'RESERVA PENDIENTE',LEGADO:'AGENDA HISTÓRICA'}[c.estado_agenda]||'AGENDA SIN ACREDITAR';
+        const care=String(c.estado_cita||'SIN ESTADO DE ATENCIÓN').replace(/_/g,' ');
+        const payment=String(c.estado_pagado||'SIN ESTADO FINANCIERO');
+        return {agenda,care,payment,description:'Horario: '+agenda+' · Atención: '+care+' · Pago: '+payment};
+    }
+    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness, stateSummary };
 }));

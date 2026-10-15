@@ -11,20 +11,21 @@ use App\Models\User;
  * patient.manage ni equivalente). La regla de negocio queda centralizada
  * en estos roles hasta que el proyecto defina esa capability.
  *
- * COMERCIAL forma parte de la regla. En la base local conocida ese rol
- * todavía no está creado: hay que reconciliarlo antes de desplegar.
+ * ADMINISTRADOR también puede crear y completar fichas operativas.
+ * Otros perfiles MVP con acceso, lectura, creación y edición efectivos pueden
+ * escribir fichas. Esta política no concede capacidades ni excepciones financieras.
  */
 final class PatientWriteAccess
 {
-    public const ROLES = ['ADMISION', 'RECEPCION', 'COMERCIAL'];
+    public const ROLES = ['ADMINISTRADOR', 'ADMISION', 'RECEPCION', 'COMERCIAL'];
 
     public static function middleware(): string
     {
-        return 'role:'.implode('|', self::ROLES);
+        return 'mvp-operational:write';
     }
 
     public static function allows(?User $user): bool
     {
-        return $user !== null && $user->hasAnyRole(self::ROLES);
+        return \App\Support\Scheduling\MvpOperationalAccess::writesPatients($user);
     }
 }

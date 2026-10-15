@@ -66,6 +66,7 @@ $(document).on("click", ".edit-doctor-schedule", async function (e) {
             let p = data.doctor_schedule;
             //PINTAR DATOS EN EL MODAL
             $("#doctorScheduleModalEdit #doctor_schedule_id_edit").val(p.id);
+            $("#doctorScheduleModalEdit #doctor_schedule_version_edit").val(p.expected_version);
             $("#doctorScheduleModalEdit #doctor_id_edit").val(p.doctor_id);
             $("#doctorScheduleModalEdit #dia_semana_edit").val(p.dia_semana);
             $("#doctorScheduleModalEdit #hora_inicio_edit").val(p.hora_inicio.substring(0, 5));
@@ -130,6 +131,7 @@ $(document).on("click", ".delete-doctor-schedule", async function (e) {
     e.preventDefault();
 
     let doctorScheduleId = $(this).data("id");
+    const expectedVersion = $(this).data('version');
 
     const result = await Swal.fire({
         title: "¿Está seguro de inactivar?",
@@ -156,6 +158,7 @@ $(document).on("click", ".delete-doctor-schedule", async function (e) {
             },
             body: JSON.stringify({
                 id: doctorScheduleId,
+                expected_version: expectedVersion,
             }),
         });
 

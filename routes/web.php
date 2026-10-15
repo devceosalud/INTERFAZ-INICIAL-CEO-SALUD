@@ -36,7 +36,7 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])
     ->name('admin.logout');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'role:ADMINISTRADOR|ADMISION|RECEPCION|COMERCIAL'])
+    ->middleware(['auth', 'mvp-operational'])
     ->name('admin.dashboard.index');
 
 // Future scheduling module. Its own middleware keeps the legacy routes intact.

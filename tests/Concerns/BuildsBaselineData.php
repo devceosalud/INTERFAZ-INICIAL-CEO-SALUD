@@ -28,6 +28,18 @@ trait BuildsBaselineData
 
         return $user;
     }
+    /** Explicit test fixture only. Ordinary createUserWithRole never grants management. */
+    protected function scheduleManager(string $roleName,array $attributes=[]): User
+    {
+        $user=$this->createUserWithRole($roleName,$attributes);
+        $user->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate(\App\Support\Scheduling\DoctorScheduleAccess::MANAGE,'web'));
+        return $user;
+    }
+    protected function scheduleVersion(int $id):?string
+    {
+        $row=DoctorSchedule::find($id);
+        return $row?\App\Services\Scheduling\DoctorScheduleMutation::version($row):null;
+    }
 
     protected function createSite(array $attributes = []): Site
     {

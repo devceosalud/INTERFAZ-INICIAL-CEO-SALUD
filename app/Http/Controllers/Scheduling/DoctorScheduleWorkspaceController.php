@@ -35,8 +35,8 @@ class DoctorScheduleWorkspaceController extends Controller
                 ->orderBy('nombre')
                 ->get(['id', 'nombre']),
             'sites' => Site::activo()->orderBy('nombre')->get(['id', 'nombre']),
-            'canManageSchedules' => $request->user()->hasAnyRole(['ADMISION', 'COMERCIAL']),
-            'today' => Carbon::today()->toDateString(),
+            'canManageSchedules' => \App\Support\Scheduling\DoctorScheduleAccess::allows($request->user()),
+            'today' => Carbon::today(config('scheduling.operational_timezone','America/Lima'))->toDateString(),
         ]);
     }
 
@@ -53,10 +53,10 @@ class DoctorScheduleWorkspaceController extends Controller
 
         $start = isset($data['start'])
             ? Carbon::parse($data['start'])->startOfDay()
-            : Carbon::today()->startOfMonth();
+            : Carbon::today(config('scheduling.operational_timezone','America/Lima'))->startOfMonth();
         $end = isset($data['end'])
             ? Carbon::parse($data['end'])->startOfDay()
-            : Carbon::today()->endOfMonth()->startOfDay();
+            : Carbon::today(config('scheduling.operational_timezone','America/Lima'))->endOfMonth()->startOfDay();
 
         $blocks = DoctorSchedule::query()
             ->where('estado', 'ACTIVO')
@@ -139,6 +139,7 @@ class DoctorScheduleWorkspaceController extends Controller
             'textColor' => '#ffffff',
             // Keep the inherited feed keys while the new workspace consumes extendedProps.
             'doctor_schedule_id_edit' => (int) $block->id,
+            'expected_version' => \App\Services\Scheduling\DoctorScheduleMutation::version($block),
             'doctor_id_edit' => (int) $block->doctor_id,
             'hora_inicio_edit' => substr((string) $block->hora_inicio, 0, 5),
             'hora_fin_edit' => substr((string) $block->hora_fin, 0, 5),
@@ -146,6 +147,7 @@ class DoctorScheduleWorkspaceController extends Controller
             'fecha_cita_edit' => $date->toDateString(),
             'extendedProps' => [
                 'schedule_id' => (int) $block->id,
+                'version' => \App\Services\Scheduling\DoctorScheduleMutation::version($block),
                 'doctor_id' => (int) $block->doctor_id,
                 'doctor_name' => (string) $block->doctor->nombre,
                 'doctor_initial' => $this->doctorInitials((string) $block->doctor->nombre),

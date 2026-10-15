@@ -1,0 +1,327 @@
+{
+  "stage": "jornada-reserves",
+  "started_at": "2026-10-15T14:16:42.661Z",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Comercial A crea paciente ficticio y reserva sin dinero desde modal",
+      "result": "PASS",
+      "ms": 2003
+    },
+    {
+      "name": "Comercial B no ve identidad de A y reserva el mismo intervalo todavía libre",
+      "result": "PASS",
+      "ms": 4261
+    },
+    {
+      "name": "Sin permiso financiero: campo y cobro HTTP rechazados; CSRF real rechaza 419",
+      "result": "PASS",
+      "ms": 2174
+    },
+    {
+      "name": "Administrador habilita cobros mediante editor, comercial refresca y puede ingresar adelanto",
+      "result": "PASS",
+      "ms": 3776
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/patient-lookup",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/economy",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/patient-lookup",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/1",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/registrations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/quote",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/economy",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/history",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/scheduling-mvp/agenda/appointments/2/payments",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/3/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/3/economy",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/3/documents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role/edit/4",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/ui-telemetry/click-events",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/admin/role/update/4",
+      "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/admin/role",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/feed",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/contingencies",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/regular-capacity",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/economy",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/scheduling-mvp/agenda/appointments/2/documents",
+      "status": 200
+    }
+  ],
+  "blocked_external_hosts": [],
+  "contexts": {},
+  "finished_at": "2026-10-15T14:16:58.802Z"
+}

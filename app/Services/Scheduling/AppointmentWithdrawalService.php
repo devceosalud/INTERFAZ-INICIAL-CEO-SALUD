@@ -76,8 +76,10 @@ class AppointmentWithdrawalService
             if ($type === 'ADICIONAL') { abort_unless($actor->can(C::CREATE_ADDITIONAL), 403); $b = $creator->createAdditional($dto); }
             elseif ($type === 'FUERA_HORARIO') { $b = $creator->createOffHours($dto); }
             else { $b = $creator->createPending($dto); }
+            if(!empty($data['credits'])) abort_unless($actor->can(C::SUBMIT_PAYMENT),403,'Aplicar crédito requiere appointment.payment.submit.');
             $this->reserveMoney($a, $op, $data['credits'] ?? [], $actor, $b);
             $p = app(AppointmentEconomicPosition::class)->forAppointment($b);
+            if($type!=='REGULAR' && !$p['secured']) throw ValidationException::withMessages(['credits'=>'Confirmar una cita especial también exige el 50% del precio neto.']);
             if ($type === 'REGULAR' && $p['secured']) {
                 app(AppointmentSlotValidator::class)->assertUnoccupied($b->doctor_id, $data['fecha_cita'], $data['hora_cita'], $b->duracion_cita, $b->id);
                 $b->update(['estado_agenda' => 'CONFIRMADA']);

@@ -1,0 +1,19 @@
+{
+  "max_in_flight": 1,
+  "initial_manual_reload_max_in_flight": 2,
+  "requests": 5,
+  "ticks": [
+    1792074302422,
+    1792074307796,
+    1792074313174,
+    1792074325593,
+    1792074330599
+  ],
+  "intervals_ms": [
+    5374,
+    5378,
+    12419,
+    5006
+  ],
+  "hidden_tab": "Unit-tested; actual headed-tab visibility transition pending"
+}

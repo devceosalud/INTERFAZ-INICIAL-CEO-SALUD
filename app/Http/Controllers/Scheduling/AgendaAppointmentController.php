@@ -16,10 +16,10 @@ use Illuminate\Http\JsonResponse;
 
 class AgendaAppointmentController extends Controller
 {
-    public function offHours(StoreAgendaAppointmentRequest $request, CreateAppointmentService $appointments): JsonResponse
+    public function offHours(StoreAgendaAppointmentRequest $request, \App\Services\Scheduling\OperationalRegistrationService $registrations): JsonResponse
     {
         try {
-            $appointment = $appointments->createOffHours(CreateAppointmentData::fromValidated($request->validated(), (int) $request->user()->id));
+            $appointment = $registrations->register($request->validated(), $request->user(), $request->file('proofs') ?? $request->file('proof'));
         } catch (AppointmentSlotUnavailableException $exception) {
             return response()->json(['message' => $exception->getMessage()], 409);
         } catch (AppointmentConfigurationException $exception) {
@@ -31,10 +31,10 @@ class AgendaAppointmentController extends Controller
         ]], 201);
     }
 
-    public function additional(StoreAdditionalAppointmentRequest $request, CreateAppointmentService $appointments): JsonResponse
+    public function additional(StoreAdditionalAppointmentRequest $request, \App\Services\Scheduling\OperationalRegistrationService $registrations): JsonResponse
     {
         try {
-            $appointment = $appointments->createAdditional(CreateAppointmentData::fromValidated($request->validated(), (int) $request->user()->id));
+            $appointment = $registrations->register($request->validated(), $request->user(), $request->file('proofs') ?? $request->file('proof'));
         } catch (AppointmentSlotUnavailableException $exception) {
             return response()->json(['message' => $exception->getMessage()], 409);
         } catch (AppointmentConfigurationException $exception) {
@@ -75,7 +75,7 @@ class AgendaAppointmentController extends Controller
         \App\Services\Scheduling\OperationalRegistrationService $registrations
     ): JsonResponse {
         try {
-            $appointment = $registrations->register($request->validated(), $request->user(), $request->file('proof'));
+            $appointment = $registrations->register($request->validated(), $request->user(), $request->file('proofs') ?? $request->file('proof'));
         } catch (AppointmentSlotUnavailableException $exception) {
             return response()->json(['message' => $exception->getMessage()], 409);
         } catch (AppointmentConfigurationException $exception) {

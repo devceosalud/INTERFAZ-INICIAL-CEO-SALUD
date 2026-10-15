@@ -67,67 +67,21 @@ class AppointmentController extends Controller
         ], 200);
     }
 
-    //PARA CALCULAR PRECIO 
     public function calculatedPrice(Request $request)
     {
-        $patient_id = $request->patient_id; //id de la tabla pacientes
-        $service_id = $request->service_id; //id de la tabla DoctorServices
-        $additional_rate_id = $request->additional_rate_id; //id de la tabla de tarifas
-        $es_exonerado = $request->es_exonerado; //check de que si es exonero o no
-
-        $service = app(ActiveDoctorServiceResolver::class)->resolveAssignment((int) $service_id,
-            $request->filled('doctor_id') ? (int) $request->doctor_id : null);
-
-        if (!$service) {
-            return response()->json([
-                'message' => 'Servicio no encontrado'
-            ], 404);
+        abort_unless($request->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW), 403);
+        \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
+        $data = $request->validate(\App\Support\Scheduling\AppointmentPriceInput::rules() + ['service_id' => 'required|integer', 'patient_id' => 'nullable|integer|min:0',
+            'doctor_id' => 'nullable|integer', 'additional_rate_id' => 'nullable|integer',
+            'fecha_cita' => 'nullable|date_format:Y-m-d', 'es_exonerado' => 'sometimes|boolean']);
+        $service = app(ActiveDoctorServiceResolver::class)->resolveAssignment($data['service_id'], $data['doctor_id'] ?? null);
+        $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
+            $data['patient_id'] ?? 0, (int) $request->user()->id, $data['fecha_cita'] ?? now()->toDateString(), $data['additional_rate_id'] ?? null, $data['discount'] ?? [],$data['reevaluation_indication_id'] ?? null,$data['referral'] ?? []);
+        if (!empty($data['es_exonerado'])) {
+            abort_unless($request->user()->can(\App\Support\Scheduling\SchedulingCapability::APPROVE_ZERO_COST), 403);
         }
-
-        //PARA PAGO EXONERADO , PRECIO CERO
-        if ($es_exonerado) {
-            return response()->json([
-                'precio_programado' => 0,
-                'total_pagado' => 0,
-                'tipo' => 'EXONERADO'
-            ]);
-        }
-
-        //PRECIO POR DEFECTO DE LA TABLA
-        $precio = $service->precio_primera_consulta;
-        $tipo = 'PRIMERA_CONSULTA';
-
-        //BUSCAMOS LA ULTIMA CITA
-        $ultimaCita = Appointment::where('patient_id', $patient_id)
-            ->where('service_id', $service_id)
-            ->where('estado_cita', 'ATENDIDO')
-            ->latest('fecha_cita')
-            ->first();
-
-        if ($ultimaCita) {
-            $dias = Carbon::parse($ultimaCita->fecha_cita)->diffInDays(now());
-            //SI SE ENCUENTRA DENTRO DE LOS 15 DIAS SE COBRA RECONSULTA
-            if ($service->dias_reconsulta > 0 && $dias <= $service->dias_reconsulta) {
-                $precio = $service->precio_reconsulta;
-                $tipo = 'RECONSULTA';
-            }
-        }
-
-        //TARIFA ADICIONAL POR RECOMENDACION O CAMPAÑA 
-        $rate = AdditionalRate::findOrFail($additional_rate_id);
-        if ($rate->tipo_tarifa == 'MONTO_FIJO') {
-            $precio += $rate->tarifa;
-        } elseif ($rate->tipo_tarifa == 'PORCENTAJE') {
-            $precio += ($precio * $rate->tarifa / 100);
-        }
-
-        if ($request->es_exonerado) {
-            $precio = 0;
-        }
-
-        return response()->json([
-            'precio_programado' => $precio,
-            'tipo' => $tipo
-        ]);
+        return response()->json(['precio_programado' => (float) $quote['precio_programado'], 'pricing_rule'=>$quote['pricing_rule'],'tipo' => $quote['tipo'],
+            'catalog_price'=>$quote['catalog_price'], 'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents']),
+            'total_pagado' => 0, 'importe_exigible' => !empty($data['es_exonerado']) ? '0.00' : $quote['precio_programado']]);
     }
 }
