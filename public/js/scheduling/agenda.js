@@ -1987,9 +1987,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Explicit actions only: pressing Enter in an input must never silently
+    // confirm a paid appointment instead of saving a private reservation.
     el.patientDraft.addEventListener('submit', function (event) {
         event.preventDefault();
-        savePatient(true);
+        if (state.draft) {
+            el.draftMessage.textContent = 'Para guardar, utiliza «Guardar reserva» o «Guardar y confirmar cita».';
+        }
     });
     el.patientRegister.addEventListener('click', function () {
         const draft = draftModel.open(state.identity, scheduleSnapshot());
@@ -2008,6 +2012,9 @@ document.addEventListener('DOMContentLoaded', function () {
     el.patientModal.querySelector('[data-modal-close]').addEventListener('click', closePatientModal);
     el.draftSave.addEventListener('click', function () {
         savePatient(false);
+    });
+    el.draftSaveSchedule.addEventListener('click', function () {
+        savePatient(true);
     });
     el.appointmentSubmit.addEventListener('click', () => {
         if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }
