@@ -32,7 +32,8 @@ class OperationalRegistrationController extends Controller
         catch (AppointmentConfigurationException $e) { return response()->json(['message' => $e->getMessage()], 422); }
         return response()->json(['message' => $a->estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'Reserva privada guardada' : 'Cita agendada',
             'appointment' => ['appointment_id' => $a->id, 'estado_agenda' => $a->estado_agenda,
-                'tipo_agendamiento' => $a->tipo_agendamiento, 'responsible_user_id' => $a->responsible_user_id],
+                'tipo_agendamiento' => $a->tipo_agendamiento, 'responsible_user_id' => $a->responsible_user_id,
+                'duracion_cita' => (int) $a->duracion_cita, 'duration_slots' => (int) ($a->duration_slots ?: 1)],
             'patient' => \App\Http\Controllers\Patients\OperationalPatientController::patientPayload($a->patient),
             'economy' => app(AppointmentEconomicPosition::class)->publicPosition($a)], 201);
     }
