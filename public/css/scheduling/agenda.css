@@ -646,6 +646,12 @@ body.agenda-modal-open {
     display: none;
 }
 
+/* SweetAlert2 confirms discarding drafts. Its default z-index (1060) is
+   below the Agenda patient modal (1200), making Cancel seem unresponsive. */
+body.agenda-viewport .swal2-container {
+    z-index: 1300 !important;
+}
+
 .agenda-patient-modal__backdrop {
     position: absolute;
     inset: 0;
