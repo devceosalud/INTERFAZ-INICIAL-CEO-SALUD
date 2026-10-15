@@ -19,9 +19,9 @@ class ReniecService
      * @param int|null $timeoutSeconds
      * @return array<string, mixed>|null
      */
-    public function consultar($dni, $timeoutSeconds = null)
+    public function consultar($dni, $timeoutSeconds = null, ?string $providerOverride = null)
     {
-        $provider = $this->provider($timeoutSeconds);
+        $provider = $this->provider($timeoutSeconds, $providerOverride);
 
         if ($provider === null) {
             return null;
@@ -39,9 +39,9 @@ class ReniecService
     /**
      * @param int|null $timeoutSeconds
      */
-    private function provider($timeoutSeconds): ?ReniecProviderInterface
+    private function provider($timeoutSeconds, ?string $providerOverride = null): ?ReniecProviderInterface
     {
-        $selected = config('apidatosperu.reniec_provider');
+        $selected = $providerOverride ?? config('apidatosperu.reniec_provider');
 
         if ($selected === 'insalud') {
             return new InsaludReniecProvider($timeoutSeconds);
