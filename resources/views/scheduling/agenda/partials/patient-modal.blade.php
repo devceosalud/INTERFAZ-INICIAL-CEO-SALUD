@@ -214,7 +214,7 @@
                 </span>
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
                 <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar reserva</button>
-                <button type="submit" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
+                <button type="button" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
                     Guardar y confirmar cita
                 </button>
             </footer>
