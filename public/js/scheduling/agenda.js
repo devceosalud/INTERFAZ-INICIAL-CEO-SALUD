@@ -241,9 +241,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const kind = options && options.bookingType;
             const copy = window.AgendaGuidance.copy;
             result.hidden = false;
-            result.textContent = pendingSaved
+            const savedAppointment = payload.appointment || {};
+            const extendedSaved = Number(savedAppointment.duration_slots) === 2;
+            const savedMessage = pendingSaved
                 ? (options && options.occupiedHour ? copy.reserveSavedHere : copy.reserveSaved)
                 : (kind === 'ADICIONAL' ? copy.additionalSaved : (kind === 'FUERA_HORARIO' ? copy.offHoursSaved : copy.appointmentSaved));
+            const savedId = Number(savedAppointment.appointment_id);
+            result.textContent = savedMessage
+                + (extendedSaved ? ' · Cita extendida: ' + Number(savedAppointment.duracion_cita) + ' min (2 intervalos).' : '')
+                + (Number.isSafeInteger(savedId) && savedId > 0 ? ' · N.º de cita: ' + savedId + '.' : '');
             if (pendingSaved) {
                 el.completeRegistration.hidden = false;
                 el.completeRegistration.disabled = false;
