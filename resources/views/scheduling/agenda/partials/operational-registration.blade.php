@@ -40,6 +40,7 @@
         </div>
         <small>El descuento se guarda con tu usuario. El adelanto mínimo es el 50% del precio neto. Una gratuidad discrecional requiere exoneración.</small>
         <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
+        <button type="button" id="agenda-op-quote-retry" class="agenda-btn" hidden>Reintentar cotización</button>
         <div class="agenda-patient-form-grid">
             <label class="agenda-field"><span>Precio neto de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Pagado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
