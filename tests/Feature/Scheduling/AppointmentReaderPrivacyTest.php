@@ -60,6 +60,28 @@ class AppointmentReaderPrivacyTest extends TestCase
         }
     }
 
+    public function test_assigned_private_reservation_remains_visible_in_feed_to_its_creator_and_assignee_only(): void
+    {
+        $unrelated = $this->agendaReader();
+        $reservation = $this->lifecycleAppointment($this->owner, $this->catalog, [
+            'estado_agenda' => Lifecycle::PENDING_CONFIRMATION,
+            'hora_cita' => '10:00:00',
+            'responsible_user_id' => $this->other->id,
+        ]);
+
+        foreach ([$this->owner, $this->other] as $reader) {
+            $response = $this->actingAs($reader)->getJson($this->feed())->assertOk();
+            $ids = collect($response->json('eventos'))
+                ->pluck('extendedProps.appointment_id')->filter()->all();
+            $this->assertContains($reservation->id, $ids);
+        }
+
+        $response = $this->actingAs($unrelated)->getJson($this->feed())->assertOk();
+        $ids = collect($response->json('eventos'))
+            ->pluck('extendedProps.appointment_id')->filter()->all();
+        $this->assertNotContains($reservation->id, $ids);
+    }
+
     public function test_foreign_pending_rows_leave_feed_calendar_and_availability_responses_unchanged(): void
     {
         $this->lifecycleAppointment($this->owner, $this->catalog);
