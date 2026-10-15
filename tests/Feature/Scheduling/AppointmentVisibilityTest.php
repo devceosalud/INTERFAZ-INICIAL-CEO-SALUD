@@ -51,6 +51,41 @@ class AppointmentVisibilityTest extends TestCase
             ->orderBy('agenda.id')->pluck('agenda.id')->map(fn ($id) => (int) $id)->all());
     }
 
+    public function test_creator_retains_pending_reservation_visibility_when_assigned_to_commercial(): void
+    {
+        [$creator, $appointments] = $this->fixtures();
+        $commercial = $this->createUser();
+        $unrelated = $this->createUser();
+        $reservation = $appointments['pending own'];
+        $reservation->update(['responsible_user_id' => $commercial->id]);
+
+        foreach ([$creator, $commercial] as $reader) {
+            $this->assertTrue(AppointmentVisibility::allows(
+                Lifecycle::PENDING_CONFIRMATION, $creator->id, $reader->id, $commercial->id
+            ));
+            $this->assertSame([$reservation->id], Appointment::whereKey($reservation->id)
+                ->visibleToAgendaUser($reader->id)->pluck('id')->all());
+            $this->assertSame([$reservation->id], AppointmentVisibility::apply(
+                DB::table('appointments as agenda')->where('agenda.id', $reservation->id),
+                $reader->id, 'agenda'
+            )->pluck('agenda.id')->map(fn ($id) => (int) $id)->all());
+        }
+
+        $this->assertFalse(AppointmentVisibility::allows(
+            Lifecycle::PENDING_CONFIRMATION, $creator->id, $unrelated->id, $commercial->id
+        ));
+        $this->assertFalse(Appointment::whereKey($reservation->id)
+            ->visibleToAgendaUser($unrelated->id)->exists());
+        $this->assertFalse(AppointmentVisibility::apply(
+            DB::table('appointments as agenda')->where('agenda.id', $reservation->id),
+            $unrelated->id, 'agenda'
+        )->exists());
+
+        // Assigning a different owner must never change the original creator identity.
+        $this->assertSame($creator->id, (int) $reservation->fresh()->user_id);
+        $this->assertSame($commercial->id, (int) $reservation->fresh()->responsible_user_id);
+    }
+
     public function test_scope_rejects_an_unauthenticated_actor(): void
     {
         $this->expectException(InvalidArgumentException::class);
