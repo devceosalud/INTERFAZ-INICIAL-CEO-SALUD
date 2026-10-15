@@ -30,7 +30,7 @@ class AgendaReniecLookupController extends Controller
         ]);
 
         try {
-            $result = $reniec->consultar($data['numero_identidad'], self::TIMEOUT_SECONDS);
+            $result = $reniec->consultar($data['numero_identidad'], self::TIMEOUT_SECONDS, config('apidatosperu.agenda_dni_provider'));
         } catch (\Throwable $exception) {
             $result = null;
         }
@@ -38,7 +38,7 @@ class AgendaReniecLookupController extends Controller
         if (!is_array($result)) {
             return response()->json([
                 'status' => 'unavailable',
-                'message' => config('apidatosperu.reniec_provider') === 'insalud'
+                'message' => config('apidatosperu.agenda_dni_provider') === 'insalud'
                     ? 'No se pudieron obtener datos de INSALUD. Puede continuar con el registro manual.'
                     : 'No se pudieron obtener datos de RENIEC. Puede continuar con el registro manual.',
             ]);
@@ -46,7 +46,7 @@ class AgendaReniecLookupController extends Controller
 
         return response()->json([
             'status' => 'prefilled',
-            'message' => config('apidatosperu.reniec_provider') === 'insalud'
+            'message' => config('apidatosperu.agenda_dni_provider') === 'insalud'
                 ? 'Nombres encontrados en INSALUD. Revise antes de continuar.'
                 : 'Datos encontrados en RENIEC. Revise y complete antes de continuar.',
             'identity' => [
