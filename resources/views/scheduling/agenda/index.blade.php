@@ -179,6 +179,7 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-guidance.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-help.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-form.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-form-validation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('vendor/appointment-ocr/tesseract.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-ocr.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-review.js') }}"></script>
