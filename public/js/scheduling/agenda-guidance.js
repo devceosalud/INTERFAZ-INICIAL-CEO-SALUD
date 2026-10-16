@@ -16,7 +16,7 @@
         needSelection: 'Selecciona paciente, servicio y horario.',
         needReservePatient: 'Selecciona el paciente de esta reserva.',
         needAppointment: 'Primero guarda la reserva o selecciona una cita.',
-        needDoctorHour: 'Selecciona una hora dentro del horario del médico.',
+        needDoctorHour: 'Selecciona una hora dentro del horario del profesional.',
         needAmount: 'Ingresa un monto mayor a S/0.',
         needDocument: 'Selecciona un archivo o agrega un enlace.',
         fileSaved: 'Comprobante adjuntado.',
@@ -31,7 +31,7 @@
         refundDone: 'Solicitud de devolución registrada.',
         resolved: 'Seguimiento resuelto.',
         additional: 'Cita adicional: paciente extra en una hora que ya tiene una cita regular.',
-        offHours: 'Fuera de horario: cita excepcional fuera del horario configurado del médico.',
+        offHours: 'Fuera de horario: cita excepcional fuera del horario configurado del profesional.',
         dniMiss: 'No se encontró el DNI. Completa los datos manualmente.',
         fileInvalid: 'Usa JPG, PNG o PDF de hasta 8 MB.',
         linkInvalid: 'Ingresa un enlace HTTPS válido.',
@@ -43,9 +43,9 @@
         resolveNote: 'Indica qué ocurrió: nueva hora, no contesta, no desea reprogramar…',
         legendPrivate: 'Pendiente de confirmación. Con adelanto o crédito protege el horario; visibilidad según permisos.',
         legendAdditional: 'Paciente extra en una hora que ya tiene una cita regular.',
-        legendOffHours: 'Atención excepcional fuera del horario configurado del médico.',
+        legendOffHours: 'Atención excepcional fuera del horario configurado del profesional.',
         miniCalendar: 'El color indica cuánto del horario regular ya está confirmado con adelantos.',
-        minutesFree: 'Minutos todavía disponibles dentro del horario del médico.',
+        minutesFree: 'Minutos todavía disponibles dentro del horario del profesional.',
         specials: 'Citas adicionales y atenciones fuera de horario.',
     };
 
@@ -118,7 +118,7 @@
     }
 
     function contingency(patient, when) {
-        return 'El horario del médico cambió. La reserva de ' + patient + ' para ' + when + ' se conservó. Contacta al paciente y ofrece otra hora.';
+        return 'El horario del profesional cambió. La reserva de ' + patient + ' para ' + when + ' se conservó. Contacta al paciente y ofrece otra hora.';
     }
 
     function invalidProof(file) {

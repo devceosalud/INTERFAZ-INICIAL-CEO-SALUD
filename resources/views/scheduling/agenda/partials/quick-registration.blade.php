@@ -54,7 +54,7 @@
 
         <dl class="agenda-quick__context agenda-fast-context">
             <div class="agenda-context-secondary"><dt>ID paciente</dt><dd id="agenda-quick-patient-id-display">—</dd></div>
-            <div><dt>Médico</dt><dd id="agenda-quick-doctor">—</dd></div>
+            <div><dt>Profesional</dt><dd id="agenda-quick-doctor">—</dd></div>
             <div class="agenda-context-secondary"><dt>Especialidad</dt><dd id="agenda-quick-specialty">—</dd></div>
             <div><dt>Fecha</dt><dd id="agenda-quick-date">—</dd></div>
             <div><dt>Hora</dt><dd id="agenda-quick-time">Seleccione un intervalo</dd></div>
@@ -65,7 +65,7 @@
             <div><dt>Estado</dt><dd id="agenda-quick-status">Sin cita</dd></div>
             <div><dt>Pago</dt><dd id="agenda-quick-payment">—</dd></div>
             <div class="agenda-context-secondary"><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
-            <div class="agenda-context-secondary"><dt>Quién agenda</dt><dd id="agenda-scheduler-user">{{ ($previewMode ?? false) ? 'Usuario de demostración' : (auth()->user()->name ?? 'Usuario autenticado') }}</dd></div>
+            <div class="agenda-registrar-context" id="agenda-registrar-context"><dt id="agenda-registrar-label">Operador actual</dt><dd id="agenda-scheduler-user">{{ ($previewMode ?? false) ? 'Usuario de demostración' : (auth()->user()->name ?? 'Usuario autenticado') }}</dd></div>
             <div class="agenda-context-secondary"><dt>Comercial dueño</dt><dd id="agenda-commercial-owner">Sin asignar</dd></div>
         </dl>
 
@@ -95,7 +95,7 @@
         <p class="agenda-fast-success" id="agenda-registration-result" role="status" hidden></p>
 
         <p class="agenda-quick__message" id="agenda-quick-message">
-            Seleccione médico, fecha, intervalo disponible, paciente y servicio.
+            Seleccione profesional, fecha, intervalo disponible, paciente y servicio.
         </p>
 
         <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
@@ -157,7 +157,7 @@
             </form>
             <p class="agenda-overlap__result" id="agenda-overlap-result" role="status" aria-live="polite"></p>
             <a class="agenda-link" href="{{ route('admissionit.doctor.schedule.index') }}" id="agenda-schedule-link">
-                Configurar horarios médicos
+                Configurar horarios profesionales
             </a>
         </details>
     </div>

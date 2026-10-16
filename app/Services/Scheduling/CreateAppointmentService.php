@@ -132,6 +132,7 @@ class CreateAppointmentService
                         'discount_reason' => $quote['discount']['reason'],
                         'discount_actor_user_id' => $quote['discount']['amount_cents'] > 0 ? $actor->id : null,
                         'is_postoperative' => (bool) ($data->operational['is_postoperative'] ?? false),
+                        'has_diabetic_wound' => (bool) ($data->operational['has_diabetic_wound'] ?? false),
                         'motivo_exoneracion' => $data->operational['motivo_exoneracion'] ?? null,
                         'total_pagado' => 0,
                         'saldo_pendiente' => $price,
@@ -152,7 +153,7 @@ class CreateAppointmentService
                     app(AppointmentHistory::class)->record($appointment,'PRECIO_REGISTRADO',$actor->id,
                         ['metadata'=>['catalog_price'=>$quote['catalog_price'],'net_price'=>$price,
                             'pricing_rule'=>$quote['pricing_rule'],'indication_id'=>$quote['indication']?->id,'referral_origin'=>$quote['referral_origin'],
-                            'discount'=>$quote['discount'],'is_postoperative'=>(bool)$appointment->is_postoperative,
+                            'discount'=>$quote['discount'],'is_postoperative'=>(bool)$appointment->is_postoperative,'has_diabetic_wound'=>(bool)$appointment->has_diabetic_wound,
                             'exemption'=>(bool)$appointment->es_exonerado,
                             'exemption_reason'=>$appointment->motivo_exoneracion]]);
                     return $appointment;

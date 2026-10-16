@@ -4,6 +4,9 @@ namespace App\Services\Scheduling;
 
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\User;
+use App\Services\Billing\AppointmentEconomicPosition;
+use App\Support\Scheduling\AgendaAppointmentPresentation;
 use App\Support\Scheduling\AgendaLegend;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\AgendaRange;
@@ -52,13 +55,20 @@ class AgendaBoardPresenter
         );
 
         $availability = $this->availability->forRange($agenda);
-        $appointments = $this->appointments->forRange($agenda, $actorId);
+        $appointments = $this->appointments->forPresentationRange($agenda, $actorId);
+        $positions = app(AppointmentEconomicPosition::class)->forAppointments($appointments, []);
+        $presentations = $appointments->mapWithKeys(fn($a)=>[$a->id=>AgendaAppointmentPresentation::of($a,$positions[$a->id])]);
         $compareProfessionals = $doctors->count() > 1;
+        $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows(User::findOrFail($actorId));
+        if ($canSeeCreator) $appointments = $appointments->filter(fn($a)=>$presentations[$a->id]['paid_real'] || $presentations[$a->id]['present'] || $presentations[$a->id]['departed'] || $presentations[$a->id]['refund_requested'] || $presentations[$a->id]['informational']);
 
-        $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range, $appointments) {
+        $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range, $appointments, $presentations) {
             $professional = $this->professional($doctor, $agenda, $availability, $range);
             foreach ($professional['dias'] as &$day) {
                 $visible = $appointments->filter(fn ($a) => (int) $a->doctor_id === (int) $doctor->id && substr((string) $a->fecha_cita, 0, 10) === $day['fecha']);
+                $day['seguimiento'] = [];
+                foreach ($visible as $a) foreach ($presentations[$a->id]['badges'] as $badge) { $key=$badge['clave']; $day['seguimiento'][$key]=($day['seguimiento'][$key]??0)+1; }
+                $visible = $visible->whereNotIn('estado_cita',AppointmentOccupancy::RELEASING_STATES);
                 $day['especiales'] = [
                     'adicionales' => $visible->where('estado_agenda', AppointmentAgendaLifecycle::CONFIRMED)->where('tipo_agendamiento', AppointmentAgendaLifecycle::ADDITIONAL)->count(),
                     'fuera_horario' => $visible->where('tipo_agendamiento', AppointmentAgendaLifecycle::OFF_HOURS)->count(),
@@ -73,20 +83,23 @@ class AgendaBoardPresenter
             'rango' => $range->toArray(),
             'site_id' => $siteId,
             'comparando' => $compareProfessionals,
+            'vista_operativa' => $canSeeCreator ? 'SEGUIMIENTO_ADMIN' : 'HABITUAL',
             // Historical withdrawals are separate from the current occupants and capacity.
-            'retiros' => Appointment::visibleToAgendaUser($actorId)->where('estado_cita', 'RETIRO')
+            'retiros' => $range->isDetailed() ? Appointment::visibleToAgendaUser($actorId)->where('estado_cita', 'RETIRO')
                 ->whereIn('doctor_id', $agenda->doctorIds())->whereBetween('fecha_cita', [$range->start()->toDateString(), $range->end()->toDateString()])
                 ->when($siteId !== null, fn ($q) => $q->where(fn ($s) => $s->where('site_id', $siteId)->orWhereNull('site_id')))
                 ->with('patient:id,nombre,apellido_paterno,apellido_materno')->orderByDesc('fecha_cita')->orderBy('hora_cita')->limit(100)->get()
                 ->map(fn ($a) => ['appointment_id' => $a->id, 'fecha' => substr($a->fecha_cita, 0, 10), 'hora' => substr($a->hora_cita, 0, 5),
-                    'patient' => trim($a->patient->apellido_paterno.' '.$a->patient->apellido_materno.' '.$a->patient->nombre), 'duracion' => $a->duracion_cita])->all(),
+                    'patient' => trim($a->patient->apellido_paterno.' '.$a->patient->apellido_materno.' '.$a->patient->nombre), 'duracion' => $a->duracion_cita])->all() : [],
             'profesionales' => $professionals->all(),
             'eventos' => $this->events(
                 $professionals,
                 $range,
                 $compareProfessionals,
                 $appointments,
-                $appointments->isEmpty() ? collect() : $appointments->whereIn('id',Appointment::whereIn('id',$appointments->pluck('id'))->occupyingInterval()->pluck('id'))
+                $appointments->isEmpty() ? collect() : $appointments->whereIn('id',Appointment::whereIn('id',$appointments->pluck('id'))->occupyingInterval()->pluck('id')),
+                $canSeeCreator,
+                $presentations->all()
             ),
             'leyenda' => AgendaLegend::ordered(),
             'resumen' => $this->totals($professionals->pluck('resumen')),
@@ -186,13 +199,15 @@ class AgendaBoardPresenter
         AgendaRange $range,
         bool $comparing,
         Collection $appointments,
-        Collection $visibleOccupants
+        Collection $visibleOccupants,
+        bool $canSeeCreator,
+        array $presentations
     ): array {
         $events = collect();
 
         foreach ($professionals as $professional) {
             foreach ($professional['dias'] as $day) {
-                if (! $day['con_horario'] && array_sum($day['especiales']) === 0) {
+                if (! $day['con_horario'] && array_sum($day['especiales']) === 0 && array_sum($day['seguimiento']) === 0) {
                     continue;
                 }
 
@@ -229,7 +244,7 @@ class AgendaBoardPresenter
                     continue;
                 }
 
-                $events->push($this->appointmentEvent($appointment, $professional));
+                $events->push($this->appointmentEvent($appointment, $professional, $canSeeCreator, $presentations[$appointment->id]));
             }
         }
 
@@ -285,18 +300,14 @@ class AgendaBoardPresenter
      *
      * @return array<string, mixed>
      */
-    protected function appointmentEvent(Appointment $appointment, array $professional): array
+    protected function appointmentEvent(Appointment $appointment, array $professional, bool $canSeeCreator, array $presentation): array
     {
         $state = (string) $appointment->estado_cita;
         $additional = $appointment->estado_agenda === AppointmentAgendaLifecycle::CONFIRMED
             && $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::ADDITIONAL;
         $offHours = $appointment->tipo_agendamiento === AppointmentAgendaLifecycle::OFF_HOURS;
         $private = $appointment->estado_agenda === 'PENDIENTE_CONFIRMACION';
-        $legend = AgendaLegend::of($private ? 'PENDIENTE_CONFIRMACION' : ($offHours ? AgendaLegend::OFF_HOURS_APPOINTMENT : ($additional ? AgendaLegend::ADDITIONAL : (
-            in_array($state, [AgendaLegend::SCHEDULED, AgendaLegend::CONFIRMED], true)
-                ? $state
-                : AgendaLegend::BUSY
-        ))));
+        $legend = $presentation;
         $date = substr((string) $appointment->fecha_cita, 0, 10);
         $start = substr((string) $appointment->hora_cita, 0, 5);
         $minutes = $this->appointmentMinutes($appointment, $professional, $date, $start);
@@ -331,6 +342,7 @@ class AgendaBoardPresenter
                 'duration_slots' => (int) ($appointment->duration_slots ?: 1),
                 'estado' => AvailabilitySlot::STATUS_OCCUPIED,
                 'estado_cita' => $state,
+                'presentation' => $presentation,
                 'estado_agenda' => $appointment->estado_agenda,
                 'tipo_agendamiento' => $appointment->tipo_agendamiento,
                 'estado_pagado' => $paymentState !== '' ? $paymentState : null,
@@ -352,8 +364,10 @@ class AgendaBoardPresenter
                 'responsable' => $appointment->responsibleUser
                     ? $appointment->responsibleUser->name
                     : null,
-                'creator_user_id' => $appointment->user_id ? (int) $appointment->user_id : null,
-                'creador' => $appointment->user ? $appointment->user->name : null,
+                ...($canSeeCreator ? [
+                    'creator_user_id' => $appointment->user_id ? (int) $appointment->user_id : null,
+                    'creador' => $appointment->user?->name,
+                ] : []),
             ],
         ];
     }
@@ -423,6 +437,7 @@ class AgendaBoardPresenter
                 'especialidad' => $professional['especialidad'],
                 'fecha' => $day['fecha'],
                 'especiales' => $day['especiales'],
+                'seguimiento' => $day['seguimiento'],
                 'libres' => $summary['libres'],
                 'ocupadas' => $summary['ocupadas'],
                 'seleccionable' => false,

@@ -120,7 +120,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('js/scheduling/agenda-patient-lookup.js', false)
             ->assertSee('js/scheduling/agenda-appointment-create.js', false)
             ->assertSeeInOrder(['Hora', 'Citado', 'Pago', 'H.C.', 'Apellidos y nombres'])
-            ->assertSee('Seleccione médico, fecha, intervalo disponible, paciente y servicio.')
+            ->assertSee('Seleccione profesional, fecha, intervalo disponible, paciente y servicio.')
             ->assertSee('id="agenda-appointment-submit"', false)
             ->assertSee('id="agenda-appointment-submit" disabled', false);
     }
@@ -172,7 +172,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('data-can-write="1"', false)
             ->assertSee('Guardado habilitado para Administrador, Admisión, Recepción y Comercial.')
             ->assertDontSee('id="agenda-draft-save" disabled', false)
-            ->assertSee('Quién agenda')
+            ->assertSee('Operador actual')
             ->assertSee($admission->name);
     }
 
@@ -633,7 +633,7 @@ class AgendaBoardTest extends TestCase
             (float) $event['extendedProps']['precio_programado']
         );
         $this->assertSame($appointment->service_id, $event['extendedProps']['service_id']);
-        $this->assertSame((int) $appointment->user_id, $event['extendedProps']['creator_user_id']);
+        $this->assertArrayNotHasKey('creator_user_id', $event['extendedProps']);
         $this->assertNull($event['extendedProps']['responsible_user_id']);
         $this->assertStringNotContainsString('hora_cita', $body);
     }
@@ -658,8 +658,8 @@ class AgendaBoardTest extends TestCase
         $this->assertEquals(150, (float) $event['extendedProps']['precio_programado']);
         $this->assertSame($commercial->id, $event['extendedProps']['responsible_user_id']);
         $this->assertSame($commercial->name, $event['extendedProps']['responsable']);
-        $this->assertSame((int) $appointment->user_id, $event['extendedProps']['creator_user_id']);
-        $this->assertSame($appointment->user->name, $event['extendedProps']['creador']);
+        $this->assertArrayNotHasKey('creator_user_id', $event['extendedProps']);
+        $this->assertArrayNotHasKey('creador', $event['extendedProps']);
         $this->assertSame('PROGRAMADO', $event['extendedProps']['estado_cita']);
         $this->assertSame('PENDIENTE', $event['extendedProps']['estado_pagado']);
     }
@@ -730,10 +730,10 @@ class AgendaBoardTest extends TestCase
 
     /**
      * A whole month of several professionals must not cost a query per day. The engine reads
-     * the blocks once and the appointments once, so a month costs the same as a single day —
-     * which is the claim worth testing, rather than an arbitrary ceiling.
+     * the blocks once and the appointments once. Month omits exactly the detailed withdrawal
+     * query to keep its summary anonymous; expanding the range must not introduce N+1 reads.
      */
-    public function test_a_month_costs_the_same_number_of_queries_as_a_single_day(): void
+    public function test_month_omits_the_detailed_withdrawal_query_without_range_dependent_reads(): void
     {
         $others = collect(range(1, 3))->map(fn ($i) => $this->extraDoctor('Doctora '.$i));
         $month = Carbon::parse($this->monday);
@@ -756,7 +756,7 @@ class AgendaBoardTest extends TestCase
         $full = $this->countQueries(fn () => $request('mes'));
 
         $this->assertSame(
-            $day,
+            $day - 1,
             $full,
             'Un mes costó '.$full.' consultas frente a '.$day.' de un solo día.'
         );

@@ -26,9 +26,9 @@
         </label>
 
         <div class="agenda-field agenda-field--doctor">
-            <span class="agenda-field__label">Médico</span>
+            <span class="agenda-field__label">Profesional</span>
             <button type="button" class="agenda-filter-button" id="agenda-doctor-filter">
-                <span id="agenda-doctor-filter-summary">Primer médico disponible</span>
+                <span id="agenda-doctor-filter-summary">Primer profesional disponible</span>
             </button>
         </div>
 
@@ -55,3 +55,7 @@
         </div>
     </div>
 </header>
+
+@if(auth()->user()->hasRole('ADMINISTRADOR'))
+<p class="agenda-follow-up-notice" role="note">Seguimiento: pagos reales, pacientes presentes, cancelaciones y retiros efectivos. Las reservas privadas conservan su responsable autorizado.</p>
+@endif

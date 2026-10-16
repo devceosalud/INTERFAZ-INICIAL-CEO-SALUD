@@ -224,3 +224,16 @@ test('reserva pagada ajena se muestra ocupada sin identidad ni modo fuera de hor
     const actions=require('../../public/js/scheduling/agenda-appointment-actions');
     assert.equal(actions.reserveIntent(row.context,1,1).post,false);
 });
+
+test('released red history and active appointment on reused hour remain distinct rows and never offer that occupied hour',()=>{
+ for(const state of ['CANCELADO','RETIRO']){
+  const old=appointment(81,'10:00','10:20',state),current=appointment(82,'10:00','10:20','CONFIRMADO');
+  old.backgroundColor='#fecaca';old.extendedProps.presentation={informational:true};current.backgroundColor='#fff2a6';
+  const occupied={...free('10:00','10:20',20),estado:'OCUPADO'};
+  const model=grid.build({date,professional:professional([occupied]),events:[old,current]});
+  const row=model.rows.find(r=>r.start==='10:00');
+  assert.deepEqual(row.items.map(i=>i.context.appointment_id).sort(),[81,82]);assert.equal(row.availableContext,null);
+  assert.equal(row.items.find(i=>i.context.appointment_id===81).backgroundColor,'#fecaca');
+  assert.equal(row.items.find(i=>i.context.appointment_id===82).backgroundColor,'#fff2a6');
+ }
+});

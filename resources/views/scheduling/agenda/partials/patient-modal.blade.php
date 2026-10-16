@@ -199,7 +199,7 @@
                 </details>
                 <div id="agenda-op-modal-host"></div>
                 <div class="agenda-patient-dialog__schedule">
-                    <span>Médico: <strong id="agenda-draft-context-doctor">—</strong></span>
+                    <span>Profesional: <strong id="agenda-draft-context-doctor">—</strong></span>
                     <span>Fecha: <strong id="agenda-draft-context-date">—</strong></span>
                     <span>Hora: <strong id="agenda-draft-context-time">—</strong></span>
                     <span>Sede: <strong id="agenda-draft-context-site">—</strong></span>

@@ -10,10 +10,10 @@
         <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
     </div>
     <div class="agenda-mini__grid" id="agenda-mini-grid" role="grid" aria-label="Seleccionar fecha"></div>
-    <div class="agenda-mini-legend" aria-label="Ocupación segura del médico">
+    <div class="agenda-mini-legend" aria-label="Ocupación segura del profesional">
         <span title="0–49% de capacidad regular"><i class="agenda-mini-legend__dot" data-capacity="verde" aria-hidden="true"></i>Disponible</span>
         <span title="50–79% de capacidad regular"><i class="agenda-mini-legend__dot" data-capacity="amarillo" aria-hidden="true"></i>Medio</span>
         <span title="80% o más de capacidad regular"><i class="agenda-mini-legend__dot" data-capacity="rojo" aria-hidden="true"></i>Lleno</span>
-        <span title="Médico sin horario activo"><i class="agenda-mini-legend__dot" data-capacity="plomo" aria-hidden="true"></i>Sin horario</span>
+        <span title="Profesional sin horario activo"><i class="agenda-mini-legend__dot" data-capacity="plomo" aria-hidden="true"></i>Sin horario</span>
     </div>
 </section>

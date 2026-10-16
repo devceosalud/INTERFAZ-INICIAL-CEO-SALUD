@@ -1,18 +1,18 @@
 <section data-ui-zone="doctors" class="agenda-operations__section agenda-doctors" aria-labelledby="agenda-doctors-title">
     <div class="agenda-pane-head">
         <div>
-            <h2 class="agenda-section-title" id="agenda-doctors-title">Médicos</h2>
+            <h2 class="agenda-section-title" id="agenda-doctors-title">Profesionales</h2>
             <p id="agenda-compare-hint">Cargando disponibilidad…</p>
         </div>
-        <label class="agenda-compare-control" title="Permite seleccionar varios médicos para comparar su carga">
+        <label class="agenda-compare-control" title="Permite seleccionar varios profesionales para comparar su carga">
             <input type="checkbox" id="agenda-compare-toggle">
             <span>Comparar</span>
         </label>
     </div>
 
     <label class="agenda-doctor-search">
-        <span class="agenda-visually-hidden">Buscar médico</span>
-        <input type="search" id="agenda-doctor-search" placeholder="Buscar médico" autocomplete="off">
+        <span class="agenda-visually-hidden">Buscar profesional</span>
+        <input type="search" id="agenda-doctor-search" placeholder="Buscar profesional" autocomplete="off">
     </label>
 
     <div class="agenda-doctor-list" id="agenda-doctor-list">
@@ -35,6 +35,6 @@
 
     <div class="agenda-doctors__footer">
         <span>Un clic abre una agenda.</span>
-        <button type="button" class="agenda-text-button" id="agenda-doctor-reset">Primer médico</button>
+        <button type="button" class="agenda-text-button" id="agenda-doctor-reset">Primer profesional</button>
     </div>
 </section>

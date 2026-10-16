@@ -20,6 +20,7 @@
         <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label class="agenda-field"><span>Observación operativa</span><textarea id="agenda-op-note" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label><input id="agenda-op-postoperative" type="checkbox"> Cita postoperatoria · no implica gratuidad</label>
+        <label><input id="agenda-op-has-wound" type="checkbox"> Pie diabético con herida · selección explícita para esta cita</label>
         <button id="agenda-op-save-notes" class="agenda-btn" type="button" hidden>Guardar motivo y observación</button>
         <small id="agenda-op-notes-tip">Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.</small>
         <p id="agenda-op-notes-status" class="agenda-action-notice" role="status" hidden></p>

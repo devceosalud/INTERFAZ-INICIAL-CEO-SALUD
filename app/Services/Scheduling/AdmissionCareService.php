@@ -25,7 +25,16 @@ class AdmissionCareService
             Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             abort_if((int)$a->doctor_id !== (int)$original->doctor_id || $a->estado_cita !== $data['expected_state'],409,'La cita cambió. Actualiza antes de continuar.');
+            abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
             abort_unless(in_array($data['state'],app(AdmissionBoardService::class)->careActions($a,$actor),true),422,'La transición no está disponible. Confirma la reserva en Agenda antes de registrar atención.');
+            if ($data['state'] === 'SALIDA_REGISTRADA') {
+                abort_unless(trim((string)($data['motivo'] ?? '')) !== '',422,'Registra el motivo o constancia de salida.');
+                $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
+                app(AppointmentHistory::class)->record($a,'ADMISION_SALIDA_REGISTRADA',$actor->id,
+                    ['motivo'=>$data['motivo'], 'metadata'=>['state'=>'ATENDIDO','timestamp_field'=>'hora_salida','operation_id'=>$op->id]]);
+                DB::table('appointment_operations')->where('id',$op->id)->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+                return $a;
+            }
             $request = Request::create('/','POST',['appointment_id'=>$id,'estado_cita'=>$data['state'],'request_key'=>$data['request_key']]);
             $request->setUserResolver(fn () => $actor);
             $a = app(LegacyAppointmentMutation::class)->update($request);

@@ -8,10 +8,12 @@ const guidance = require('../../public/js/scheduling/agenda-guidance');
 const root = path.resolve(__dirname, '../..');
 function source(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }
 
-test('comprobante se puede seleccionar en Documentos sin abrir ni registrar adelanto', () => {
+test('comprobante permanece dentro de Registrar adelanto según PR24 y no se duplica en Documentos', () => {
     const view = source('resources/views/scheduling/agenda/partials/operational-registration.blade.php');
     const documents = view.slice(view.indexOf('id="agenda-op-documents-panel"'));
-    assert.match(documents,/id="agenda-op-proof"[^>]*type="file"/);
+    assert.doesNotMatch(documents,/id="agenda-op-proof"/);
+    const payment = view.slice(view.indexOf('id="agenda-op-payment-panel"'), view.indexOf('id="agenda-op-documents-panel"'));
+    assert.match(payment,/id="agenda-op-proof"[^>]*type="file"/);
     assert.equal((view.match(/id="agenda-op-proof"/g)||[]).length,1);
 });
 
@@ -45,7 +47,7 @@ test('guardar reserva nombra el siguiente paso y los botones apagados explican p
     assert.equal(guidance.copy.needSelection, 'Selecciona paciente, servicio y horario.');
     assert.equal(guidance.copy.needReservePatient, 'Selecciona el paciente de esta reserva.');
     assert.equal(guidance.copy.needAppointment, 'Primero guarda la reserva o selecciona una cita.');
-    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora dentro del horario del médico.');
+    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora dentro del horario del profesional.');
     assert.equal(guidance.copy.cashNoOperation, 'No se requiere número de operación para efectivo.');
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-pending-tip/);
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-payment-tip/);
@@ -93,7 +95,7 @@ test('retiro, devolución, adicional y fuera de horario usan una línea operativ
 
 test('la contingencia dice qué hacer y no muestra un id interno', () => {
     const text = guidance.contingency('Ana Pérez', '23/11/2026 10:00');
-    assert.match(text, /El horario del médico cambió/);
+    assert.match(text, /El horario del profesional cambió/);
     assert.match(text, /Ana Pérez/);
     assert.match(text, /23\/11\/2026 10:00/);
     assert.match(text, /Contacta al paciente/);
@@ -282,7 +284,7 @@ test('la ayuda clickeable reemplaza el símbolo de información en lo obvio', ()
     assert.doesNotMatch(legend, /ⓘ/);
     assert.doesNotMatch(calendar, /ⓘ/);
     assert.doesNotMatch(withdrawal, /ⓘ/);
-    assert.match(legend, /Minutos todavía disponibles dentro del horario del médico/);
+    assert.match(legend, /Minutos todavía disponibles dentro del horario del profesional/);
     assert.match(legend, /Citas adicionales y atenciones fuera de horario/);
     assert.match(calendar, /El color indica cuánto del horario regular ya está confirmado con adelantos/);
     assert.match(withdrawal, /No asistió: nunca llegó/);

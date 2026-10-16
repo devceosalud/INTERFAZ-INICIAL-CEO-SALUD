@@ -1,0 +1,178 @@
+{
+  "baseline": "2b4f1e8db81b8629aa8508cb41f45b0a263e660c",
+  "branch": "codex/agenda-etapa-a-semaforizacion",
+  "tested_code_commit": "3cec2579e616e6ed4a765f14283d33c403800b2c",
+  "tested_code_tree": "32782c1791f5be4dd829c1de0ffe5791aebacf0d",
+  "environment": {
+    "os": "Windows local",
+    "php": "8.3.35",
+    "laravel": "9.52.21",
+    "phpunit": "9.6.34",
+    "node": "26.3.0",
+    "mariadb": "11.8.9",
+    "database": "ceosalud_qa_agenda_a",
+    "host": "127.0.0.1",
+    "port": 33323,
+    "sqlite": ":memory:",
+    "browser": "155.0.8059.79",
+    "real_data": false,
+    "external_egress": false
+  },
+  "php": {
+    "command": "php vendor/phpunit/phpunit/phpunit --colors=never",
+    "result": "PASS",
+    "tests": 920,
+    "assertions": 7393,
+    "failures": 0,
+    "time": "01:53.077",
+    "memory_mb": 178
+  },
+  "mariadb": {
+    "command": "php vendor/phpunit/phpunit/phpunit -c phpunit.agenda-stage-a.xml --colors=never",
+    "scope": "10 feature families, isolated schema, not the entire PHP suite on MariaDB",
+    "result": "PASS",
+    "tests": 207,
+    "assertions": 1970,
+    "failures": 0,
+    "time": "00:20.899",
+    "memory_mb": 78
+  },
+  "javascript": {
+    "command": "powershell -File tools/qa/run-js.ps1 -Report stage-a-js-3cec257.txt",
+    "result": "PASS",
+    "tests": 279,
+    "failures": 0,
+    "skipped": 0,
+    "duration_ms": 7291.4855
+  },
+  "browser": {
+    "command": "node tools/qa/browser-agenda-stage-a.cjs",
+    "result": "PASS",
+    "cases": [
+      {
+        "name": "Bases blanco/amarillo y chips HERIDA/POSTOP junto al nombre, sin pintar el slot",
+        "result": "PASS"
+      },
+      {
+        "name": "Otros comerciales no reciben reservas privadas ni nombres del creador por JSON",
+        "result": "PASS"
+      },
+      {
+        "name": "ADMIN ve solo seguimiento autorizado y distingue registró del responsable por teclado",
+        "result": "PASS"
+      },
+      {
+        "name": "Cancelada posterior a llegada es roja e informativa; intervalo sigue disponible",
+        "result": "PASS"
+      },
+      {
+        "name": "Semana mantiene colores y detalle del creador; Mes sigue anónimo y admite apertura por teclado",
+        "result": "PASS"
+      },
+      {
+        "name": "Marca HERIDA explícita se guarda desde UI sin cobro ni confirmación",
+        "result": "PASS"
+      },
+      {
+        "name": "Nicol registra llegada real y Agenda cambia a turquesa; ATENDIDO solo no tacha",
+        "result": "PASS"
+      },
+      {
+        "name": "Salida explícita después de ATENDIDO exige constancia y mantiene dinero; nombre tachado en Día/Semana/Nicol",
+        "result": "PASS"
+      },
+      {
+        "name": "Dos sesiones y dos procesos HTTP compiten por salida: un éxito, un conflicto y un solo evento",
+        "result": "PASS"
+      },
+      {
+        "name": "Viewport móvil verificado 390px permite navegar y consultar el estado sin desbordar documento",
+        "result": "PASS"
+      }
+    ],
+    "page_errors": [],
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "document_width": 390,
+      "physical_device": false
+    },
+    "started_at": "2026-10-16T02:08:47.676Z",
+    "finished_at": "2026-10-16T02:09:15.469Z",
+    "independent_contexts": 4,
+    "departure_race": {
+      "statuses": [
+        200,
+        409
+      ],
+      "audit_delta": 1,
+      "operation_delta": 1
+    },
+    "week_geometry": {
+      "right": 865.75,
+      "nameWidth": 38.421875,
+      "chips": [
+        {
+          "right": 824.359375,
+          "width": 33.046875
+        },
+        {
+          "right": 857.203125,
+          "width": 30.84375
+        }
+      ]
+    }
+  },
+  "database_invariants": {
+    "synthetic_appointments": 11,
+    "payments": 3,
+    "payment_total": "90.00",
+    "operations": 10,
+    "audit_events": 25,
+    "new_ui_reservation_paid": false,
+    "new_ui_reservation_confirmed": false,
+    "concurrent_departure_single_audit": true,
+    "departed_state_preserved": "ATENDIDO"
+  },
+  "syntax": {
+    "php_files": 42,
+    "javascript_files": 9,
+    "failures": 0
+  },
+  "privacy": {
+    "private_reservation_rule_changed": false,
+    "creator_admin_only": true,
+    "creator_and_responsible_distinct": true,
+    "month_anonymous": true,
+    "clarity_source_unchanged": true,
+    "production_privacy_approved": false
+  },
+  "pending_business_decisions": [],
+  "issues": {
+    "25": "IMPLEMENTED_TESTED_PENDING_REVIEW",
+    "26": "IMPLEMENTED_TESTED_PENDING_REVIEW",
+    "27": "IMPLEMENTED_TESTED_PENDING_REVIEW"
+  },
+  "release": "DRAFT_REVIEWABLE_NOT_PRODUCTION_CERTIFIED",
+  "local_raw_evidence_sha256": {
+    "storage/app/qa-stage-a/php-3cec257.txt": "e913e65aa20a1720ffc5726ae997e8e3f301529e6fafbc50b68869c2c21f4e80",
+    "storage/app/qa-stage-a/maria-3cec257.txt": "3c9e9be5cf3f701774ae1e57ffe9c09c4973e6eebdff82e7c2bffc626f1eb285",
+    "storage/app/qa-rc/stage-a-js-3cec257.txt": "318891ceb94bd89cd85bde4502058d85fabf0da2b0a003403dd4e8252fb54cfe",
+    "storage/app/qa-stage-a/browser.json": "4ea11f13459f6485e3e3c87669204094f2542dd977a27d5f6e42d6c642defb38",
+    "storage/app/qa-stage-a/mobile.png": "550ee9e2f880c336e834326d91f93504ddf90bd1cd2f862ee6b5301c343499a3",
+    "storage/app/qa-stage-a/week-departure.png": "afd1568990c655c2a3e07698b7989525ce4b94c9f20bbd8f09337ae4719f1e38"
+  },
+  "approved_visual_policy": {
+    "base_priority": [
+      "RED",
+      "TURQUOISE",
+      "YELLOW",
+      "WHITE"
+    ],
+    "wound": "FUCHSIA_CHIP_ONLY",
+    "postoperative": "GRAY_CHIP_ONLY",
+    "departure": "EXPLICIT_AFTER_ATENDIDO",
+    "strikethrough": "ATENDIDO_AND_HORA_SALIDA",
+    "refund_red": "REQUEST_ONLY_NO_MONEY_EXECUTION_OR_CAPACITY_CHANGE"
+  }
+}

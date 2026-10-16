@@ -204,6 +204,8 @@ class WorkerAccessTest extends TestCase
         $owner=$this->agendaReader('COMERCIAL');$owner->update(['name'=>'OPERADOR QA INACTIVO']);
         $catalog=$this->createAppointmentCatalog();$patient=$this->createPatient($this->admin);
         $old=$this->lifecycleAppointment($this->admin,$catalog,['responsible_user_id'=>$owner->id,'fecha_cita'=>$catalog['schedule']->fecha_cita],$patient);
+        // ADMIN follow-up includes arrived history, even if the former responsible is inactive.
+        $old->forceFill(['hora_llegada'=>now()])->save();
         $this->state($owner,false)->assertOk();
         $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$patient->id,
             'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'fecha_cita'=>$catalog['schedule']->fecha_cita,

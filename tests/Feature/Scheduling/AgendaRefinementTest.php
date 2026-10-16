@@ -117,7 +117,8 @@ class AgendaRefinementTest extends TestCase
         foreach (['dia', 'semana'] as $view) {
             $events = collect($this->feed($view)->assertOk()->json('eventos'))->pluck('extendedProps');
             $this->assertNotNull($events->firstWhere('appointment_id', $regular));
-            $this->assertSame('ADICIONAL', $events->firstWhere('appointment_id', $additional)['etiqueta']);
+            $this->assertSame('ADICIONAL', $events->firstWhere('appointment_id', $additional)['tipo_agendamiento']);
+            $this->assertSame('PAGO_REAL', $events->firstWhere('appointment_id', $additional)['leyenda']);
         }
         $this->feed('mes')->assertOk()->assertJsonPath('especiales.adicionales', 1);
         $this->assertSame([$regular], Appointment::consumingRegularSlot()->pluck('id')->all());

@@ -92,6 +92,22 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertNull($appointment->autorizado_por);
     }
 
+
+    public static function ordinaryRoles(): array { return [['ADMISION'],['COMERCIAL'],['RECEPCION']]; }
+    /** @dataProvider ordinaryRoles */
+    public function test_non_admin_registration_response_omits_creator_but_preserves_server_audit(string $role): void
+    {
+        $this->creator->syncRoles([\Spatie\Permission\Models\Role::findOrCreate($role,'web')]);
+        $response = $this->postAppointment([])->assertCreated();
+        $this->assertArrayNotHasKey('creator_user_id', $response->json('appointment'));
+        $this->assertArrayNotHasKey('updated_by_user_id', $response->json('appointment'));
+        $this->assertSame($this->creator->id, (int) Appointment::sole()->updated_by_user_id);
+        $appointment = Appointment::sole();
+        $this->assertSame($this->creator->id, (int) $appointment->user_id);
+        $this->assertDatabaseHas('appointment_events', ['appointment_id' => $appointment->id,
+            'event_type' => 'RESERVA_CREADA', 'actor_user_id' => $this->creator->id]);
+    }
+
     /**
      * @dataProvider programmedDurations
      */

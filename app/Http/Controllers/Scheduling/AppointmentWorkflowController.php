@@ -17,12 +17,14 @@ class AppointmentWorkflowController extends Controller
             || ($r->user()->can(C::CREATE) && $r->user()->can(C::RESCHEDULE)), 403);
         $a = Appointment::visibleToAgendaUser($r->user()->id)->whereKey($appointmentId)->firstOr(fn () => abort(404));
         $events = $a->events()->with('actor:id,name')->orderByDesc('id')->get();
+        $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows($r->user());
         // Related private appointments never become a discovery channel through public history.
         $related = Appointment::visibleToAgendaUser($r->user()->id)->whereIn('id', $events->pluck('related_appointment_id')->filter())->pluck('id');
         $p = app(AppointmentEconomicPosition::class)->forAppointment($a);
         return response()->json(['appointment_id' => $a->id, 'estado_cita' => $a->estado_cita,
             'events' => $events->map(fn ($e) => ['type' => $e->event_type, 'motivo' => $e->motivo, 'occurred_at' => $e->occurred_at->toIso8601String(),
-                'actor' => $e->actor?->name, 'requested_action' => $e->requested_action,
+                // Keep the stored audit intact; registration identity is ADMIN-only, including indirect event lookups.
+                'actor' => \App\Support\Scheduling\AgendaCreatorVisibility::eventActor($a, $e, $canSeeCreator), 'requested_action' => $e->requested_action,
                 'related_appointment_id' => $related->contains($e->related_appointment_id) ? $e->related_appointment_id : null,
                 'refund_request_status' => $e->refund_request_status]),
             'available_credit' => collect($p['available_by_voucher'])->map(fn ($amount, $id) => ['voucher_id' => (int) $id, 'amount' => Money::decimal($amount)])->values(),

@@ -18,7 +18,7 @@
 
         return {
             mode: 'Sin selección',
-            doctor: base.doctor || 'Sin médico disponible',
+            doctor: base.doctor || 'Sin profesional disponible',
             specialty: base.specialty || '—',
             date: base.date || '—',
             time: base.time || 'Seleccione un intervalo',
@@ -68,7 +68,7 @@
             service: appointment ? (context.servicio || 'Servicio no registrado') : 'Pendiente de selección',
             price: appointment ? money(context.precio_programado) : '—',
             commercial: appointment ? (context.responsable || 'Sin asignar') : 'Sin asignar',
-            creator: appointment ? (context.creador || '—') : null,
+            creator: appointment && context.creador ? context.creador : null,
             status: appointment
                 ? (context.estado_cita || context.etiqueta || 'Ocupada')
                 : (offHours ? 'Fuera de horario' : (occupied ? 'Ocupado' : 'Sin cita')),
@@ -79,6 +79,11 @@
         };
     }
 
+    function registrationDescription(context) {
+        if (context.tipo_contexto !== 'cita_existente' || !context.creador) { return ''; }
+        return 'Registró: ' + context.creador + ' · Comercial responsable: ' + (context.responsable || 'Sin asignar');
+    }
+
     function showDayColumns(view, comparing) {
         return view === 'dia' && !comparing;
     }
@@ -86,6 +91,7 @@
     return {
         empty: empty,
         fromContext: fromContext,
+        registrationDescription: registrationDescription,
         showDayColumns: showDayColumns,
     };
 }));

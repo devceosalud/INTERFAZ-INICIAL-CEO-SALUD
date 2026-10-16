@@ -221,3 +221,21 @@
 
 .agenda-day-attention { display:block; font-size:10px; line-height:1.25; font-weight:500; }
 .agenda-week-event__booking { font-size:9px; font-weight:700; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Appointment signals are scoped to Agenda; labels preserve meaning without colour. */
+.agenda-board .agenda-presentation-badge { display:inline-block; padding:2px 5px; margin:2px; border:1px solid currentColor; border-radius:3px; font-size:11px; font-weight:700; white-space:normal; line-height:1.3; }
+.agenda-board .agenda-follow-up-notice { margin:4px 0; color:#374151; font-size:13px; }
+.agenda-board .agenda-week-event__booking { white-space:normal; }
+.agenda-board .agenda-day-entry--appointment .agenda-day-cell--4 { display:block; white-space:normal; }
+.agenda-board .agenda-event--month-summary { display:block; line-height:1.05; }
+.agenda-board .agenda-event--month-summary .agenda-event__line { font-size:9px; }
+.agenda-board .agenda-event--month-summary .agenda-event__state { font-size:8px; }
+.agenda-board .agenda-month-signal { display:inline-block; font-size:8px; padding:0 2px; margin-right:1px; border:1px solid currentColor; border-radius:2px; line-height:1; }
+.agenda-board .agenda-patient-name.is-departed { text-decoration:line-through; }
+
+/* Compact week columns retain a readable name and both medical chips within the interval. */
+.agenda-board .agenda-week-event__primary { flex:0 0 auto; min-height:10px; }
+.agenda-board .agenda-week-event__patient { display:block; flex:1 1 auto; white-space:nowrap; font-size:9px; line-height:11px; }
+.agenda-board .agenda-week-signals { display:flex; gap:2px; flex:0 0 auto; line-height:9px; overflow:hidden; }
+.agenda-board .agenda-week-signals .agenda-presentation-badge { font-size:7px; margin:0; padding:0 1px; line-height:9px; white-space:nowrap; }
+.agenda-board .agenda-week-event__booking { font-size:7px; line-height:9px; white-space:nowrap; flex:0 0 auto; }

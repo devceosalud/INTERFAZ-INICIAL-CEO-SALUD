@@ -37,7 +37,7 @@ class Appointment extends Model
     }
     use HasFactory;
 
-    protected $casts = ['is_postoperative'=>'boolean','catalog_price'=>'decimal:2','discount_value'=>'decimal:2','discount_amount'=>'decimal:2'];
+    protected $casts = ['hora_salida'=>'datetime','has_diabetic_wound'=>'boolean','is_postoperative'=>'boolean','catalog_price'=>'decimal:2','discount_value'=>'decimal:2','discount_amount'=>'decimal:2'];
     protected $fillable = [
         'numero_cita',
         'site_id',
@@ -67,7 +67,7 @@ class Appointment extends Model
         'observaciones',
         'fecha_registro',
         'economic_source', 'pricing_rule','referral_origin','referral_recorded_by_user_id','catalog_price', 'discount_type', 'discount_value', 'discount_amount',
-        'discount_reason', 'discount_actor_user_id', 'is_postoperative', 'motivo_exoneracion',
+        'discount_reason', 'discount_actor_user_id', 'is_postoperative', 'has_diabetic_wound', 'motivo_exoneracion',
     ];
 
     /** Opt-in scope; it does not change existing readers automatically. */
