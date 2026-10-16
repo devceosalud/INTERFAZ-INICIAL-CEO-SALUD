@@ -1,0 +1,34 @@
+name: Agenda compact legend regression
+
+on:
+  pull_request:
+    paths:
+      - 'app/Support/Scheduling/AgendaLegend.php'
+      - 'app/Http/Controllers/Scheduling/AgendaBoardController.php'
+      - 'tests/Feature/Scheduling/AgendaBoardTest.php'
+      - '.github/workflows/agenda-compact-legend-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-feature:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - name: PHP syntax
+        run: |
+          php -l app/Support/Scheduling/AgendaLegend.php
+          php -l app/Http/Controllers/Scheduling/AgendaBoardController.php
+          php -l tests/Feature/Scheduling/AgendaBoardTest.php
+      - name: Locked dependencies, isolated environment
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Agenda UI and state regression (SQLite in memory)
+        run: php artisan test --filter=AgendaBoardTest
