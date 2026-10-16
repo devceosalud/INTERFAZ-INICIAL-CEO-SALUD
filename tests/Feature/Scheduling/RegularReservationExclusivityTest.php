@@ -50,6 +50,7 @@ class RegularReservationExclusivityTest extends TestCase
         $data=$this->payload(['payment'=>['amount'=>$amount,'method'=>'EFECTIVO']]);
         $url='/scheduling-mvp/agenda/registrations';
         if($entry==='legacy'){
+            $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
             $url='/admissionist/appointment/store';$data['service_id']=$this->catalog['doctorService']->id;
             $data['total_pagado']=$amount;$data['metodo_pago']='EFECTIVO';unset($data['payment']);
         }
@@ -62,6 +63,7 @@ class RegularReservationExclusivityTest extends TestCase
         $paid=['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'20','method'=>'EFECTIVO']];
         $url='/scheduling-mvp/agenda/appointments/'.$id.'/payments';
         $this->postJson($url,$paid)->assertOk();
+        DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']); // Historical paid pending fixture.
         // Simulate an existing inconsistent row without using today's guarded registration.
         $this->lifecycleAppointment($this->actor,$this->catalog,['patient_id'=>$this->other->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','estado_agenda'=>'CONFIRMADA','tipo_agendamiento'=>'REGULAR'],$this->other);
@@ -138,11 +140,12 @@ class RegularReservationExclusivityTest extends TestCase
         $before=$this->snapshot();$data=$this->payload(['patient_id'=>$this->other->id,'payment'=>['amount'=>$amount,'method'=>'EFECTIVO']]);
         $url='/scheduling-mvp/agenda/registrations';
         if($entry==='legacy'){
+            $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
             $url='/admissionist/appointment/store';$data['service_id']=$this->catalog['doctorService']->id;
             $data['total_pagado']=$amount;$data['metodo_pago']='EFECTIVO';unset($data['payment']);
         }
         $this->postJson($url,$data)->assertConflict();$this->assertSame($before,$this->snapshot());
-        $a=Appointment::find($id);$this->assertSame('PENDIENTE_CONFIRMACION',$a->estado_agenda);
+        $a=Appointment::find($id);$this->assertSame('CONFIRMADA',$a->estado_agenda);
         $this->assertSame('PROGRAMADO',$a->estado_cita);$this->assertSame('PARCIAL',$a->estado_pagado);
         $this->assertSame([$id],Appointment::occupyingInterval()->pluck('id')->all());
         $query=new \App\Support\Scheduling\AvailabilityQuery($a->doctor_id,\Carbon\Carbon::parse($a->fecha_cita));
@@ -189,6 +192,8 @@ class RegularReservationExclusivityTest extends TestCase
     public function test_double_paid_reservation_protects_both_intervals_for_another_worker():void {
         $id=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['duracion_cita'=>60,'cita_doble'=>true,
             'payment'=>['amount'=>'20','method'=>'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
+        DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']); // Historical paid pending fixture.
+
         $worker=$this->agendaReader('COMERCIAL');
         foreach([C::CREATE,C::SUBMIT_PAYMENT] as $p)$worker->givePermissionTo(Permission::findOrCreate($p,'web'));
         $this->actingAs($worker);$before=$this->snapshot();
@@ -235,7 +240,7 @@ class RegularReservationExclusivityTest extends TestCase
         $pay='/scheduling-mvp/agenda/appointments/'.$b.'/payments';
         $this->postJson($pay,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertUnprocessable();
         $this->postJson($pay,['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'50','method'=>'EFECTIVO']])->assertOk();
-        $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::find($b)->estado_agenda);
+        $this->assertSame('CONFIRMADA',Appointment::find($b)->estado_agenda);
         $this->postJson($pay,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->assertSame('CONFIRMADA',Appointment::find($b)->estado_agenda);$this->assertEquals(70,Payment::sum('monto'));
         $this->actor->revokePermissionTo(C::CREATE_ADDITIONAL);$this->postJson($url,$data)->assertForbidden();
@@ -272,6 +277,8 @@ class RegularReservationExclusivityTest extends TestCase
         $this->patient->update(['historia_clinica'=>'QA-PRIVATE-HOLD-HCE','nombre'=>'QA PRIVADO RESERVA']);
         $id=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['cita_doble'=>true,'duracion_cita'=>60,
             'payment'=>['amount'=>'20','method'=>'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
+        DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']); // Historical paid pending fixture.
+
         $peer=$this->agendaReader('COMERCIAL');$this->actingAs($peer);
         foreach(['dia','semana','mes'] as $view){
             $data=$this->getJson('/scheduling-mvp/agenda/feed?'.http_build_query(['vista'=>$view,

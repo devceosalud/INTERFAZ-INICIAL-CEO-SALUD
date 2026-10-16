@@ -111,6 +111,7 @@ class ServicePriceCatalogTest extends TestCase
     /** @dataProvider entries */
     public function test_paid_confirmation_and_price_snapshot_survive_catalogue_edits(string $entry): void
     {
+        if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         foreach ([C::CREATE, C::SUBMIT_PAYMENT] as $p) {
             $this->actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
         }

@@ -1,3 +1,5 @@
+<x-utils.operational-reevaluations />
+<details><summary>Reevaluaciones clínicas heredadas</summary>
 <div>
     <div class="row">
 
@@ -95,3 +97,5 @@
 
     </div>
 </div>
+
+</details>

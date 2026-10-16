@@ -64,7 +64,7 @@ class OperationalAgendaAppointmentService
             ->select(['id','user_id','patient_id','doctor_id','service_id','responsible_user_id','site_id','fecha_cita','hora_cita',
                 'duracion_cita','duration_slots','precio_programado','estado_cita','estado_agenda','tipo_agendamiento','estado_pagado',
                 'economic_source','total_pagado','es_exonerado','autorizado_por','pricing_rule','is_postoperative','has_diabetic_wound','hora_llegada','hora_atendido','hora_salida'])
-            ->with(['patient:id,historia_clinica,nombre,apellido_paterno,apellido_materno','service:id,nombre','responsibleUser:id,name','user:id,name'])
+            ->with(['operationalReview','patient:id,historia_clinica,nombre,apellido_paterno,apellido_materno','service:id,nombre','responsibleUser:id,name','user:id,name'])
             ->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->get();
     }
 

@@ -1,0 +1,17 @@
+# Migraciones y compatibilidad
+
+Migración nueva: `database/migrations/2026_10_16_020000_create_appointment_operational_procedures.php`.
+
+Es aditiva: crea appointment_operational_reviews, appointment_requested_procedures y appointment_procedure_events. No altera columnas de appointments, patients, payments, vouchers, indicaciones clínicas ni tareas libres; no modifica filas históricas ni ejecuta backfills. Usa claves foráneas con restrictOnDelete, unicidad de cita, cita/procedimiento y actor/UUID, e índice de estado/ready_at/ID.
+
+Una cita anterior sin procedimientos tiene versión cero, lista vacía y no entra en reevaluación. Una reserva histórica pagada permanece pendiente hasta una nueva operación autorizada de pago real positivo o su confirmación explícita vigente. Leer el feed, documentos o detalle no confirma ni reconcilia dinero. Los procedimientos libres anteriores no se interpretan como solicitudes estructuradas.
+
+La retirada de una solicitud conserva su fila desactivada y su auditoría. Añadirla nuevamente restablece verificación a pendiente para evitar heredar una realización de una solicitud retirada. Se conserva quién solicitó, quién verificó, las fechas y los snapshots antes/después. Las claves no dependen de acentos o de la etiqueta visible.
+
+El código nuevo requiere las tres tablas antes de recibir tráfico: **migración primero, código después** en una futura liberación autorizada. El baseline anterior ignora las tablas nuevas, por lo que un rollback de código puede conservarlas. La migración down se niega a borrar tablas pobladas: no debe utilizarse migrate:rollback para retirar esta función después de su uso. Si las tres tablas están vacías, down puede retirarlas en un esquema desechable o una operación específica autorizada. Nunca eliminar auditoría ni procedimientos para forzar un rollback.
+
+La prueba AgendaV2CompatibilityTest recrea el esquema sin las tablas nuevas, registra una tarea histórica ficticia, aplica up y compara íntegramente appointments, appointment_events, tareas/eventos libres, payments y vouchers. Verifica también que down con datos bloquea sin eliminar historia. Las suites SQLite/MariaDB incluyen los contratos anteriores de catálogo PR #45, asignación profesional/especialidad, importes, documentos privados, OCR, Caja e indicaciones.
+
+Pruebas MariaDB: instancia exclusiva local 11.8.9, puerto 33324, datadir `storage/app/qa-v2/mariadb`. Esquemas ceosalud_qa_agenda_v2_suite y ceosalud_qa_agenda_v2_browser, usuarios limitados a cada esquema. IsolatedAgendaV2Qa rechaza .env, conexiones no locales, puerto/nombre/usuario/directory/version distintos, URL de BD o socket alternativo. CI usa únicamente un servicio desechable, con marcador explícito, host/puerto mapeado, versión y datadir propios del contenedor. El arnés de pruebas reutiliza el detector DDL existente para reinicializar fixtures tras commits implícitos de MariaDB; no cambia aislamiento productivo.
+
+No se ejecutó esta migración en Hostinger ni en una BD productiva. Un respaldo y un ensayo en fixtures no acreditan la existencia, integridad ni restaurabilidad de un respaldo productivo.

@@ -24,3 +24,9 @@
 .admission-detail .admission-task-editor textarea:focus-visible { outline: 2px solid #217d7c; outline-offset: 2px; }
 .admission-detail .admission-task-editor button { justify-self: start; }
 .admission-detail .admission-task-status { font-size: 12px; font-weight: 600; color: #97242f; margin: 0; }
+.admission-procedure-picker { display: grid; gap: 8px; min-width: 0; margin: 12px 0; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+.admission-procedure-picker legend { float: none; width: auto; padding: 0 4px; font-size: 14px; font-weight: 700; }
+.admission-detail .admission-procedure-picker .admission-task-check { display: flex; min-height: 32px; line-height: 1.4; margin: 0; }
+.admission-detail .admission-procedure-picker input { flex: 0 0 18px; }
+.admission-procedure-picker button { justify-self: start; }
+.admission-procedure-picker small { color: #526873; line-height: 1.5; }

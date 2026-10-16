@@ -62,7 +62,9 @@
 
             </div>
 
-            @include('admissionist.appointment.crud.create')
+            @if(auth()->user()->hasRole('ADMINISTRADOR') || !auth()->user()->hasAnyRole(['ADMISION','COMERCIAL']))
+                @include('admissionist.appointment.crud.create')
+            @endif
 
             @include('admissionist.appointment.crud.edit')
 

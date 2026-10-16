@@ -60,7 +60,7 @@ class AgendaBoardPresenter
         $presentations = $appointments->mapWithKeys(fn($a)=>[$a->id=>AgendaAppointmentPresentation::of($a,$positions[$a->id])]);
         $compareProfessionals = $doctors->count() > 1;
         $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows(User::findOrFail($actorId));
-        if ($canSeeCreator) $appointments = $appointments->filter(fn($a)=>$presentations[$a->id]['paid_real'] || $presentations[$a->id]['present'] || $presentations[$a->id]['departed'] || $presentations[$a->id]['refund_requested'] || $presentations[$a->id]['informational']);
+        if ($canSeeCreator) $appointments = $appointments->filter(fn($a)=>$presentations[$a->id]['operational_reevaluation_ready'] || $presentations[$a->id]['paid_real'] || $presentations[$a->id]['present'] || $presentations[$a->id]['departed'] || $presentations[$a->id]['refund_requested'] || $presentations[$a->id]['informational']);
 
         $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range, $appointments, $presentations) {
             $professional = $this->professional($doctor, $agenda, $availability, $range);

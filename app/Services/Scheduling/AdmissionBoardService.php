@@ -67,7 +67,7 @@ class AdmissionBoardService
         foreach (['precio','pagos_reales','pagado_historico','credito','saldo'] as $key) $totals[$key] = Money::decimal($totals[$key]);
         // Only the visible page needs identity and label relations; totals use minimal rows.
         $pageRows=$rows->slice(($page-1)*30,30);
-        $pageRows->load(['patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
+        $pageRows->load(['operationalReview','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
             'responsibleUser:id,name','user:id,name','site:id,nombre']);
         return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
@@ -123,7 +123,9 @@ class AdmissionBoardService
                     'url'=>$d->url?:route('scheduling.mvp.documents.download',[$a->id,$d->id])])
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
-        return ['appointment'=>$this->row($a,$positions[$a->id]),'contact'=>[
+        $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
+        return ['procedures'=>$procedures,'care_reversal'=>app(AdmissionCareService::class)->reversalOffer($a,$actor),
+            'appointment'=>$this->row($a,$positions[$a->id]),'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
             'events'=>$events,'history'=>$history,'documents'=>$documents,'operational_documents'=>$operationalDocuments,

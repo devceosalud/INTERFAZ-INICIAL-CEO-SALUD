@@ -7,6 +7,7 @@ function invalidateLegacyQuote(){
     }
 }
 window.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('appointmentModalCreate')) return;
     console.log('CARGANDDO CITAS');
 
     //VARIABLES GLOBALES

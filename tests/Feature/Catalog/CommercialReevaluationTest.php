@@ -19,7 +19,7 @@ class CommercialReevaluationTest extends TestCase
     {
         Storage::fake('local');
         config(['scheduling.enabled' => true]);
-        $actor = $this->agendaReader('ADMISION');
+        $actor = $this->agendaReader($entry === 'legacy' ? 'ADMINISTRADOR' : 'ADMISION');
         foreach ([C::CREATE, ReevaluationIndicationService::CAPABILITY] as $p) {
             $actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
         }

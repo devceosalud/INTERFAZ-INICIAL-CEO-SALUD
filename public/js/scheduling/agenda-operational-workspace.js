@@ -124,7 +124,7 @@
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
-                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
+                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Un nuevo pago real positivo confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el profesional.';
             }
         }
@@ -500,8 +500,12 @@
                 if(!confirm && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
+                const currentContext=config.context();
+                if(currentContext && String(currentContext.appointment_id)===String(id))currentContext.estado_agenda=response.appointment.estado_agenda;
+                ui['confirm-reservation'].hidden=response.appointment.estado_agenda!=='PENDIENTE_CONFIRMACION';
+                if(byId('confirmation-reason'))byId('confirmation-reason').hidden=ui['confirm-reservation'].hidden;
                 paymentKey = null; ui.amount.value = '0'; if(!confirm)await receipt.reset(); ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);
-                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
+                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Pago registrado y horario confirmado. Saldo: S/ ' + response.economy.saldo);
             } catch (e) { rejected(e, 'payment'); showPlaced(e, 'payment'); }
             finally { setWorking(false); }
         }

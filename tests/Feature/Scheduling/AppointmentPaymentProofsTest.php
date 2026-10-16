@@ -62,7 +62,7 @@ class AppointmentPaymentProofsTest extends TestCase
             $this->assertNotNull($d->reviewed_at);$this->assertSame(true,$d->receipt_review['human_reviewed']);
             $this->assertSame(false,$d->receipt_review['bank_validated']);$this->assertSame('BROWSER_OCR',$d->receipt_review['source']);
         }
-        $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::find($id)->estado_agenda);
+        $this->assertSame('CONFIRMADA',Appointment::find($id)->estado_agenda);
     }
     public function test_image_alone_never_registers_money_or_confirms(): void
     {
@@ -86,7 +86,7 @@ class AppointmentPaymentProofsTest extends TestCase
         $this->pay($id,$p,[$this->file(),$this->file('bcp.jpg')])->assertOk();
         $this->assertDatabaseCount('payments',1);$this->assertEquals(50,Payment::sum('monto'));
         $this->assertDatabaseCount('appointment_documents',2);
-        $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::find($id)->estado_agenda);
+        $this->assertSame('CONFIRMADA',Appointment::find($id)->estado_agenda);
         $this->pay($id,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk()->assertJsonPath('appointment.estado_agenda','CONFIRMADA');
         $this->assertDatabaseCount('payments',1);
     }
@@ -122,6 +122,8 @@ class AppointmentPaymentProofsTest extends TestCase
     public function test_documents_do_not_expose_hash_paths_and_foreign_reservation_is_private(): void
     {
         $id=$this->create($this->payload(['payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-PRIVATE'],'proof_review'=>$this->review()]),[$this->file()])->assertCreated()->json('appointment.appointment_id');
+        // Preserve coverage of pre-v2 private paid reservations.
+        \Illuminate\Support\Facades\DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']);
         $d=AppointmentDocument::first();
         $r=$this->getJson(route('scheduling.mvp.documents.index',$id))->assertOk();
         $this->assertStringNotContainsString($d->private_path,$r->getContent());$this->assertStringNotContainsString($d->payment_proof_hash,$r->getContent());
@@ -150,19 +152,21 @@ class AppointmentPaymentProofsTest extends TestCase
 
     public function test_legacy_form_uses_same_reviewed_proof_payment_and_retry_contract(): void
     {
+        $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         $data=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','patient_id'=>$this->patient->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['doctorService']->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','total_pagado'=>'20.00',
             'metodo_pago'=>'YAPE','numero_operacion'=>'QA-LEGACY','proof_review'=>$this->review()];
         $url=route('admissionit.appointment.store');
         for($n=0;$n<2;$n++)$this->post($url,$data+['proofs'=>[$this->file(),$this->file('bcp.jpg')]],['Accept'=>'application/json'])
-            ->assertOk()->assertJsonPath('code',1)->assertJsonPath('estado_agenda','PENDIENTE_CONFIRMACION');
+            ->assertOk()->assertJsonPath('code',1)->assertJsonPath('estado_agenda','CONFIRMADA');
         $this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('appointment_documents',2);
         $this->assertEquals(20,Payment::sum('monto'));
         foreach(AppointmentDocument::all() as $d)$this->assertSame(Payment::first()->id,$d->payment_id);
     }
     public function test_legacy_rejects_receipt_used_in_agenda_without_creating_another_payment(): void
     {
+        $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         $this->create($this->payload(['payment'=>['amount'=>'20','method'=>'YAPE','operation'=>'QA-FROM-AGENDA'],'proof_review'=>$this->review()]),[$this->file()])->assertCreated();
         $data=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','patient_id'=>$this->patient->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['doctorService']->id,

@@ -13,6 +13,9 @@ trait CreatesApplication
      */
     public function createApplication()
     {
+        if (($_ENV['AGENDA_V2_QA_RUNTIME'] ?? getenv('AGENDA_V2_QA_RUNTIME')) === 'agenda-v2-11.8.9') {
+            return \Tests\Support\IsolatedAgendaV2Qa::boot();
+        }
         if (($_ENV['CATALOG_QA_RUNTIME'] ?? getenv('CATALOG_QA_RUNTIME')) === 'catalog-11.8.9') {
             return \Tests\Support\IsolatedCatalogQa::boot();
         }

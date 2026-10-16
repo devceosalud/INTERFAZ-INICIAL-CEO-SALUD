@@ -35,7 +35,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
 
     public function test_authenticated_user_can_create_an_unpaid_appointment_with_current_contract(): void
     {
-        $user = $this->createUserWithRole('ADMISION');
+        $user = $this->createUserWithRole('ADMINISTRADOR');
         foreach (['appointment.view', 'appointment.create'] as $permission) {
             $user->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($permission, 'web'));
         }

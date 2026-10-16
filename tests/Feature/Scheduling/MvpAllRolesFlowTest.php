@@ -36,6 +36,11 @@ class MvpAllRolesFlowTest extends TestCase
             'service_id'=>$entry==='legacy'?$catalog['doctorService']->id:$catalog['service']->id,'additional_rate_id'=>$catalog['rate']->id,
             'fecha_cita'=>$catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','booking_type'=>'REGULAR','duracion_cita'=>30];
         if($entry==='legacy'){$payload+=['total_pagado'=>'0','metodo_pago'=>'EFECTIVO','precio_programado'=>'100.00'];}
+        if($entry==='legacy' && in_array($role,['ADMISION','COMERCIAL'],true)){
+            $this->postJson('/admissionist/appointment/store',$payload)->assertForbidden();
+            // The approved operational path must still exercise the entire financial flow for these roles.
+            $entry='operational';$payload['service_id']=$catalog['service']->id;unset($payload['total_pagado'],$payload['metodo_pago']);
+        }
         $url=$entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations';
         $quoteUrl=$entry==='legacy'?'/api/appointment/calculated':'/scheduling-mvp/agenda/quote';
         $this->postJson($quoteUrl,$payload)->assertOk()->assertJsonPath('tipo','PRIMERA_CONSULTA');
@@ -47,7 +52,7 @@ class MvpAllRolesFlowTest extends TestCase
         $payment=['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'50.00','method'=>'YAPE','operation'=>'QA-ONLY-131','origin'=>'YAPE']];
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',$payment)->assertOk();
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',$payment)->assertOk();$this->assertDatabaseCount('payments',1);
-        $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::findOrFail($id)->estado_agenda);
+        $this->assertSame('CONFIRMADA',Appointment::findOrFail($id)->estado_agenda);
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',array_replace($payment,['request_key'=>(string)Str::uuid()]))->assertUnprocessable();$this->assertDatabaseCount('payments',1);
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->assertSame('CONFIRMADA',Appointment::findOrFail($id)->estado_agenda);

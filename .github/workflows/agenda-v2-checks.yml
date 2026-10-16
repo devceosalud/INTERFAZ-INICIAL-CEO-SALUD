@@ -1,0 +1,68 @@
+name: Agenda v2 isolated verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sqlite-and-js:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_mysql, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: php vendor/phpunit/phpunit/phpunit --log-junit storage/agenda-v2-sqlite.xml
+      - run: node --test tests/JavaScript/*.test.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agenda-v2-sqlite-results
+          path: storage/agenda-v2-sqlite.xml
+
+  mariadb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      AGENDA_V2_CI_OWNED: DISPOSABLE_SERVICE_ONLY
+    services:
+      database:
+        image: mariadb:11.8.9
+        env:
+          MARIADB_ROOT_PASSWORD: v2-ci-disposable-root
+          MARIADB_DATABASE: ceosalud_qa_agenda_v2_suite
+          MARIADB_USER: agenda_v2_suite
+          MARIADB_PASSWORD: v2-local-only
+        ports:
+          - 33324:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_mysql, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: php vendor/phpunit/phpunit/phpunit -c phpunit.agenda-v2-mariadb.xml --log-junit storage/agenda-v2-mariadb.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agenda-v2-mariadb-results
+          path: storage/agenda-v2-mariadb.xml

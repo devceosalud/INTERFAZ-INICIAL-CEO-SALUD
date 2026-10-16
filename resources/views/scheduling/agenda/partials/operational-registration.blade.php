@@ -70,10 +70,10 @@
         @unless($canSubmitPayment)<p class="agenda-payment-help">No tienes autorización para registrar adelantos. Puedes guardar una reserva sin pago si tu perfil lo permite.</p>@endunless
         <div class="agenda-payment-actions">
             <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
-            <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
+            <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar autorización</button>
             <button id="agenda-op-convert-additional" class="agenda-btn" type="button" hidden>Resolver como ADICIONAL</button>
         </div>
-        <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
+        <p id="agenda-op-confirmation-reason" class="agenda-guidance">Un nuevo pago real positivo confirma automáticamente la reserva.</p>
         <p id="agenda-op-conversion-reason" class="agenda-guidance" hidden></p>
     </details>
     <details id="agenda-op-indication-record-panel" hidden>

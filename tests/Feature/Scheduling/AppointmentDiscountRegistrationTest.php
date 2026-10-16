@@ -35,7 +35,7 @@ class AppointmentDiscountRegistrationTest extends TestCase
             'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>$this->catalog['schedule']->fecha_cita,
             'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
     }
-    protected function endpoint(string $entry): string { return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations'; }
+    protected function endpoint(string $entry): string { if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web')); return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations'; }
     /** @dataProvider entries */
     public function test_net_quote_audit_positive_payment_and_idempotency_match_both_entries(string $entry,string $type,string $value,string $net): void
     {

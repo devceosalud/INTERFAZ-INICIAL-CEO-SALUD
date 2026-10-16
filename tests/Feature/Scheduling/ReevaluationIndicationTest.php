@@ -44,6 +44,7 @@ class ReevaluationIndicationTest extends TestCase {
         return $this->postJson('/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications',$data)->assertCreated()->json('indication_id');
     }
     protected function payload(string $entry,int $service,int $assignment,array $extra=[]):array {
+        if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$this->patient->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$entry==='legacy'?$assignment:$service,
             'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>now('America/Lima')->toDateString(),'hora_cita'=>'09:00','duracion_cita'=>30],$extra);

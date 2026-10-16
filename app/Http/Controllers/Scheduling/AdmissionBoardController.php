@@ -56,6 +56,16 @@ class AdmissionBoardController extends Controller
             ->header('Cache-Control','private, no-store');
     }
 
+    public function reverseCare(Request $r, int $appointmentId, AdmissionCareService $service)
+    {
+        abort_unless($r->user()->hasAnyRole(['ADMINISTRADOR','ADMISION']), 403);
+        abort_if(array_diff(array_keys($r->all()), ['expected_event_id','expected_state','request_key','motivo','_token']),422);
+        $data = $r->validate(['request_key'=>'required|uuid','expected_event_id'=>'required|integer|min:1',
+            'expected_state'=>'required|string|max:40','motivo'=>'required|string|min:3|max:500']);
+        $a = $service->reverse($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
+    }
+
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
         abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','_token']),422,'Esta acción solo actualiza el recorrido de atención.');

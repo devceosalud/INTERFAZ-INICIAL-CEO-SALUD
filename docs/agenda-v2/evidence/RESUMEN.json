@@ -1,0 +1,92 @@
+{
+  "baseline": "9c3b93a5086172d30fbf59fc9c4c2c40df84a645",
+  "branch": "feat/agenda-operativa-flujo-reevaluaciones-v2",
+  "scope": "Exclusively synthetic data; no production access or deployment",
+  "versions": {
+    "php": "8.3.35",
+    "laravel": "9.52.21",
+    "phpunit": "9.6.34",
+    "mariadb": "11.8.9",
+    "node": "26.3.0",
+    "chrome": "155.0.8059.79"
+  },
+  "php_baseline": {
+    "tests": 1013,
+    "assertions": 8230,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "php_sqlite": {
+    "tests": 1039,
+    "assertions": 8513,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "php_mariadb": {
+    "tests": 1044,
+    "assertions": 8561,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "javascript": {
+    "tests": 306,
+    "passed": 306,
+    "failures": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "cases": [
+      {
+        "name": "ADMINISTRADOR selecciona exactamente dos procedimientos mediante confirmación explícita",
+        "result": "PASS"
+      },
+      {
+        "name": "ADMISION solo ve lo solicitado, registra realizado y envía manualmente con motivo",
+        "result": "PASS"
+      },
+      {
+        "name": "COMERCIAL consulta pero recibe 403 en solicitudes, realizados y envío; creación heredada bloqueada",
+        "result": "PASS"
+      },
+      {
+        "name": "Reevaluación automática se sincroniza en Agenda operativa y cola de Nicol sin recargar",
+        "result": "PASS"
+      },
+      {
+        "name": "Refresco de admisión conserva checkboxes y texto sin guardar incluso después de perder foco",
+        "result": "PASS"
+      },
+      {
+        "name": "Retroceder estado requiere motivo, restaura el anterior y conserva auditoría",
+        "result": "PASS"
+      },
+      {
+        "name": "Pago real desde reserva confirma automáticamente y oculta confirmación adicional",
+        "result": "PASS"
+      },
+      {
+        "name": "CSRF real rechaza escrituras sin token y páginas sensibles excluyen Clarity",
+        "result": "PASS"
+      },
+      {
+        "name": "Escritorio y móvil 390×844 muestran procedimientos, botones y cola legibles",
+        "result": "PASS"
+      }
+    ],
+    "page_errors": [],
+    "started": "2026-10-16T21:52:12.671Z",
+    "finished": "2026-10-16T21:53:10.880Z",
+    "viewports": [
+      "1440x1000",
+      "390x844"
+    ],
+    "csrf": "real middleware, missing token HTTP 419",
+    "network": "loopback-only, CSP and browser route blocking"
+  },
+  "source_manifest": "FUENTES_SHA256.json",
+  "tested_commit": "Exact execution SHA is recorded in the PR and the local ignored execution record; this avoids self-reference inside the commit.",
+  "ci": "See PR checks for the exact commit; local results do not imply CI success."
+}

@@ -29,7 +29,7 @@ class AgendaDoubleDurationTest extends TestCase {
     'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$entry==='legacy'?$this->catalog['doctorService']->id:$this->catalog['service']->id,
     'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
  }
- protected function url(string $entry):string{return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations';}
+ protected function url(string $entry):string{ if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations';}
  protected function id($response,string $entry):int{return (int)($entry==='legacy'?$response->json('appointment_id'):$response->json('appointment.appointment_id'));}
  /** @dataProvider entries */
  public function test_double_confirms_two_intervals_charges_one_fee_and_retry_is_idempotent(string $entry):void {

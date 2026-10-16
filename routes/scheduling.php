@@ -22,6 +22,13 @@ Route::middleware([
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
         $admission = \App\Http\Controllers\Scheduling\AdmissionBoardController::class;
+        $procedures = \App\Http\Controllers\Scheduling\OperationalProcedureController::class;
+        Route::get('/scheduling-mvp/admission/reevaluations', [$procedures, 'queue'])->name('scheduling.mvp.admission.reevaluations');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/procedures/{action}', [$procedures, 'update'])
+            ->whereNumber('appointmentId')->whereIn('action', ['selection','completion','send','withdraw'])
+            ->middleware('throttle:60,1')->name('scheduling.mvp.admission.procedures');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care-reversal', [$admission, 'reverseCare'])
+            ->whereNumber('appointmentId')->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care-reversal');
         Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
         Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');

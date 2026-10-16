@@ -122,7 +122,7 @@ class OperationalRegistrationService
                 }
                 $a->update(['total_pagado' => Money::decimal($amount), 'saldo_pendiente' => $waived ? 0 : Money::decimal(Money::cents($a->precio_programado) - $amount),
                     'estado_pagado' => !$amount ? 'PENDIENTE' : ($amount === Money::cents($a->precio_programado) ? 'PAGADO' : 'PARCIAL')]);
-                if ($data['mode'] === 'CONFIRM') {
+                if ($amount > 0 || $data['mode'] === 'CONFIRM') {
                     if (!$waived && !AppointmentEconomicPosition::allowsConfirmation(app(AppointmentEconomicPosition::class)->forAppointment($a))) {
                         throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo. Puedes guardar una reserva privada.']);
                     }

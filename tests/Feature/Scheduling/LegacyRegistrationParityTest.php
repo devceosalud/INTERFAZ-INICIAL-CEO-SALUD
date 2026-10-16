@@ -24,7 +24,7 @@ class LegacyRegistrationParityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp(); config(['scheduling.enabled' => true, 'app.debug' => false]);
-        $this->actor = $this->agendaReader('ADMISION');
+        $this->actor = $this->agendaReader('ADMINISTRADOR');
         foreach ([C::CREATE, C::SUBMIT_PAYMENT, C::UPDATE, C::RESCHEDULE] as $p) {
             $this->actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
         }
@@ -52,7 +52,7 @@ class LegacyRegistrationParityTest extends TestCase
             : ['booking_type' => 'REGULAR', 'duracion_cita' => 30, 'payment' => ['amount' => '0', 'method' => 'EFECTIVO']];
         return array_replace($base, $changes);
     }
-    private function url(string $entry): string { return $entry === 'legacy' ? '/admissionist/appointment/store' : '/scheduling-mvp/agenda/registrations'; }
+    private function url(string $entry): string { if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web')); return $entry === 'legacy' ? '/admissionist/appointment/store' : '/scheduling-mvp/agenda/registrations'; }
     private function pay(string $entry, string $amount, array $extra = []): array
     {
         return $entry === 'legacy' ? ['total_pagado' => $amount] + $extra
@@ -136,7 +136,7 @@ class LegacyRegistrationParityTest extends TestCase
     }
 
     /** @dataProvider entries */
-    public function test_paid_reservation_stays_pending_and_replay_cannot_charge_again(string $entry): void
+    public function test_paid_registration_confirms_and_replay_cannot_charge_again(string $entry): void
     {
         $payload = $this->payload($entry, $this->pay($entry, '50.00'));
         $this->postJson($this->url($entry), $payload)->assertSuccessful();
@@ -145,7 +145,7 @@ class LegacyRegistrationParityTest extends TestCase
         $this->assertDatabaseCount('appointments', 1); $this->assertDatabaseCount('payments', 1);
         $this->assertDatabaseCount('vouchers', 1); $this->assertEquals(50, Payment::sum('monto'));
         $this->assertEquals(100, Appointment::first()->precio_programado);
-        $this->assertSame('PENDIENTE_CONFIRMACION', Appointment::first()->estado_agenda);
+        $this->assertSame('CONFIRMADA', Appointment::first()->estado_agenda);
         $this->postJson($this->url($entry), array_replace($payload, $this->pay($entry, '60.00')))->assertStatus(409);
         $this->assertDatabaseCount('payments', 1);
     }
@@ -358,8 +358,9 @@ class LegacyRegistrationParityTest extends TestCase
         $quote = $this->actingAs($other)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
         $this->assertEquals(100, $quote->json('precio_programado'));
         $other->givePermissionTo(Permission::findOrCreate(C::CREATE, 'web'));
-        $ownResult = $this->postJson($this->url($entry), $this->payload($entry, ['hora_cita' => '10:00']))->assertSuccessful();
-        $ownId = $entry === 'legacy' ? $ownResult->json('appointment_id') : $ownResult->json('appointment.appointment_id');
+        if($entry==='legacy')$this->postJson('/admissionist/appointment/store',$this->payload($entry,['hora_cita'=>'10:00']))->assertForbidden();
+        $ownResult = $this->postJson($this->url('operational'), $this->payload('operational', ['hora_cita' => '10:00']))->assertSuccessful();
+        $ownId = $ownResult->json('appointment.appointment_id');
         $this->assertEquals(100, Appointment::findOrFail($ownId)->precio_programado);
         $this->assertSame($before, $history->fresh()->getAttributes());
     }
@@ -394,8 +395,13 @@ class LegacyRegistrationParityTest extends TestCase
             $quote = $this->actingAs($worker)->postJson($url, $payload)->assertOk()->assertJsonPath('tipo', 'PRIMERA_CONSULTA');
             $this->assertEquals(100, $quote->json('precio_programado'));
             $expected ??= $quote->json(); $this->assertSame($expected, $quote->json());
-            $result = $this->postJson($this->url($entry), $payload)->assertSuccessful();
-            $id = $entry === 'legacy' ? $result->json('appointment_id') : $result->json('appointment.appointment_id');
+            $actualEntry=$entry;
+            if($entry==='legacy' && !$worker->hasRole('ADMINISTRADOR') && $worker->hasAnyRole(['ADMISION','COMERCIAL'])){
+                $this->postJson('/admissionist/appointment/store',$payload)->assertForbidden();
+                $actualEntry='operational';$payload=$this->payload('operational',['precio_programado'=>'100.00','hora_cita'=>['09:30','10:00','10:30'][$i]]);
+            }
+            $result = $this->postJson($this->url($actualEntry), $payload)->assertSuccessful();
+            $id = $actualEntry === 'legacy' ? $result->json('appointment_id') : $result->json('appointment.appointment_id');
             $this->assertEquals(100, Appointment::findOrFail($id)->precio_programado);
         }
         $this->assertSame($before, $history->fresh()->getAttributes());

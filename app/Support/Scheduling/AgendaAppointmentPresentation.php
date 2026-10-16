@@ -18,6 +18,7 @@ final class AgendaAppointmentPresentation
         $uncertain = ($position['authority'] ?? null) === 'UNALLOCATED'
             || (($position['authority'] ?? null) === 'LEGACY_SNAPSHOT' && ($position['paid_cents'] ?? 0) > 0);
         $refundRequested = ($position['refund_reserved_cents'] ?? 0) > 0;
+        $ready = \App\Services\Scheduling\OperationalProcedureService::ready($appointment);
 
         // Approved base priority: RED > TURQUOISE > YELLOW > WHITE. Medical
         // flags are chips only. Unattributed legacy amounts never become paid;
@@ -25,12 +26,14 @@ final class AgendaAppointmentPresentation
         if ($released) $key = 'DESACTIVADA';
         elseif ($refundRequested) $key = 'REEMBOLSO_SOLICITADO';
         elseif ($departed) $key = 'SALIDA_REGISTRADA';
+        elseif ($ready && !$uncertain) $key = 'LISTO_REEVALUACION';
         elseif ($present) $key = 'PRESENTE';
         elseif ($paid) $key = 'PAGO_REAL';
         else $key = ! $uncertain && $appointment->estado_agenda === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
+        if ($ready) $badges[] = 'LISTO_REEVALUACION';
         if ($released) $badges[] = 'DESACTIVADA';
         if ($refundRequested) $badges[] = 'REEMBOLSO_SOLICITADO';
         if ($departed) $badges[] = 'SALIDA_REGISTRADA';
@@ -40,9 +43,16 @@ final class AgendaAppointmentPresentation
         if ($appointment->has_diabetic_wound) $badges[] = 'HERIDA';
         if ($uncertain) $badges[] = 'CONCILIAR_PAGO';
 
+        $chips = array_map(fn ($condition) => AgendaLegend::of($condition), $badges);
+        if ($appointment->relationLoaded('operationalReview') && $appointment->operationalReview?->requested_count > 0) {
+            $review=$appointment->operationalReview;
+            $chips[]=['clave'=>'PROCEDIMIENTOS','etiqueta'=>'Procedimientos: '.$review->completed_count.'/'.$review->requested_count.' realizados',
+                'glifo'=>'P','color'=>'#334155','fondo'=>'#f1f5f9','descripcion'=>'Avance de los procedimientos solicitados.'];
+        }
         return AgendaLegend::of($key) + [
-            'badges' => array_map(fn ($condition) => AgendaLegend::of($condition), $badges),
+            'badges' => $chips,
             'paid_real' => $paid, 'present' => (bool) $present, 'departed' => $departed,
+            'operational_reevaluation_ready' => $ready,
             'refund_requested' => $refundRequested,
             // A visual financial request never releases capacity or executes money.
             'informational' => $released,

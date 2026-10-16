@@ -59,7 +59,7 @@ class AgendaFeedController extends Controller
             'profesionales_coincidentes' => $selectable->count(),
             'profesionales_mostrados' => $shown->count(),
             'truncado' => $selectable->count() > $shown->count(),
-        ]);
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     /**

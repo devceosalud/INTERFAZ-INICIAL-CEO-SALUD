@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    public function operationalReview()
+    {
+        return $this->hasOne(AppointmentOperationalReview::class);
+    }
     public function events() { return $this->hasMany(AppointmentEvent::class); }
     public function save(array $options = [])
     {

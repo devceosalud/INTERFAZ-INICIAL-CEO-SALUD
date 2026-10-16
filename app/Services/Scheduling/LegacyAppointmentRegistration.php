@@ -16,6 +16,7 @@ class LegacyAppointmentRegistration
 {
     public function register(Request $request): Appointment
     {
+        abort_if(!$request->user()->hasRole('ADMINISTRADOR') && $request->user()->hasAnyRole(['ADMISION','COMERCIAL']),403,'Registra nuevas citas desde Agenda operativa.');
         abort_unless($request->user()->can(C::VIEW) && $request->user()->can(C::CREATE), 403);
         \App\Support\Scheduling\AppointmentPriceInput::normalize($request);
         $data = $request->validate(AppointmentPaymentProofs::rules() + \App\Support\Scheduling\AppointmentPriceInput::rules() + [

@@ -169,8 +169,8 @@ class AgendaBoardTest extends TestCase
             ->assertSee('Celular')
             ->assertSee('Más datos del paciente · opcional')
             ->assertSee('Guardar reserva')
-            ->assertSee('Guardar y confirmar cita')
-            ->assertSee('Confirmar cita')
+            ->assertSee('Registrar pago y cita')
+            ->assertSee('Registrar pago y cita')
             ->assertSee('data-store-endpoint="'.route('patients.operational.store').'"', false)
             ->assertSee('data-can-write="0"', false)
             ->assertSee('id="agenda-draft-save" disabled', false)
@@ -260,7 +260,7 @@ class AgendaBoardTest extends TestCase
         }
         $this->assertMatchesRegularExpression('/id="agenda-appointment-submit"[^>]*disabled/', $html);
         $this->assertMatchesRegularExpression('/id="agenda-pending-start"[^>]*disabled/', $html);
-        $response->assertSee('agenda-registration', false)->assertSee('agenda-reservation-reason', false)->assertSee('Confirmar cita');
+        $response->assertSee('agenda-registration', false)->assertSee('agenda-reservation-reason', false)->assertSee('Registrar pago y cita');
     }
 
     /*

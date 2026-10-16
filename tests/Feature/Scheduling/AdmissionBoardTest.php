@@ -176,7 +176,7 @@ class AdmissionBoardTest extends TestCase
             'proof_review'=>['reviewed'=>true,'source'=>'BROWSER_OCR','date'=>'2026-10-14','time'=>'09:35']];
         for($i=0;$i<2;$i++)$this->post(route('scheduling.mvp.agenda.payments',$id),['payload'=>json_encode($pay),
             'proofs'=>[new UploadedFile(base_path('tests/Fixtures/receipts/yape.png'),'yape.png',null,null,true)]],['Accept'=>'application/json'])->assertOk();
-        $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.reservas',1)->assertJsonPath('totals.pagos_reales','50.00');
+        $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.reservas',0)->assertJsonPath('totals.pagos_reales','50.00');
         $this->postJson(route('scheduling.mvp.agenda.payments',$id),['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.por_llegar',1)->assertJsonPath('totals.pagos_reales','50.00')->assertJsonPath('totals.saldo','50.00');
         $this->detail($id)->assertOk()->assertJsonCount(1,'documents')->assertJsonPath('appointment.economy.fuente','PAYMENTS')->assertJsonPath('payments.0.method','YAPE')->assertJsonPath('payments.0.amount','50.00');

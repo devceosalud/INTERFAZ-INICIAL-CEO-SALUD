@@ -190,7 +190,7 @@ class AppointmentReaderPrivacyTest extends TestCase
 
     public function test_private_rows_do_not_disclose_themselves_through_the_duplicate_message(): void
     {
-        $writer = $this->agendaReader('ADMISION');
+        $writer = $this->agendaReader('ADMINISTRADOR');
         foreach (['appointment.create', 'appointment.update'] as $p) $writer->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($p, 'web'));
         $patient = $this->createPatient($this->owner);
         $payload = ['patient_id' => $patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'fecha_cita' => now()->toDateString()];

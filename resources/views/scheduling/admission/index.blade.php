@@ -36,6 +36,7 @@
         </form>
         <p class="admission-scope" id="admission-scope">Indicadores, tabla y totales corresponden al mismo conjunto filtrado.</p>
         <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
+        <x-utils.operational-reevaluations />
         <div class="admission-workspace">
             <section class="admission-main" aria-label="Citas y disponibilidad">
                 <div class="admission-table-card"><div class="admission-section-head"><h2>Citas <span id="admission-count"></span></h2><span id="admission-reservations"></span></div>
