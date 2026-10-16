@@ -39,5 +39,6 @@ jobs:
             tests/JavaScript/appointment-receipt-review.test.js \
             tests/JavaScript/agenda-payment-ocr-placement.test.js \
             tests/JavaScript/agenda-payment-ux-closure.test.js \
+            tests/JavaScript/agenda-form-validation.test.js \
             tests/JavaScript/agenda-modal-explicit-actions.test.js \
             tests/JavaScript/agenda-quote-race.test.js
