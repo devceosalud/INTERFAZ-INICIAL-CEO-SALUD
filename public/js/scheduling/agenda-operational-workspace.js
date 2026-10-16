@@ -288,6 +288,24 @@
         }
         async function register(options) {
             if (working) { return; }
+            // "Guardar reserva" never creates a payment/operation from a draft OCR suggestion.
+            // Actual advances remain available through the explicit "Registrar adelanto" flow
+            // on an existing reservation; that flow preserves all bank duplicate protections.
+            if (options.pending) {
+                const hasPaymentDraft=Number(ui.amount.value || 0)>0
+                    || Boolean(ui.operation.value.trim()) || Boolean(ui.proof.files?.length);
+                if (hasPaymentDraft) {
+                    if (!root.Swal) { config.notice('Para guardar sin cobrar, limpia primero los datos de pago o confirma la cita.',true);return; }
+                    const answer=await root.Swal.fire({
+                        title:'Guardar reserva SIN registrar pago',
+                        text:'El importe, el N.º de operación y el comprobante seleccionados NO se guardarán como pago. Puedes registrar un adelanto después desde la cita pendiente.',
+                        icon:'warning',showCancelButton:true,
+                        confirmButtonText:'Guardar solo reserva',
+                        cancelButtonText:'Volver al pago',
+                    });
+                    if (!answer.isConfirmed || working) return;
+                }
+            }
             validation?.clear();config.clearPatientErrors?.();
             setWorking(true);
             try {
@@ -297,7 +315,8 @@
                 registrationKey = registrationKey || root.crypto.randomUUID();
                 Object.assign(payload, { request_key: registrationKey, mode: options.pending ? 'RESERVE' : 'CONFIRM',
                     booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
-                    es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null, payment: payment(), links: model.links(ui.links.value) });
+                    es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null,
+                    payment: options.pending ? model.payment('0','EFECTIVO','','') : payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
                 Object.assign(payload,medicalPriceInput());
                 payload.cita_doble=Boolean(doubleInput?.checked);
@@ -310,7 +329,7 @@
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
                     payload.patient_capture = captureValues();
                 }
-                const body = new FormData(); receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
+                const body = new FormData(); if(!options.pending)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(config.endpoint, { method: 'POST', body });
                 registrationKey = null; ui.amount.value = '0'; await receipt.reset(); ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';

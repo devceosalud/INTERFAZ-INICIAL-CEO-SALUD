@@ -18,26 +18,45 @@
         return Number.isSafeInteger(cents) && cents > 0 && cents <= 9999999900 ? (cents / 100).toFixed(2) : null;
     }
     function parse(text) {
-        const normalized = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '');
+        const normalized = String(text || '').normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '')
+            .replace(/\u00a0/g, ' ');
         const lines = normalized.split('\n').map(line => line.trim()).filter(Boolean);
         const money = [];
-        for (const line of lines) {
-            // Never confuse a balance, phone, commission or unrelated price with the transfer amount.
-            if (/\b(saldo|comision|comisi[oó]n|disponible|celular|telefono|numero de cuenta)\b/i.test(line)) continue;
-            const eligible = /\b(monto|importe|total pagado|total enviado|enviaste|enviado|transferiste|transferencia realizada|pago realizado)\b/i.test(line);
-            const currency = /(?:S\s*\/\s*\.?|PEN\s+)\s*(\d{1,8}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,8}[.,]\d{2})\b/gi;
-            let m;
-            while ((m = currency.exec(line)) !== null) {
-                const v = amount(m[1]);
-                if (v) money.push({value:v,priority:eligible ? 2 : 1});
-            }
-            if (eligible && !/(?:S\s*\/|PEN\s+)/i.test(line)) {
-                const m = line.match(/(?:monto|importe|total pagado|total enviado|enviaste|enviado|transferiste)\s*(?:enviado|pagado|de la operacion)?\s*[:=]?\s*(\d{1,8}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,8}[.,]\d{2})\b/i);
-                if (m) {const v = amount(m[1]);if (v) money.push({value:v,priority:2});}
-            }
+        const amountCue = /\b(monto|importe|total(?:\s+(?:pagado|enviado|transferido))?|enviaste|enviado|transferiste|pagaste|yapeaste|plin(?:easte)?|recibiste|pago realizado)\b/i;
+        const rejectCue = /\b(saldo|comision|disponible|celular|telefono|numero de cuenta|dni|codigo de operacion)\b/i;
+
+        function collect(raw, priority) {
+            // Tesseract can mistake the zero in "S/ 5O" for the letter O.
+            const token = String(raw).replace(/[oO]/g, '0');
+            const value = amount(token);
+            if (value) money.push({value, priority});
         }
-        const bestPriority = Math.max(0, ...money.map(item => item.priority));
-        const amounts = unique(money.filter(item=>item.priority===bestPriority).map(item=>item.value));
+
+        lines.forEach((line, index) => {
+            if (rejectCue.test(line) && !amountCue.test(line)) return;
+            const eligible = amountCue.test(line);
+            // S/50, S/. 50, PEN 50 and thousands/decimal formats. No decimal required.
+            const currency = /(?:S\s*\/\s*\.?\s*|PEN\s+)(\d[\d.,oO]*(?:\s*[.,]\s*\d{2})?)(?!\d)/gi;
+            let m, detected = false;
+            while ((m = currency.exec(line)) !== null) {
+                collect(m[1].replace(/\s+/g, ''), eligible ? 3 : 2);
+                detected = true;
+            }
+            // Banking apps may write "Monto: 50" without S/.
+            if (eligible && !detected && !rejectCue.test(line)) {
+                const direct = line.match(/(?:monto|importe|total(?:\s+(?:pagado|enviado|transferido))?|enviaste|enviado|transferiste|pagaste|yapeaste|recibiste)\s*(?:enviado|pagado|s\/?)?\s*[:=]?\s*(\d{1,5}(?:[.,]\d{2})?)\b/i);
+                if (direct) collect(direct[1], 3);
+            }
+            // "¡Yapeaste!" line followed by a single "50": avoid unrelated
+            // operation/telephone/DNI numbers by restricting to 1–5 digits.
+            if (!detected && /^(?:\d{1,5})(?:[.,]\d{2})?$/.test(line)
+                && index > 0 && amountCue.test(lines[index - 1])) {
+                collect(line, 2);
+            }
+        });
+        const priority = Math.max(0, ...money.map(item => item.priority));
+        const amounts = unique(money.filter(item => item.priority === priority).map(item => item.value));
 
         const operations = [];
         const operationPattern = /\b(?:n(?:umer[o0])?|nro|num|codigo|cod|referencia|ref)?\s*(?:[.°º#]\s*)?(?:de(?:\s+la)?\s+)?(?:operacion|transaccion|transferencia|referencia)\s*(?:n(?:umero|ro)?[.°º#]?\s*)?[:#=-]?\s*([0-9][0-9\s-]{4,24}[0-9])(?!\d)/gi;
@@ -91,11 +110,11 @@
             const timeout = new Promise((_, reject) => { timer = setTimeout(() => {
                 timedOut = true; if (worker) void worker.terminate();
                 reject(new Error('El OCR excedió el tiempo disponible. Revisa o completa los datos manualmente.'));
-            }, opts.timeoutMs || 60000); });
+            }, opts.timeoutMs || 30000); });
             const work = (async () => {
                 worker = await workerFactory('spa', 1, {
                     workerPath: new URL('worker.min.js',base).href, corePath: new URL('core/',base).href,
-                    langPath: new URL('lang/',base).href, workerBlobURL: false, cacheMethod: 'none',
+                    langPath: new URL('lang/',base).href, workerBlobURL: false, cacheMethod: 'write',
                     logger: m => { if (current === generation && onProgress) onProgress(Math.max(0, Math.min(1, Number(m.progress) || 0))); },
                     errorHandler: () => {}
                 });

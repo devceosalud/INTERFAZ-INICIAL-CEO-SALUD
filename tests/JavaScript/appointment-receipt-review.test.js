@@ -25,7 +25,7 @@ test('OCR suggestions need explicit use and final human review; edits invalidate
  assert.equal(h.paymentFields.amount.value,'0');assert.equal(h.id('proof-reviewed').checked,false);
  await h.find('Usar sugerencias en el pago').trigger('click');
  assert.equal(h.paymentFields.amount.value,'75.00');assert.equal(h.paymentFields.method.value,'YAPE');assert.deepEqual(h.events,['method-change']);
- assert.ok(h.picker.some(([field,action])=>field===h.paymentFields.method&&action==='refresh'));
+ assert.equal(h.picker.length,0,'OCR no debe inicializar selectpicker en un select nativo');
  const body={files:[],append(k,v){this.files.push([k,v]);}},payload={};
  assert.throws(()=>h.api.append(body,payload),/revisión humana/);
  h.id('proof-reviewed').checked=true;h.api.append(body,payload);
@@ -35,6 +35,17 @@ test('OCR suggestions need explicit use and final human review; edits invalidate
  assert.throws(()=>h.api.append({append(){}},{}),/revisión humana/);
  await h.api.reset();assert.equal(h.input.files.length,0);assert.equal(h.api.hasChanges(),false);
 });
+test('OCR does not replace a manually typed amount or operation',async()=>{
+ const h=harness();h.paymentFields.amount.value='60.00';h.paymentFields.operation.value='000098765';
+ await h.select([{name:'yape.png',type:'image/png',size:100}]);
+ await h.find('Leer imagen con OCR').trigger('click');
+ await h.find('Usar sugerencias en el pago').trigger('click');
+ assert.equal(h.paymentFields.amount.value,'60.00');
+ assert.equal(h.paymentFields.operation.value,'000098765');
+ assert.equal(h.paymentFields.method.value,'YAPE');
+ assert.equal(h.picker.length,0);
+});
+
 test('manual contingency preserves files and discards an obsolete OCR response',async()=>{
  let resolve,started;const start=new Promise(r=>started=r),reading=new Promise(r=>resolve=r);
  const h=harness(async()=>{started();return reading;});

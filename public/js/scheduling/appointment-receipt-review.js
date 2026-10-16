@@ -19,7 +19,7 @@ root.AppointmentReceiptReview=function(config){
     }
     const applyButton=make('button','Usar sugerencias en el pago');applyButton.type='button';applyButton.className='agenda-btn';suggestionBox.append(applyButton);
     const reviewLabel=make('label');const reviewed=make('input');reviewed.type='checkbox';reviewed.id=config.prefix+'-proof-reviewed';
-    reviewLabel.append(reviewed,document.createTextNode(' Verifiqué el monto, la operación y todos los comprobantes. Confirmo el registro manual del pago.'));
+    reviewLabel.append(reviewed,document.createTextNode(' Revisé el comprobante y los datos del pago.'));
     const dateLabel=make('label','Fecha del comprobante (opcional)');dateLabel.className='agenda-field';const date=make('input');date.type='date';date.id=config.prefix+'-receipt-date';date.className='agenda-field__input';dateLabel.append(date);
     const timeLabel=make('label','Hora del comprobante (opcional)');timeLabel.className='agenda-field';const time=make('input');time.type='time';time.id=config.prefix+'-receipt-time';time.className='agenda-field__input';timeLabel.append(time);
     const heading=make('h4','Leer importe y N.º de operación');
@@ -42,9 +42,13 @@ root.AppointmentReceiptReview=function(config){
     host.append(heading,buttons,status,imagePanel,suggestionBox,extras,reviewLabel);
     function invalidate(){reviewed.checked=false;}
     function releasePreview(){if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}preview.hidden=true;preview.removeAttribute('src');}
-    function refreshSelect(field){if(root.jQuery?.fn?.selectpicker)root.jQuery(field).selectpicker('refresh');}
+    // Avoid initializing bootstrap-select on native selects: that duplicates the dropdown.
+    function refreshSelect(field){
+        if(!root.jQuery?.fn?.selectpicker)return;
+        const picker=root.jQuery(field);
+        if(picker.data?.('selectpicker'))picker.selectpicker('refresh');
+    }
     function showPreview(){
-        refreshSelect(selector);
         releasePreview();const file=input.files[Number(selector.value)||0];
         selector.hidden = (input.files || []).length <= 1;
         imagePanel.hidden = !file || !['image/png','image/jpeg'].includes(file.type);
@@ -91,22 +95,39 @@ root.AppointmentReceiptReview=function(config){
     applyButton.addEventListener('click',()=>{
         if(!suggestions)return;
         const bank=suggestionFields.bank.value.trim().toUpperCase();
-        // Ambiguous OCR values are never copied without explicit human correction.
-        if(suggestionFields.amount.value)fields.amount.value=suggestionFields.amount.value;
-        if(suggestionFields.operation.value)fields.operation.value=suggestionFields.operation.value;
-        if(['YAPE','PLIN'].includes(bank))fields.method.value=bank;
-        else if(bank)fields.method.value='TRANSFERENCIA';
-        if(bank)fields.origin.value=bank;
-        date.value=suggestionFields.date.value;time.value=suggestionFields.time.value;
-        Object.values(fields).forEach(f=>{f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));});
-        refreshSelect(fields.method);
-        source='BROWSER_OCR';invalidate();status.textContent='Sugerencias copiadas. Verifica los campos del pago y marca la revisión antes de registrar.';
+        // OCR must never override values manually entered by the operator.
+        if(suggestionFields.amount.value && (!fields.amount.value || Number(fields.amount.value)===0)) {
+            fields.amount.value=suggestionFields.amount.value;
+            fields.amount.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        if(suggestionFields.operation.value && !fields.operation.value.trim()) {
+            fields.operation.value=suggestionFields.operation.value;
+            fields.operation.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        const method=['YAPE','PLIN'].includes(bank)?bank:bank?'TRANSFERENCIA':null;
+        if(method && fields.method.value!==method) {
+            fields.method.value=method;
+            fields.method.dispatchEvent(new Event('change',{bubbles:true}));
+            fields.method.dispatchEvent(new Event('input',{bubbles:true}));
+            refreshSelect(fields.method);
+        }
+        if(bank && !fields.origin.value.trim()){
+            fields.origin.value=bank;
+            fields.origin.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        if(!date.value)date.value=suggestionFields.date.value;
+        if(!time.value)time.value=suggestionFields.time.value;
+        source='BROWSER_OCR';invalidate();
+        status.textContent='Sugerencias aplicadas solo en campos vacíos. Puedes corregir los datos manualmente.';
     });
     [...Object.values(fields),date,time].forEach(f=>f.addEventListener('input',invalidate));
     function append(body,payload){
         const files=validate();if(!files.length)return;
-        if(busy)throw new Error('Espera la lectura o descártala antes de registrar.');
-        if(!reviewed.checked)throw new Error('Revisa todos los comprobantes y confirma la revisión humana antes de registrar el pago.');
+        if(busy){
+            ++version;busy=false;void engine.cancel();
+            status.textContent='Lectura detenida: puedes continuar con los datos ingresados manualmente.';
+        }
+        if(!reviewed.checked)throw new Error('Marca la revisión humana del comprobante antes de adjuntarlo. El OCR no es obligatorio para registrar un pago manual.');
         payload.proof_review={reviewed:true,source,date:date.value||null,time:time.value||null};
         files.forEach(file=>body.append('proofs[]',file));
     }

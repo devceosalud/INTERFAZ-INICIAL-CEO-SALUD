@@ -1543,7 +1543,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const reservation = window.AgendaOperationalForm.reservationReadiness({
             canCreate: canCreateAppointments, busy: state.appointmentBusy,
             slot: Boolean(slot && !state.additionalMode && !state.offHoursMode),
-            patient, service, ...operationalWorkspace.readiness(),
+            patient, service, ...operationalWorkspace.readiness(), amount:'0',
         });
         if (pendingStart) {pendingStart.hidden=Boolean(state.selection?.appointment_id && !existingFree) || state.additionalMode || state.offHoursMode;
             pendingStart.disabled=state.selection?.appointment_id?!existingFree||!canCreateAppointments||state.appointmentBusy:!reservation.allowed;}
