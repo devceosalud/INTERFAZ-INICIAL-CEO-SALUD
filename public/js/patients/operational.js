@@ -540,6 +540,7 @@
         row.className = 'patients-table__row is-just-created';
         row.tabIndex = 0;
         row.dataset.patientId = highlight.id;
+        row.dataset.patientState = highlight.estado;
         row.setAttribute('aria-label', 'Abrir ficha de ' + highlight.nombre);
         [highlight.registro, highlight.hce, highlight.documento, highlight.nombre, highlight.fecha, '—', highlight.estado]
             .forEach(function (cellText, index) {
