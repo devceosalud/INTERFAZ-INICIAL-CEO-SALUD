@@ -7,7 +7,7 @@
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
         const receipt = root.AppointmentReceiptReview ? root.AppointmentReceiptReview({host:byId('receipt-review'),input:ui.proof,prefix:'agenda-op',
-            paymentFields:{amount:ui.amount,method:ui.method,operation:ui.operation,origin:ui.origin}}) : {
+            paymentFields:{amount:ui.amount,method:ui.method,operation:ui.operation,origin:ui.origin},onProofRemoved:()=>clearStalePaymentMessages()}) : {
                 append() {if(Array.from(ui.proof.files || []).some(f=>root.AgendaGuidance.invalidProof(f))) throw new Error(root.AgendaGuidance.copy.fileInvalid);
                     if(ui.proof.files?.length) throw new Error('No se cargó la revisión de comprobantes. Actualiza Agenda antes de adjuntar; puedes registrar un pago manual sin imagen.');},
                 reset:async()=>{ui.proof.value='';},hasChanges:()=>Boolean(ui.proof.files?.length)};
