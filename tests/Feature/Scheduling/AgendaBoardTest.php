@@ -90,8 +90,26 @@ class AgendaBoardTest extends TestCase
             ->assertSee('Comparar')
             ->assertSee('Sede Central')
             ->assertSee($this->catalog['doctor']->nombre)
-            ->assertSee('Sin horario de atención')
-            ->assertSee('Disponible');
+            ->assertSee('Programada')
+            ->assertSee('RESERVA PRIVADA')
+            ->assertSee('ADICIONAL')
+            ->assertSee('FUERA DE HORARIO');
+    }
+
+    public function test_operational_legend_is_compact_without_changing_the_full_state_dictionary(): void
+    {
+        $this->assertSame(
+            ['PROGRAMADO', 'PENDIENTE_CONFIRMACION', 'ADICIONAL', 'FUERA_HORARIO'],
+            array_column(\\App\\Support\\Scheduling\\AgendaLegend::compactForAgenda(), 'clave')
+        );
+        $all = \\App\\Support\\Scheduling\\AgendaLegend::ordered();
+        $this->assertGreaterThan(4, count($all));
+        $this->assertContains('PAGO_REAL', array_column($all, 'clave'));
+        $this->assertContains('PRESENTE', array_column($all, 'clave'));
+        $this->assertContains('HERIDA', array_column($all, 'clave'));
+
+        $response = $this->actingAs($this->reader())->get(self::PAGE_URI)->assertOk();
+        $this->assertSame(4, substr_count($response->getContent(), 'class="agenda-legend__item"'));
     }
 
     public function test_the_page_exposes_interaction_hooks_without_a_false_save_action(): void
