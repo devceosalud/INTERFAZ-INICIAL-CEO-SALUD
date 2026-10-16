@@ -73,7 +73,7 @@ class ReservationPaymentService
                 'updated_by_user_id' => $actor->id]);
             if (($data['confirm'] ?? false) === true && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
-                if (!$p['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere adelanto real de al menos 50%.']); }
+                if (!AppointmentEconomicPosition::allowsConfirmation($p) && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo o exoneración autorizada.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
                 // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.

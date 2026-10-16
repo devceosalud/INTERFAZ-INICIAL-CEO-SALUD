@@ -85,21 +85,21 @@ class AgendaStabilizationTest extends TestCase
     {
         $rows = [];
         foreach (self::endpoints() as $label => [$endpoint]) {
-            foreach (['0.00' => false, '49.99' => false, '50.00' => true] as $amount => $allowed) {
+            foreach (['0.00' => false, '0.01' => true, '30.00' => true, '49.99' => true, '50.00' => true] as $amount => $allowed) {
                 $rows[$label.'-'.$amount] = [$endpoint, $amount, $allowed];
             }
         }
         return $rows;
     }
     /** @dataProvider thresholds */
-    public function test_fifty_percent_is_enforced_on_direct_requests(string $endpoint, string $amount, bool $allowed): void
+    public function test_any_positive_real_payment_confirms_on_direct_requests(string $endpoint, string $amount, bool $allowed): void
     {
         $this->grant(C::SUBMIT_PAYMENT); $this->shift();
         $response = $this->sendAppointment($endpoint, $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => $amount, 'method' => 'EFECTIVO'],
             'total_pagado' => 100, 'estado_pagado' => 'PAGADO', 'precio_programado' => 100]));
         if ($allowed) {
             $response->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
-            $this->assertEquals(50, Payment::sum('monto')); $this->assertSame(1, Appointment::consumingRegularSlot()->count());
+            $this->assertEquals((float)$amount, Payment::sum('monto')); $this->assertSame(1, Appointment::consumingRegularSlot()->count());
         } else {
             $response->assertUnprocessable()->assertJsonValidationErrors('payment.amount');
             $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0);
@@ -173,15 +173,14 @@ class AgendaStabilizationTest extends TestCase
         $this->grant(C::SUBMIT_PAYMENT); $this->shift();
         $id = $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $this->payload())->assertCreated()->json('appointment.appointment_id');
         $url = route('scheduling.mvp.agenda.payments', $id);
-        $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '49.99', 'method' => 'EFECTIVO']])
-            ->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION');
         $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
-        $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '0.01', 'method' => 'EFECTIVO']])->assertOk();
+        $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '30.00', 'method' => 'EFECTIVO']])
+            ->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION');
         $this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);
         $key = (string) Str::uuid();
         $this->postJson($url, ['request_key' => $key, 'confirm' => true])->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->postJson($url, ['request_key' => $key, 'confirm' => true])->assertOk();
-        $this->assertDatabaseCount('payments', 2); $this->assertEquals(50, Payment::sum('monto'));
+        $this->assertDatabaseCount('payments', 1); $this->assertEquals(30, Payment::sum('monto'));
     }
 
     public static function nonConfirmationIntents(): array

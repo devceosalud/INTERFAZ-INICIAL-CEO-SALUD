@@ -32,6 +32,6 @@ class StoreAgendaAppointmentRequest extends OperationalRegistrationRequest
 
     public function messages(): array
     {
-        return parent::messages()+['request_key.required'=>'Incluye request_key UUID y reutilízala al reintentar. Confirmar requiere 50% del neto o exoneración autorizada.'];
+        return parent::messages()+['request_key.required'=>'Incluye request_key UUID y reutilízala al reintentar. Confirmar requiere un pago real positivo o exoneración autorizada.'];
     }
 }

@@ -244,7 +244,7 @@ async function calcularPrecioCita() {
         field('precio_programado').value=result.precio_programado;
         field('precio_programado_hidden').value=result.precio_programado;
         legacyQuoteReady=true;
-        if(status)status.textContent='Precio neto vigente: S/ '+Number(result.precio_programado).toFixed(2)+'. Adelanto mínimo 50%.';
+        if(status)status.textContent='Precio neto vigente: S/ '+Number(result.precio_programado).toFixed(2)+'. Confirmar requiere un pago real positivo.';
         calcularSaldoCita();
     } catch(error) {
         if(version!==legacyQuoteVersion)return;

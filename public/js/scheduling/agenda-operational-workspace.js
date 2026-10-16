@@ -92,23 +92,27 @@
             return { automaticFree: quoteReady && automaticFree, price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled && lastPosition?.reservation_slot_available !== false,
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
+        function hasConfirmablePayment(position) {
+            return position.asegurada || (position.fuente === 'PAYMENTS' && Number(position.pago_real || 0) > 0
+                && Number(position.saldo) < Number(position.precio));
+        }
         function reservationConfirmation() {
             const pending = config.context()?.estado_agenda === 'PENDIENTE_CONFIRMACION';
             return { allowed: Boolean(pending && !working && config.canCreate && lastPosition
-                && lastPosition.can_confirm_additional !== false && lastPosition.reservation_slot_available !== false && (lastPosition.asegurada || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
+                && lastPosition.can_confirm_additional !== false && lastPosition.reservation_slot_available !== false && (hasConfirmablePayment(lastPosition) || (lastPosition.es_exonerado && String(lastPosition.autorizado_por || '').trim()))),
                 reason: working ? 'Guardando. Espera el resultado de esta operaci\u00f3n.' :
                     !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     !pending ? 'La cita seleccionada no tiene una confirmaci\u00f3n pendiente.' :
                     !lastPosition ? 'Consultando el requisito financiero de la reserva\u2026' :
                     lastPosition.reservation_slot_available===false ? lastPosition.reservation_block_reason :
-                    'Para confirmar se requiere al menos 50% de pago real o exoneraci\u00f3n autorizada.' };
+                    'Para confirmar se requiere un pago real positivo o exoneraci\u00f3n autorizada.' };
         }
         function confirmReservation() {
             if (reservationConfirmation().allowed) { return submitPayment(true); }
         }
         function confirmation(position) {
             const reason = byId('confirmation-reason');
-            const allowed = config.canCreate && position.can_confirm_additional!==false && position.reservation_slot_available!==false && (position.asegurada || (position.es_exonerado && String(position.autorizado_por || '').trim()));
+            const allowed = config.canCreate && position.can_confirm_additional!==false && position.reservation_slot_available!==false && (hasConfirmablePayment(position) || (position.es_exonerado && String(position.autorizado_por || '').trim()));
             ui['confirm-reservation'].disabled = working || !allowed;
             ui['submit-payment'].disabled = working || position.reservation_slot_available===false || ui.amount.disabled;
             const conversion = byId('convert-additional'), explanation = byId('conversion-reason'), offer = position.additional_conversion;
@@ -118,7 +122,7 @@
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
-                    !allowed ? 'Para confirmar se requiere al menos 50% de pago real o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
+                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el profesional.';
             }
         }

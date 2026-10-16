@@ -20,7 +20,7 @@ test('comprobante permanece dentro de Registrar adelanto según PR24 y no se dup
 test('el par reserva/agendar explica el siguiente paso sin decir que la reserva ocupa el horario', () => {
     const help = guidance.copy.reserveVsSchedule;
     assert.match(help, /Guardar reserva: guarda el seguimiento sin confirmar el horario/);
-    assert.match(help, /Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada/);
+    assert.match(help, /Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada/);
     assert.match(help, /Con adelanto o crédito, la reserva protege el horario sin confirmarlo/);
     assert.match(guidance.copy.legendPrivate,/Pendiente de confirmación.*protege el horario/);
     for (const file of [
@@ -31,8 +31,8 @@ test('el par reserva/agendar explica el siguiente paso sin decir que la reserva 
     }
 });
 
-test('un adelanto menor a 50% se explica en el pago y no abre un modal', () => {
-    const placed = guidance.place('Para agendar se requiere adelanto real de al menos 50%. Puedes guardar una reserva privada.', 422, 'payment');
+test('la ausencia de pago real se explica en el pago y no abre un modal', () => {
+    const placed = guidance.place('Para confirmar se requiere un pago real positivo. Puedes guardar una reserva privada.', 422, 'payment');
     assert.equal(placed.domain, 'payment');
     assert.equal(placed.focus, true);
     assert.equal(placed.text, guidance.copy.insufficientAdvance);
@@ -119,7 +119,7 @@ test('un error de adelanto abre el bloque, enfoca el importe y no crea un modal'
         querySelector() { return { content: 'csrf' }; },
         createElement: element,
     };
-    const context = { window: { AgendaGuidance: guidance, setTimeout, crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000009' } }, document, setTimeout, clearTimeout, FormData: class { append() {} }, fetch: async () => ({ ok: false, status: 422, json: async () => ({ message: 'Para agendar se requiere adelanto real de al menos 50%.' }) }) };
+    const context = { window: { AgendaGuidance: guidance, setTimeout, crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000009' } }, document, setTimeout, clearTimeout, FormData: class { append() {} }, fetch: async () => ({ ok: false, status: 422, json: async () => ({ message: 'Para confirmar se requiere un pago real positivo.' }) }) };
     context.window.document = document;
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-form.js'), context);
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-workspace.js'), context);

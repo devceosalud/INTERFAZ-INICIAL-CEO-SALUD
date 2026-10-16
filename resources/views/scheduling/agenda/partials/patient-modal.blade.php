@@ -208,7 +208,7 @@
                 <p class="agenda-draft__message" id="agenda-draft-message" role="status" aria-live="polite"></p>
             </div>
 
-            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
+            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
             <footer class="agenda-patient-dialog__actions">
                 <span id="agenda-patient-write-policy">
                     {{ $canWritePatients ? 'Guardado habilitado para Administrador, Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Administrador, Admisión, Recepción o Comercial.' }}

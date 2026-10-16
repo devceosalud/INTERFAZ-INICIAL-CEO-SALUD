@@ -61,8 +61,8 @@
                 else if (amount > price) { reason = 'El adelanto supera el precio de la cita.'; }
                 else if (!input.canPay && ((!input.waived && !input.automaticFree) || amount > 0)) {
                     reason = 'Puedes guardar una reserva sin pago. Registrar el adelanto requiere autorización (appointment.payment.submit) y revisión de Caja.';
-                } else if (!input.waived && amount * 2 < price) {
-                    reason = 'Para confirmar registra al menos S/ ' + decimal(Math.ceil(price / 2)) + ' (50%). Puedes guardar una reserva sin confirmar.';
+                } else if (!input.waived && !input.automaticFree && amount <= 0) {
+                    reason = 'Para confirmar registra un pago real mayor a S/0. Puedes guardar una reserva sin confirmar.';
                 }
             } catch (e) { reason = e.message; }
         }

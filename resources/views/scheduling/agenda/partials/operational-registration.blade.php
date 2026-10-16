@@ -66,7 +66,7 @@
             <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
             <p class="agenda-payment-help">La exoneración requiere permisos y autorización expresa; el OCR no acredita dinero.</p>
         </details>
-        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Para confirmar se exige al menos el 50% de adelanto real o exoneración autorizada.</p>
+        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Para confirmar se requiere un pago real positivo o exoneración autorizada.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
         @unless($canSubmitPayment)<p class="agenda-payment-help">No tienes autorización para registrar adelantos. Puedes guardar una reserva sin pago si tu perfil lo permite.</p>@endunless
         <div class="agenda-payment-actions">
