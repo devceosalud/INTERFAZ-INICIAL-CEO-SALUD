@@ -12,10 +12,10 @@ root.AppointmentReceiptReview=function(config){
     const cancelButton=make('button','Detener OCR / completar manualmente');cancelButton.type='button';cancelButton.className='agenda-btn';cancelButton.disabled=true;
     const preview=make('img');preview.alt='Vista previa privada del comprobante seleccionado';preview.hidden=true;preview.style.maxWidth='100%';preview.style.maxHeight='280px';
     const suggestionBox=make('div');suggestionBox.hidden=true;
-    const suggestionFields={};
+    const suggestionFields={},suggestionLabels={};
     for(const [key,label] of Object.entries({amount:'Monto sugerido',operation:'N.º de operación sugerido',bank:'Entidad sugerida',date:'Fecha sugerida',time:'Hora sugerida'})){
         const wrapper=make('label',label);wrapper.className='agenda-field';const field=make('input');field.className='agenda-field__input';field.setAttribute('aria-label',label);
-        wrapper.append(field);suggestionBox.append(wrapper);suggestionFields[key]=field;
+        wrapper.append(field);suggestionBox.append(wrapper);suggestionFields[key]=field;suggestionLabels[key]=wrapper;
     }
     const applyButton=make('button','Usar sugerencias en el pago');applyButton.type='button';applyButton.className='agenda-btn';suggestionBox.append(applyButton);
     const reviewLabel=make('label');const reviewed=make('input');reviewed.type='checkbox';reviewed.id=config.prefix+'-proof-reviewed';
@@ -28,10 +28,10 @@ root.AppointmentReceiptReview=function(config){
     buttons.append(selector,readButton,cancelButton);
     cancelButton.hidden=true;
     const primary=make('div');primary.className='agenda-receipt-primary';
-    primary.append(suggestionFields.amount.closest('label'),suggestionFields.operation.closest('label'));
+    primary.append(suggestionLabels.amount,suggestionLabels.operation);
     const additional=make('details');additional.className='agenda-receipt-secondary';
     const extraLabel=make('summary','Otros datos extraídos · opcional');
-    additional.append(extraLabel,suggestionFields.bank.closest('label'),suggestionFields.date.closest('label'),suggestionFields.time.closest('label'));
+    additional.append(extraLabel,suggestionLabels.bank,suggestionLabels.date,suggestionLabels.time);
     const receiptActions=make('div');receiptActions.className='agenda-receipt-actions';
     receiptActions.append(applyButton);
     suggestionBox.append(primary,additional,receiptActions);
