@@ -1,0 +1,32 @@
+name: Confirmed demo cleanup QA
+
+on:
+  pull_request:
+    paths:
+      - 'app/Console/Commands/ClearConfirmedDemoOperations.php'
+      - 'tests/Feature/Operations/ClearConfirmedDemoOperationsTest.php'
+      - '.github/workflows/ceo-demo-cleanup-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sql-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - name: PHP syntax (no DB)
+        run: |
+          php -l app/Console/Commands/ClearConfirmedDemoOperations.php
+          php -l tests/Feature/Operations/ClearConfirmedDemoOperationsTest.php
+      - name: Install locked dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Simulate cleanup in SQLite memory only, never production
+        run: php artisan test --filter=ClearConfirmedDemoOperationsTest
