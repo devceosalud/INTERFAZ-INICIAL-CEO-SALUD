@@ -38,7 +38,9 @@ jobs:
             tests/JavaScript/agenda-quote-race.test.js \
             tests/JavaScript/agenda-extended-visibility.test.js \
             tests/JavaScript/agenda-modal-explicit-actions.test.js \
-            tests/JavaScript/agenda-payment-ocr-placement.test.js
+            tests/JavaScript/agenda-payment-ocr-placement.test.js \
+            tests/JavaScript/agenda-operational-form.test.js \
+            tests/JavaScript/agenda-guidance.test.js
       - name: PHP syntax only (never touches production DB)
         run: |
           php -l app/Http/Controllers/Scheduling/OperationalRegistrationController.php
@@ -67,3 +69,5 @@ jobs:
         run: php artisan test --filter=AgendaDoubleDurationTest
       - name: Reservation visibility regression
         run: php artisan test --filter=AppointmentVisibilityTest
+      - name: Positive partial-payment confirmation regressions
+        run: php artisan test --filter='AgendaStabilizationTest|AppointmentDiscountRegistrationTest'
