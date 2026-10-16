@@ -16,6 +16,7 @@ class AppointmentPriceResolver
     public function resolve(DoctorService $service, int $patientId, int $actorId, string $date, ?int $rateId = null, array $discount = [], ?int $indicationId = null, array $referral = [], ?int $existing = null, bool $lock = false): array
     {
         if($lock){
+            \App\Models\Doctor::whereKey($service->doctor_id)->lockForUpdate()->firstOrFail();
             $service=DoctorService::whereKey($service->id)->lockForUpdate()->firstOrFail();
             \App\Models\Service::whereKey($service->service_id)->lockForUpdate()->firstOrFail();
         }

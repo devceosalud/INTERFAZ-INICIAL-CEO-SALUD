@@ -27,7 +27,11 @@ final class ServiceSpecialtyEligibility
             $assignmentQuery->lockForUpdate();
         }
         $assignment = $assignmentQuery->first() ?? $assignment;
-        $doctor = Doctor::find($assignment->doctor_id);
+        $doctorQuery = Doctor::whereKey($assignment->doctor_id);
+        if ($lock) {
+            $doctorQuery->lockForUpdate();
+        }
+        $doctor = $doctorQuery->first();
         $serviceQuery = Service::whereKey($assignment->service_id);
         if ($lock) {
             $serviceQuery->lockForUpdate();

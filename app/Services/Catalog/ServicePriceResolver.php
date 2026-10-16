@@ -13,6 +13,7 @@ final class ServicePriceResolver
     {
         $assignmentQuery = DoctorService::whereKey($assignment->id);
         if ($lock) {
+            \App\Models\Doctor::whereKey($assignment->doctor_id)->lockForUpdate()->firstOrFail();
             $assignmentQuery->lockForUpdate();
         }
         $assignment = $assignmentQuery->firstOrFail();

@@ -45,6 +45,15 @@ class Handler extends ExceptionHandler
             }
         });
 
+        $this->renderable(function (\Illuminate\Database\QueryException $e, $request) {
+            // MariaDB snapshot conflicts require a fresh operation, not authorization from an old snapshot.
+            if ((int) ($e->errorInfo[1] ?? 0) !== 1020) { return null; }
+            return response()->json([
+                'code' => 'DATA_CHANGED_DURING_OPERATION',
+                'message' => 'Los datos cambiaron durante la operación. Actualiza la información y reintenta con la misma solicitud; no dupliques el cobro.',
+            ], 409);
+        });
+
         $this->reportable(function (Throwable $e) {
             //
         });

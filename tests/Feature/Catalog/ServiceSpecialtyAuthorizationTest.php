@@ -97,4 +97,47 @@ class ServiceSpecialtyAuthorizationTest extends TestCase
         $report = app(\App\Services\Catalog\ServiceCatalogDefinition::class)->report();
         $this->assertCount(16, $report);
     }
+    protected function connectionsToTransact()
+    {
+        if (DB::getDriverName() === 'mysql' && $this->getName(false) === 'test_locked_price_rejects_a_specialty_changed_after_the_transaction_snapshot') {
+            return [];
+        }
+        return [null];
+    }
+    public function test_locked_price_rejects_a_specialty_changed_after_the_transaction_snapshot(): void
+    {
+        $c = $this->catalog();
+        $row = $c['doctorService'];
+        $date = $c['schedule']->fecha_cita;
+        $rejected = false;
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        }
+        try {
+            DB::transaction(function () use ($c, $row, $date) {
+                $before = DB::table('doctors')->where('id', $row->doctor_id)->value('specialty_id');
+                if (DB::getDriverName() === 'mysql') {
+                    $config = config('database.connections.mysql');
+                    $other = new \PDO('mysql:host=' . $config['host'] . ';port=' . $config['port'] . ';dbname=' . $config['database'], $config['username'], $config['password'], [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
+                    $statement = $other->prepare('UPDATE doctors SET specialty_id=? WHERE id=?');
+                    $statement->execute([5, $row->doctor_id]);
+                    // Prove a plain consistent read is stale; the write path must not authorize from it.
+                    $this->assertEquals($before, DB::table('doctors')->where('id', $row->doctor_id)->value('specialty_id'));
+                } else {
+                    DB::table('doctors')->where('id', $row->doctor_id)->update(['specialty_id' => 5]);
+                }
+                app(ServicePriceResolver::class)->resolve($row, $date, false, true);
+            });
+        } catch (\Illuminate\Validation\ValidationException $error) {
+            $rejected = true;
+            $this->assertArrayHasKey('service_id', $error->errors());
+        } catch (\Illuminate\Database\QueryException $error) {
+            // MariaDB snapshot isolation may abort this locking read instead of returning the current row.
+            $this->assertSame(1020, (int) ($error->errorInfo[1] ?? 0));
+            $rejected = true;
+        }
+        $this->assertTrue($rejected, 'A locking price read must reject the now-incompatible professional');
+        $this->assertDatabaseCount('appointments', 0);
+        $this->assertDatabaseCount('payments', 0);
+    }
 }

@@ -30,4 +30,24 @@ class QuoteConfigurationErrorTest extends TestCase
     {
         return [['operational'], ['legacy']];
     }
+    /** @dataProvider entries */
+    public function test_native_snapshot_conflict_is_controlled_without_sql_details_or_money(string $endpoint): void
+    {
+        config(['scheduling.enabled' => true, 'app.debug' => false]);
+        $actor = $this->agendaReader('ADMISION');
+        $catalog = $this->createAppointmentCatalog();
+        $pdo = new \PDOException('Record has changed since last read: QA_PRIVATE_NO_EXPOSE');
+        $pdo->errorInfo = ['HY000', 1020, 'QA_PRIVATE_NO_EXPOSE'];
+        $error = new \Illuminate\Database\QueryException('select QA_PRIVATE_NO_EXPOSE', [], $pdo);
+        $this->mock(AppointmentPriceResolver::class, function ($mock) use ($error) {
+            $mock->shouldReceive('resolve')->once()->andThrow($error);
+        });
+        $payload = ['doctor_id' => $catalog['doctor']->id, 'service_id' => $endpoint === 'legacy' ? $catalog['doctorService']->id : $catalog['service']->id, 'fecha_cita' => $catalog['schedule']->fecha_cita];
+        $response = $this->actingAs($actor)->postJson($endpoint === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote', $payload);
+        $response->assertConflict()->assertJsonPath('code', 'DATA_CHANGED_DURING_OPERATION');
+        $this->assertStringNotContainsString('QA_PRIVATE_NO_EXPOSE', $response->getContent());
+        $this->assertDatabaseCount('appointments', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('appointment_operations', 0);
+    }
 }
