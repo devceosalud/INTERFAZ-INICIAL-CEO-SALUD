@@ -65,6 +65,7 @@ class OperationalPatientController extends Controller
             'numero_documento' => ['nullable', 'string', 'max:255'],
             'hce' => ['nullable', 'string', 'max:255'],
             'nombre' => ['nullable', 'string', 'max:255'],
+            'estado' => ['nullable', 'string', Rule::in(['ACTIVO', 'INACTIVO', 'TODOS'])],
             // Reserved for the future encounter source. It is displayed but is not
             // silently mapped to fecha_registro or fecha_cita.
             'fecha' => ['nullable', 'date_format:Y-m-d'],
@@ -100,10 +101,12 @@ class OperationalPatientController extends Controller
             'nombre' => null,
             'fecha' => Carbon::today()->toDateString(),
             'vista' => null,
+            'estado' => 'ACTIVO',
         ], $filters);
         $pendingView = ($filters['vista'] ?? null) === 'pendientes';
+        if ($pendingView) { $filters['estado'] = 'ACTIVO'; }
         $actorId = (int) $request->user()->id;
-        $pendingCount = PendingPatientChartQuery::apply(Patient::query(), $actorId)->count();
+        $pendingCount = PendingPatientChartQuery::apply(Patient::query()->where('patients.estado', 'ACTIVO'), $actorId)->count();
 
         $patients = $this->filteredPatients(Patient::query(), $filters)
             ->when($pendingView, function (Builder $query) use ($actorId): void {
@@ -175,6 +178,7 @@ class OperationalPatientController extends Controller
             'channels' => Channel::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'interactionMedia' => InteractionMedium::where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre']),
             'canWritePatients' => PatientWriteAccess::allows($request->user()),
+            'canDeactivatePatients' => $request->user()->hasRole('ADMINISTRADOR'),
             'initialPatientId' => $initialPatientId,
             'agendaReturnUrl' => $agendaReturnUrl,
         ]);
@@ -304,6 +308,9 @@ class OperationalPatientController extends Controller
     private function filteredPatients(Builder $query, array $filters): Builder
     {
         return $query
+            ->when(($filters['estado'] ?? 'ACTIVO') !== 'TODOS', function (Builder $patients) use ($filters): void {
+                $patients->where('patients.estado', $filters['estado'] ?? 'ACTIVO');
+            })
             ->when(!blank($filters['tipo_documento']), function (Builder $patients) use ($filters): void {
                 $patients->where('tipo_identificacion', $filters['tipo_documento']);
             })
@@ -382,11 +389,12 @@ class OperationalPatientController extends Controller
     private function patientListUrl(Request $request, bool $pending): string
     {
         $query = collect($request->query())
-            ->only(['tipo_documento', 'numero_documento', 'hce', 'nombre', 'fecha'])
+            ->only(['tipo_documento', 'numero_documento', 'hce', 'nombre', 'fecha', 'estado'])
             ->reject(fn ($value) => $value === null || $value === '')
             ->all();
 
         if ($pending) {
+            unset($query['estado']);
             $query['vista'] = 'pendientes';
         }
 
