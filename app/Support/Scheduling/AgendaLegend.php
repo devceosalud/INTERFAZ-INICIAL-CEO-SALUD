@@ -116,6 +116,24 @@ final class AgendaLegend
         return array_values(self::entries());
     }
 
+    /**
+     * Compact legend shown below the operational calendar.
+     *
+     * Keep entries()/ordered() intact: the feed, event badges, month summaries,
+     * state colours and availability still need the complete vocabulary.
+     *
+     * @return array<int, array<string, string>>
+     */
+    public static function compactForAgenda(): array
+    {
+        $entries = self::entries();
+
+        return array_values(array_map(
+            static fn (string $key): array => $entries[$key],
+            ['PROGRAMADO', 'PENDIENTE_CONFIRMACION', 'ADICIONAL', 'FUERA_HORARIO']
+        ));
+    }
+
     public static function of(string $key): array
     {
         $entries = self::entries();
