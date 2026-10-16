@@ -6,14 +6,14 @@ root.AppointmentReceiptReview=function(config){
     const engine=root.AppointmentReceiptOCR.createEngine({basePath:config.basePath});
     let version=0,objectUrl=null,source='MANUAL',suggestions=null,busy=false;
     const make=(tag,text)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e;};
-    const status=make('p','Selecciona comprobantes. OCR solo sugiere datos; no registra ni valida pagos.');status.setAttribute('role','status');
+    const status=make('p','Adjunta imagen JPG o PNG para identificar monto y operación.');status.setAttribute('role','status');
     const selector=make('select');selector.setAttribute('aria-label','Comprobante para leer');
     const readButton=make('button','Leer imagen con OCR');readButton.type='button';readButton.className='agenda-btn';readButton.disabled=true;
     const cancelButton=make('button','Detener OCR / completar manualmente');cancelButton.type='button';cancelButton.className='agenda-btn';cancelButton.disabled=true;
     const preview=make('img');preview.alt='Vista previa privada del comprobante seleccionado';preview.hidden=true;preview.style.maxWidth='100%';preview.style.maxHeight='280px';
     const suggestionBox=make('div');suggestionBox.hidden=true;
     const suggestionFields={};
-    for(const [key,label] of Object.entries({amount:'Monto sugerido',operation:'Operación sugerida',bank:'Entidad sugerida',date:'Fecha sugerida',time:'Hora sugerida'})){
+    for(const [key,label] of Object.entries({amount:'Monto sugerido',operation:'N.º de operación sugerido',bank:'Entidad sugerida',date:'Fecha sugerida',time:'Hora sugerida'})){
         const wrapper=make('label',label);wrapper.className='agenda-field';const field=make('input');field.className='agenda-field__input';field.setAttribute('aria-label',label);
         wrapper.append(field);suggestionBox.append(wrapper);suggestionFields[key]=field;
     }
@@ -22,7 +22,22 @@ root.AppointmentReceiptReview=function(config){
     reviewLabel.append(reviewed,document.createTextNode(' Verifiqué el monto, la operación y todos los comprobantes. Confirmo el registro manual del pago.'));
     const dateLabel=make('label','Fecha del comprobante (opcional)');dateLabel.className='agenda-field';const date=make('input');date.type='date';date.id=config.prefix+'-receipt-date';date.className='agenda-field__input';dateLabel.append(date);
     const timeLabel=make('label','Hora del comprobante (opcional)');timeLabel.className='agenda-field';const time=make('input');time.type='time';time.id=config.prefix+'-receipt-time';time.className='agenda-field__input';timeLabel.append(time);
-    host.append(selector,readButton,cancelButton,status,preview,suggestionBox,dateLabel,timeLabel,reviewLabel);
+    const heading=make('h4','Leer importe y N.º de operación');
+    heading.className='agenda-receipt-heading';
+    const buttons=make('div');buttons.className='agenda-receipt-actions';
+    buttons.append(selector,readButton,cancelButton);
+    cancelButton.hidden=true;
+    const primary=make('div');primary.className='agenda-receipt-primary';
+    primary.append(suggestionFields.amount.closest('label'),suggestionFields.operation.closest('label'));
+    const additional=make('details');additional.className='agenda-receipt-secondary';
+    const extraLabel=make('summary','Otros datos extraídos · opcional');
+    additional.append(extraLabel,suggestionFields.bank.closest('label'),suggestionFields.date.closest('label'),suggestionFields.time.closest('label'));
+    const receiptActions=make('div');receiptActions.className='agenda-receipt-actions';
+    receiptActions.append(applyButton);
+    suggestionBox.append(primary,additional,receiptActions);
+    const extras=make('details');extras.className='agenda-receipt-secondary';
+    extras.append(make('summary','Fecha y hora del comprobante · opcional'),dateLabel,timeLabel);
+    host.append(heading,buttons,status,preview,suggestionBox,extras,reviewLabel);
     function invalidate(){reviewed.checked=false;}
     function releasePreview(){if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}preview.hidden=true;preview.removeAttribute('src');}
     function refreshSelect(field){if(root.jQuery?.fn?.selectpicker)root.jQuery(field).selectpicker('refresh');}
@@ -31,6 +46,7 @@ root.AppointmentReceiptReview=function(config){
         releasePreview();const file=input.files[Number(selector.value)||0];
         readButton.disabled=!file || !['image/png','image/jpeg'].includes(file.type) || fields.amount.disabled || busy;
         cancelButton.disabled=!file;
+        cancelButton.hidden=!busy;
         if(file && ['image/png','image/jpeg'].includes(file.type)){objectUrl=URL.createObjectURL(file);preview.src=objectUrl;preview.hidden=false;}
     }
     function validate(){
@@ -42,7 +58,7 @@ root.AppointmentReceiptReview=function(config){
     async function reset(clearInput=true){
         ++version;await engine.cancel();busy=false;source='MANUAL';suggestions=null;invalidate();date.value='';time.value='';suggestionBox.hidden=true;
         Object.values(suggestionFields).forEach(f=>f.value='');if(clearInput)input.value='';selector.replaceChildren();releasePreview();readButton.disabled=true;
-        status.textContent='Selecciona comprobantes. OCR solo sugiere datos; no registra ni valida pagos.';cancelButton.disabled=true;
+        status.textContent='Adjunta una imagen JPG o PNG para sugerir monto y operación.';cancelButton.disabled=true;cancelButton.hidden=true;
     }
     input.addEventListener('change',async()=>{
         await reset(false);
@@ -53,12 +69,14 @@ root.AppointmentReceiptReview=function(config){
     selector.addEventListener('change',async()=>{++version;await engine.cancel();busy=false;invalidate();suggestionBox.hidden=true;showPreview();});
     readButton.addEventListener('click',async()=>{
         const file=input.files[Number(selector.value)||0];if(!file || busy)return;
-        const current=++version;busy=true;invalidate();readButton.disabled=true;suggestionBox.hidden=true;
+        const current=++version;busy=true;invalidate();readButton.disabled=true;cancelButton.hidden=false;suggestionBox.hidden=true;
         try{
             const result=await engine.recognize(file,p=>{if(current===version)status.textContent='Leyendo imagen localmente: '+Math.round(p*100)+'%';});
             if(current!==version)return;suggestions=result;
             Object.keys(suggestionFields).forEach(k=>suggestionFields[k].value=result[k]||'');suggestionBox.hidden=false;
-            status.textContent=result.ambiguous?'Lectura ambigua: completa y contrasta los datos manualmente.':'Lectura terminada. Corrige las sugerencias y revisa la imagen; no acredita que el dinero se recibió.';
+            status.textContent=result.ambiguous
+                ? 'Hay varios importes u operaciones posibles. Completa y verifica los datos manualmente.'
+                : 'Revisa el monto y N.º de operación sugeridos antes de aplicarlos. OCR no confirma pagos.';
         }catch(e){if(current===version)status.textContent=e.message;}
         finally{if(current===version){busy=false;showPreview();}}
     });
@@ -69,6 +87,7 @@ root.AppointmentReceiptReview=function(config){
     applyButton.addEventListener('click',()=>{
         if(!suggestions)return;
         const bank=suggestionFields.bank.value.trim().toUpperCase();
+        // Ambiguous OCR values are never copied without explicit human correction.
         if(suggestionFields.amount.value)fields.amount.value=suggestionFields.amount.value;
         if(suggestionFields.operation.value)fields.operation.value=suggestionFields.operation.value;
         if(['YAPE','PLIN'].includes(bank))fields.method.value=bank;
