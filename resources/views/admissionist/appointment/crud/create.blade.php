@@ -128,6 +128,7 @@
                             <label class="form-label text-primary">Tarifa Especial <span
                                     class="text-danger">*</span></label>
                             <select class="form-control" name="additional_rate_id" id="additional_rate_id">
+<option value="">Sin recargo</option>
                                 @foreach ($additional_rates as $rate)
                                     <option value="{{ $rate->id }}">
                                         {{ $rate->nombre }}

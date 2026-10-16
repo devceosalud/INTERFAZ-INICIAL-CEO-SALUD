@@ -77,6 +77,7 @@ class CreateAppointmentService
                     }
 
                     $doctorService = $this->resolveDoctorService($data);
+                    $commercialId=\App\Support\Scheduling\AppointmentPriceInput::assertCommercialService($data->operational,(int)$doctorService->service_id,true);
                     $actor = User::findOrFail($data->creatorUserId);
                     $automaticOwner = !$actor->hasRole('ADMINISTRADOR') && $actor->hasAnyRole(['COMERCIAL', 'ADMISION']);
                     abort_if($automaticOwner && $data->responsibleUserId !== null && $data->responsibleUserId !== (int) $actor->id, 403);
@@ -119,6 +120,8 @@ class CreateAppointmentService
                         'doctor_id' => $data->doctorId,
                         'service_id' => $doctorService->service_id,
                         'additional_rate_id' => $quote['additional_rate_id'],
+                        'price_source' => $quote['price_source'],
+                        'commercial_service_id' => $commercialId,
                         'fecha_cita' => $data->date,
                         'hora_cita' => $data->time,
                         'duracion_cita' => $data->duration,'duration_slots'=>!empty($data->operational['legacy_double'])?2:1,
@@ -152,7 +155,7 @@ class CreateAppointmentService
                     app(AppointmentHistory::class)->record($appointment, $pending ? 'RESERVA_CREADA' : 'CITA_CREADA', $data->creatorUserId);
                     app(AppointmentHistory::class)->record($appointment,'PRECIO_REGISTRADO',$actor->id,
                         ['metadata'=>['catalog_price'=>$quote['catalog_price'],'net_price'=>$price,
-                            'pricing_rule'=>$quote['pricing_rule'],'indication_id'=>$quote['indication']?->id,'referral_origin'=>$quote['referral_origin'],
+                            'pricing_rule'=>$quote['pricing_rule'],'price_source'=>$quote['price_source'],'indication_id'=>$quote['indication']?->id,'referral_origin'=>$quote['referral_origin'],
                             'discount'=>$quote['discount'],'is_postoperative'=>(bool)$appointment->is_postoperative,'has_diabetic_wound'=>(bool)$appointment->has_diabetic_wound,
                             'exemption'=>(bool)$appointment->es_exonerado,
                             'exemption_reason'=>$appointment->motivo_exoneracion]]);

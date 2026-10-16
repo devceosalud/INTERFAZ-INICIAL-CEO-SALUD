@@ -11,7 +11,7 @@ class ServiceController extends Controller
     //
     public function search(Request $request)
     {
-        $service = Service::with('specialty')->find($request->id);
+        $service = Service::with(['specialty','sharedSpecialties'])->find($request->id);
 
         if (!$service) {
             return response()->json(['message' => 'no encontrado'], 404);

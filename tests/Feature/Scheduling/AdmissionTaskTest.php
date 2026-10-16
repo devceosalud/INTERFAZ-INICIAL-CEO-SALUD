@@ -91,7 +91,7 @@ class AdmissionTaskTest extends TestCase
                 ->assertJsonPath('can_complete_operational_tasks', false);
             $this->assertStringNotContainsString('CONTROL OPERATIVO MUY PRIVADO', $result->getContent());
             $this->createTask($a)->assertForbidden();
-            $this->toggle($a, 1, false, true)->assertForbidden();
+            $this->toggle($a, (int) DB::table('appointment_admission_tasks')->where('appointment_id',$a->id)->value('id'), false, true)->assertForbidden();
         }
         $this->actingAs($this->admin);
         $feed = $this->postJson(route('scheduling.mvp.admission.feed'), [
@@ -116,11 +116,11 @@ class AdmissionTaskTest extends TestCase
         $this->createTask($a)->assertNotFound();
         $this->actingAs($other);
         $this->getJson(route('scheduling.mvp.admission.detail', $a->id))->assertNotFound();
-        $this->toggle($a, 1, false, true)->assertNotFound();
+        $this->toggle($a, (int) DB::table('appointment_admission_tasks')->where('appointment_id',$a->id)->value('id'), false, true)->assertNotFound();
         $this->actingAs($owner);
         $this->getJson(route('scheduling.mvp.admission.detail', $a->id))->assertOk()
             ->assertJsonPath('operational_tasks.0.text', 'Pendiente sólo de su responsable');
-        $this->toggle($a, 1, false, true)->assertOk();
+        $this->toggle($a, (int) DB::table('appointment_admission_tasks')->where('appointment_id',$a->id)->value('id'), false, true)->assertOk();
     }
 
     public function test_admin_permission_is_opt_in_and_no_appointment_update_permission_is_required(): void

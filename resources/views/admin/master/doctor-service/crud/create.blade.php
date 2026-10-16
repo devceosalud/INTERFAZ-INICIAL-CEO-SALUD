@@ -1,6 +1,6 @@
-<div class="modal fade" id="doctorServiceModalCreate" tabindex="-1" aria-labelledby="doctorServiceModalCreateLabel" aria-hidden="true">
+<div class="modal fade catalog-modal" id="doctorServiceModalCreate" tabindex="-1" aria-labelledby="doctorServiceModalCreateLabel" aria-hidden="true">
 
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
 
             <!-- Header -->
@@ -24,14 +24,14 @@
                         Datos del Servicio
                     </h6>
 
-                    <div class="row g-3">
+                    <p class="alert alert-info" data-price-source></p><div class="row g-3">@include('admin.master.doctor-service.crud.specialty-authorization')
                        
                         <div class="col-md-6">
-                            <label class="form-label text-primary">Doctores<span
+                            <label class="form-label text-primary">Profesional<span
                                     class="text-danger">*</span></label>
                             <select class="form-control" name="doctor_id" id="doctor_id">
                                 @foreach ($doctors as $doctor)
-                                    <option value="{{ $doctor->id }}">{{ $doctor->nombre }}</option>
+                                    <option data-specialty="{{ $doctor->specialty_id }}" value="{{ $doctor->id }}" @selected((string)$selectedDoctorId === (string)$doctor->id)>{{ $doctor->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -40,36 +40,32 @@
                             <label class="form-label text-primary">Servicios<span
                                     class="text-danger">*</span></label>
                             <select class="form-control" name="service_id" id="service_id">
-                                @foreach ($services as $service)
-                                    <option value="{{ $service->id }}">{{ $service->nombre }}</option>
+                                <option value="">Seleccione un servicio compatible</option>@foreach ($services as $service)
+                                    <option value="{{ $service->id }}" data-specialties="{{ json_encode(array_merge([(int)$service->specialty_id],$service->sharedSpecialties->filter(fn($s)=>$s->pivot->estado==='ACTIVO')->pluck('id')->map(fn($id)=>(int)$id)->all())) }}" data-policy="{{ $service->pricing_policy }}" data-price="{{ $service->institutional_price }}">{{ $service->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Precio Estándar<span
+                            <label class="form-label text-primary">Consulta / precio base S/<span
                                     class="text-danger">*</span></label>
                             <input type="number" class="form-control" name="precio_estandar" id="precio_estandar"
-                                placeholder="100">
+                                min="0.01" step="0.01">
 
                             <span class="text-danger error-text precio_estandar_error"></span>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Reconsulta<span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Reevaluación S/<span class="text-danger">*</span></label>
                             <input type="number" class="form-control" name="reconsulta" id="reconsulta"
-                                placeholder="80">
+                                min="0.01" step="0.01">
 
                             <span class="text-danger error-text reconsulta_error"></span>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label text-primary">Días<span class="text-danger">*</span></label>
-                            <select class="form-control" name="dias" id="dias">
-                                @for ($i = 1; $i < $count; $i++)
-                                    <option value=" {{ $i }} ">{{ $i }}</option>
-                                @endfor
-                            </select>
+                            <input type="number" class="form-control" name="dias" id="dias" value="15" readonly><small>El límite clínico aprobado es de 15 días.</small>
                         </div>
                     </div>
                 </div>

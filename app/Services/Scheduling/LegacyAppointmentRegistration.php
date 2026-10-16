@@ -53,6 +53,7 @@ class LegacyAppointmentRegistration
             'request_key' => $data['request_key'] ?? (string) Str::uuid(), 'mode' => $mode, 'booking_type' => 'REGULAR',
             'patient_id' => $data['patient_id'], 'doctor_id' => $data['doctor_id'], 'service_id' => $assignment->service_id,
             'additional_rate_id' => $data['additional_rate_id'] ?? null, 'site_id' => $slot->siteId(),
+            'commercial_service_id'=>$data['commercial_service_id']??null,'price_modality'=>$data['price_modality']??null,
             'fecha_cita' => $data['fecha_cita'], 'hora_cita' => $data['hora_cita'], 'duracion_cita' => $slot->range()->minutes(),
             '_legacy_double' => $double, 'motivo_consulta' => $data['motivo_consulta'] ?? null,
             'precio_programado' => $data['precio_programado'] ?? null, 'saldo_pendiente' => $data['saldo_pendiente'] ?? null,

@@ -19,9 +19,10 @@ class OperationalRegistrationController extends Controller
             'patient_id' => 'nullable|integer|min:0', 'fecha_cita' => 'required|date_format:Y-m-d',
             'additional_rate_id' => 'nullable|integer']);
         $service = app(\App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve($d['doctor_id'], $d['service_id']);
+        \App\Support\Scheduling\AppointmentPriceInput::assertCommercialService($d,(int)$service->service_id);
         $quote = app(\App\Services\Scheduling\AppointmentPriceResolver::class)->resolve($service,
             $d['patient_id'] ?? 0, (int) $request->user()->id, $d['fecha_cita'], $d['additional_rate_id'] ?? null, $d['discount'] ?? [],$d['reevaluation_indication_id'] ?? null,$d['referral'] ?? []);
-        return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo'], 'catalog_price'=>$quote['catalog_price'],
+        return response()->json(['precio_programado' => $quote['precio_programado'], 'tipo' => $quote['tipo'], 'catalog_price'=>$quote['catalog_price'],'price_source'=>$quote['price_source'],
             'pricing_rule'=>$quote['pricing_rule'],'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents'])]);
     }
 

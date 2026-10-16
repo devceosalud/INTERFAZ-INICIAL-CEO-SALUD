@@ -66,6 +66,8 @@ Route::post('/master/admin/service/delete', [ServiceController::class, 'delete']
 
 Route::get('/master/admin/doctor/services', [DoctorServiceController::class, 'index'])->name('master.service.doctor.index');
 Route::post('/master/admin/doctor/services/store', [DoctorServiceController::class, 'store'])->name('master.service.doctor.store');
+Route::get('/master/admin/doctor/services/{assignmentId}', [DoctorServiceController::class, 'show'])->whereNumber('assignmentId')->name('master.service.doctor.show');
+Route::put('/master/admin/doctor/services/update', [DoctorServiceController::class, 'update'])->name('master.service.doctor.update');
 Route::post('/master/admin/doctor/services/delete', [DoctorServiceController::class, 'delete'])->name('master.service.doctor.delete');
 
 

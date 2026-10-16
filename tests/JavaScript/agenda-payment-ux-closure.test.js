@@ -7,6 +7,7 @@ const view=fs.readFileSync(path.resolve(__dirname,'../../resources/views/schedul
 const modal=fs.readFileSync(path.resolve(__dirname,'../../resources/views/scheduling/agenda/partials/patient-modal.blade.php'),'utf8');
 const scripts=fs.readFileSync(path.resolve(__dirname,'../../resources/views/scheduling/agenda/index.blade.php'),'utf8');
 const js=fs.readFileSync(path.resolve(__dirname,'../../public/js/scheduling/agenda-operational-workspace.js'),'utf8');
+const quick=fs.readFileSync(path.resolve(__dirname,'../../resources/views/scheduling/agenda/partials/quick-registration.blade.php'),'utf8');
 
 test('Importe y operacion primero: separadores PEN y ceros a izquierda',()=>{
     const samples=[
@@ -36,7 +37,10 @@ test('El pago presenta primero importe y método, y conserva TODOS los controles
     assert.ok(idx('amount')<idx('method') && idx('method')<idx('operation'));
     assert.ok(idx('operation')<idx('proof') && idx('proof')<idx('receipt-review'));
     assert.ok(idx('advanced')>idx('receipt-review'));
-    for(const key of ['indication','referred','referral-origin','rate','discount-type','discount-value','discount-reason','catalog-price','authorized','exemption-reason','waived','submit-payment','confirm-reservation','payment-error'])
+    assert.equal((quick.match(/id="agenda-op-indication"/g)||[]).length,1);
+    assert.equal((view.match(/id="agenda-op-indication"/g)||[]).length,0);
+    assert.match(quick,/id="agenda-reevaluation-fields"/);
+    for(const key of ['referred','referral-origin','rate','discount-type','discount-value','discount-reason','catalog-price','authorized','exemption-reason','waived','submit-payment','confirm-reservation','payment-error'])
         assert.ok(idx(key)>=0,key);
     assert.match(view,/id="agenda-op-payment-summary"/);
     assert.match(modal,/id="agenda-patient-error-summary"/);

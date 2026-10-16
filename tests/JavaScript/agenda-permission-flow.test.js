@@ -74,7 +74,7 @@ test('reserva financiada se confirma sin otro cobro aunque el operador no pueda 
     assert.equal(f.get('submit-payment').disabled,true);
 });
 
-test('reserva sin 50% o sin CREATE muestra requisitos y conserva confirmación bloqueada',async()=>{
+test('reserva sin atribución financiera verificable o sin CREATE conserva confirmación bloqueada',async()=>{
     for(const canCreate of [true,false]){
         const f=fixture(url=>response(200,url.endsWith('/economy')?
             {precio:'100',pago_real:'49.99',saldo:'50.01',asegurada:false,can_edit_notes:true}:
@@ -82,7 +82,7 @@ test('reserva sin 50% o sin CREATE muestra requisitos y conserva confirmación b
         const selected={tipo_contexto:'cita_existente',appointment_id:12,patient_id:1,estado_agenda:'PENDIENTE_CONFIRMACION'};
         f.select(selected);await f.workspace.selectionChanged(selected);
         assert.equal(f.get('confirm-reservation').disabled,true);
-        assert.match(f.get('confirmation-reason').textContent,canCreate?/50%/:/appointment.create/);
+        assert.match(f.get('confirmation-reason').textContent,canCreate?/pago real positivo/:/appointment.create/);
         assert.equal(f.workspace.reservationConfirmation().allowed,false);
         await f.workspace.confirmReservation();
         assert.equal(f.calls.filter(c=>c.options.method==='POST').length,0);

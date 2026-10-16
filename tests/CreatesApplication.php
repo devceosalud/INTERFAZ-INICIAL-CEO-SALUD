@@ -13,6 +13,10 @@ trait CreatesApplication
      */
     public function createApplication()
     {
+        if (($_ENV['CATALOG_QA_RUNTIME'] ?? getenv('CATALOG_QA_RUNTIME')) === 'catalog-11.8.9') {
+            return \Tests\Support\IsolatedCatalogQa::boot();
+        }
+
         $requiredEnvironment = [
             'APP_ENV' => 'testing',
             'APP_CONFIG_CACHE' => 'bootstrap/cache/testing-config.php',

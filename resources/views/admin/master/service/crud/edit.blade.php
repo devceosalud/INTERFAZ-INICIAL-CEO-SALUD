@@ -1,6 +1,6 @@
-<div class="modal fade" id="serviceModalEdit" tabindex="-1" aria-labelledby="serviceModalEditLabel" aria-hidden="true">
+<div class="modal fade catalog-modal" id="serviceModalEdit" tabindex="-1" aria-labelledby="serviceModalEditLabel" aria-hidden="true">
 
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
 
             <!-- Header -->
@@ -44,6 +44,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @include('admin.master.service.crud.price-fields')
                     </div>
                 </div>
 

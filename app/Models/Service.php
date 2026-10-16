@@ -13,7 +13,15 @@ class Service extends Model
         'specialty_id',
         'nombre',
         'estado',
+        'service_type', 'pricing_policy', 'institutional_price', 'price_valid_from', 'price_valid_until', 'pricing_notes', 'canonical_service_id',
     ];
+
+    protected $casts = ['institutional_price' => 'decimal:2'];
+
+    public function sharedSpecialties()
+    {
+        return $this->belongsToMany(Specialty::class,'service_specialties')->withPivot(['estado','authorized_by_user_id','authorization_reason'])->withTimestamps();
+    }
 
     /**
      * Obtiene la specialty a la que pertenece el servicio.

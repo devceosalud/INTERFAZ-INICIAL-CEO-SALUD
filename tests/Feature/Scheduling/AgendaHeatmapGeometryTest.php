@@ -94,11 +94,11 @@ class AgendaHeatmapGeometryTest extends TestCase
         $this->assertStringContainsString("connect-src 'none'",$response->headers->get('Content-Security-Policy'));
         $this->assertDatabaseCount('patients',1);
     }
-    public function test_empty_geometry_rollback_is_safe_for_the_installed_sqlite_version(): void
+    public function test_empty_geometry_rollback_is_safe_for_the_installed_database_version(): void
     {
         $migration=require database_path('migrations/2026_10_09_120000_add_click_event_geometry.php');
-        $version=DB::selectOne('select sqlite_version() as version')->version;
-        if (version_compare($version,'3.35.0','<')) {
+        $version=DB::getDriverName()==='sqlite'?DB::selectOne('select sqlite_version() as version')->version:null;
+        if ($version!==null && version_compare($version,'3.35.0','<')) {
             try { $migration->down(); $this->fail('Unsupported DDL must not partially change the schema'); }
             catch (\RuntimeException $e) { $this->assertStringContainsString('SQLite >= 3.35',$e->getMessage()); }
             $this->assertTrue(Schema::hasColumn('agenda_click_events','geometry'));

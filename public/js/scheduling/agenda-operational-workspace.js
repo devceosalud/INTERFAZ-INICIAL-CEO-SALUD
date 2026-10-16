@@ -27,8 +27,10 @@
         const initialFinancialLocks = { waived: ui.waived.disabled, authorized: ui.authorized.disabled, exemption: exemptionReason?.disabled };
         const doubleInput=byId('double');
         const indicationInput=byId('indication'), referredInput=byId('referred'), referralOrigin=byId('referral-origin');
+        const modalityInput=byId('price-modality'),commercialInput=byId('commercial-service');
         function medicalPriceInput() {
             const data={};
+            if(modalityInput?.value){data.price_modality=modalityInput.value;if(modalityInput.value==='REEVALUATION'&&commercialInput?.value)data.commercial_service_id=Number(commercialInput.value);}
             if(indicationInput?.value) data.reevaluation_indication_id=Number(indicationInput.value);
             if(referredInput?.checked) data.referral={origin:referralOrigin.value,attested:true};
             return data;
@@ -41,7 +43,7 @@
         let capturePatient = null;
         const pendingDocumentEdits=new Map();
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
-            'rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','referred','referral-origin',
+            'rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','price-modality','commercial-service','referred','referral-origin',
             'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
             'document-file','document-kind','document-label','replacement-file','replacement-reason','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
@@ -192,6 +194,7 @@
             if (ui.method.value === 'EFECTIVO') { ui.operation.value = ''; }
             try { ui.balance.value = model.decimal(ui.waived.checked ? 0 : Math.max(0, balance - model.cents(ui.amount.value || '0'))); }
             catch (_) { ui.balance.value = 'Revisa el importe'; }
+            config.quoted?.({status:quoteReady?'ready':'pending',precio_programado:ui.price.value,advance:ui.amount.value,balance:ui.balance.value});
             if (config.changed) { config.changed(); }
         }
         function economy(p) {
@@ -200,8 +203,19 @@
             quote = model.cents(p.precio); balance = model.cents(p.saldo);
             ui.price.value = p.precio; ui.paid.value = p.pago_real; calculate();
         }
-        function quoteChanged(price) {
+        function quoteChanged(price, serviceConfig) {
             if (config.context()?.tipo_contexto === 'cita_existente') { return; }
+            if(serviceConfig&&modalityInput){
+                modalityInput.value='CONSULTATION';
+                const canReevaluate=!serviceConfig.serviceType||serviceConfig.serviceType==='CONSULTATION';
+                const aliases=serviceConfig.reevaluationServices||[];
+                modalityInput.disabled=!canReevaluate||!config.canCreate;
+                const option=modalityInput.querySelector?.('[value="REEVALUATION"]');if(option)option.disabled=!canReevaluate||aliases.length===0;
+                if(commercialInput){commercialInput.replaceChildren();aliases.forEach(alias=>{const o=document.createElement('option');o.value=String(alias.id);o.textContent=alias.nombre;commercialInput.appendChild(o);});commercialInput.disabled=true;}
+                if(indicationInput){indicationInput.value='';indicationInput.disabled=true;}
+                const fields=document.getElementById('agenda-reevaluation-fields');if(fields)fields.hidden=true;
+            }
+            quoteReady=false;
             quote = Math.round(Number(price || 0) * 100); balance = quote;
             ui.price.value = model.decimal(quote); ui.paid.value = '0.00'; calculate();
             refreshQuote();
@@ -218,6 +232,7 @@
                 quoteStatus.hidden = true;
                 if (quoteRetry) quoteRetry.hidden = true;
                 if (config.changed) config.changed();
+                config.quoted?.({status:'idle'});
                 return;
             }
             if (rateSelect?.value) data.additional_rate_id = rateSelect.value;
@@ -228,6 +243,7 @@
             ui.price.value = '';
             ui.price.placeholder = 'Esperando cotización';
             quoteStatus.hidden = false; quoteStatus.textContent = 'Consultando precio vigente…';
+            config.quoted?.({status:'pending'});
             if (quoteRetry) quoteRetry.hidden = true;
             if (config.changed) config.changed();
 
@@ -247,6 +263,7 @@
                 if (catalogPrice) catalogPrice.value = result.catalog_price ?? result.precio_programado;
                 ui.price.value = result.precio_programado; ui.paid.value = '0.00';
                 quoteReady = true; quoteStatus.hidden = true; calculate();
+                config.quoted?.({...result,status:'ready',advance:ui.amount?.value||'0.00',balance:ui.balance?.value??result.precio_programado});
             } catch (error) {
                 if (version !== quoteVersion || config.context()?.appointment_id) return;
                 quoteReady = false;
@@ -256,6 +273,7 @@
                     ? 'La cotización tardó demasiado. Pulsa Reintentar cotización.'
                     : 'No se pudo cotizar: ' + error.message;
                 if (quoteRetry) quoteRetry.hidden = false;
+                config.quoted?.({status:'error',message:quoteStatus.textContent});
                 if (config.changed) config.changed();
             } finally {
                 clearTimeout(timeout);
@@ -264,6 +282,14 @@
         }
         quoteRetry?.addEventListener('click', () => refreshQuote());
         [indicationInput,referredInput,referralOrigin].forEach(field=>field?.addEventListener('input',()=>refreshQuote()));
+        modalityInput?.addEventListener('change',()=>{
+            const reevaluation=modalityInput.value==='REEVALUATION';
+            if(commercialInput)commercialInput.disabled=!reevaluation;
+            if(indicationInput){indicationInput.disabled=!reevaluation;if(!reevaluation)indicationInput.value='';}
+            const fields=document.getElementById('agenda-reevaluation-fields');if(fields)fields.hidden=!reevaluation;
+            refreshQuote();
+        });
+        commercialInput?.addEventListener('change',()=>refreshQuote());
         [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
@@ -415,7 +441,7 @@
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
             if (byId('conversion-reason')) byId('conversion-reason').hidden=true;
             conversionKey=null;
-            [doubleInput,indicationInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
+            [doubleInput,indicationInput,modalityInput,commercialInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
             if(byId('indication-record-panel')) byId('indication-record-panel').hidden=true;
             [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
             if (postoperative) postoperative.disabled = Boolean(id); if(hasWound)hasWound.disabled=Boolean(id);

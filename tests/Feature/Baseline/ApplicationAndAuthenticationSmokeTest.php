@@ -16,8 +16,15 @@ class ApplicationAndAuthenticationSmokeTest extends TestCase
     public function test_application_boots_with_the_isolated_test_configuration(): void
     {
         $this->assertSame('testing', app()->environment());
-        $this->assertSame('sqlite', config('database.default'));
-        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        if(($_ENV['CATALOG_QA_RUNTIME']??getenv('CATALOG_QA_RUNTIME'))==='catalog-11.8.9') {
+            $this->assertSame('mysql',config('database.default'));
+            $this->assertSame('ceosalud_qa_catalog_suite',config('database.connections.mysql.database'));
+            $this->assertSame('127.0.0.1',config('database.connections.mysql.host'));
+            $this->assertSame(33323,(int)config('database.connections.mysql.port'));
+        } else {
+            $this->assertSame('sqlite', config('database.default'));
+            $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        }
         $this->assertSame('array', config('mail.default'));
         $this->assertSame('array', config('cache.default'));
         $this->assertSame('array', config('session.driver'));

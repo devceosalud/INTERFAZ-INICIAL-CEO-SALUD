@@ -3,98 +3,40 @@
 namespace App\Http\Controllers\admin\master\doctorService;
 
 use App\Http\Controllers\Controller;
-use App\Models\Doctor;
-use App\Models\DoctorService;
-use App\Models\Service;
+use App\Models\{Doctor, DoctorService, Service};
+use App\Services\Catalog\{CatalogInput, CatalogManagement};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-
-
 class DoctorServiceController extends Controller
 {
-    //
     public function __construct()
     {
         $this->middleware('auth');
     }
-
-    public function index()
+    public function index(Request $request)
     {
-        $doctors = Doctor::where('estado', 'ACTIVO')->get();
-        $services = Service::where('estado', 'ACTIVO')->get();
-        $doctorServices = DoctorService::where('estado','ACTIVO')->get();
-        $count = 31;
-        return view('admin.master.doctor-service.index', [
-            'doctors' => $doctors,
-            'services' => $services,
-            'count' => $count,
-            'doctorServices' => $doctorServices
-        ]);
+        $filter = $request->validate(['doctor_id' => 'nullable|integer|exists:doctors,id']);
+        return view('admin.master.doctor-service.index', ['selectedDoctorId' => $filter['doctor_id'] ?? null, 'doctors' => Doctor::orderBy('nombre')->get(), 'services' => Service::with('sharedSpecialties')->where('estado', 'ACTIVO')->where(fn($q) => $q->whereNull('service_type')->orWhere('service_type', '<>', 'REEVALUATION'))->get(), 'doctorServices' => DoctorService::with(['doctor', 'service'])->when($filter['doctor_id'] ?? null, fn($q, $id) => $q->where('doctor_id', $id))->get(), 'count' => 31]);
     }
-
-
-    //PARA GUARDAR SERVICIOS Y DOCTORES
-    public function store(Request $request)
+    public function show(int $assignmentId)
     {
-        //dd($request->all());
-        //VALIDATOR
-        $validator = Validator::make($request->all(), [
-            'precio_estandar' => 'required|numeric|min:0',
-            'reconsulta' => 'required|numeric|min:0',
-            'dias' => 'required|numeric|min:0'
-        ]);
-
-        //ERRORES
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        //GUARDAR DATOS
-        $service = DoctorService::create([
-            'doctor_id' => $request->doctor_id,
-            'service_id' => $request->service_id,
-            'precio_primera_consulta' => $request->precio_estandar,
-            'precio_reconsulta' => $request->reconsulta,
-            'dias_reconsulta' => $request->dias,
-            'estado' => 'ACTIVO'
-        ]);
-
-        //RESPUESTA DE CONSUMO
-        if ($service) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Servicio guardado correctamente",
-            ], 200);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "No se registro el servicio"
-            ]);
-        }
+        return response()->json(['assignment' => DoctorService::with(['service.sharedSpecialties', 'doctor'])->findOrFail($assignmentId)]);
     }
-
-
-    //PARA DESACTIVAR DOCTOR/SERVICE
-    public function delete(Request $request)
+    public function store(Request $r, CatalogManagement $manager)
     {
-        $doctorService = DoctorService::find($request->id);
-        $exito = $doctorService->update([
-            'estado' => "INACTIVO"
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Servicio inactivado"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "Servicio no se inactivo"
-            ]);
-        }
+        $s = $manager->assignment(CatalogInput::assignment($r), $r->user());
+        return response()->json(['code' => 1, 'msg' => 'Asignación guardada.', 'assignment' => $s]);
+    }
+    public function update(Request $r, CatalogManagement $manager)
+    {
+        $r->validate(['doctor_service_id' => 'required|integer|exists:doctor_services,id']);
+        $s = $manager->assignment(CatalogInput::assignment($r, true), $r->user(), (int) $r->doctor_service_id);
+        return response()->json(['code' => 1, 'msg' => 'Precios actualizados. No se recalcularon citas existentes.', 'assignment' => $s]);
+    }
+    public function delete(Request $r, CatalogManagement $manager)
+    {
+        $d = $r->validate(['id' => 'required|integer|exists:doctor_services,id', 'catalog_version' => 'required|integer|min:0']);
+        $s = DoctorService::findOrFail($d['id']);
+        $manager->assignment(['doctor_id' => $s->doctor_id, 'service_id' => $s->service_id, 'estado' => 'INACTIVO', 'catalog_version' => $d['catalog_version']], $r->user(), $s->id);
+        return response()->json(['code' => 1, 'msg' => 'Asignación desactivada. Historial conservado.']);
     }
 }

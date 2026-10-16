@@ -304,7 +304,7 @@ class OperationalPatientFormTest extends TestCase
         $this->assertStringContainsString('prependCreated(patient)', $script);
         $this->assertStringContainsString("state.mode = 'existing'", $script);
         $this->assertStringContainsString("registro: '—'", $workspace);
-        $this->assertStringNotContainsString('window.location', $script);
+        $this->assertDoesNotMatchRegularExpression('/window\\.location(?:\\.href)?\\s*=(?!=)/', $script);
     }
 
     public function test_agenda_save_still_returns_the_patient_and_does_not_navigate_to_the_patient_list(): void

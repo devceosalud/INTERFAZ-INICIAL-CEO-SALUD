@@ -1,0 +1,6 @@
+.catalog-modal .modal-content > form { display:flex; flex-direction:column; min-height:0; overflow:hidden; flex:1 1 auto; }
+.catalog-modal .modal-body { min-height:0; overflow-y:auto; }
+.catalog-modal .modal-footer { flex-shrink:0; }
+.catalog-modal details > summary { cursor:pointer; font-weight:600; margin-bottom:8px; }
+.catalog-modal .form-control { min-width:0; }
+.catalog-modal .alert { overflow-wrap:anywhere; }

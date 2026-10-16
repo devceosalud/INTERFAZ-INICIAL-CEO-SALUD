@@ -172,6 +172,13 @@ class AppointmentPaymentProofsTest extends TestCase
         $this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('appointment_documents',1);
     }
 
+    protected function connectionsToTransact()
+    {
+        // These fault injections must retry at the outer transaction, as in an HTTP request.
+        if (\Illuminate\Support\Facades\DB::getDriverName()==='mysql' && in_array($this->getName(false), ['test_deadlock_after_private_file_storage_retries_without_orphan_files_or_duplicate_money','test_exhausted_deadlocks_return_generic_conflict_without_money_or_private_files'],true)) return [];
+        return [null];
+    }
+
     private function deadlock(): \Illuminate\Database\QueryException
     {
         $pdo=new \PDOException('Deadlock found when trying to get lock',40001);

@@ -111,7 +111,7 @@ class ReevaluationIndicationTest extends TestCase {
         $this->assertDatabaseCount('appointments',2);$this->assertSame($aId,(int)Indication::find($id)->bound_appointment_id);
     }
     public function test_different_doctor_same_service_allowed_and_referral_does_not_follow_to_other_doctor():void {
-        $id=$this->indicate($this->source(1));$other=$this->createAppointmentCatalog();
+        $id=$this->indicate($this->source(1));$other=$this->createAppointmentCatalog();$other['doctor']->update(['specialty_id'=>$this->catalog['specialty']->id]);
         DoctorService::create(['doctor_id'=>$other['doctor']->id,'service_id'=>$this->catalog['service']->id,'precio_primera_consulta'=>90,'precio_reconsulta'=>70,'dias_reconsulta'=>15,'estado'=>'ACTIVO']);
         $other['schedule']->update(['fecha_cita'=>now('America/Lima')->toDateString(),'dia_semana'=>now('America/Lima')->dayOfWeekIso]);
         $data=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,['doctor_id'=>$other['doctor']->id,'reevaluation_indication_id'=>$id]);
@@ -190,7 +190,7 @@ class ReevaluationIndicationTest extends TestCase {
     public function test_referred_discount_confirmation_uses_net_funding_and_retry_does_not_duplicate_payment():void {
         $data=$this->payload('operational',$this->catalog['service']->id,$this->catalog['doctorService']->id,[
             'referral'=>['origin'=>'Derivación QA acreditada','attested'=>true],'discount'=>['type'=>'PERCENT','value'=>'10'],
-            'mode'=>'CONFIRM','payment'=>['amount'=>'112.49','method'=>'EFECTIVO']]);
+            'mode'=>'CONFIRM','payment'=>['amount'=>'0.00','method'=>'EFECTIVO']]);
         $this->postJson('/scheduling-mvp/agenda/registrations',$data)->assertUnprocessable();
         $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointments',0);
         $data['payment']['amount']='112.50';

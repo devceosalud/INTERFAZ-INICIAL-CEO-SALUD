@@ -2,6 +2,7 @@
 
 
 @section('css_data')
+ <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/admin/catalog.css') }}" rel="stylesheet">
     <!-- Datatable -->
     <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
     <!-- Custom Stylesheet -->
@@ -68,7 +69,7 @@
                                             @foreach ($additionalRates as $additionalRate)
                                                 <tr>
                                                     <td><strong>{{ $additionalRate->id }}</strong></td>
-                                                    <td>{{ $additionalRate->nombre }} </td>
+                                                    <td>{{ $additionalRate->nombre }} · {{ $additionalRate->estado }} </td>
                                                     <td>{{ $additionalRate->tipo_tarifa }} </td>
                                                     <td>{{ $additionalRate->tarifa }} </td>
                                                     <td>
@@ -81,7 +82,7 @@
                                                             </span>
                                                             <span>
                                                                 <a href="#" class="delete-additional-rate btn btn-sm btn-danger"
-                                                                    data-id="{{ $additionalRate->id }}"><i
+                                                                    data-id="{{ $additionalRate->id }}" data-version="{{ $additionalRate->catalog_version }}"><i
                                                                         class="fa fa-trash fs-18"></i></a>
                                                             </span>
                                                         </strong>
@@ -100,7 +101,7 @@
 
             @include('admin.master.additional-rate.crud.create')
 
-            @include('admin.master.additional-rate.crud.edit');
+            @include('admin.master.additional-rate.crud.edit')
 
         </div>
         <!--**********************************Content body end***********************************-->
@@ -120,7 +121,7 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
-        <script src="{{ asset('js/admin/master/additional-rate/additional-rate.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admin/master/catalog-editor.js') }}"></script><script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admin/master/additional-rate/additional-rate.js') }}"></script>
     @endsection
 
 
