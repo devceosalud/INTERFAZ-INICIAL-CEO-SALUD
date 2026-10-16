@@ -47,3 +47,7 @@ En ventana autorizada: migraciones aditivas compatibles antes de activar el cód
 Rollback preferido: volver código/assets al baseline revisado, **conservar ambas columnas y auditoría**. No `migrate:rollback` para borrar información registrada y no restaurar una BD antigua sobre cobros posteriores. Si hubo citas/pagos nuevos, mantenerlos, detener nuevas operaciones y corregir hacia adelante o revertir únicamente código compatible. Una interfaz anterior no muestra HERIDA/salida: suspender operaciones que dependan de esas señales hasta resolverlo.
 
 UX compacta/OCR/validación #33 se entrega en PR dependiente separado; no amplía contabilidad ni issue #28.
+
+## Evidencia final de revisión
+
+Código `29ba5df02d811377bfad1204392268fb2051f7b4`: PHP completa **924/7.471**, MariaDB aislada **211/2.048**, JavaScript **280**, navegador **11 escenarios**, todos aprobados. [Resultados](qa/agenda-etapa-a/revision-final.json). La evidencia anterior de 920/207/279/10 corresponde a su commit anterior y no sustituye esta ejecución. UI de pagos/OCR/#33 se valida adicionalmente en el PR dependiente.
