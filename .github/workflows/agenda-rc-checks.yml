@@ -70,4 +70,4 @@ jobs:
       - name: Reservation visibility regression
         run: php artisan test --filter=AppointmentVisibilityTest
       - name: Positive partial-payment confirmation regressions
-        run: php artisan test --filter='AgendaStabilizationTest|AppointmentDiscountRegistrationTest'
+        run: php artisan test --filter='AgendaStabilizationTest|AppointmentDiscountRegistrationTest|AppointmentEconomicPositionConfirmationTest'
