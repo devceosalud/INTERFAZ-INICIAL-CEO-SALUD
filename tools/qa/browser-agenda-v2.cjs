@@ -24,6 +24,30 @@ const fixture=read('browser-fixtures.json'),secret=read('browser-private.json'),
  try{
   const admin=await account('admin'),admission=await account('admission'),commercial=await account('commercial');
   const id=fixture.appointments.manual,auto=fixture.appointments.auto,reverse=fixture.appointments.reversal;
+  await step('Maestro Profesional/Servicio: MFR seleccionable al cambiar profesional y reabrir; Traumatología bloqueada sin excepción',admin,async()=>{
+   await admin.goto(base+'/master/admin/doctor/services?doctor_id='+fixture.doctor_id);
+   await admin.locator('[data-bs-target="#doctorServiceModalCreate"]').click();
+   const form=admin.locator('#formCreateDoctorService'),select=form.locator('[name=service_id]'),doctor=form.locator('[name=doctor_id]');
+   const picker=select.locator('..');
+   const row=name=>picker.locator('li').filter({hasText:name});
+   const mfr='CONSULTA MEDICA MFR FICTICIA QA',trauma='CONSULTA TRAUMATOLOGIA FICTICIA QA';
+   await picker.locator('button.dropdown-toggle').click();assert.match(await row(mfr).getAttribute('class'),/disabled/);
+   await picker.locator('button.dropdown-toggle').click();const doctorPicker=doctor.locator('..');await doctorPicker.locator('button.dropdown-toggle').click();await doctorPicker.locator('li').filter({hasText:'PROFESIONAL MFR FICTICIA QA'}).locator('a').click();assert.equal(await doctor.inputValue(),String(fixture.mfr_doctor_id));
+   await picker.locator('button.dropdown-toggle').click();assert.doesNotMatch(await row(mfr).getAttribute('class')||'',/disabled/);assert.match(await row(trauma).getAttribute('class'),/disabled/);
+   await row(mfr).locator('a').click();assert.equal(await select.inputValue(),String(fixture.mfr_service_id));
+   await form.locator('[data-specialty-authorization] summary').click();await form.locator('[name=specialty_exception_authorized]').check();
+   assert.equal(await select.inputValue(),String(fixture.mfr_service_id));assert.equal(await form.locator('[name=specialty_exception_reason]').evaluate(e=>e.required),true);
+   await picker.locator('button.dropdown-toggle').click();assert.doesNotMatch(await row(trauma).getAttribute('class')||'',/disabled/);await row(trauma).locator('a').click();
+   await form.locator('[name=specialty_exception_authorized]').uncheck();assert.equal(await select.inputValue(),'');
+   await picker.locator('button.dropdown-toggle').click();assert.match(await row(trauma).getAttribute('class'),/disabled/);await row(mfr).locator('a').click();
+   await form.getByRole('button',{name:'Cancelar',exact:true}).click();await admin.locator('#doctorServiceModalCreate').waitFor({state:'hidden'});
+   await admin.locator('[data-bs-target="#doctorServiceModalCreate"]').click();assert.equal(await select.inputValue(),String(fixture.mfr_service_id));
+   await picker.locator('button.dropdown-toggle').click();assert.doesNotMatch(await row(mfr).getAttribute('class')||'',/disabled/);assert.match(await row(trauma).getAttribute('class'),/disabled/);
+   await admin.screenshot({path:path.join(out,'master-mfr-compatible.png'),fullPage:true});
+   const rejected=await direct(admin,'/master/admin/doctor/services/store','POST',{doctor_id:fixture.mfr_doctor_id,service_id:fixture.service_id,precio_estandar:'100',reconsulta:'80',dias:15});
+   assert.equal(rejected.status,422);assert.ok(rejected.body.errors.service_id);
+  });
+
   await step('ADMINISTRADOR selecciona exactamente dos procedimientos mediante confirmación explícita',admin,async()=>{
    await detail(admin,id);assert.equal(await admin.locator('[data-procedure-selection]').count(),7);
    await admin.locator('[data-procedure-selection=radiography]').check();await admin.locator('[data-procedure-selection=laboratory]').check();

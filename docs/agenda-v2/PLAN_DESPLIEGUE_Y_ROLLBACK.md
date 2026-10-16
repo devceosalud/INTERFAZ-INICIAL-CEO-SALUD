@@ -19,7 +19,7 @@ Esta entrega es un PR Draft para revisión. No autoriza ni ejecuta publicación 
 - Verificar claves/índices y ausencia de modificaciones a filas históricas; no ejecutar migrate:fresh, seeders de QA ni scripts bajo tests/Support en producción.
 - Publicar el SHA aprobado con PHP/dependencias compatibles y archivos JS/Blade juntos. Mantener URLs versionadas por contenido y limpiar/reconstruir cachés conforme al procedimiento existente.
 - Validar sesiones de ADMINISTRADOR, ADMISION y COMERCIAL: reserva sin pago; nuevo adelanto con confirmación única; selección confirmada; realizado parcial/manual; todos realizados naranja en ambas agendas; cola ordenada; reversión no final; HTTP directo prohibido.
-- Confirmar que Caja, OCR/documentos privados, exoneraciones, adicionales, fuera de horario, precios y acreditaciones clínicas mantienen sus reglas. Verificar que Clarity no se carga en páginas excluidas.
+- Probar Maestro Profesional / Servicio con un profesional MFR ficticio: cambiar desde Traumatología, seleccionar Consulta MFR, reabrir conservando el servicio, activar/retirar la excepción y comprobar el bloqueo de Traumatología. Confirmar que Caja, OCR/documentos privados, exoneraciones, adicionales, fuera de horario, precios y acreditaciones clínicas mantienen sus reglas. Verificar que Clarity no se carga en páginas excluidas.
 - Reanudar escrituras solo tras aprobación funcional. Monitorear 403/409/422 y errores sin incluir datos clínicos/financieros en analítica.
 
 ## Reversión sin pérdida

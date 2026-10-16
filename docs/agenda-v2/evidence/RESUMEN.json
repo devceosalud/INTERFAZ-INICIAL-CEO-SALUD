@@ -32,13 +32,17 @@
     "skipped": 0
   },
   "javascript": {
-    "tests": 306,
-    "passed": 306,
+    "tests": 309,
+    "passed": 309,
     "failures": 0,
     "skipped": 0
   },
   "browser": {
     "cases": [
+      {
+        "name": "Maestro Profesional/Servicio: MFR seleccionable al cambiar profesional y reabrir; Traumatología bloqueada sin excepción",
+        "result": "PASS"
+      },
       {
         "name": "ADMINISTRADOR selecciona exactamente dos procedimientos mediante confirmación explícita",
         "result": "PASS"
@@ -77,8 +81,8 @@
       }
     ],
     "page_errors": [],
-    "started": "2026-10-16T21:52:12.671Z",
-    "finished": "2026-10-16T21:53:10.880Z",
+    "started": "2026-10-16T22:03:18.918Z",
+    "finished": "2026-10-16T22:04:24.355Z",
     "viewports": [
       "1440x1000",
       "390x844"

@@ -8,9 +8,11 @@ Se extrajo una copia intacta de 9c3b93a y se ejecutó antes de adaptar los tests
 
 ## Resultados de verificación
 
-La suite SQLite completa de v2 registra **1.039 pruebas / 8.513 aserciones**, sin fallos ni omisiones. JavaScript ampliado: **306/306**, sin fallos ni omisiones. La suite MariaDB completa registra **1.044 pruebas / 8.561 aserciones**, sin errores, fallos ni omisiones; incluye cinco carreras de procesos HTTP reales, Unit y Feature. Chrome registra **9/9 escenarios y cero errores JavaScript**. El SHA exacto probado se registra junto al resumen de ejecución y en el PR. No se presenta una compilación como prueba funcional.
+La suite SQLite completa de v2 registra **1.039 pruebas / 8.513 aserciones**, sin fallos ni omisiones. JavaScript ampliado: **309/309**, sin fallos ni omisiones. La suite MariaDB completa registra **1.044 pruebas / 8.561 aserciones**, sin errores, fallos ni omisiones; incluye cinco carreras de procesos HTTP reales, Unit y Feature. Chrome registra **10/10 escenarios y cero errores JavaScript**. El SHA exacto probado se registra junto al resumen de ejecución y en el PR. No se presenta una compilación como prueba funcional.
 
 Los 26 escenarios PHP nuevos cubren pagos, permisos negativos, cambios simultáneos/versiones, idempotencia, cola, colores críticos, Lima al cruzar medianoche UTC, migración sobre datos ficticios heredados y reversión. Las cinco carreras MariaDB comprueban: misma UUID con un pago/ticket/cita; dos cobros por el mismo intervalo con un único ganador; actualizaciones de procedimientos con una versión perdedora; reintento simultáneo de realización con una única auditoría; dos reversiones con una única corrección.
+
+Tres pruebas nuevas de `doctor-service-compatibility.test.js` verifican el refresco de Bootstrap Select después del cálculo, la conservación de selecciones válidas, apertura del modal, cambios de excepción y funcionamiento sin plugin. El escenario Chrome del maestro utiliza el desplegable visual real para MFR y Traumatología; comprueba además HTTP 422 sin autorización. No modifica registros reales de la profesional reportada.
 
 Chrome usa tres sesiones de usuario (ADMINISTRADOR, ADMISION y COMERCIAL), escritorio 1440×1000 y móvil 390×844. El runner comprueba selección no guardada hasta confirmar, realizados, decisión manual, HTTP 403, actualización compartida sin recarga, cola ordenada, conservación de texto y casillas después de perder foco, reversión con motivo, confirmación automática desde panel de pago, ausencia del botón adicional tras pagar, CSRF 419 y exclusión de Clarity. Guarda capturas y errores JavaScript; cualquier error de página hace fallar la ejecución.
 
@@ -31,7 +33,7 @@ Los tests de privacidad/conciliación de reservas pagadas pendientes usan ahora 
 | CA-17 a CA-25 | Procedimientos + CompatibilityTest; dos feeds, cola cronológica, decisiones manuales, ausencia de dinero/citas nuevas |
 | CA-26 | ReevaluationIndicationTest y CommercialReevaluationTest, conservando días 0, 1, 15 y 16 |
 | CA-27 a CA-30 | AgendaV2ReversalTest; carrera de reversiones; historial y snapshots; Chrome |
-| CA-31 y CA-32 | Suite completa de catálogo PR #45, especialidad/asignación y precios por profesional |
+| CA-31 y CA-32 | Suite completa de catálogo PR #45, especialidad/asignación y precios por profesional; doctor-service-compatibility.test.js y Chrome con Bootstrap Select real MFR/Traumatología |
 | CA-33 | Suites completas PHP/JS de Caja, vouchers, reservas, OCR, documentos y autorizaciones |
 | CA-34 | Capturas e inspección en Chrome escritorio/móvil y comprobación de ancho |
 
@@ -47,6 +49,6 @@ php vendor/phpunit/phpunit/phpunit -c phpunit.agenda-v2-mariadb.xml --colors=nev
 
 La tercera orden solo funciona con el runtime exacto verificado; no reutiliza otra BD ni usa credenciales del desarrollador. Crear el datadir exclusivo con MariaDB 11.8.9, puerto 33324 y bind local; ejecutar tests/Support/agenda-v2-init.php únicamente con AGENDA_V2_QA_INIT=NEW_SYNTHETIC_RUNTIME. La inicialización rechaza esquemas preexistentes. Para navegador, usar tools/qa/run-agenda-v2-browser.ps1 -ResetSyntheticData; solo reinicia el esquema ficticio de navegador y detiene el servidor que crea.
 
-Los logs/JUnit, contraseñas efímeras y capturas se conservan localmente en docs/agenda-v2/evidence y storage/app/qa-v2; no se suben credenciales ni fixtures de ejecución. El resumen sanitizado y el manifiesto SHA-256 identifican resultados y fuentes. El SHA del commit probado se registra aparte para no crear una referencia circular en el propio commit.
+Los logs/JUnit, contraseñas efímeras y capturas se conservan localmente en docs/agenda-v2/evidence y storage/app/qa-v2; no se suben credenciales ni fixtures de ejecución. El resumen sanitizado y el manifiesto SHA-256 identifican resultados y fuentes; los hashes de texto normalizan CRLF a LF como el almacenamiento de Git. El SHA del commit probado se registra aparte para no crear una referencia circular en el propio commit.
 
 Pendientes de liberación: aceptación del personal sobre los fixtures, backup productivo real, ensayo de despliegue autorizado, eventual concesión individual de supervisión y comprobación del entorno instalado. CI se informa con sus estados reales en el PR; una ejecución pendiente no se declara aprobada.

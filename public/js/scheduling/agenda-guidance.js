@@ -6,7 +6,7 @@
     'use strict';
 
     const copy = {
-        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.',
+        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario y sin registrar dinero. Registrar pago y cita: registra cualquier pago real positivo y confirma automáticamente el horario. La exoneración requiere autorización expresa.',
         insufficientAdvance: 'Para confirmar registra un pago real mayor a S/0. Si aún no pagó, usa Guardar reserva.',
         reserveSaved: 'Reserva guardada. Pendiente de confirmación.',
         reserveSavedHere: 'Reserva guardada para esta hora.',

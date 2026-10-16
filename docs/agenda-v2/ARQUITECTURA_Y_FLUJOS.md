@@ -56,3 +56,7 @@ Agenda operativa usa agenda-refresh.js, con temporizador al finalizar, exclusió
 ## Prioridad visual
 
 DESACTIVADA → REEMBOLSO_SOLICITADO → SALIDA_REGISTRADA → LISTO_REEVALUACION (si no existe incertidumbre financiera) → PRESENTE → PAGO_REAL → reserva/sin pago. La incertidumbre conserva la advertencia CONCILIAR_PAGO y evita el fondo naranja. Cuando un reembolso tiene prioridad, la disponibilidad para reevaluación permanece como chip textual. NO_ASISTIO y las citas fuera de jornada no esperan activamente. Ninguna regla visual escribe estados.
+
+## Sincronización del selector Profesional / Servicio
+
+`public/js/admin/master/doctor-service/doctor-service.js` recalcula las opciones desde `data-specialties`, aplica la excepción explícita y limpia únicamente valores incompatibles. A continuación refresca la caché visual de Bootstrap Select, sin volver a asignar el valor seleccionado. Carga inicial, cambio de profesional, cambio de excepción y `shown.bs.modal` comparten el mismo cálculo. La validación autoritativa continúa en CatalogManagement, independiente del estado del desplegable.

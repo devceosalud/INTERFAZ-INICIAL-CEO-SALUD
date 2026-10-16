@@ -13,6 +13,7 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 - `app/Http/Controllers/Scheduling/AdmissionBoardController.php`
 - `app/Http/Controllers/Scheduling/AgendaFeedController.php`
 - `app/Http/Controllers/Scheduling/OperationalProcedureController.php`
+- `app/Http/Controllers/admissionist/appointment/AppointmentController.php`
 - `app/Models/Appointment.php`
 - `app/Models/AppointmentOperationalReview.php`
 - `app/Services/Scheduling/AdmissionBoardService.php`
@@ -31,16 +32,18 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 - `database/migrations/2026_10_16_020000_create_appointment_operational_procedures.php`
 - `routes/scheduling.php`
 
-## Interfaces
+## Interfaz y componentes
 
 - `public/css/scheduling/admission-board.css`
-
+- `public/js/admin/master/doctor-service/doctor-service.js`
 - `public/js/admissionist/appointment/appointment.js`
 - `public/js/scheduling/admission-board.js`
+- `public/js/scheduling/agenda-guidance.js`
 - `public/js/scheduling/agenda-operational-workspace.js`
 - `public/js/scheduling/agenda-refresh.js`
 - `public/js/scheduling/agenda.js`
 - `public/js/scheduling/operational-reevaluations.js`
+- `resources/views/admissionist/appointment/crud/create.blade.php`
 - `resources/views/admissionist/appointment/index.blade.php`
 - `resources/views/components/utils/operational-reevaluations.blade.php`
 - `resources/views/components/utils/reevaluations.blade.php`
@@ -55,8 +58,6 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 - `resources/views/templates/nav/mvp.blade.php`
 
 ## Pruebas y arneses
-
-- `tools/qa/run-agenda-v2-browser.ps1`
 
 - `phpunit.agenda-v2-mariadb.xml`
 - `tests/CreatesApplication.php`
@@ -82,7 +83,9 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 - `tests/Feature/Scheduling/ReevaluationIndicationTest.php`
 - `tests/Feature/Scheduling/RegularReservationExclusivityTest.php`
 - `tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php`
+- `tests/JavaScript/agenda-guidance.test.js`
 - `tests/JavaScript/agenda-v2-refresh.test.js`
+- `tests/JavaScript/doctor-service-compatibility.test.js`
 - `tests/Support/AgendaV2TestCase.php`
 - `tests/Support/IsolatedAgendaV2Qa.php`
 - `tests/Support/agenda-v2-browser-router.php`
@@ -91,6 +94,7 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 - `tests/Support/agenda-v2-request.php`
 - `tests/TestCase.php`
 - `tools/qa/browser-agenda-v2.cjs`
+- `tools/qa/browser-catalog.cjs`
 - `tools/qa/run-agenda-v2-browser.ps1`
 
 ## CI
@@ -99,8 +103,10 @@ Reutilizadas en operaciones nuevas: appointments, appointment_operations, appoin
 
 ## Documentación y evidencias
 
-Los siete documentos en docs/agenda-v2 explican diagnóstico, flujos, permisos, migración, QA, archivos y despliegue/rollback. evidence/RESUMEN.json y FUENTES_SHA256.json registran resultados sanitizados y hashes de fuentes. Las capturas PNG contienen exclusivamente fixtures ficticios de QA. Logs/JUnit y secretos locales quedan ignorados.
+Los siete documentos en docs/agenda-v2 explican diagnóstico, flujos, permisos, migración, QA, archivos y despliegue/rollback. evidence/RESUMEN.json y FUENTES_SHA256.json registran resultados sanitizados y hashes de fuentes. Las capturas PNG contienen exclusivamente fixtures ficticios de QA, incluido Maestro Profesional / Servicio con MFR seleccionable y Traumatología bloqueada. Logs/JUnit y secretos locales quedan ignorados.
 
 ## Motivo de los ajustes en pruebas heredadas
 
-Las pruebas de creación por el adaptador heredado se ejecutan con autorización ADMINISTRADOR. ADMISION/COMERCIAL tienen nuevos asserts 403 y continúan pruebas económicas por Agenda operativa. Las expectativas de pago positivo ahora exigen CONFIRMADA; los casos de privacidad de reservas pagadas anteriores conservan sus aserciones mediante fixtures históricos explícitos. No se eliminan pruebas de importes, duplicados, Caja, indicaciones, documentos o estados finales. El arnés MariaDB incorpora su detector DDL ya existente y fakes de URLs locales, sin modificar producción.
+Las pruebas de creación por el adaptador heredado se ejecutan con autorización ADMINISTRADOR. ADMISION/COMERCIAL tienen nuevos asserts 403 y continúan pruebas económicas por Agenda operativa. Las expectativas de pago positivo ahora exigen CONFIRMADA; los casos de privacidad de reservas pagadas anteriores conservan sus aserciones mediante fixtures históricos explícitos. No se eliminan pruebas de importes, duplicados, Caja, indicaciones, documentos o estados finales. El arnés MariaDB incorpora su detector DDL ya existente y fakes de URLs locales, sin modificar producción. Los textos y el arnés de navegador del catálogo se alinearon con la nueva confirmación automática.
+
+La corrección adicional modifica doctor-service.js y añade doctor-service-compatibility.test.js, junto con el escenario Chrome y fixtures del arnés v2. Conserva la validación de especialidad y refresca únicamente la proyección visual después del cálculo de compatibilidad.

@@ -33,8 +33,14 @@ $fixture=new class {
         $p=$this->createPatient($admin,['nombre'=>'PACIENTE V2 PAGO FICTICIO','numero_identidad'=>'79009920','historia_clinica'=>'V2-QA-PAGO','telefono'=>'+51999000001']);
         $pending=$this->lifecycleAppointment(\App\Models\User::findOrFail($users['admission']['id']),$catalog,[
             'fecha_cita'=>$today,'hora_cita'=>'12:00','estado_agenda'=>'PENDIENTE_CONFIRMACION','tipo_agendamiento'=>'REGULAR','economic_source'=>'VOUCHER'], $p);
+        $catalog['specialty']->update(['nombre'=>'TRAUMATOLOGIA FICTICIA QA']);
+        $catalog['service']->update(['nombre'=>'CONSULTA TRAUMATOLOGIA FICTICIA QA']);
+        $mfrSpecialty=\App\Models\Specialty::create(['nombre'=>'MEDICINA FISICA Y REHABILITACION FICTICIA QA','estado'=>'ACTIVO']);
+        $mfrDoctor=\App\Models\Doctor::create(['nombre'=>'PROFESIONAL MFR FICTICIA QA','specialty_id'=>$mfrSpecialty->id,'estado'=>'ACTIVO']);
+        $mfrService=\App\Models\Service::create(['nombre'=>'CONSULTA MEDICA MFR FICTICIA QA','specialty_id'=>$mfrSpecialty->id,
+            'service_type'=>'CONSULTATION','pricing_policy'=>'PROFESSIONAL','estado'=>'ACTIVO']);
         return ['users'=>$users,'date'=>$today,'appointments'=>$appointments,'pending_id'=>$pending->id,
-            'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'patient_id'=>$p->id,'document'=>'79009920'];
+            'mfr_doctor_id'=>$mfrDoctor->id,'mfr_service_id'=>$mfrService->id,'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'patient_id'=>$p->id,'document'=>'79009920'];
     }
 };
 $data=$fixture->seed($password);

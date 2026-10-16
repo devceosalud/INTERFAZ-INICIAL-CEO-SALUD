@@ -20,8 +20,8 @@ test('comprobante permanece dentro de Registrar adelanto según PR24 y no se dup
 test('el par reserva/agendar explica el siguiente paso sin decir que la reserva ocupa el horario', () => {
     const help = guidance.copy.reserveVsSchedule;
     assert.match(help, /Guardar reserva: guarda el seguimiento sin confirmar el horario/);
-    assert.match(help, /Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada/);
-    assert.match(help, /Con adelanto o crédito, la reserva protege el horario sin confirmarlo/);
+    assert.match(help, /Registrar pago y cita: registra cualquier pago real positivo y confirma automáticamente el horario/);
+    assert.match(help, /La exoneración requiere autorización expresa/);
     assert.match(guidance.copy.legendPrivate,/Pendiente de confirmación.*protege el horario/);
     for (const file of [
         'resources/views/scheduling/agenda/partials/quick-registration.blade.php',

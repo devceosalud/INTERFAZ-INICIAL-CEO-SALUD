@@ -36,3 +36,11 @@ Las nuevas citas de reevaluación clínica mantienen indicación escrita, origen
 Una decisión manual con realizados y pendientes se conserva al editar solicitudes. Si se desmarca el último realizado, queda **SUSPENDED**, visible y auditada; con una nueva realización recupera READY y una nueva hora efectiva. **WITHDRAWN** solo vuelve por un envío explícito autorizado, aunque se completen más procedimientos. Las lecturas y el polling no cambian estas decisiones. No se añadió «Reevaluación completada» porque introducir un segundo cierre de atención no es parte de la autorización actual.
 
 Deuda detectada: tareas libres y procedimientos son conceptos diferentes y mantienen permisos distintos; scripts heredados asumían la presencia del formulario de creación y se corrigió su inicializador; las pruebas con DDL necesitan aislamiento adicional en MariaDB por los commits implícitos; Clarity continúa fuera de las rutas excluidas, por lo que una política global de analítica requiere un proyecto separado.
+
+## Corrección adicional del maestro Profesional / Servicio
+
+Se incorporó el diagnóstico reportado en `/master/admin/doctor/services`: `compatibility(form)` ya recalculaba la compatibilidad nativa, pero Bootstrap Select conservaba opciones visualmente deshabilitadas. Tras actualizar todos los `disabled` y retirar solo una selección que haya dejado de ser válida, se ejecuta `selectpicker('refresh')` si el plugin está disponible. El mismo cálculo se ejecuta al cambiar profesional, cambiar autorización excepcional, elegir servicio, abrir el modal y cargar inicialmente la pantalla. No se cambió ninguna autorización del servidor.
+
+El caso reportado de Keylinn / Consulta MFR se reprodujo con una profesional y catálogo íntegramente ficticios de Medicina Física y Rehabilitación. Chrome comprueba la opción visual seleccionable, la conservación de una selección válida al reabrir y Traumatología bloqueada sin excepción; un POST incompatible también devuelve 422. Tres pruebas JavaScript cubren sincronización inicial/cambios/modal, excepciones/selecciones compartidas y ausencia del plugin.
+
+Se alinearon textos heredados y el arnés de catálogo con la confirmación automática por pago nuevo positivo. Las reservas históricas pagadas pendientes continúan cubiertas mediante fixtures explícitos.
