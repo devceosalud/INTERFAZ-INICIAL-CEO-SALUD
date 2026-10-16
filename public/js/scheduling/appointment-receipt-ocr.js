@@ -20,7 +20,6 @@
     function parse(text) {
         const normalized = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '');
         const lines = normalized.split('\n').map(line => line.trim()).filter(Boolean);
-        const valuePattern = String.raw;
         const money = [];
         for (const line of lines) {
             // Never confuse a balance, phone, commission or unrelated price with the transfer amount.
@@ -66,8 +65,6 @@
             time: times.length === 1 ? times[0] : null,
             needs_review: true,
             ambiguous: amounts.length > 1 || uniqueOperations.length > 1,
-            amount_ambiguous: amounts.length > 1,
-            operation_ambiguous: uniqueOperations.length > 1,
         };
     }
     function createEngine(options) {
