@@ -239,3 +239,47 @@
 .agenda-board .agenda-week-signals { display:flex; gap:2px; flex:0 0 auto; line-height:9px; overflow:hidden; }
 .agenda-board .agenda-week-signals .agenda-presentation-badge { font-size:7px; margin:0; padding:0 1px; line-height:9px; white-space:nowrap; }
 .agenda-board .agenda-week-event__booking { font-size:7px; line-height:9px; white-space:nowrap; flex:0 0 auto; }
+
+
+/* Agenda payment workflow: intentionally scoped to the existing registration surface. */
+.agenda-operational-fields .agenda-payment-intro,
+.agenda-operational-fields .agenda-payment-help {
+    font-size: 12px; line-height: 1.45; margin: 8px 0; color: #455a64;
+}
+.agenda-operational-fields .agenda-payment-totals {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0;
+}
+.agenda-operational-fields .agenda-payment-totals .agenda-field__input {
+    font-weight: 700; font-size: 15px; background: #f1f5f9;
+}
+.agenda-operational-fields .agenda-payment-entry {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0;
+}
+.agenda-operational-fields .agenda-payment-proof {
+    border: 1px solid #dce6e9; border-radius: 8px; padding: 10px; margin: 12px 0;
+}
+.agenda-operational-fields .agenda-payment-proof h3 { margin: 0 0 8px; font-size: 14px; }
+.agenda-operational-fields .agenda-receipt-heading { font-size: 13px; margin: 8px 0; }
+.agenda-operational-fields .agenda-receipt-actions,
+.agenda-operational-fields .agenda-payment-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.agenda-operational-fields .agenda-receipt-actions .agenda-btn { white-space: normal; }
+.agenda-operational-fields .agenda-receipt-primary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 8px 0; }
+.agenda-operational-fields .agenda-receipt-primary .agenda-field__input { font-size: 15px; font-weight: 700; }
+.agenda-operational-fields .agenda-receipt-secondary,
+.agenda-operational-fields .agenda-payment-advanced { margin: 10px 0; padding: 9px; border: 1px solid #dce6e9; border-radius: 7px; }
+.agenda-operational-fields .agenda-receipt-secondary summary,
+.agenda-operational-fields .agenda-payment-advanced summary { font-size: 12px; font-weight: 600; cursor: pointer; }
+.agenda-operational-fields [aria-invalid="true"], .agenda-patient-modal [aria-invalid="true"] {
+    border: 2px solid #a51a1a; box-shadow: 0 0 0 1px #a51a1a;
+}
+.agenda-operational-fields .agenda-error-summary,
+.agenda-patient-modal .agenda-error-summary { background: #fff2f2; color: #842020; border-left: 4px solid #ad2222; font-size: 14px; font-weight: 600; padding: 10px 12px; margin: 10px 0; line-height: 1.45; }
+.agenda-operational-fields .agenda-input-error,
+.agenda-patient-modal .agenda-input-error { display:block; margin-top: 4px; color: #9d2020; font-size: 13px; line-height: 1.4; font-weight: 600; }
+.agenda-operational-fields .agenda-error-summary[hidden],
+.agenda-patient-modal .agenda-error-summary[hidden] { display: none; }
+@media (max-width: 650px) {
+    .agenda-operational-fields .agenda-payment-totals,
+    .agenda-operational-fields .agenda-payment-entry,
+    .agenda-operational-fields .agenda-receipt-primary { grid-template-columns: minmax(0, 1fr); }
+}
