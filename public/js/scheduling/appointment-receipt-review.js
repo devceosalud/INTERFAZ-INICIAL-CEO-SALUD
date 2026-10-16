@@ -127,7 +127,7 @@ root.AppointmentReceiptReview=function(config){
             ++version;busy=false;void engine.cancel();
             status.textContent='Lectura detenida: puedes continuar con los datos ingresados manualmente.';
         }
-        if(!reviewed.checked)throw new Error('Marca la revisión del comprobante antes de adjuntarlo. El OCR no es obligatorio para registrar un pago manual.');
+        if(!reviewed.checked)throw new Error('Marca la revisión humana del comprobante antes de adjuntarlo. El OCR no es obligatorio para registrar un pago manual.');
         payload.proof_review={reviewed:true,source,date:date.value||null,time:time.value||null};
         files.forEach(file=>body.append('proofs[]',file));
     }
