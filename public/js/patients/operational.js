@@ -12,6 +12,8 @@
     var recordSurface = document.getElementById('patients-record-surface');
     var tableRegion = document.getElementById('patients-table-region');
     var addButton = document.getElementById('patient-add');
+    var deactivateButton = document.getElementById('patient-deactivate');
+    var listNotice = document.getElementById('patients-list-notice');
     var backButton = document.getElementById('patient-back');
     var notice = document.getElementById('patient-record-notice');
     var hce = document.getElementById('patient-context-hce');
@@ -25,6 +27,7 @@
     var contextMenu = document.getElementById('patients-context-menu');
     var contextOpen = document.getElementById('patient-context-open');
     var contextAdd = document.getElementById('patient-context-add');
+    var contextDeactivate = document.getElementById('patient-context-deactivate');
     var recordId = document.getElementById('patient-record-id');
     var documentType = document.getElementById('patient-document-type');
     var documentNumber = document.getElementById('patient-document-number');
@@ -34,6 +37,8 @@
     var dirty = {};
     var hydrating = false;
     var canWrite = root.dataset.canWrite === '1';
+    var canDeactivate = root.dataset.canDeactivate === '1';
+    var deactivating = false;
     var hceSupportedTypes = JSON.parse(root.dataset.hceSupportedTypes || '[]');
 
     if (!canWrite) {
@@ -111,6 +116,11 @@
         );
     }
 
+    function updateDeactivateActions() {
+        deactivateButton.disabled = !canDeactivate || deactivating || !selectedRow || selectedRow.dataset.patientState !== 'ACTIVO';
+        contextDeactivate.disabled = !canDeactivate || deactivating || !contextRow || contextRow.dataset.patientState !== 'ACTIVO';
+    }
+
     function selectRow(row) {
         if (!row || !row.classList || !row.dataset || !row.dataset.patientId) {
             return;
@@ -124,6 +134,7 @@
         selectedRow = row;
         selectedRow.classList.add('is-selected');
         selectedRow.setAttribute('aria-selected', 'true');
+        updateDeactivateActions();
     }
 
     function showRecord() {
@@ -153,10 +164,12 @@
     function hideContextMenu() {
         contextMenu.hidden = true;
         contextRow = null;
+        updateDeactivateActions();
     }
 
     function showContextMenu(event, row) {
         contextRow = row || null;
+        updateDeactivateActions();
         contextOpen.hidden = !contextRow;
         contextMenu.hidden = false;
         contextMenu.style.left = Math.min(event.clientX, window.innerWidth - 210) + 'px';
@@ -542,6 +555,38 @@
         row.focus({ preventScroll: true });
     }
 
+    async function deactivatePatient(row) {
+        if (!canDeactivate || deactivating || !row || row.dataset.patientState !== 'ACTIVO') { return; }
+        if (!window.confirm('¿Desactivar este paciente? Se conservarán su ficha, HCE, citas y comprobantes. No se permitirá si tiene citas pendientes.')) { return; }
+
+        deactivating = true;
+        listNotice.hidden = true;
+        updateDeactivateActions();
+        try {
+            var url = root.dataset.deactivateTemplate.replace('__PATIENT__', encodeURIComponent(row.dataset.patientId));
+            var response = await fetch(url, {
+                method: 'PATCH', credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json', 'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: '{}',
+            });
+            var payload = await response.json().catch(function () { return {}; });
+            if (!response.ok) {
+                var first = Object.values(payload.errors || {})[0];
+                throw new Error(Array.isArray(first) && first[0] ? first[0] : (payload.message || 'No se pudo desactivar el paciente.'));
+            }
+            window.location.reload(); // Refresca conteos y filtros, sin borrar el registro.
+        } catch (error) {
+            listNotice.textContent = error.message || 'No se pudo desactivar el paciente.';
+            listNotice.hidden = false;
+        } finally {
+            deactivating = false;
+            updateDeactivateActions();
+        }
+    }
+
     function markPhoneEdited() {
         if (!hydrating) {
             phoneUnparsed = false;
@@ -603,6 +648,7 @@
 
     if (/^[1-9][0-9]*$/.test(root.dataset.initialPatientId || '')) { openExisting(root.dataset.initialPatientId); }
     addButton.addEventListener('click', openNew);
+    deactivateButton.addEventListener('click', function () { deactivatePatient(selectedRow); });
     backButton.addEventListener('click', showList);
     reniecButton.addEventListener('click', consultReniec);
     recordForm.addEventListener('submit', savePatient);
@@ -616,6 +662,11 @@
     contextAdd.addEventListener('click', function () {
         hideContextMenu();
         openNew();
+    });
+    contextDeactivate.addEventListener('click', function () {
+        var row = contextRow;
+        hideContextMenu();
+        deactivatePatient(row);
     });
     document.addEventListener('click', function (event) {
         if (!contextMenu.hidden && !contextMenu.contains(event.target)) {

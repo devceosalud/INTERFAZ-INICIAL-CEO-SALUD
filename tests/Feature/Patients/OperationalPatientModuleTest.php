@@ -136,18 +136,19 @@ class OperationalPatientModuleTest extends TestCase
 
         $response->assertSee('id="patients-context-menu"', false)
             ->assertSee('id="patient-context-open"', false)
-            ->assertSee('Eliminar / Desactivar')
+            ->assertSee('Desactivar paciente')
             ->assertDontSee('Doble clic');
     }
 
-    public function test_delete_is_visible_but_disabled_and_admission_has_an_explicit_save_action(): void
+    public function test_deactivate_is_selection_gated_and_admission_has_no_permission(): void
     {
         $user = $this->createUserWithRole('ADMISION');
 
         $response = $this->actingAs($user)->get('/admissionist/patient');
 
         $response->assertOk()
-            ->assertSee('id="patient-delete" disabled', false)
+            ->assertSee('id="patient-deactivate" disabled', false)
+            ->assertSee('data-can-deactivate="0"', false)
             ->assertSee('id="patient-record-form" novalidate', false)
             ->assertSee('id="patient-save"', false)
             ->assertSee('data-can-write="1"', false);

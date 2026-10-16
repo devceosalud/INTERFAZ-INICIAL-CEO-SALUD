@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -68,6 +69,41 @@ class OperationalPatientMutationController extends Controller
         return response()->json([
             'message' => 'Paciente actualizado correctamente.',
             'patient' => OperationalPatientController::patientPayload($patient->fresh()),
+        ]);
+    }
+
+    /** Keep clinical, financial, and historical records intact: this changes only patients.estado. */
+    public function deactivate(Request $request, int $patientId): JsonResponse
+    {
+        abort_unless($request->user()?->hasRole('ADMINISTRADOR'), 403);
+
+        $patient = DB::transaction(function () use ($patientId): Patient {
+            $patient = Patient::query()->whereKey($patientId)->lockForUpdate()->firstOrFail();
+            abort_if($patient->estado !== 'ACTIVO', 409, 'El paciente ya está inactivo.');
+
+            // Any appointment without a terminal care state may still require attention,
+            // even if the scheduled date has passed. Never invalidate those commitments.
+            $hasUnresolvedAppointment = $patient->appointments()
+                ->whereNotIn('estado_cita', ['CANCELADO', 'NO_ASISTIO', 'RETIRO', 'ATENDIDO'])
+                ->exists();
+            if ($hasUnresolvedAppointment) {
+                throw ValidationException::withMessages([
+                    'patient' => 'El paciente tiene citas futuras o pendientes de resolver. Resuelve esas citas antes de desactivarlo.',
+                ]);
+            }
+
+            $patient->update(['estado' => 'INACTIVO']);
+            return $patient;
+        });
+
+        Log::info('patients.deactivated', [
+            'patient_id' => $patient->id,
+            'actor_user_id' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Paciente desactivado. Se conservan su ficha, citas e historial.',
+            'patient' => ['id' => $patient->id, 'estado' => $patient->estado],
         ]);
     }
 

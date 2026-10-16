@@ -25,6 +25,8 @@
                     data-reniec-url="{{ route('patients.operational.reniec-lookup') }}"
                     data-hce-supported-types='@json(\App\Support\Patients\PatientClinicalHistoryNumber::supportedDocumentTypes())'
                     data-can-write="{{ $canWritePatients ? '1' : '0' }}"
+                    data-can-deactivate="{{ $canDeactivatePatients ? '1' : '0' }}"
+                    data-deactivate-template="{{ url('/patients/__PATIENT__/deactivate') }}"
                     data-today="{{ $filters['fecha'] }}">
 
                     @if($agendaReturnUrl ?? null)
@@ -56,7 +58,7 @@
                             </a>
                         </nav>
 
-                        <form class="patients-filterbar" method="GET" action="{{ url()->current() }}" id="patients-filter-form" data-ui-zone="toolbar">
+                        <form class="patients-filterbar @unless($pendingView) patients-filterbar--with-state @endunless" method="GET" action="{{ url()->current() }}" id="patients-filter-form" data-ui-zone="toolbar">
                             @if ($pendingView)
                                 <input type="hidden" name="vista" value="pendientes">
                             @endif
@@ -96,10 +98,20 @@
                                     aria-describedby="patient-date-source-note">
                             </label>
 
+                            @unless($pendingView)
+                                <label class="patients-field patients-field--state">
+                                    <span>Estado</span>
+                                    <select name="estado" id="patient-filter-state">
+                                        <option value="ACTIVO" @selected($filters['estado'] === 'ACTIVO')>Activos</option>
+                                        <option value="INACTIVO" @selected($filters['estado'] === 'INACTIVO')>Inactivos</option>
+                                        <option value="TODOS" @selected($filters['estado'] === 'TODOS')>Todos</option>
+                                    </select>
+                                </label>
+                            @endunless
                             <div class="patients-filterbar__actions">
                                 <button class="patients-btn patients-btn--primary" type="button" id="patient-add">Agregar</button>
-                                <button class="patients-btn patients-btn--danger" type="button" id="patient-delete" disabled
-                                    title="La semántica de eliminación todavía no está definida">Eliminar</button>
+                                <button class="patients-btn patients-btn--danger" type="button" id="patient-deactivate" disabled
+                                    title="{{ $canDeactivatePatients ? 'Selecciona un paciente activo' : 'Solo ADMINISTRADOR puede desactivar pacientes' }}">Desactivar</button>
                                 <button class="patients-btn" type="submit" id="patient-search">Buscar</button>
                             </div>
                         </form>
@@ -119,6 +131,7 @@
                             </div>
                         @endif
 
+                        <p id="patients-list-notice" class="patients-record-notice" role="alert" hidden></p>
                         <div class="patients-source-note" id="patient-date-source-note" role="note">
                             @if ($pendingView)
                                 <strong>Ficha pendiente de completar:</strong> todavía faltan datos del paciente.
@@ -159,6 +172,7 @@
                                             $patientName = trim($patient->apellido_paterno.' '.$patient->apellido_materno.' '.$patient->nombre);
                                         @endphp
                                         <tr class="patients-table__row" tabindex="0" data-patient-id="{{ $patient->id }}"
+                                            data-patient-state="{{ $pendingView ? 'ACTIVO' : $patient->estado }}"
                                             aria-label="Abrir ficha de {{ $patientName }}">
                                             @if ($pendingView)
                                                 <td>
@@ -451,7 +465,7 @@
                     <div class="patients-context-menu" id="patients-context-menu" role="menu" hidden>
                         <button type="button" role="menuitem" id="patient-context-open">Abrir ficha</button>
                         <button type="button" role="menuitem" id="patient-context-add">Agregar nuevo</button>
-                        <button type="button" role="menuitem" disabled>Eliminar / Desactivar</button>
+                        <button type="button" role="menuitem" id="patient-context-deactivate" disabled>Desactivar paciente</button>
                     </div>
                 </main>
             </div>

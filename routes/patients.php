@@ -32,6 +32,9 @@ Route::middleware(['auth', PatientWriteAccess::middleware()])
         Route::put('/{patientId}', [OperationalPatientMutationController::class, 'update'])
             ->whereNumber('patientId')
             ->name('update');
+        Route::patch('/{patientId}/deactivate', [OperationalPatientMutationController::class, 'deactivate'])
+            ->whereNumber('patientId')
+            ->name('deactivate');
         Route::patch('/{patientId}/agenda-contact', [\App\Http\Controllers\Scheduling\AgendaDetailsController::class, 'patient'])
             ->whereNumber('patientId')->name('agenda-contact');
     });

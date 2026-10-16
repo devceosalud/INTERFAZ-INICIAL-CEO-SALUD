@@ -1,0 +1,54 @@
+name: Patient deactivation regressions
+
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Patients/**'
+      - 'app/Support/Patients/**'
+      - 'routes/patients.php'
+      - 'resources/views/patients/**'
+      - 'public/js/patients/**'
+      - 'public/css/patients/**'
+      - 'tests/Feature/Patients/**'
+      - 'tests/JavaScript/patient-deactivation-ui.test.js'
+      - '.github/workflows/patient-deactivation-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui:
+    name: Patient JS syntax and UI contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check public/js/patients/operational.js
+      - name: Patient UI regressions
+        run: node --test tests/JavaScript/patient-deactivation-ui.test.js
+
+  php:
+    name: Patient Laravel feature tests (isolated SQLite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, zip, curl, fileinfo, gd
+          coverage: none
+      - name: PHP syntax
+        run: |
+          php -l app/Http/Controllers/Patients/OperationalPatientMutationController.php
+          php -l app/Http/Controllers/Patients/OperationalPatientController.php
+          php -l tests/Feature/Patients/PatientDeactivationTest.php
+      - name: Install locked dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Feature regressions with fictitious patients
+        run: php artisan test --filter='PatientDeactivationTest|OperationalPatientModuleTest'
