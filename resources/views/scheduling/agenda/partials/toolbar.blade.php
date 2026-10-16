@@ -26,9 +26,9 @@
         </label>
 
         <div class="agenda-field agenda-field--doctor">
-            <span class="agenda-field__label">Médico</span>
+            <span class="agenda-field__label">Profesional</span>
             <button type="button" class="agenda-filter-button" id="agenda-doctor-filter">
-                <span id="agenda-doctor-filter-summary">Primer médico disponible</span>
+                <span id="agenda-doctor-filter-summary">Primer profesional disponible</span>
             </button>
         </div>
 

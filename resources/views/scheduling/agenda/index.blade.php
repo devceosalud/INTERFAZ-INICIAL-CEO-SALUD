@@ -44,7 +44,7 @@
                     @include('scheduling.agenda.partials.toolbar')
 
                     <div class="agenda-workspace">
-                        <aside class="agenda-operations" aria-label="Médicos y calendario">
+                        <aside class="agenda-operations" aria-label="Profesionales y calendario">
                             <div class="agenda-operations__pair">
                                 @include('scheduling.agenda.partials.professionals')
                                 @include('scheduling.agenda.partials.mini-calendar')
@@ -71,7 +71,7 @@
                                         <dd id="agenda-total-busy">—</dd>
                                     </div>
                                     <div>
-                                        <dt>Min. libres <button type="button" class="agenda-help" data-help-title="Min. libres" data-help-text="Minutos todavía disponibles dentro del horario del médico." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Min. libres">?</button></dt>
+                                        <dt>Min. libres <button type="button" class="agenda-help" data-help-title="Min. libres" data-help-text="Minutos todavía disponibles dentro del horario del profesional." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Min. libres">?</button></dt>
                                         <dd id="agenda-total-minutes">—</dd>
                                     </div>
                                     <div><dt>Especiales <button type="button" class="agenda-help" data-help-title="Especiales" data-help-text="Citas adicionales y atenciones fuera de horario." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda: Especiales">?</button></dt><dd id="agenda-total-special">—</dd></div>
@@ -85,8 +85,8 @@
                             <section class="agenda-comparison" id="agenda-comparison" aria-labelledby="agenda-comparison-title" hidden>
                                 <div class="agenda-comparison__head">
                                     <div>
-                                        <h3 id="agenda-comparison-title">Comparación de médicos</h3>
-                                        <p>Resumen de carga para decidir qué agenda abrir. No comprime médicos en la grilla horaria.</p>
+                                        <h3 id="agenda-comparison-title">Comparación de profesionales</h3>
+                                        <p>Resumen de carga para decidir qué agenda abrir. No comprime profesionales en la grilla horaria.</p>
                                     </div>
                                     <button type="button" class="agenda-btn" id="agenda-comparison-open">Abrir agenda seleccionada</button>
                                 </div>
@@ -94,7 +94,7 @@
                                     <table class="agenda-comparison__table">
                                         <thead>
                                             <tr>
-                                                <th scope="col">Médico</th>
+                                                <th scope="col">Profesional</th>
                                                 <th scope="col">Especialidad</th>
                                                 <th scope="col">Libres</th>
                                                 <th scope="col">Ocupadas</th>

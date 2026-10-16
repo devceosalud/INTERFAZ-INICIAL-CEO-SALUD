@@ -156,4 +156,31 @@ class AgendaSemaphorizationTest extends TestCase
         $this->assertSame('#99f6e4',$p['fondo']);$this->assertDatabaseCount('payments',0);
     }
 
+    public static function releasedStates(): array { return [['CANCELADO'], ['RETIRO']]; }
+    /** @dataProvider releasedStates */
+    public function test_released_history_and_active_confirmed_appointment_share_a_reused_slot_without_double_occupation(string $state): void
+    {
+        $date=$this->catalog['schedule']->fecha_cita;
+        $historic=$this->lifecycleAppointment($this->actor,$this->catalog,['fecha_cita'=>$date,'hora_cita'=>'09:00','estado_cita'=>$state]);
+        $historicalRow=$historic->fresh()->getRawOriginal();
+        $active=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['mode'=>'CONFIRM','payment'=>['amount'=>'50','method'=>'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
+        $this->assertEquals([$active],Appointment::occupyingInterval()->pluck('id')->all());
+        foreach (['dia','semana','mes'] as $view) {
+            $response=$this->feed($view)->assertOk();
+            $day=collect($response->json('profesionales.0.dias'))->firstWhere('fecha',substr($date,0,10));
+            $this->assertSame(1,$day['resumen']['ocupadas']);
+            $this->assertSame(1,$day['seguimiento']['DESACTIVADA']);$this->assertSame(1,$day['seguimiento']['PAGO_REAL']);
+            if ($view==='mes') {
+                $this->assertTrue(collect($response->json('eventos'))->every(fn($event)=>$event['allDay']??false));
+                $this->assertStringNotContainsString($this->patient->nombre,$response->getContent());continue;
+            }
+            $events=collect($response->json('eventos'));
+            $red=$events->firstWhere('id','cita-'.$historic->id);$live=$events->firstWhere('id','cita-'.$active);
+            $this->assertNotNull($red);$this->assertNotNull($live);$this->assertSame($red['start'],$live['start']);
+            $this->assertSame('#fecaca',$red['backgroundColor']);$this->assertTrue($red['extendedProps']['presentation']['informational']);
+            $this->assertSame('#fff2a6',$live['backgroundColor']);$this->assertFalse($live['extendedProps']['presentation']['informational']);
+        }
+        $this->assertSame($historicalRow,$historic->fresh()->getRawOriginal());$this->assertDatabaseCount('payments',1);
+    }
+
 }

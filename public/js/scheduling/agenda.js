@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (selected.length === 0) {
             const first = state.payload && state.payload.profesionales ? state.payload.profesionales[0] : null;
-            el.doctorFilterSummary.textContent = first ? first.nombre : 'Sin médicos';
+            el.doctorFilterSummary.textContent = first ? first.nombre : 'Sin profesionales';
             return;
         }
 
@@ -550,11 +550,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const row = el.doctorRows.find((candidate) => candidate.dataset.doctorId === selected[0]);
             el.doctorFilterSummary.textContent = row
                 ? row.querySelector('.agenda-doctor-row__name').textContent.trim()
-                : '1 médico';
+                : '1 profesional';
             return;
         }
 
-        el.doctorFilterSummary.textContent = selected.length + ' médicos en comparación';
+        el.doctorFilterSummary.textContent = selected.length + ' profesionales en comparación';
     }
 
     let loadedFilters=null;
@@ -644,11 +644,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const matching = state.payload.profesionales_coincidentes;
         el.compareHint.textContent = state.payload.truncado
             ? shown + ' de ' + matching + ' visibles'
-            : shown + (shown === 1 ? ' médico visible' : ' médicos visibles');
+            : shown + (shown === 1 ? ' profesional visible' : ' profesionales visibles');
 
         const first = effectiveProfessionals()[0];
         if (isComparing()) {
-            document.getElementById('agenda-title').textContent = 'Comparación de carga · ' + selectedDoctorIds().length + ' médicos';
+            document.getElementById('agenda-title').textContent = 'Comparación de carga · ' + selectedDoctorIds().length + ' profesionales';
         } else if (state.view === 'mes') {
             document.getElementById('agenda-title').textContent = 'Resumen mensual';
         } else {
@@ -1204,8 +1204,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const doctor = professionals[0];
         const base = selectionModel.empty({
             doctor: isComparing()
-                ? professionals.length + ' médicos en comparación'
-                : (doctor ? doctor.nombre : 'Sin médico disponible'),
+                ? professionals.length + ' profesionales en comparación'
+                : (doctor ? doctor.nombre : 'Sin profesional disponible'),
             specialty: !isComparing() && doctor ? (doctor.especialidad || 'Sin especialidad') : '—',
             date: DAY_FORMAT.format(parseIso(state.date)),
             time: isComparing() ? 'Abra una agenda' : 'Seleccione un intervalo',
@@ -1214,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', function () {
         applyQuickState(base);
         el.quickMessage.classList.remove('is-ready');
         el.quickMessage.textContent = isComparing()
-            ? 'Seleccione un médico de la comparación y abra su agenda para elegir un intervalo.'
+            ? 'Seleccione un profesional de la comparación y abra su agenda para elegir un intervalo.'
             : 'Seleccione un intervalo disponible, un paciente y un servicio.';
     }
 
@@ -2414,7 +2414,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (selectedDoctorIds().length > MAX_SELECTED_DOCTORS) {
                 check.checked = false;
-                showNotice('Puede comparar hasta 12 médicos a la vez.');
+                showNotice('Puede comparar hasta 12 profesionales a la vez.');
                 return;
             }
 

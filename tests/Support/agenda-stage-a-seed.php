@@ -30,6 +30,9 @@ $fixture=new class {use \Tests\Concerns\BuildsAgendaLifecycleData;
    $a=$this->lifecycleAppointment($admin,$catalog,['fecha_cita'=>$date,'hora_cita'=>$time,'estado_cita'=>$state,'site_id'=>$site->id]);
    $a->forceFill(['hora_llegada'=>now(),'has_diabetic_wound'=>true,'is_postoperative'=>true]+($state==='ATENDIDO'?['hora_atendido'=>now()]:[]))->save();$ids[$key]=$a->id;
   }
+  $past=$this->createPatient($owner,['nombre'=>'PACIENTE CANCELADO REUTILIZADO QA','numero_identidad'=>'73999001','historia_clinica'=>'QA-REUSE-OLD']);
+  $old=$this->lifecycleAppointment($admin,$catalog,['fecha_cita'=>$date,'hora_cita'=>'10:30','estado_cita'=>'CANCELADO','site_id'=>$site->id],$past);
+  $ids['reusedCancelled']=$old->id;$register('reusedActive','10:30',50,true);
   return ['date'=>$date,'users'=>$users,'ids'=>$ids,'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'patient_id'=>$patient->id,'document'=>'73000001'];
  }
 };

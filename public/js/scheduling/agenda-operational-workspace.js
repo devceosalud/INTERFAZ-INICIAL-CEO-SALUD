@@ -112,7 +112,7 @@
                     position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
                     !allowed ? 'Para confirmar se requiere al menos 50% de pago real o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
-                    'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el médico.';
+                    'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el profesional.';
             }
         }
         async function request(url, options = {}) {

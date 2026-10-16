@@ -18,7 +18,7 @@
 
         return {
             mode: 'Sin selección',
-            doctor: base.doctor || 'Sin médico disponible',
+            doctor: base.doctor || 'Sin profesional disponible',
             specialty: base.specialty || '—',
             date: base.date || '—',
             time: base.time || 'Seleccione un intervalo',

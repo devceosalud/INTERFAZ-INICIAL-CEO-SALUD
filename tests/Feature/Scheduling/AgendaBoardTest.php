@@ -120,7 +120,7 @@ class AgendaBoardTest extends TestCase
             ->assertSee('js/scheduling/agenda-patient-lookup.js', false)
             ->assertSee('js/scheduling/agenda-appointment-create.js', false)
             ->assertSeeInOrder(['Hora', 'Citado', 'Pago', 'H.C.', 'Apellidos y nombres'])
-            ->assertSee('Seleccione médico, fecha, intervalo disponible, paciente y servicio.')
+            ->assertSee('Seleccione profesional, fecha, intervalo disponible, paciente y servicio.')
             ->assertSee('id="agenda-appointment-submit"', false)
             ->assertSee('id="agenda-appointment-submit" disabled', false);
     }

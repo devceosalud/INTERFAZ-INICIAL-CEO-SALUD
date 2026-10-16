@@ -26,7 +26,7 @@
             <label class="agenda-field"><span>Duración · minutos</span><input id="agenda-withdrawal-duration" type="number" min="1" max="255" class="agenda-field__input"></label>
             <label class="agenda-field"><span>Tipo explícito de nueva cita</span><select id="agenda-withdrawal-type" class="agenda-field__input"><option value="REGULAR">Regular</option>@if($canCreateAdditional)<option value="ADICIONAL">Adicional</option>@endif<option value="FUERA_HORARIO">Fuera de horario</option></select></label>
         </div>
-        <small>Mismo paciente, médico y servicio; precio del catálogo vigente. Si el crédito no asegura la cita, se guarda como reserva privada.</small>
+        <small>Mismo paciente, profesional y servicio; precio del catálogo vigente. Si el crédito no asegura la cita, se guarda como reserva privada.</small>
         <div class="agenda-workflow-actions">
             <button id="agenda-withdrawal-rebook" class="agenda-btn" type="button" @disabled(!$canCreateAppointments || !$canRescheduleAppointments)>Crear nueva cita y aplicar crédito</button>
             <button id="agenda-withdrawal-refund" class="agenda-btn" type="button" @disabled(!$canWithdraw)>Solicitar devolución</button>

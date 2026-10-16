@@ -47,7 +47,7 @@ test('guardar reserva nombra el siguiente paso y los botones apagados explican p
     assert.equal(guidance.copy.needSelection, 'Selecciona paciente, servicio y horario.');
     assert.equal(guidance.copy.needReservePatient, 'Selecciona el paciente de esta reserva.');
     assert.equal(guidance.copy.needAppointment, 'Primero guarda la reserva o selecciona una cita.');
-    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora dentro del horario del médico.');
+    assert.equal(guidance.copy.needDoctorHour, 'Selecciona una hora dentro del horario del profesional.');
     assert.equal(guidance.copy.cashNoOperation, 'No se requiere número de operación para efectivo.');
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-pending-tip/);
     assert.match(source('resources/views/scheduling/agenda/partials/quick-registration.blade.php'), /agenda-payment-tip/);
@@ -95,7 +95,7 @@ test('retiro, devolución, adicional y fuera de horario usan una línea operativ
 
 test('la contingencia dice qué hacer y no muestra un id interno', () => {
     const text = guidance.contingency('Ana Pérez', '23/11/2026 10:00');
-    assert.match(text, /El horario del médico cambió/);
+    assert.match(text, /El horario del profesional cambió/);
     assert.match(text, /Ana Pérez/);
     assert.match(text, /23\/11\/2026 10:00/);
     assert.match(text, /Contacta al paciente/);
@@ -284,7 +284,7 @@ test('la ayuda clickeable reemplaza el símbolo de información en lo obvio', ()
     assert.doesNotMatch(legend, /ⓘ/);
     assert.doesNotMatch(calendar, /ⓘ/);
     assert.doesNotMatch(withdrawal, /ⓘ/);
-    assert.match(legend, /Minutos todavía disponibles dentro del horario del médico/);
+    assert.match(legend, /Minutos todavía disponibles dentro del horario del profesional/);
     assert.match(legend, /Citas adicionales y atenciones fuera de horario/);
     assert.match(calendar, /El color indica cuánto del horario regular ya está confirmado con adelantos/);
     assert.match(withdrawal, /No asistió: nunca llegó/);

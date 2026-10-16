@@ -64,7 +64,7 @@
     }
     function additionalContext(context, slot) {
         if (!context || !slot || slot.inicio !== context.hora_inicio || !(Number(slot.minutos) > 0)) {
-            throw new Error('Seleccione un intervalo real del horario médico.');
+            throw new Error('Seleccione un intervalo real del horario profesional.');
         }
         return {
             tipo_contexto: 'slot_libre', seleccionable: true, leyenda: 'ADICIONAL', etiqueta: 'ADICIONAL',

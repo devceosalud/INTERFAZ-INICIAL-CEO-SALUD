@@ -101,7 +101,8 @@ class AgendaAppointmentController extends Controller
                 'responsible_user_id' => $appointment->responsible_user_id
                     ? (int) $appointment->responsible_user_id
                     : null,
-                'updated_by_user_id' => (int) $appointment->updated_by_user_id,
+                ...(\App\Support\Scheduling\AgendaCreatorVisibility::allows($request->user())
+                    ? ['updated_by_user_id' => (int) $appointment->updated_by_user_id] : []),
             ],
         ], 201);
     }

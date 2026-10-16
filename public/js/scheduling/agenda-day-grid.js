@@ -132,7 +132,7 @@
             leyenda: available ? AVAILABLE : (occupied ? OCCUPIED : OFF_HOURS),
             etiqueta: available ? 'Disponible' : (occupied ? 'Ocupado' : 'Fuera de horario'),
             doctor_id: professional.id || null,
-            doctor: professional.nombre || 'Sin médico disponible',
+            doctor: professional.nombre || 'Sin profesional disponible',
             especialidad: professional.especialidad || null,
             fecha: options.date,
             hora_inicio: time(rowStart),

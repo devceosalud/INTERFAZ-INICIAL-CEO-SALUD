@@ -103,7 +103,7 @@ final class AgendaLegend
             self::OFF_HOURS_APPOINTMENT => [
                 'clave' => self::OFF_HOURS_APPOINTMENT, 'etiqueta' => 'FUERA DE HORARIO', 'glifo' => 'FH',
                 'color' => '#b45309', 'fondo' => '#ffedd5',
-                'descripcion' => 'Atención excepcional fuera del horario configurado del médico.',
+                'descripcion' => 'Atención excepcional fuera del horario configurado del profesional.',
             ],
         ];
     }
