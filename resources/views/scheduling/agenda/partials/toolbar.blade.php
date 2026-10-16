@@ -55,3 +55,7 @@
         </div>
     </div>
 </header>
+
+@if(auth()->user()->hasRole('ADMINISTRADOR'))
+<p class="agenda-follow-up-notice" role="note">Seguimiento: pagos reales, pacientes presentes, cancelaciones y retiros efectivos. Las reservas privadas conservan su responsable autorizado.</p>
+@endif

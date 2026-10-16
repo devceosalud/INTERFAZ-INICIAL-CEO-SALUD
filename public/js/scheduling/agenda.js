@@ -312,6 +312,10 @@ document.addEventListener('DOMContentLoaded', function () {
         dayHeaderFormat: { weekday: 'short', day: '2-digit', month: '2-digit' },
         dayHeaderClassNames: selectedWeekDayClass,
         dayCellClassNames: selectedWeekDayClass,
+        dayCellDidMount: function(info) {
+            info.el.tabIndex=0;
+            info.el.addEventListener('keydown',function(event){if(state.view==='mes'&&(event.key==='Enter'||event.key===' ')){event.preventDefault();setView('dia');setDate(toIso(info.date));}});
+        },
         eventContent: renderEventContent,
         dateClick: function (info) {
             if (state.view === 'mes') {
@@ -327,6 +331,12 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         eventDidMount: function (info) {
             const context = info.event.extendedProps;
+            if (state.view === 'mes') { info.el.tabIndex = 0; info.el.addEventListener('keydown', function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();setView('dia');setDate(context.fecha);}}); }
+            if (context.tipo_contexto === 'cita_existente') {
+                info.el.tabIndex = 0;
+                info.el.title = selectionModel.registrationDescription(context);
+                info.el.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectInterval(context, info.el); } });
+            }
 
             if (['slot_libre','slot_ocupado'].includes(context.tipo_contexto)) {
                 info.el.setAttribute(
@@ -401,13 +411,23 @@ document.addEventListener('DOMContentLoaded', function () {
         return state.compare && selectedDoctorIds().length > 1 && state.view !== 'mes';
     }
 
+    function appendPresentationBadges(parent, context) {
+        for (const badge of context.presentation?.badges || []) {
+            const node = document.createElement('small');
+            node.className = 'agenda-presentation-badge'; node.textContent = badge.etiqueta;
+            node.style.backgroundColor = badge.fondo; node.style.color = badge.color;
+            parent.appendChild(node);
+        }
+    }
+
     function renderEventContent(info) {
         const context = info.event.extendedProps;
         const wrapper = document.createElement('span');
 
         wrapper.className = 'agenda-event';
 
-        if (state.view === 'mes') {
+        if (state.view === 'mes' && context.tipo_contexto !== 'cita_existente') {
+            wrapper.classList.add('agenda-event--month-summary');
             const line = document.createElement('span');
             const status = document.createElement('span');
             line.className = 'agenda-event__line';
@@ -420,7 +440,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (specials.reservas) { status.textContent += ' · ' + specials.reservas + ' reserva privada'; }
             wrapper.appendChild(line);
             wrapper.appendChild(status);
-
+            for (const [key, count] of Object.entries(context.seguimiento || {})) {
+                const badge = state.legend[key];
+                if (badge && count) {
+                    const signal = document.createElement('span'); signal.className='agenda-month-signal';
+                    signal.textContent=count+' '+badge.glifo; signal.title=count+' · '+badge.etiqueta;
+                    signal.setAttribute('aria-label', signal.title); signal.style.color=badge.color;signal.style.backgroundColor=badge.fondo;wrapper.appendChild(signal);
+                }
+            }
             return { domNodes: [wrapper] };
         }
 
@@ -447,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 timeEnd.textContent = '–' + presentation.end;
                 time.appendChild(timeEnd);
             }
-            patient.textContent = context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA · ' + presentation.patient : (context.leyenda === 'ADICIONAL' ? 'ADICIONAL · ' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · ' : '')) + presentation.patient;
+            patient.textContent = context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA · ' + presentation.patient : (context.tipo_agendamiento === 'ADICIONAL' ? 'ADICIONAL · ' : (context.tipo_agendamiento === 'FUERA_HORARIO' ? 'FH · ' : '')) + presentation.patient;
             primary.appendChild(time);
             primary.appendChild(patient);
             wrapper.appendChild(primary);
@@ -455,8 +482,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const summary=window.AgendaOperationalForm.stateSummary(context);
             const extended = extendedDurationText(context);
             booking.textContent = summary.agenda + ' · ' + summary.payment + (extended ? ' · ' + extended : '');
-            wrapper.title = summary.description + (extended ? ' · ' + extended : '');
+            wrapper.title = [summary.description, extended, selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
             wrapper.appendChild(booking);
+            appendPresentationBadges(wrapper, context);
 
             if (presentation.service) {
                 const service = document.createElement('span');
@@ -726,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 : [];
             calendar.addEvent(Object.assign({}, event, {
                 classNames: classNames,
-                startEditable: canReschedule && event.extendedProps.tipo_contexto === 'cita_existente',
+                startEditable: canReschedule && event.extendedProps.tipo_contexto === 'cita_existente' && !event.extendedProps.presentation?.informational,
                 durationEditable: false,
             }));
         });
@@ -845,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function () {
             entry.dataset.appointmentId = String(context.appointment_id);
             values = [
                 context.hora_inicio,
-                (context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.leyenda === 'ADICIONAL' ? 'ADICIONAL' : (context.leyenda === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda)) + (extended ? ' · EXTENDIDA' : ''),
+                (context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.tipo_agendamiento === 'ADICIONAL' ? 'ADICIONAL' : (context.tipo_agendamiento === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda)) + (extended ? ' · EXTENDIDA' : ''),
                 context.estado_pagado || '—',
                 context.historia_clinica || '—',
                 (context.paciente || 'Paciente sin nombre') + (extended ? ' · ' + extended : ''),
@@ -897,8 +925,8 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.className = 'agenda-day-cell agenda-day-cell--' + index;
             cell.setAttribute('role', 'gridcell');
             cell.textContent = value;
-            if(item)cell.title=window.AgendaOperationalForm.stateSummary(context).description;
-            if(appointment && index===4){const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
+            if(item)cell.title=[window.AgendaOperationalForm.stateSummary(context).description,selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
+            if(appointment && index===4){appendPresentationBadges(cell,context);const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
             entry.appendChild(cell);
         });
 
@@ -1331,7 +1359,12 @@ document.addEventListener('DOMContentLoaded', function () {
         el.lookupClinicalRecord.textContent = quick.clinicalRecord || '—';
         el.commercialOwner.textContent = quick.commercial || 'Sin asignar';
         if (el.schedulerUser) {
-            el.schedulerUser.textContent = quick.creator || authenticatedScheduler;
+            const existing = Boolean(state.selection?.appointment_id);
+            const row = document.getElementById('agenda-registrar-context');
+            const label = document.getElementById('agenda-registrar-label');
+            if (row) row.hidden = existing && !quick.creator;
+            if (label) label.textContent = existing ? 'Registró' : 'Operador actual';
+            el.schedulerUser.textContent = existing ? (quick.creator || '') : authenticatedScheduler;
         }
         el.completeRegistration.disabled = !quick.showCompleteRegistration;
         el.completeRegistration.hidden = !quick.showCompleteRegistration;

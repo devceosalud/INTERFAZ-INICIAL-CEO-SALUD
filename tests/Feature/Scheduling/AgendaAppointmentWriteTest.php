@@ -92,6 +92,17 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertNull($appointment->autorizado_por);
     }
 
+
+    public function test_non_admin_registration_response_omits_creator_but_preserves_server_audit(): void
+    {
+        $response = $this->postAppointment([])->assertCreated();
+        $this->assertArrayNotHasKey('creator_user_id', $response->json('appointment'));
+        $appointment = Appointment::sole();
+        $this->assertSame($this->creator->id, (int) $appointment->user_id);
+        $this->assertDatabaseHas('appointment_events', ['appointment_id' => $appointment->id,
+            'event_type' => 'RESERVA_CREADA', 'actor_user_id' => $this->creator->id]);
+    }
+
     /**
      * @dataProvider programmedDurations
      */

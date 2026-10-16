@@ -123,8 +123,9 @@ class PilotAppointmentOperationsTest extends TestCase
             'vista' => 'dia', 'fecha' => $additional->fecha_cita, 'doctor_id' => [$additional->doctor_id],
         ]))->assertOk();
         $event = collect($feed->json('eventos'))->first(fn ($e) => ($e['extendedProps']['appointment_id'] ?? null) === $id);
-        $this->assertSame('ADICIONAL', $event['extendedProps']['etiqueta']);
-        $this->assertSame('#f3e8ff', $event['backgroundColor']);
+        $this->assertSame('ADICIONAL', $event['extendedProps']['tipo_agendamiento']);
+        $this->assertSame('PAGO_REAL', $event['extendedProps']['leyenda']);
+        $this->assertSame('#fff2a6', $event['backgroundColor']);
         $this->assertStringContainsString('ADICIONAL', $event['title']);
         $this->assertDatabaseCount('appointments', 2);
     }

@@ -19,7 +19,7 @@ class AdmissionBoardService
 {
     private const COLUMNS = ['id','numero_cita','user_id','responsible_user_id','patient_id','doctor_id','service_id','site_id',
         'fecha_cita','hora_cita','estado_cita','estado_agenda','estado_pagado','precio_programado','total_pagado',
-        'economic_source','es_exonerado','autorizado_por','pricing_rule','is_postoperative',
+        'economic_source','es_exonerado','autorizado_por','pricing_rule','is_postoperative','has_diabetic_wound',
         'hora_llegada','hora_llamado','hora_atencion','hora_atendido'];
 
     public function __construct(private OperationalAgendaAppointmentService $appointments,
@@ -80,10 +80,10 @@ class AdmissionBoardService
             'patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre]))),
             'documento'=>$a->patient?->numero_identidad,'historia'=>$a->patient?->historia_clinica,
             'doctor'=>$a->doctor?->nombre,'especialidad'=>$a->doctor?->specialty?->nombre,'servicio'=>$a->service?->nombre,
-            'responsable'=>$a->responsibleUser?->name ?? $a->user?->name,'sede'=>$a->site?->nombre,
+            'responsable'=>$a->responsibleUser?->name,'sede'=>$a->site?->nombre,
             'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda,'estado_pagado'=>$a->estado_pagado,
             'payment_methods'=>array_values(array_unique(array_column($p['payment_details'],'method'))),
-            'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
+            'presentation'=>\App\Support\Scheduling\AgendaAppointmentPresentation::of($a,$p),'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
             'tiempos'=>collect(['llegada'=>$a->hora_llegada,'llamado'=>$a->hora_llamado,'inicio'=>$a->hora_atencion,'fin'=>$a->hora_atendido])->map(fn ($time) => $time ? Carbon::parse($time,config('app.timezone'))->toISOString() : null)->all(),
             'economy'=>['precio'=>Money::decimal($p['price_cents']),'pagado'=>Money::decimal($p['paid_cents']),
                 'credito'=>Money::decimal($p['credit_cents']),'saldo'=>Money::decimal($p['balance_cents']),'fuente'=>$p['authority']],
@@ -106,8 +106,9 @@ class AdmissionBoardService
                 'doctor'=>$item->doctor?->nombre,'servicio'=>$item->service?->nombre,'estado_cita'=>$item->estado_cita,
                 'estado_agenda'=>$item->estado_agenda,'economy'=>$this->row($item,$positions[$item->id])['economy']];
         })->values();
+        $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows($actor);
         $events = $a->events()->with('actor:id,name')->orderByDesc('occurred_at')->orderByDesc('id')->limit(30)->get()
-            ->map(fn ($e) => ['type'=>$e->event_type,'at'=>$e->occurred_at->toISOString(),'actor'=>$e->actor?->name]);
+            ->map(fn ($e) => ['type'=>$e->event_type,'at'=>$e->occurred_at->toISOString(),'actor'=>\App\Support\Scheduling\AgendaCreatorVisibility::eventActor($a,$e,$canSeeCreator)]);
         // Only payment attachments are linked here. Medical evidence stays behind its own access checks.
         $documents = $a->documents()->whereNotNull('payment_id')->get(['id','appointment_id','payment_id','reviewed_at'])
             ->map(fn ($d) => ['id'=>$d->id,'payment_id'=>$d->payment_id,'reviewed_at'=>$d->reviewed_at?->toISOString(),

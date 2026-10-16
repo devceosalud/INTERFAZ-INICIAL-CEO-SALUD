@@ -15,7 +15,7 @@
         let replacementDocument=null,replacementKey=null;
         function clearReplacement(){replacementDocument=null;replacementKey=null;byId('replacement-panel').hidden=true;byId('replacement-file').value='';byId('replacement-reason').value='';captureClean(['replacement-file','replacement-reason']);}
         const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
-        const catalogPrice = byId('catalog-price'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
+        const catalogPrice = byId('catalog-price'), hasWound = byId('has-wound'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
         function discountInput() { return discountType?.value ? { type: discountType.value, value: discountValue.value || '0', reason: discountReason.value || null } : null; }
         const initialFinancialLocks = { waived: ui.waived.disabled, authorized: ui.authorized.disabled, exemption: exemptionReason?.disabled };
         const doubleInput=byId('double');
@@ -34,7 +34,7 @@
         let capturePatient = null;
         const pendingDocumentEdits=new Map();
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
-            'rate','discount-type','discount-value','discount-reason','postoperative','exemption-reason','double','indication','referred','referral-origin',
+            'rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','referred','referral-origin',
             'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
             'document-file','document-kind','document-label','replacement-file','replacement-reason','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
@@ -156,16 +156,16 @@
         ui['save-notes'].addEventListener('click', async () => {
             const id = config.context()?.appointment_id;
             if (!id || working || ui.reason.disabled) { return; }
-            const fields=[ui.reason,ui.note,postoperative].filter(Boolean);
+            const fields=[ui.reason,ui.note,postoperative,hasWound].filter(Boolean);
             const locks=fields.map(field=>field.disabled);
-            const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,is_postoperative:Boolean(postoperative?.checked)});
+            const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,has_diabetic_wound:Boolean(hasWound?.checked),is_postoperative:Boolean(postoperative?.checked)});
             fields.forEach(field=>field.disabled=true);
             setWorking(true); inlineStatus('notes', '');
             try {
                 const result = await request(base + '/' + id + '/notes', json('PATCH', notes));
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
-                ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || ''; if (postoperative) postoperative.checked = Boolean(result.is_postoperative);
-                captureClean(['reason','note','postoperative']);inlineStatus('notes', result.message);
+                ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || ''; if(hasWound)hasWound.checked=Boolean(result.has_diabetic_wound); if (postoperative) postoperative.checked = Boolean(result.is_postoperative);
+                captureClean(['reason','note','has-wound','postoperative']);inlineStatus('notes', result.message);
             } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
             finally { fields.forEach((field,i)=>field.disabled=locks[i]);setWorking(false); ui['save-notes'].disabled = ui.reason.disabled; }
         });
@@ -294,7 +294,7 @@
                 payload.cita_doble=Boolean(doubleInput?.checked);
                 if(payload.cita_doble) payload.duracion_cita=Number(payload.duracion_cita)*2;
                 if (discountInput()) payload.discount = discountInput();
-                payload.is_postoperative = Boolean(postoperative?.checked);
+                payload.is_postoperative = Boolean(postoperative?.checked); payload.has_diabetic_wound = Boolean(hasWound?.checked);
                 payload.motivo_exoneracion = exemptionReason?.value || null;
                 if (rateSelect?.value) payload.additional_rate_id = rateSelect.value;
                 if (options.patient) { payload.patient = options.patient; }
@@ -348,7 +348,7 @@
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
             if(key!==selectedKey){clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
-            if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
+            if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if(hasWound)hasWound.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
             if (byId('conversion-reason')) byId('conversion-reason').hidden=true;
@@ -356,7 +356,7 @@
             [doubleInput,indicationInput,referredInput,referralOrigin].forEach(field=>{if(field) field.disabled=Boolean(id)||!config.canCreate;});
             if(byId('indication-record-panel')) byId('indication-record-panel').hidden=true;
             [discountType,discountValue,discountReason].forEach(field => { if (field) field.disabled = Boolean(id) || !config.canCreate; });
-            if (postoperative) postoperative.disabled = Boolean(id);
+            if (postoperative) postoperative.disabled = Boolean(id); if(hasWound)hasWound.disabled=Boolean(id);
             ++quoteVersion;
             if (activeQuoteRequest) activeQuoteRequest.abort();
             activeQuoteRequest = null;
@@ -385,13 +385,13 @@
                 if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
                 if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
                 if (discountReason) discountReason.value=p.discount_reason || '';
-                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; }
+                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; } if(hasWound){hasWound.checked=Boolean(p.has_diabetic_wound);hasWound.disabled=!p.can_edit_notes;}
                 if (exemptionReason) exemptionReason.value=p.motivo_exoneracion || '';
                 ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
                 ui.reason.disabled = !p.can_edit_notes; ui.note.disabled = !p.can_edit_notes;
                 ui['save-notes'].hidden = !p.can_edit_notes; ui['save-notes'].disabled = !p.can_edit_notes;
                 byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : 'Esta cita está en consulta: no tienes permiso para modificar sus notas.';
-                ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado);captureClean(['reason','note','postoperative','authorized','waived','indication','referred','referral-origin','discount-type','discount-value','discount-reason','exemption-reason','double','rate']);await documents(id);
+                ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado);captureClean(['reason','note','has-wound','postoperative','authorized','waived','indication','referred','referral-origin','discount-type','discount-value','discount-reason','exemption-reason','double','rate']);await documents(id);
             } catch (e) { config.notice(e.message, true); }
         }
         async function submitPayment(confirm) {

@@ -20,7 +20,7 @@ final class AppointmentPriceInput
             'discount.type'=>'required_with:discount|in:FIXED,PERCENT',
             'discount.value'=>'required_with:discount|numeric|min:0|max:99999999.99|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'discount.reason'=>'nullable|string|max:500',
-            'is_postoperative'=>'sometimes|boolean',
+            'is_postoperative'=>'sometimes|boolean', 'has_diabetic_wound'=>'sometimes|boolean',
             'motivo_exoneracion'=>'nullable|string|max:2000'];
     }
 }

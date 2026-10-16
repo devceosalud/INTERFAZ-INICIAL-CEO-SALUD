@@ -46,7 +46,7 @@ class OperationalRegistrationController extends Controller
             'can_confirm_additional'=>$a->tipo_agendamiento!=='ADICIONAL'||$request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE_ADDITIONAL),
             'can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
                 && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]
-            + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'motivo_exoneracion',
+            + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'has_diabetic_wound', 'motivo_exoneracion',
                 'duration_slots','pricing_rule', 'referral_origin', 'discount_reason', 'catalog_price', 'discount_type', 'discount_value', 'discount_amount']));
     }
     public function payment(Request $request, int $appointmentId, \App\Services\Scheduling\ReservationPaymentService $service)

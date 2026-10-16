@@ -8,10 +8,12 @@ const guidance = require('../../public/js/scheduling/agenda-guidance');
 const root = path.resolve(__dirname, '../..');
 function source(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }
 
-test('comprobante se puede seleccionar en Documentos sin abrir ni registrar adelanto', () => {
+test('comprobante permanece dentro de Registrar adelanto según PR24 y no se duplica en Documentos', () => {
     const view = source('resources/views/scheduling/agenda/partials/operational-registration.blade.php');
     const documents = view.slice(view.indexOf('id="agenda-op-documents-panel"'));
-    assert.match(documents,/id="agenda-op-proof"[^>]*type="file"/);
+    assert.doesNotMatch(documents,/id="agenda-op-proof"/);
+    const payment = view.slice(view.indexOf('id="agenda-op-payment-panel"'), view.indexOf('id="agenda-op-documents-panel"'));
+    assert.match(payment,/id="agenda-op-proof"[^>]*type="file"/);
     assert.equal((view.match(/id="agenda-op-proof"/g)||[]).length,1);
 });
 

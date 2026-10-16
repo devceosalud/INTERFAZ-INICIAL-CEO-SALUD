@@ -97,7 +97,7 @@ class AgendaAppointmentController extends Controller
                 'hora' => substr((string) $appointment->hora_cita, 0, 5),
                 'duracion' => (int) $appointment->duracion_cita,
                 'estado' => $appointment->estado_cita,
-                'creator_user_id' => (int) $appointment->user_id,
+                ...(\App\Support\Scheduling\AgendaCreatorVisibility::allows($request->user()) ? ['creator_user_id' => (int) $appointment->user_id] : []),
                 'responsible_user_id' => $appointment->responsible_user_id
                     ? (int) $appointment->responsible_user_id
                     : null,

@@ -14,11 +14,11 @@ function workspace() {
         querySelector() { return { content: 'test-csrf' }; }, createElement: element };
     let patientId = 2, serviceId = 3;
     let selected = { tipo_contexto: 'slot_libre', doctor_id: 1, fecha: '2026-10-13', hora_inicio: '09:00' };
-    const sandbox = { document, FormData:class {constructor(){this.values=new Map();}append(k,v){this.values.set(k,v);}},
+    const sandbox = { document, AbortController, setTimeout:(fn,ms)=>{const timer=setTimeout(fn,ms);timer.unref();return timer;}, clearTimeout, FormData:class {constructor(){this.values=new Map();}append(k,v){this.values.set(k,v);}},
         window: {Swal:{fire:async options=>{asks.push(options.text);return {isConfirmed:decision};}},confirm:message=>{asks.push(message);return decision;},crypto:{randomUUID:()=> '11111111-1111-4111-a111-111111111111'},AgendaGuidance: require('../../public/js/scheduling/agenda-guidance') },
         fetch: (url, options = {}) => {
             calls.push({ url, options });
-            if (url === '/quote') return new Promise(resolve => pending.push(resolve));
+            if (url === '/quote') return new Promise((resolve,reject) => {pending.push(resolve);options.signal?.addEventListener('abort',()=>{const error=new Error('Aborted');error.name='AbortError';reject(error);});});
             const body = url.endsWith('/reevaluation-indications')?{indication_id:42}:url.endsWith('/economy') ? { precio: '175.00', saldo: '175.00', pago_real: '0.00' }
                 : url.endsWith('/documents') ? { documents: [] } : { patient: { telefono: '' } };
             return Promise.resolve({ ok: true, status: 200, json: async () => body });
@@ -63,7 +63,7 @@ test('una cita persistida conserva su precio aunque llegue una cotización anter
 test('un fallo de precio conserva el registro bloqueado y explica la tarifa inválida', async () => {
     const qa = workspace(); qa.widget.quoteChanged(100); qa.answer(0, '', false); await settle();
     assert.equal(qa.widget.readiness().price, '0.00');
-    assert.equal(qa.field('quote-status').hidden, false); assert.equal(qa.field('quote-status').textContent, 'Tarifa no vigente');
+    assert.equal(qa.field('quote-status').hidden, false); assert.equal(qa.field('quote-status').textContent, 'No se pudo cotizar: Tarifa no vigente');
     assert.deepEqual(qa.calls.map(c => c.url), ['/quote']);
 });
 

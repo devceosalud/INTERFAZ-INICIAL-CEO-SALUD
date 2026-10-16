@@ -57,6 +57,17 @@ class OperationalAgendaAppointmentService
             ->orderBy('hora_cita')
             ->get();
     }
+    /** Display projection, deliberately independent from occupation/availability readers. */
+    public function forPresentationRange(AgendaQuery $query,int $actorId):Collection
+    {
+        return $this->rangeQuery($query,$actorId)->where('estado_cita','<>','NO_ASISTIO')
+            ->select(['id','user_id','patient_id','doctor_id','service_id','responsible_user_id','site_id','fecha_cita','hora_cita',
+                'duracion_cita','duration_slots','precio_programado','estado_cita','estado_agenda','tipo_agendamiento','estado_pagado',
+                'economic_source','total_pagado','es_exonerado','autorizado_por','pricing_rule','is_postoperative','has_diabetic_wound','hora_llegada','hora_atendido'])
+            ->with(['patient:id,historia_clinica,nombre,apellido_paterno,apellido_materno','service:id,nombre','responsibleUser:id,name','user:id,name'])
+            ->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->get();
+    }
+
     /** Shared authenticated range; callers decide whether to include released care states. */
     public function rangeQuery(AgendaQuery $query, int $actorId): Builder
     {
