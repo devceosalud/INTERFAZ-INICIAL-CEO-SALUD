@@ -11,6 +11,13 @@
                 append() {if(Array.from(ui.proof.files || []).some(f=>root.AgendaGuidance.invalidProof(f))) throw new Error(root.AgendaGuidance.copy.fileInvalid);
                     if(ui.proof.files?.length) throw new Error('No se cargó la revisión de comprobantes. Actualiza Agenda antes de adjuntar; puedes registrar un pago manual sin imagen.');},
                 reset:async()=>{ui.proof.value='';},hasChanges:()=>Boolean(ui.proof.files?.length)};
+        const validation = root.AgendaFormValidation?.create({summary:byId('payment-summary'),fields:{
+            'payment.amount':ui.amount,'payment.method':ui.method,'payment.operation':ui.operation,'payment.origin':ui.origin,
+            'proofs':ui.proof,'proof_review.reviewed':()=>byId('proof-reviewed'),
+            'discount.value':()=>byId('discount-value'),'discount.type':()=>byId('discount-type'),
+            'referral.origin':()=>byId('referral-origin'),'motivo_exoneracion':()=>byId('exemption-reason'),
+            'autorizado_por':ui.authorized,'service_id':()=>document.getElementById('agenda-service-select')
+        }});
         const documentFile=byId('document-file');
         let replacementDocument=null,replacementKey=null;
         function clearReplacement(){replacementDocument=null;replacementKey=null;byId('replacement-panel').hidden=true;byId('replacement-file').value='';byId('replacement-reason').value='';captureClean(['replacement-file','replacement-reason']);}
@@ -121,6 +128,7 @@
             if (!response.ok) {
                 const error = new Error(config.error(body, response.status));
                 error.status = response.status;
+                error.errors = response.status === 422 ? (body.errors || {}) : {};
                 throw error;
             }
             return body;
@@ -280,6 +288,7 @@
         }
         async function register(options) {
             if (working) { return; }
+            validation?.clear();config.clearPatientErrors?.();
             setWorking(true);
             try {
                 const context = config.context();
@@ -306,7 +315,14 @@
                 registrationKey = null; ui.amount.value = '0'; await receipt.reset(); ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
                 ui.waived.checked = false; ui.authorized.value = '';
                 captureClean();pendingDocumentEdits.clear();await config.registered(response, options);
-            } catch (e) { rejected(e, 'registration'); showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment'); }
+            } catch (e) {
+                rejected(e, 'registration');
+                if (options.patient && Object.keys(e.errors || {}).some(key=>key.startsWith('patient.'))) {
+                    config.patientErrors?.(e.errors,e.message);
+                } else {
+                    showPlaced(e, options.bookingType === 'ADICIONAL' ? 'additional' : 'payment');
+                }
+            }
             finally { setWorking(false); }
         }
         async function documents(id) {
@@ -345,6 +361,7 @@
             });captureClean(['indication-document']);
         }
         async function selectionChanged(context) {
+            validation?.clear();
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
             if(key!==selectedKey){clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
@@ -395,6 +412,7 @@
             } catch (e) { config.notice(e.message, true); }
         }
         async function submitPayment(confirm) {
+            validation?.clear();
             const id = config.context()?.appointment_id;
             if (!id || working) { return; }
             if (!confirm) {
@@ -417,6 +435,7 @@
         }
         function showPlaced(error, context) {
             const placed = root.AgendaGuidance.place(error.message, error.status, context);
+            const errors = error.errors || {};
             const paymentError = document.getElementById('agenda-op-payment-error');
             const documentError = document.getElementById('agenda-op-documents-error');
             if (paymentError) { paymentError.hidden = true; }
@@ -424,8 +443,9 @@
             if (placed.domain === 'payment') {
                 ui['payment-panel'].open = true;
                 if (paymentError) { paymentError.hidden = false; paymentError.textContent = placed.text; }
+                validation?.show(errors,placed.text);
                 ui['payment-panel'].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                ui.amount.focus();
+                if (!validation) ui.amount.focus();
                 if (placed.focus) {
                     ui.amount.classList.add('is-guidance-focus');
                     root.setTimeout(() => ui.amount.classList.remove('is-guidance-focus'), 7000);
