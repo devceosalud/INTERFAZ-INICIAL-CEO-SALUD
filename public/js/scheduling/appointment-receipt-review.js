@@ -35,15 +35,19 @@ root.AppointmentReceiptReview=function(config){
     const receiptActions=make('div');receiptActions.className='agenda-receipt-actions';
     receiptActions.append(applyButton);
     suggestionBox.append(primary,additional,receiptActions);
+    const imagePanel=make('details');imagePanel.className='agenda-receipt-secondary';imagePanel.hidden=true;
+    imagePanel.append(make('summary','Ver imagen del comprobante'),preview);
     const extras=make('details');extras.className='agenda-receipt-secondary';
     extras.append(make('summary','Fecha y hora del comprobante · opcional'),dateLabel,timeLabel);
-    host.append(heading,buttons,status,preview,suggestionBox,extras,reviewLabel);
+    host.append(heading,buttons,status,imagePanel,suggestionBox,extras,reviewLabel);
     function invalidate(){reviewed.checked=false;}
     function releasePreview(){if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}preview.hidden=true;preview.removeAttribute('src');}
     function refreshSelect(field){if(root.jQuery?.fn?.selectpicker)root.jQuery(field).selectpicker('refresh');}
     function showPreview(){
         refreshSelect(selector);
         releasePreview();const file=input.files[Number(selector.value)||0];
+        selector.hidden = (input.files || []).length <= 1;
+        imagePanel.hidden = !file || !['image/png','image/jpeg'].includes(file.type);
         readButton.disabled=!file || !['image/png','image/jpeg'].includes(file.type) || fields.amount.disabled || busy;
         cancelButton.disabled=!file;
         cancelButton.hidden=!busy;
@@ -57,7 +61,7 @@ root.AppointmentReceiptReview=function(config){
     }
     async function reset(clearInput=true){
         ++version;await engine.cancel();busy=false;source='MANUAL';suggestions=null;invalidate();date.value='';time.value='';suggestionBox.hidden=true;
-        Object.values(suggestionFields).forEach(f=>f.value='');if(clearInput)input.value='';selector.replaceChildren();releasePreview();readButton.disabled=true;
+        Object.values(suggestionFields).forEach(f=>f.value='');if(clearInput)input.value='';selector.replaceChildren();releasePreview();imagePanel.hidden=true;readButton.disabled=true;
         status.textContent='Adjunta una imagen JPG o PNG para sugerir monto y operación.';cancelButton.disabled=true;cancelButton.hidden=true;
     }
     input.addEventListener('change',async()=>{
