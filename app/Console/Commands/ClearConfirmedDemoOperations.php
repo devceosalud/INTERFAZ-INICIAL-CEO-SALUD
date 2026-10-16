@@ -156,10 +156,25 @@ class ClearConfirmedDemoOperations extends Command
      */
     private function deletionOrder(array $planned): array
     {
-        $edges = DB::select("SELECT TABLE_NAME child_table, COLUMN_NAME child_column,
-                REFERENCED_TABLE_NAME parent_table, REFERENCED_COLUMN_NAME parent_column
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL");
+        $edges = [];
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            foreach (DB::select("SELECT name FROM sqlite_master WHERE type='table'") as $row) {
+                if (!preg_match('/^[a-zA-Z0-9_]+$/', $row->name)) continue;
+                foreach (DB::select('PRAGMA foreign_key_list("'.$row->name.'")') as $foreign) {
+                    $edges[] = (object) [
+                        'child_table' => $row->name,
+                        'child_column' => $foreign->from,
+                        'parent_table' => $foreign->table,
+                        'parent_column' => $foreign->to,
+                    ];
+                }
+            }
+        } else {
+            $edges = DB::select("SELECT TABLE_NAME child_table, COLUMN_NAME child_column,
+                    REFERENCED_TABLE_NAME parent_table, REFERENCED_COLUMN_NAME parent_column
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL");
+        }
 
         $parents = [];
         foreach ($edges as $fk) {
@@ -197,7 +212,8 @@ class ClearConfirmedDemoOperations extends Command
 
     public function handle(): int
     {
-        if (!in_array(DB::connection()->getDriverName(), ['mysql'], true)) {
+        if (!in_array(DB::connection()->getDriverName(), ['mysql'], true)
+            && !(app()->environment('testing') && DB::connection()->getDriverName() === 'sqlite')) {
             $this->error('Solo MySQL/MariaDB productivo está soportado. Sin cambios.');
             return self::FAILURE;
         }
