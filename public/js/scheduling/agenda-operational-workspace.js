@@ -93,7 +93,8 @@
                 waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
         }
         function hasConfirmablePayment(position) {
-            return position.asegurada || (position.fuente === 'PAYMENTS' && Number(position.pago_real || 0) > 0);
+            return position.asegurada || (position.fuente === 'PAYMENTS' && Number(position.pago_real || 0) > 0
+                && Number(position.saldo) < Number(position.precio));
         }
         function reservationConfirmation() {
             const pending = config.context()?.estado_agenda === 'PENDIENTE_CONFIRMACION';
