@@ -18,72 +18,64 @@
         return Number.isSafeInteger(cents) && cents > 0 && cents <= 9999999900 ? (cents / 100).toFixed(2) : null;
     }
     function parse(text) {
-        const normalized = String(text || '').normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '')
-            .replace(/\u00a0/g, ' ');
-        const lines = normalized.split('\n').map(line => line.trim()).filter(Boolean);
+        const normalized = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '');
+        const lines = normalized.split('\n').map(line=>line.trim()).filter(Boolean);
         const money = [];
-        const amountCue = /\b(monto|importe|total(?:\s+(?:pagado|enviado|transferido))?|enviaste|enviado|transferiste|pagaste|yapeaste|plin(?:easte)?|recibiste|pago realizado)\b/i;
-        const rejectCue = /\b(saldo|comision|disponible|celular|telefono|numero de cuenta|dni|codigo de operacion)\b/i;
-
-        function collect(raw, priority) {
-            // Tesseract can mistake the zero in "S/ 5O" for the letter O.
-            const token = String(raw).replace(/[oO]/g, '0');
-            const value = amount(token);
-            if (value) money.push({value, priority});
+        const namedAmount = /\b(monto|importe|total\s+(?:pagado|enviado|recibido)|yapeaste|pagaste|enviaste|transferiste|recibiste)\b/i;
+        const excluded = /\b(saldo|comision|disponible|telefono|celular|numero de cuenta|nro\.?\s*de\s*operacion)\b/i;
+        // Inside a currency amount only, OCR commonly confuses S/50 with S/SO.
+        const ocrAmount = raw => amount(String(raw).replace(/[Oo]/g,'0').replace(/[Ss]/g,'5').replace(/[Il|]/g,'1'));
+        const currency = /(?:\bS\s*[\/|]\s*\.?\s*|\bPEN\s*:?\s*)([0-9OoSsIl|]{1,8}(?:[.,][0-9OoSsIl|]{2,3})*)/gi;
+        for(let index=0;index<lines.length;index++){
+            const line = lines[index];
+            if(excluded.test(line)) continue;
+            const priority = namedAmount.test(line) ? 3 : 2;
+            let match;
+            while((match=currency.exec(line))!==null){
+                const value=ocrAmount(match[1]);
+                if(value)money.push({value,priority});
+            }
+            currency.lastIndex=0;
+            // Short linebreaks in tiny Yape screenshots: "S/" on one line, "50" on the next.
+            if(/(?:\bS\s*[/|]\s*\.?|\bPEN)\s*$/i.test(line)&&index+1<lines.length) {
+                const next=lines[index+1].match(/^([0-9OoSsIl|]{1,7}(?:[.,][0-9OoSsIl|]{2})?)(?!\d)/);
+                if(next){const value=ocrAmount(next[1]);if(value)money.push({value,priority:3});}
+            }
+            // OCR sometimes drops "S/" entirely but leaves a standalone value below "Yapeaste".
+            if(namedAmount.test(line) && index+1<lines.length && !excluded.test(lines[index+1])) {
+                const next=lines[index+1].match(/^([0-9]{1,5}(?:[.,][0-9]{2})?)$/);
+                if(next){const value=amount(next[1]);if(value)money.push({value,priority:1});}
+            }
+            if(namedAmount.test(line) && !/(?:\bS\s*[/|]|\bPEN)/i.test(line)){
+                const label=line.match(/(?:monto|importe|total\s+(?:pagado|enviado)|yapeaste|pagaste|enviaste)\s*(?::|=)?\s*(\d{1,6}(?:[.,]\d{2})?)\b/i);
+                if(label){const value=amount(label[1]);if(value)money.push({value,priority:2});}
+            }
         }
-
-        lines.forEach((line, index) => {
-            if (rejectCue.test(line) && !amountCue.test(line)) return;
-            const eligible = amountCue.test(line);
-            // S/50, S/. 50, PEN 50 and thousands/decimal formats. No decimal required.
-            const currency = /(?:S\s*\/\s*\.?\s*|PEN\s+)(\d[\d.,oO]*(?:\s*[.,]\s*\d{2})?)(?!\d)/gi;
-            let m, detected = false;
-            while ((m = currency.exec(line)) !== null) {
-                collect(m[1].replace(/\s+/g, ''), eligible ? 3 : 2);
-                detected = true;
-            }
-            // Banking apps may write "Monto: 50" without S/.
-            if (eligible && !detected && !rejectCue.test(line)) {
-                const direct = line.match(/(?:monto|importe|total(?:\s+(?:pagado|enviado|transferido))?|enviaste|enviado|transferiste|pagaste|yapeaste|recibiste)\s*(?:enviado|pagado|s\/?)?\s*[:=]?\s*(\d{1,5}(?:[.,]\d{2})?)\b/i);
-                if (direct) collect(direct[1], 3);
-            }
-            // "¡Yapeaste!" line followed by a single "50": avoid unrelated
-            // operation/telephone/DNI numbers by restricting to 1–5 digits.
-            if (!detected && /^(?:\d{1,5})(?:[.,]\d{2})?$/.test(line)
-                && index > 0 && amountCue.test(lines[index - 1])) {
-                collect(line, 2);
-            }
-        });
-        const priority = Math.max(0, ...money.map(item => item.priority));
-        const amounts = unique(money.filter(item => item.priority === priority).map(item => item.value));
-
-        const operations = [];
-        const operationPattern = /\b(?:n(?:umer[o0])?|nro|num|codigo|cod|referencia|ref)?\s*(?:[.°º#]\s*)?(?:de(?:\s+la)?\s+)?(?:operacion|transaccion|transferencia|referencia)\s*(?:n(?:umero|ro)?[.°º#]?\s*)?[:#=-]?\s*([0-9][0-9\s-]{4,24}[0-9])(?!\d)/gi;
-        for (const line of lines) {
+        const rank=Math.max(0,...money.map(item=>item.priority));
+        const amounts=unique(money.filter(item=>item.priority===rank).map(item=>item.value));
+        const operations=[];
+        const operationPattern=/\b(?:n(?:umer[o0])?|nro|num|codigo|cod|referencia|ref)?\s*(?:[.°º#]\s*)?(?:de(?:\s+la)?\s+)?(?:operacion|transaccion|transferencia|referencia)\s*(?:n(?:umero|ro)?[.°º#]?\s*)?[:#=-]?\s*([0-9][0-9\s-]{4,24}[0-9])(?!\d)/gi;
+        for(const line of lines){
             let m;
-            while ((m = operationPattern.exec(line)) !== null) {
-                const digits = m[1].replace(/[\s-]/g, '');
-                if (/^\d{6,20}$/.test(digits)) operations.push(digits);
+            while((m=operationPattern.exec(line))!==null){
+                const digits=m[1].replace(/[\s-]/g,'');
+                if(/^\d{6,20}$/.test(digits))operations.push(digits);
             }
-            operationPattern.lastIndex = 0;
+            operationPattern.lastIndex=0;
         }
-        const uniqueOperations = unique(operations);
-        const banks = unique([...normalized.matchAll(/\b(YAPE|PLIN|BCP|BBVA|INTERBANK)\b/gi)].map(m => m[1].toUpperCase()));
-        const bank = banks.includes('YAPE') ? 'YAPE' : banks.includes('PLIN') ? 'PLIN' : banks.length === 1 ? banks[0] : null;
-        const dates = unique([...normalized.matchAll(/\b([0-3][0-9])[/-]([01][0-9])[/-](20[0-9]{2})\b/g)].map(m => {
-            const iso = m[3] + '-' + m[2] + '-' + m[1];
-            const d = new Date(iso + 'T12:00:00Z');
-            return Number.isNaN(d.getTime()) || d.toISOString().slice(0,10) !== iso ? null : iso;
+        const uniqueOperations=unique(operations);
+        const banks=unique([...normalized.matchAll(/\b(YAPE|PLIN|BCP|BBVA|INTERBANK)\b/gi)].map(m=>m[1].toUpperCase()));
+        const bank=banks.includes('YAPE')?'YAPE':banks.includes('PLIN')?'PLIN':banks.length===1?banks[0]:null;
+        const dates=unique([...normalized.matchAll(/\b([0-3][0-9])[/-]([01][0-9])[/-](20[0-9]{2})\b/g)].map(m=>{
+            const iso=m[3]+'-'+m[2]+'-'+m[1],d=new Date(iso+'T12:00:00Z');
+            return Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==iso?null:iso;
         }));
-        const times = unique([...normalized.matchAll(/\b([01][0-9]|2[0-3]):([0-5][0-9])(?:[:][0-5][0-9])?\b/g)].map(m => m[1] + ':' + m[2]));
+        const times=unique([...normalized.matchAll(/\b([01][0-9]|2[0-3]):([0-5][0-9])(?:[:][0-5][0-9])?\b/g)].map(m=>m[1]+':'+m[2]));
         return {
-            amount: amounts.length === 1 ? amounts[0] : null,
-            operation: uniqueOperations.length === 1 ? uniqueOperations[0] : null,
-            bank, date: dates.length === 1 ? dates[0] : null,
-            time: times.length === 1 ? times[0] : null,
-            needs_review: true,
-            ambiguous: amounts.length > 1 || uniqueOperations.length > 1,
+            amount:amounts.length===1?amounts[0]:null,
+            operation:uniqueOperations.length===1?uniqueOperations[0]:null,
+            bank,date:dates.length===1?dates[0]:null,time:times.length===1?times[0]:null,
+            needs_review:true,ambiguous:amounts.length>1||uniqueOperations.length>1,
         };
     }
     function createEngine(options) {
@@ -120,7 +112,23 @@
                 });
                 if (current !== generation || timedOut) { await worker.terminate(); throw new Error('Lectura descartada.'); }
                 active.add(worker);
-                const result = await worker.recognize(file);
+                // Enhance tiny receipt screenshots locally; never upload or retain image pixels.
+                let input = file;
+                if (typeof createImageBitmap === 'function' && typeof document !== 'undefined') {
+                    try {
+                        const bitmap=await createImageBitmap(file);
+                        const scale=Math.min(3, Math.max(1, Math.ceil(1200 / bitmap.width)));
+                        if(scale>1 && bitmap.width*scale<=2400 && bitmap.height*scale<=5000){
+                            const canvas=document.createElement('canvas');
+                            canvas.width=bitmap.width*scale;canvas.height=bitmap.height*scale;
+                            const context=canvas.getContext('2d');
+                            if(context){context.imageSmoothingEnabled=true;context.drawImage(bitmap,0,0,canvas.width,canvas.height);input=canvas;}
+                        }
+                        bitmap.close();
+                    }catch(_){ input=file; }
+                }
+                if(current !== generation || timedOut) throw new Error('Lectura descartada.');
+                const result = await worker.recognize(input);
                 if (current !== generation || timedOut) throw new Error('Lectura descartada.');
                 return { ...parse(result.data.text), confidence: Number(result.data.confidence) || 0 };
             })();

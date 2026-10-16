@@ -287,7 +287,10 @@
 
 /* Payment select stability: avoid duplicate-looking native/selectpicker wrappers. */
 .agenda-operational-fields .agenda-payment-entry > .agenda-field { min-width:0; }
-.agenda-operational-fields .agenda-payment-entry select.agenda-field__input { display:block; width:100%; min-width:0; }
+.agenda-operational-fields .agenda-payment-entry select.agenda-field__input { width:100%; min-width:0; }
+/* Bootstrap-select hides the native select. Avoid drawing both controls over each other. */
+.agenda-operational-fields .agenda-payment-entry .bootstrap-select > select.agenda-field__input,
+.agenda-operational-fields .agenda-payment-entry .bootstrap-select > select { display:none!important; }
 .agenda-operational-fields .agenda-payment-entry .bootstrap-select { display:block; width:100%!important; min-width:0; }
 .agenda-operational-fields .agenda-payment-entry .bootstrap-select > .dropdown-toggle { min-height:38px; width:100%; }
 .agenda-operational-fields .agenda-payment-entry input.agenda-field__input { box-sizing:border-box; width:100%; min-width:0; }

@@ -50,3 +50,24 @@ test('runtime failures use a generic message without receipt or server details',
  const e=ocr.createEngine({origin:'https://qa.test',workerFactory:async()=>{throw new Error('SECRET receipt backend');}});
  await assert.rejects(e.recognize({type:'image/png',size:100}),error=>!error.message.includes('SECRET')&&error.message.includes('manualmente'));
 });
+
+test('Tiny Yape S/50 and OCR-confused glyphs suggest 50 without confusing operation',()=>{
+ for(const txt of [
+    'Yape\n¡Yapeaste!\nS/50\nNúmero de operación: 22536760',
+    'Yapeaste\nS/SO\nNro. de operación 22536760',
+    'Yapeaste\nS/\n50\nNro. de operación 22536760',
+    'Yape\nS/. 50\nNro. de operación 22536760',
+ ]) {
+   const result=ocr.parse(txt);
+   assert.equal(result.amount,'50.00',txt);
+   assert.equal(result.operation,'22536760',txt);
+ }
+});
+test('Non-amount numbers cannot become money without a currency or labeled amount',()=>{
+ const r=ocr.parse('Yape\nTeléfono 987654321\nNro. de operación 22536760\nSaldo disponible S/ 300.00');
+ assert.equal(r.amount,null);assert.equal(r.operation,'22536760');
+});
+test('Parsing raw Yape text never returns the cardholder or private text',()=>{
+ const r=ocr.parse('Yape\nYapeaste\nS/50\nCliente PRIVADO\nNro. de operación 22536760');
+ assert.equal(JSON.stringify(r).includes('PRIVADO'),false);
+});

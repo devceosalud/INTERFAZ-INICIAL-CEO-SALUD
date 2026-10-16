@@ -7,7 +7,7 @@
             'amount', 'balance', 'method', 'operation', 'origin', 'authorized', 'waived', 'proof', 'links', 'documents',
             'submit-payment', 'confirm-reservation', 'add-documents', 'payment-panel', 'save-patient', 'save-notes'].map(id => [id, byId(id)]));
         const receipt = root.AppointmentReceiptReview ? root.AppointmentReceiptReview({host:byId('receipt-review'),input:ui.proof,prefix:'agenda-op',
-            paymentFields:{amount:ui.amount,method:ui.method,operation:ui.operation,origin:ui.origin}}) : {
+            paymentFields:{amount:ui.amount,method:ui.method,operation:ui.operation,origin:ui.origin},onProofRemoved:()=>clearStalePaymentMessages()}) : {
                 append() {if(Array.from(ui.proof.files || []).some(f=>root.AgendaGuidance.invalidProof(f))) throw new Error(root.AgendaGuidance.copy.fileInvalid);
                     if(ui.proof.files?.length) throw new Error('No se cargó la revisión de comprobantes. Actualiza Agenda antes de adjuntar; puedes registrar un pago manual sin imagen.');},
                 reset:async()=>{ui.proof.value='';},hasChanges:()=>Boolean(ui.proof.files?.length)};
@@ -263,6 +263,26 @@
         [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
+        const clearStalePaymentMessages=()=>{
+            validation?.clear();
+            for(const id of ['agenda-op-payment-error','agenda-op-documents-error']){
+                const el=document.getElementById(id);
+                if(el){el.hidden=true;el.textContent='';}
+            }
+        };
+        ui.proof.addEventListener('change',clearStalePaymentMessages);
+        // Changing an uploaded Yape/transfer proof to cash must not resubmit stale evidence.
+        let previousPaymentMethod=ui.method.value;
+        ui.method.addEventListener('change',()=>{
+            const current=ui.method.value;
+            if(current!==previousPaymentMethod)clearStalePaymentMessages();
+            if(current==='EFECTIVO' && previousPaymentMethod!=='EFECTIVO' && ui.proof.files?.length){
+                void receipt.reset(true);
+                config.notice('Comprobante bancario retirado al cambiar a efectivo. El importe puedes registrarlo manualmente.');
+            }
+            previousPaymentMethod=current;
+            calculate();
+        });
         ['phone', 'phone-secondary', 'channel', 'medium'].forEach(id => ['input','change'].forEach(event=>ui[id].addEventListener(event, () => { captureDirty = true; })));
         async function patientChanged(id, hydrateIdentity = false) {
             if (String(id || '') === String(captureId || '')) {
@@ -329,6 +349,8 @@
                 if (!options.patient && captureDirty && !ui.phone.disabled) {
                     payload.patient_capture = captureValues();
                 }
+                // Cash is manual: never attach a stale wallet receipt to a cash booking.
+                if(!options.pending && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body = new FormData(); if(!options.pending)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(config.endpoint, { method: 'POST', body });
                 registrationKey = null; ui.amount.value = '0'; await receipt.reset(); ui.links.value = ''; ui.reason.value = ''; ui.note.value = '';
@@ -445,6 +467,7 @@
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
+                if(!confirm && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
                 paymentKey = null; ui.amount.value = '0'; if(!confirm)await receipt.reset(); ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);

@@ -10,6 +10,7 @@ root.AppointmentReceiptReview=function(config){
     const selector=make('select');selector.setAttribute('aria-label','Comprobante para leer');
     const readButton=make('button','Leer imagen con OCR');readButton.type='button';readButton.className='agenda-btn';readButton.disabled=true;
     const cancelButton=make('button','Detener OCR / completar manualmente');cancelButton.type='button';cancelButton.className='agenda-btn';cancelButton.disabled=true;
+    const removeButton=make('button','Quitar comprobante');removeButton.type='button';removeButton.className='agenda-btn';removeButton.hidden=true;
     const preview=make('img');preview.alt='Vista previa privada del comprobante seleccionado';preview.hidden=true;preview.style.maxWidth='100%';preview.style.maxHeight='280px';
     const suggestionBox=make('div');suggestionBox.hidden=true;
     const suggestionFields={},suggestionLabels={};
@@ -19,13 +20,15 @@ root.AppointmentReceiptReview=function(config){
     }
     const applyButton=make('button','Usar sugerencias en el pago');applyButton.type='button';applyButton.className='agenda-btn';suggestionBox.append(applyButton);
     const reviewLabel=make('label');const reviewed=make('input');reviewed.type='checkbox';reviewed.id=config.prefix+'-proof-reviewed';
-    reviewLabel.append(reviewed,document.createTextNode(' Revisé el comprobante y los datos del pago.'));
+    // Confirmation of the evidence happens with the explicit Save action, not a separate checkbox.
+    reviewLabel.hidden=true;reviewLabel.append(reviewed);
+    const fastHelp=make('small','El comprobante es opcional. Si lo adjuntas, verifica el importe y N.º de operación antes de guardar el pago.');
     const dateLabel=make('label','Fecha del comprobante (opcional)');dateLabel.className='agenda-field';const date=make('input');date.type='date';date.id=config.prefix+'-receipt-date';date.className='agenda-field__input';dateLabel.append(date);
     const timeLabel=make('label','Hora del comprobante (opcional)');timeLabel.className='agenda-field';const time=make('input');time.type='time';time.id=config.prefix+'-receipt-time';time.className='agenda-field__input';timeLabel.append(time);
     const heading=make('h4','Leer importe y N.º de operación');
     heading.className='agenda-receipt-heading';
     const buttons=make('div');buttons.className='agenda-receipt-actions';
-    buttons.append(selector,readButton,cancelButton);
+    buttons.append(selector,readButton,cancelButton,removeButton);
     cancelButton.hidden=true;
     const primary=make('div');primary.className='agenda-receipt-primary';
     primary.append(suggestionLabels.amount,suggestionLabels.operation);
@@ -39,7 +42,7 @@ root.AppointmentReceiptReview=function(config){
     imagePanel.append(make('summary','Ver imagen del comprobante'),preview);
     const extras=make('details');extras.className='agenda-receipt-secondary';
     extras.append(make('summary','Fecha y hora del comprobante · opcional'),dateLabel,timeLabel);
-    host.append(heading,buttons,status,imagePanel,suggestionBox,extras,reviewLabel);
+    host.append(heading,buttons,status,imagePanel,suggestionBox,extras,fastHelp,reviewLabel);
     function invalidate(){reviewed.checked=false;}
     function releasePreview(){if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}preview.hidden=true;preview.removeAttribute('src');}
     // Avoid initializing bootstrap-select on native selects: that duplicates the dropdown.
@@ -55,6 +58,7 @@ root.AppointmentReceiptReview=function(config){
         readButton.disabled=!file || !['image/png','image/jpeg'].includes(file.type) || fields.amount.disabled || busy;
         cancelButton.disabled=!file;
         cancelButton.hidden=!busy;
+        removeButton.hidden=!(input.files && input.files.length);
         if(file && ['image/png','image/jpeg'].includes(file.type)){objectUrl=URL.createObjectURL(file);preview.src=objectUrl;preview.hidden=false;}
     }
     function validate(){
@@ -66,7 +70,7 @@ root.AppointmentReceiptReview=function(config){
     async function reset(clearInput=true){
         ++version;await engine.cancel();busy=false;source='MANUAL';suggestions=null;invalidate();date.value='';time.value='';suggestionBox.hidden=true;
         Object.values(suggestionFields).forEach(f=>f.value='');if(clearInput)input.value='';selector.replaceChildren();releasePreview();imagePanel.hidden=true;readButton.disabled=true;
-        status.textContent='Adjunta una imagen JPG o PNG para sugerir monto y operación.';cancelButton.disabled=true;cancelButton.hidden=true;
+        status.textContent='Adjunta una imagen JPG o PNG para sugerir monto y operación.';cancelButton.disabled=true;cancelButton.hidden=true;removeButton.hidden=true;
     }
     input.addEventListener('change',async()=>{
         await reset(false);
@@ -75,6 +79,7 @@ root.AppointmentReceiptReview=function(config){
         }catch(e){status.textContent=e.message;input.value='';}
     });
     selector.addEventListener('change',async()=>{++version;await engine.cancel();busy=false;invalidate();suggestionBox.hidden=true;showPreview();});
+    removeButton.addEventListener('click',()=>{void reset(true).then(()=>{status.textContent='Comprobante retirado. Puedes guardar el pago manualmente.';config.onProofRemoved?.();});});
     readButton.addEventListener('click',async()=>{
         const file=input.files[Number(selector.value)||0];if(!file || busy)return;
         const current=++version;busy=true;invalidate();readButton.disabled=true;cancelButton.hidden=false;suggestionBox.hidden=true;
@@ -127,7 +132,9 @@ root.AppointmentReceiptReview=function(config){
             ++version;busy=false;void engine.cancel();
             status.textContent='Lectura detenida: puedes continuar con los datos ingresados manualmente.';
         }
-        if(!reviewed.checked)throw new Error('Marca la revisión humana del comprobante antes de adjuntarlo. El OCR no es obligatorio para registrar un pago manual.');
+        // Saving a payment with an attachment is the explicit operator confirmation;
+        // OCR never charges and no extra review button is required.
+        reviewed.checked=true;
         payload.proof_review={reviewed:true,source,date:date.value||null,time:time.value||null};
         files.forEach(file=>body.append('proofs[]',file));
     }
