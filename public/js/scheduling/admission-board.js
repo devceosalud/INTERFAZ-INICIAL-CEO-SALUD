@@ -54,7 +54,7 @@
 
             const appointmentId = Number(payload.appointment.id);
             const area = section('Observaciones y pendientes');
-            area.classList.add('admission-task-panel');
+            area.classList.add('admission-task-panel', 'clarity-mask');
             area.appendChild(node('p',
                 'Seguimiento operativo de esta cita. No sustituye una orden médica ni la historia clínica.',
                 'admission-task-help'));
