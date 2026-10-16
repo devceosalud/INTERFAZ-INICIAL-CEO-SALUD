@@ -28,14 +28,14 @@ Baseline verificado: `origin/main = 2b4f1e8db81b8629aa8508cb41f45b0a263e660c`, m
 Con responsable asignado, reserva privada visible solo para él; sin responsable, solo creador, también para ADMIN. Conservar AppointmentVisibility byte a byte y probar los dos casos, incluyendo reservas con dinero. No cambiar ocupación, 50%, cobros, precios, UUID ni los controles del PR #24. Rojo informativo no consume capacidad. AMARILLO requiere dinero atribuido real, no estado_pagado, crédito o snapshot histórico. Autorización en servidor y errores sin datos ajenos. QA SQLite/MariaDB aisladas y navegadores con pacientes ficticios; sin proveedores reales ni producción.
 ## Estado del lote A entregado para revisión
 
-Código: `3ba9001264734bd8afae537757fd774b317e5b5b` (baseline anterior sin merges adicionales).
+Código: `3cec2579e616e6ed4a765f14283d33c403800b2c` (incluye decisiones posteriores, sin merges adicionales).
 
 | Issue | Resultado de desarrollo | Criterio pendiente |
 |---|---|---|
-| #25 | **PARCIAL**: señales únicas blanco/amarillo/plomo/fucsia, rojo > turquesa, etiquetas conservadas, bandera HERIDA explícita, misma presentación en Nicol y Agenda. Mes mantiene resumen anónimo. | Prioridad entre PAGO_REAL/POSTOPERATORIO/HERIDA antes de llegada; registrar salida física explícita antes del tachado. No se presume una respuesta de negocio. |
+| #25 | **IMPLEMENTADO Y PROBADO**: fondo ROJO > TURQUESA > AMARILLO > BLANCO; HERIDA fucsia y POSTOP plomo solo como chips junto al nombre. Salida explícita desde Nicol después de ATENDIDO, motivo/actor, auditoría, idempotencia y bloqueo concurrente. Mes mantiene resumen anónimo. | Revisión del PR y aplicación autorizada de las dos migraciones aditivas, nunca ejecutadas en producción por esta entrega. |
 | #26 | **IMPLEMENTADO Y PROBADO**: creador exclusivo ADMIN en feed/detalle accesible; alta e historial no lo revelan a otros perfiles. Nicol comparte la proyección de privacidad. Responsable sin asignar no se sustituye por creador. | Revisión del PR; en Mes se accede al detalle mediante apertura por teclado del día, conservando el resumen anónimo. |
 | #27 | **IMPLEMENTADO Y PROBADO**: seguimiento ADMIN por defecto, dentro de visibilidad autorizada; dinero parcial no confirma. | Revisión del PR. No hay excepción ADMIN para reservas privadas ni opción «todas» no aprobada. |
 
-Las dos consultas de negocio de #25 permanecen abiertas. Hasta recibir respuesta, las coincidencias conservan su base anterior y todas sus etiquetas (`visual_priority_pending=true`); `ATENDIDO` no tacha el nombre ni determina salida o decisión de reevaluación. Este lote no cierra #25 ni declara completa la Etapa A. #28–#33 conservan los estados y las ramas propuestas arriba; no se mezclaron sus cambios.
+Las dos consultas de #25 quedaron resueltas expresamente por negocio: chips secundarios y salida física explícita. `ATENDIDO` solo no tacha; `ATENDIDO + hora_salida` sí. Salir no decide una reevaluación ni cambia pagos/estado de atención. La solicitud de reembolso pinta rojo, pero no ejecuta dinero ni libera por sí sola un intervalo; la reprogramación por retiro mantiene roja la cita RETIRO original. #28–#33 conservan los estados y ramas propuestas arriba; no se mezclaron sus cambios. No se cierran issues ni se hace merge automáticamente.
 
 Pruebas, archivos, reproducción y reversión: [AGENDA_ETAPA_A_QA.md](AGENDA_ETAPA_A_QA.md).

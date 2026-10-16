@@ -2,16 +2,16 @@
 
 ## Alcance y baseline
 
-Repositorio `devceosalud/INTERFAZ-INICIAL-CEO-SALUD`; rama `codex/agenda-etapa-a-semaforizacion`, worktree nuevo `agenda-etapa-a`. Baseline comprobado nuevamente por fetch: `2b4f1e8db81b8629aa8508cb41f45b0a263e660c` (PR #24). Código probado: `3ba9001264734bd8afae537757fd774b317e5b5b`; el commit de cierre agrega solo documentación/evidencias. No se incorporó #21, se conservaron worktrees y cambios de otras ramas. No hubo acceso a Hostinger ni escrituras productivas.
+Repositorio `devceosalud/INTERFAZ-INICIAL-CEO-SALUD`; rama `codex/agenda-etapa-a-semaforizacion`, worktree nuevo `agenda-etapa-a`. Baseline comprobado nuevamente por fetch: `2b4f1e8db81b8629aa8508cb41f45b0a263e660c` (PR #24). Código probado: `3cec2579e616e6ed4a765f14283d33c403800b2c`; el commit de cierre agrega solo documentación/evidencias. No se incorporó #21, se conservaron worktrees y cambios de otras ramas. No hubo acceso a Hostinger ni escrituras productivas.
 
 ## Comportamiento y límites
 
 - Pago real atribuido, parcial o total: amarillo. `estado_pagado`, créditos y snapshots históricos no lo sustituyen. Un importe sin atribución inequívoca muestra revisión pendiente; nunca acredita dinero.
-- Reserva privada sin pago real: blanco. Postoperatorio explícito: plomo. PIE DIABÉTICO CON HERIDA explícito: fucsia; no se deduce del nombre del servicio ni genera gratuidad.
-- Llegada registrada mediante Nicol: turquesa, manteniendo etiquetas. CANCELADO/RETIRO efectivo: rojo, prevalece sobre llegada, evento informativo sin ocupar capacidad. NO_ASISTIO no se convierte en cancelación. Una solicitud financiera no altera por sí sola el color a rojo.
-- ADMIN: seguimiento inicial de citas visibles con pago real, presencia o cancelación/retiro. Filtra DESPUÉS de autorizar; no recibe reservas privadas ajenas, aunque tengan adelanto o las haya creado él. Los demás roles conservan su visibilidad habitual.
+- Fondo de cita blanco sin pago real acreditado; amarillo con pago real; turquesa por llegada/salida registrada; rojo por cancelación, retiro o solicitud de reembolso, en ese orden de prioridad. HERIDA fucsia y POSTOPERATORIO plomo se presentan **solo como chips junto al nombre**, nunca como fondo del slot, y se conservan simultáneamente. Semana usa chips compactos HERIDA/POSTOP con descripción completa accesible. No se deducen del servicio ni generan gratuidad.
+- Llegada registrada mediante Nicol: turquesa, manteniendo etiquetas. CANCELADO/RETIRO efectivo: rojo, prevalece sobre llegada, evento informativo sin ocupar capacidad. NO_ASISTIO no se convierte en cancelación. Una solicitud de reembolso pendiente sí es roja según la decisión posterior; se diferencia mediante etiqueta de solicitud no ejecutada, sin alterar estado, disponibilidad o dinero. Reprogramar por retiro conserva roja la cita original RETIRO, no marca automáticamente la cita de destino.
+- ADMIN: seguimiento inicial de citas visibles con pago real, presencia, salida registrada, solicitud de reembolso o cancelación/retiro. Filtra DESPUÉS de autorizar; no recibe reservas privadas ajenas, aunque tengan adelanto o las haya creado él. Los demás roles conservan su visibilidad habitual.
 - Creador y responsable son distintos. ADMIN recibe creador en Día/Semana, tooltip y detalle enfocable por teclado; Mes sigue anónimo y permite abrir el día por teclado. Otros perfiles no reciben los campos de creador. Alta e historial comparten restricción; actores del historial que identifiquen al creador se ocultan en la respuesta no ADMIN. Auditoría almacenada intacta. Nicol no atribuye al creador una responsabilidad inexistente.
-- **#25 continúa PARCIAL:** falta definir prioridad de pago/postoperatorio/herida cuando coinciden antes de llegada/cancelación. Se conserva base previa y todas las etiquetas. No existe marca inequívoca de salida física; falta aprobar su registro. `hora_atendido` no se utiliza como salida, el nombre no se tacha y no se infiere una decisión de reevaluación.
+- **Decisiones de #25 resueltas por negocio:** base ROJO > TURQUESA > AMARILLO > BLANCO y chips secundarios; salida física explícita desde Nicol después de ATENDIDO. La acción SALIDA_REGISTRADA utiliza el endpoint de recorrido existente, permiso VIEW + UPDATE y visibilidad existente, UUID, motivo obligatorio y actor/auditoría. Guarda `hora_salida`, manteniendo `estado_cita=ATENDIDO`, sin reescribir otras marcas ni importes. Turquesa + nombre tachado solo cuando ambas condiciones existen; no determina reevaluación. El backend rechaza estados no atendidos, reservas pendientes, motivo vacío, permisos revocados, intentos de inyectar dinero/timestamps y doble salida concurrente. El mismo UUID conserva la primera actuación.
 
 ## Archivos y propósito
 
@@ -21,6 +21,7 @@ Repositorio `devceosalud/INTERFAZ-INICIAL-CEO-SALUD`; rama `codex/agenda-etapa-a
 | Privacidad | `AgendaCreatorVisibility`, `AgendaAppointmentController`, `AppointmentWorkflowController`, `AdmissionBoardService`: restricción en servidor, sin alterar auditoría o permisos existentes. |
 | Indicador explícito | Migración `2026_10_15_230000_add_explicit_diabetic_wound_flag`, `Appointment`, `AppointmentPriceInput`, `CreateAppointmentService`, `OperationalRegistrationService`, `LegacyAppointmentRegistration`, `OperationalRegistrationController`, `AgendaDetailsController`: booleano validado, auditado, con autorización y mismo motor de registro/idempotencia. |
 | Interfaz | `agenda.js`, `agenda-selection.js`, `agenda-operational-workspace.js`, `admission-board.js`, `agenda-layout.css`, parciales `operational-registration`, `quick-registration`, `toolbar`: checkbox, limpieza de contexto, colores/etiquetas, teclado y detalle ADMIN. CSS acotado a Agenda. |
+| Salida explícita | `AdmissionCareService`, `AdmissionBoardController`, `AdmissionBoardService`, nueva migración `2026_10_15_231000_add_explicit_appointment_departure`: acción de salida transaccional auditada tras ATENDIDO; sin nuevo estado clínico ni permisos financieros. |
 | Pruebas | `AgendaSemaphorizationTest`, `AgendaCreatorPrivacyTest`, `AgendaAppointmentWriteTest`; expectativas de `AgendaBoardTest`, `WorkerAccessTest`, `AgendaRefinementTest`, `PilotAppointmentOperationsTest`; pruebas JS de creador/workspace/cotización/OCR. Integración MariaDB en `tests/Integration/AgendaStageA`. |
 | QA aislado | `phpunit.agenda-stage-a.xml`, `IsolatedAgendaStageAQa`, scripts `prepare/seed/router/readback` y `browser-agenda-stage-a.cjs`. Sin credenciales productivas. |
 
@@ -34,20 +35,22 @@ Navegador: cuatro contextos/cookies independientes (ADMIN, dos comerciales y Nic
 
 ## Ejecución y evidencias
 
-Resultados finales: **914 PHP / 7.234 aserciones; 201 MariaDB / 1.813 aserciones; 279 JavaScript; 8 escenarios de navegador, todos aprobados, cero errores de página**. Sintaxis: 37 archivos PHP y 9 JavaScript, sin errores. MariaDB cubre nueve familias relevantes, no las 914 pruebas generales. Resultados verificables en `docs/qa/agenda-etapa-a/resultados.json`. Logs completos ignorados en `storage/app/qa-stage-a` y `storage/app/qa-rc`; no se versionan contraseñas aleatorias de QA, sesiones, caches ni dumps.
+Resultados finales: **920 PHP / 7.393 aserciones; 207 MariaDB / 1.970 aserciones; 279 JavaScript; 10 escenarios de navegador, todos aprobados, cero errores de página**. Sintaxis: 42 archivos PHP y 9 JavaScript, sin errores. MariaDB cubre diez familias relevantes, no las 920 pruebas generales. Resultados verificables en `docs/qa/agenda-etapa-a/resultados.json`. Logs completos ignorados en `storage/app/qa-stage-a` y `storage/app/qa-rc`; no se versionan contraseñas aleatorias de QA, sesiones, caches ni dumps.
 
 El recorrido visual verifica:
 
-1. Colores simples reales en Día; amarillo con S/20 permanece pendiente, blanco sin dinero, plomo y fucsia explícitos.
+1. Fondos reales en Día; amarillo con S/20 permanece pendiente, blanco sin dinero. HERIDA y POSTOP con colores propios solo junto al nombre, solos y combinados.
 2. Segundo comercial sin reservas privadas del primero ni creador en JSON.
 3. ADMIN distingue creador de responsable y abre detalle por teclado, dentro de seguimiento autorizado.
 4. Cancelada tras llegada roja; el intervalo conserva entrada disponible.
 5. Semana conserva señales; Mes sin nombres y apertura por teclado del día.
 6. Alta desde UI de reserva HERIDA con S/0, sin confirmación ni pagos nuevos.
 7. Llegada real desde Nicol reflejada turquesa en Agenda; ATENDIDO sin salida no tacha.
-8. Viewport móvil verificado 390×844, ancho del documento 390; navegación y consulta, captura `mobile.png`. No se afirma prueba en dispositivo físico.
+8. Salida desde Nicol con constancia obligatoria; sello persistido y nombre tachado en Nicol/Día/Semana. Se conserva el dinero. Geometría de Semana verificada: nombre no desaparece y ambos chips dentro del evento.
+9. Dos sesiones sobre dos procesos PHP (8086/8087) compiten por la misma salida: un 200, un 409, un evento y una operación; sin duplicación de dinero.
+10. Viewport móvil verificado 390×844, ancho del documento 390; navegación y consulta, captura `mobile.png`. No se afirma prueba en dispositivo físico.
 
-BD del circuito: 9 citas sintéticas al final, dos pagos originales (S/50 + S/20), 7 operaciones y 20 eventos; la reserva UI nueva no agregó dinero. Las suites automáticas comprueban además privacidad sin responsable, denegación 403/404 al editar HERIDA, idempotencia/reintento discordante, historial sin cambios, disponibilidad, ADICIONAL, doble duración, paridad heredada/operativa, descuentos y permisos.
+BD del circuito: resultados exactos en JSON de evidencias; se conservan los pagos sintéticos originales y la reserva UI nueva no agregó dinero. Persistencia final: 11 citas, 3 pagos sintéticos originales S/90, 10 operaciones y 25 eventos. Las suites automáticas comprueban además privacidad sin responsable, denegación 403/404 al editar HERIDA, idempotencia/reintento discordante, historial sin cambios, disponibilidad, ADICIONAL, doble duración, paridad heredada/operativa, descuentos y permisos.
 
 Fallos encontrados durante la iteración: el detalle ADMIN estaba oculto por una clase CSS heredada (corregido); la apertura de Mes por teclado apuntaba a un evento dentro de «más» (se hizo enfocable el día y se compactaron señales). Al conservar Mes anónimo se eliminó una consulta de retiros: prueba antigua exigía igualdad Día/Mes, ahora comprueba exactamente una consulta menos (13/12), manteniendo la comprobación contra N+1. Se corrigieron expectativas antiguas de color/modalidad y fixtures de seguimiento ADMIN; no se quitaron controles financieros. Ejecuciones intermedias fallidas o interrumpidas no acreditan el commit final.
 
@@ -62,23 +65,25 @@ Fallos encontrados durante la iteración: el detalle ADMIN estaba oculto por una
 
 ## Publicación futura y reversión (no ejecutadas)
 
-Una sola migración **aditiva y nullable** en `appointments.has_diabetic_wound`, sin backfill ni cambios a precios, pagos o estados históricos. No seeders ni grants. Antes de una publicación autorizada: respaldo verificado de BD/código/configuración/adjuntos, comprobación de autodespliegue, ensayo en staging, aplicar únicamente esta migración y publicar código/assets de este PR con su SHA revisado. Este documento no autoriza ejecutarlo.
+Dos migraciones **aditivas y nullable**, en orden: `2026_10_15_230000_add_explicit_diabetic_wound_flag` y `2026_10_15_231000_add_explicit_appointment_departure` (`hora_salida`). Sin backfill ni cambios a precios, pagos o estados históricos. No seeders ni grants. Antes de una publicación autorizada: respaldo verificado de BD/código/configuración/adjuntos, comprobación de autodespliegue, ensayo en staging, aplicar únicamente estas migraciones y publicar código/assets de este PR con su SHA revisado. Este documento no autoriza ejecutarlo.
 
-Rollback preferido: revertir código/assets al baseline revisado conservando columna y datos. No restaurar una BD antigua sobre pagos nuevos. `down()` rechaza eliminar la columna si existe cualquier valor registrado (incluso false); solo se permite borrado en un esquema descartable sin valores, con autorización. Al revertir la interfaz dejaría de mostrarse HERIDA: suspender la operativa que dependa de esa señal hasta resolverla, preservando sus datos.
+Rollback preferido: revertir código/assets al baseline revisado conservando ambas columnas y datos. No restaurar una BD antigua sobre pagos nuevos. Cada `down()` rechaza eliminar su columna si existe cualquier valor registrado (incluso false para HERIDA); solo se permite borrado en un esquema descartable sin valores, con autorización. Al revertir la interfaz dejarían de mostrarse HERIDA/salida física y el tachado: suspender la operativa que dependa de esa señal hasta resolverla, preservando sus datos.
 
 ## Dictamen
 
-**Draft revisable; Etapa A todavía parcial, NO lista para despliegue.** Resolver las dos decisiones de #25 y repetir pruebas afectadas antes de cerrar sus criterios. Ningún dato real utilizado; `AppointmentVisibility`, `DoctorAvailabilityService`, motor económico y `layouts/app.blade.php`/Clarity conservados. Sin merge, despliegue ni permisos productivos. Privacidad/admisibilidad de Clarity y validación del entorno productivo continúan siendo requisitos separados, no superados por este QA local.
+**Etapa A implementada y probada en desarrollo; mismo PR Draft para revisión, sin autorización de despliegue.** Las dos decisiones de #25 fueron incorporadas. Esto no certifica el entorno productivo ni supera la revisión de privacidad de Clarity. Ningún dato real utilizado; `AppointmentVisibility`, `DoctorAvailabilityService`, motor económico y `layouts/app.blade.php`/Clarity conservados. Sin merge, despliegue ni permisos productivos. Privacidad/admisibilidad de Clarity y validación del entorno productivo continúan siendo requisitos separados, no superados por este QA local.
 
-## Inventario exacto de código y pruebas del commit verificado
+## Inventario exacto del árbol candidato
 
 ```text
+app/Http/Controllers/Scheduling/AdmissionBoardController.php
 app/Http/Controllers/Scheduling/AgendaAppointmentController.php
 app/Http/Controllers/Scheduling/AgendaDetailsController.php
 app/Http/Controllers/Scheduling/AppointmentWorkflowController.php
 app/Http/Controllers/Scheduling/OperationalRegistrationController.php
 app/Models/Appointment.php
 app/Services/Scheduling/AdmissionBoardService.php
+app/Services/Scheduling/AdmissionCareService.php
 app/Services/Scheduling/AgendaBoardPresenter.php
 app/Services/Scheduling/CreateAppointmentService.php
 app/Services/Scheduling/LegacyAppointmentRegistration.php
@@ -89,6 +94,10 @@ app/Support/Scheduling/AgendaCreatorVisibility.php
 app/Support/Scheduling/AgendaLegend.php
 app/Support/Scheduling/AppointmentPriceInput.php
 database/migrations/2026_10_15_230000_add_explicit_diabetic_wound_flag.php
+database/migrations/2026_10_15_231000_add_explicit_appointment_departure.php
+docs/AGENDA_ETAPA_A_QA.md
+docs/AGENDA_MEJORAS_25_34_AUDITORIA.md
+docs/qa/agenda-etapa-a/resultados.json
 phpunit.agenda-stage-a.xml
 public/css/scheduling/agenda-layout.css
 public/js/scheduling/admission-board.js
@@ -99,6 +108,7 @@ resources/views/scheduling/agenda/partials/operational-registration.blade.php
 resources/views/scheduling/agenda/partials/quick-registration.blade.php
 resources/views/scheduling/agenda/partials/toolbar.blade.php
 tests/Feature/Auth/WorkerAccessTest.php
+tests/Feature/Scheduling/AdmissionDepartureTest.php
 tests/Feature/Scheduling/AgendaAppointmentWriteTest.php
 tests/Feature/Scheduling/AgendaBoardTest.php
 tests/Feature/Scheduling/AgendaCreatorPrivacyTest.php
@@ -106,6 +116,7 @@ tests/Feature/Scheduling/AgendaRefinementTest.php
 tests/Feature/Scheduling/AgendaSemaphorizationTest.php
 tests/Feature/Scheduling/PilotAppointmentOperationsTest.php
 tests/Integration/AgendaStageA/AdmissionBoardMariaDbTest.php
+tests/Integration/AgendaStageA/AdmissionDepartureMariaDbTest.php
 tests/Integration/AgendaStageA/AgendaAppointmentWriteMariaDbTest.php
 tests/Integration/AgendaStageA/AgendaBoardMariaDbTest.php
 tests/Integration/AgendaStageA/AgendaCreatorPrivacyMariaDbTest.php
@@ -129,3 +140,9 @@ tools/qa/browser-agenda-stage-a.cjs
 ## Publicación y trazabilidad
 
 La conexión Git HTTPS falló por timeout en dos intentos (lectura/publicación). Si se publica mediante el conector GitHub, el SHA puede diferir por autoría/fecha de commit generada por API. Se debe verificar **igualdad exacta del árbol Git completo** con el cierre local; la evidencia conserva el SHA y árbol del código probado. Cualquier diferencia de archivos invalida esa equivalencia y exige repetir las pruebas afectadas. No usar force push ni modificar main. El SHA candidato y enlace definitivos se informan en el PR y en la entrega.
+
+## Ampliación autorizada y correcciones de esta iteración
+
+Las respuestas de negocio sustituyen el estado PARCIAL de la primera revisión: fucsia/plomo solo chips, prioridad base completa y salida física explícita después de ATENDIDO. No se amplían reglas financieras R25–R30. Se añadió `AdmissionDepartureTest`, equivalente MariaDB, y escenarios de navegador de salida/competencia entre operadores. Se probó además que el rollback de esquema rehúse borrar salidas registradas.
+
+El primer recorrido nuevo falló en un selector de fixture de Semana (nombre supuesto distinto del paciente realmente sembrado). Se corrigió el selector sin reducir validaciones. La inspección adicional detectó un defecto visual real: las etiquetas largas dejaban el nombre con ancho cero; se compactaron HERIDA/POSTOP y se verificaron sus rectángulos reales y la presencia del nombre. Resultados previos a esta corrección no se usan como validación final de interfaz.
