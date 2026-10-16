@@ -1,0 +1,128 @@
+{
+  "base_sha": "c86ffa6e9ed04bb80272db400a63b48604a9a7ef",
+  "code_sha": "fa3f5047949cdcf78c7dcd46d0bcf6b883ed469c",
+  "environment": {
+    "php": "8.3.35",
+    "laravel": "9.52.21",
+    "mariadb": "11.8.9",
+    "browser": "155.0.8059.79",
+    "database_isolation": [
+      "ceosalud_qa_catalog_suite",
+      "ceosalud_qa_catalog",
+      "ceosalud_qa_catalog_restore"
+    ],
+    "external_services": "blocked or faked"
+  },
+  "php_sqlite": {
+    "tests": 1013,
+    "assertions": 8230,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "php_mariadb": {
+    "tests": 1013,
+    "assertions": 8233,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "javascript": {
+    "tests": 302,
+    "passed": 302,
+    "failed": 0
+  },
+  "browser": {
+    "cases": [
+      {
+        "name": "ADMIN selecciona profesional, edita ambos importes, guarda y recarga; revisión persiste",
+        "result": "PASS"
+      },
+      {
+        "name": "ADMISION y COMERCIAL no administran precios ni alteran catálogo por HTTP",
+        "result": "PASS"
+      },
+      {
+        "name": "Agenda cotiza el precio editado junto al servicio sin abrir Registrar adelanto ni recargo",
+        "result": "PASS"
+      },
+      {
+        "name": "Cambiar servicio usa importe institucional compartido y cambiar profesional usa precio particular",
+        "result": "PASS"
+      },
+      {
+        "name": "ADMIN edita precio institucional desde el catálogo; Agenda obtiene nuevo precio y mantiene autorizaciones",
+        "result": "PASS"
+      },
+      {
+        "name": "Reevaluación visible exige indicación acreditada; seleccionar modalidad sola no crea ni cotiza precio reducido",
+        "result": "PASS"
+      },
+      {
+        "name": "MFR ofrece solo servicios habilitados y rechaza la asignación traumatológica heredada sin borrarla",
+        "result": "PASS"
+      },
+      {
+        "name": "ADMIN comparte Informe Médico con MFR y lo asigna desde UI sin duplicar servicio ni introducir un precio médico",
+        "result": "PASS"
+      },
+      {
+        "name": "Reserva con S/30 y confirmación explícita conservan un solo pago y saldo S/135.25",
+        "result": "PASS"
+      },
+      {
+        "name": "Móvil verificado 390px conserva edición de precios y Registro rápido legible",
+        "result": "PASS"
+      },
+      {
+        "name": "Dos administradores y procesos HTTP: una edición vence, la otra detecta versión obsoleta y conserva la cita vendida",
+        "result": "PASS"
+      },
+      {
+        "name": "Dos altas concurrentes crean una sola asignación profesional para el documento compartido",
+        "result": "PASS"
+      }
+    ],
+    "ocr": {
+      "amount": "30.00",
+      "operation": "0007733001",
+      "no_automatic_money": true
+    },
+    "mobile": {
+      "width": 390,
+      "scroll": 390
+    },
+    "price_race": [
+      200,
+      422
+    ],
+    "assignment_race": [
+      422,
+      200
+    ],
+    "page_errors": [],
+    "payments": {
+      "count": 1,
+      "sum": "30.00"
+    },
+    "proofs": 1,
+    "vouchers": 1,
+    "finished": "2026-10-16T18:58:23.544Z"
+  },
+  "synthetic_restore": {
+    "table_count": 48,
+    "private_file_count": 1,
+    "all_contents_equal": true
+  },
+  "preserved_original_files": 5,
+  "production_changes": false,
+  "static_syntax_files": 66,
+  "snapshot_concurrency": {
+    "database": "MariaDB 11.8.9",
+    "connections": 2,
+    "stale_consistent_read_reproduced": true,
+    "locking_read_rejected": true,
+    "native_1020_http": 409,
+    "money_writes": 0
+  }
+}

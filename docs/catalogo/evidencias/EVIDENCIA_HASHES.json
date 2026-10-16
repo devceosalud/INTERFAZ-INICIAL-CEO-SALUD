@@ -1,0 +1,19 @@
+{
+  "php-sqlite-certified.xml": "8ac21583702cdf1b496f0696c0e1e1a9ed95b1cd1875ebb6194178c86c6330b4",
+  "php-maria-certified.xml": "5cfc35711df8059cefeaef93e36866efb7720cfa559d271ab587f0973e9b39fe",
+  "php-sqlite-certified.txt": "c30be294b76fef38edc60c5bf3b9cdd1f4b93dec11b14fbaf439a442fa55cf4e",
+  "php-maria-certified.txt": "3ea7ee8764fa9e8b350a069cbcadb38bb0a9263ab652ab1c4f844fa5f8ab0524",
+  "js-release.txt": "f7ce2b3a1a7aeb5e0e2d2405e7466755ddafa8dd118ed071ae72a53895145eb9",
+  "browser-catalog.json": "ad7d81c87a9882a171190b1059ac9f463a63ef6c940784a5a9edca2246e91a89",
+  "browser-certified.txt": "ce110ba5a4778447fed5e860a2e1de33d25f60a26d7b2266c6dcba52bec874aa",
+  "restore-rehearsal.json": "b2a73da02dca45fde06effe2422919016630b662541ca08faf6c9bf9e8c49017",
+  "lint-certified.json": "3c54b486704fb4c86727aea7cc3c311b633f84fe661b8ff94415db3009ebf102",
+  "secret-certified.json": "a661924fa55a97ebd7e358266192aed3d03ab8028ac1660ceac9f8665872149d",
+  "dependencies-reviewed.json": "107def01e2976ee07533301b9b379c48757de8fd261f8478751ba436b9b73e27",
+  "admin-mobile.png": "57f46e49e3b3c118fed7c7c1be2172e4ed0875d0bd78bb875b57121e732ac767",
+  "admin-professional-prices.png": "2c15a082acd58259eccdc3e108b16673681f3bebf7f9c8f36d6675429301e006",
+  "agenda-auto-price.png": "9882f48af96c325137624ecf7fd23bb3c38b9a01875d1fa5f7dd666ae88095d7",
+  "agenda-mfr-authorized.png": "8234c587f7fa8a7c638ec390db28a62a6332651f7decc6f7452ba9bb2707b14f",
+  "agenda-mobile.png": "be18bfade1edc53c3a078957511e70d5748e037d6e3ced96e80be7a967452d7c",
+  "receipt-yape-fictional.png": "1432c324946e7ab185ef7d742ccce46a61a71e039a207bab718a5ef9015dee85"
+}
