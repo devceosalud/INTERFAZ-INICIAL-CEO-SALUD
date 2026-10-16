@@ -263,10 +263,19 @@
         [discountType,discountValue].forEach(field => field?.addEventListener('input', () => refreshQuote()));
         if (rateSelect) rateSelect.addEventListener('change', () => refreshQuote());
         ['amount', 'method', 'waived', 'authorized'].forEach(id => ui[id].addEventListener('input', calculate));
+        const clearStalePaymentMessages=()=>{
+            validation?.clear();
+            for(const id of ['agenda-op-payment-error','agenda-op-documents-error']){
+                const el=document.getElementById(id);
+                if(el){el.hidden=true;el.textContent='';}
+            }
+        };
+        ui.proof.addEventListener('change',clearStalePaymentMessages);
         // Changing an uploaded Yape/transfer proof to cash must not resubmit stale evidence.
         let previousPaymentMethod=ui.method.value;
         ui.method.addEventListener('change',()=>{
             const current=ui.method.value;
+            if(current!==previousPaymentMethod)clearStalePaymentMessages();
             if(current==='EFECTIVO' && previousPaymentMethod!=='EFECTIVO' && ui.proof.files?.length){
                 void receipt.reset(true);
                 config.notice('Comprobante bancario retirado al cambiar a efectivo. El importe puedes registrarlo manualmente.');
