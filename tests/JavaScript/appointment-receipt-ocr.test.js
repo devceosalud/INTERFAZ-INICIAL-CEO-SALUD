@@ -31,7 +31,7 @@ test('OCR assets must stay on same origin',()=>{
 test('worker reads locally and terminates; no raw OCR text is returned',async()=>{
  let terminated=0;
  const e=ocr.createEngine({origin:'https://qa.test',workerFactory:async(lang,oem,options)=>{
- assert.equal(lang,'spa');assert.equal(oem,1);assert.equal(options.cacheMethod,'none');assert.equal(options.workerBlobURL,false);
+ assert.equal(lang,'spa');assert.equal(oem,1);assert.equal(options.cacheMethod,'write');assert.equal(options.workerBlobURL,false);
  for(const k of ['workerPath','corePath','langPath'])assert.equal(new URL(options[k]).origin,'https://qa.test');
  return {recognize:async()=>({data:{text:'Yape S/75.00\nOperación 45000123\nNOMBRE PRIVADO',confidence:93}}),terminate:async()=>{terminated++;}};
  }});
