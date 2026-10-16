@@ -110,11 +110,11 @@
             const timeout = new Promise((_, reject) => { timer = setTimeout(() => {
                 timedOut = true; if (worker) void worker.terminate();
                 reject(new Error('El OCR excedió el tiempo disponible. Revisa o completa los datos manualmente.'));
-            }, opts.timeoutMs || 60000); });
+            }, opts.timeoutMs || 30000); });
             const work = (async () => {
                 worker = await workerFactory('spa', 1, {
                     workerPath: new URL('worker.min.js',base).href, corePath: new URL('core/',base).href,
-                    langPath: new URL('lang/',base).href, workerBlobURL: false, cacheMethod: 'none',
+                    langPath: new URL('lang/',base).href, workerBlobURL: false, cacheMethod: 'write',
                     logger: m => { if (current === generation && onProgress) onProgress(Math.max(0, Math.min(1, Number(m.progress) || 0))); },
                     errorHandler: () => {}
                 });
