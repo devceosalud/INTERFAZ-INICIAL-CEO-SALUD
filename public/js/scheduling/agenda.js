@@ -207,8 +207,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const draftService = document.getElementById('agenda-draft-service');
     const additionalStart = document.getElementById('agenda-additional-start');
     const doctorServices = JSON.parse(document.getElementById('agenda-doctor-services').textContent || '{}');
+    const patientValidation = window.AgendaFormValidation?.create({
+        summary:document.getElementById('agenda-patient-error-summary'),
+        fields:{
+            tipo_identificacion:el.draftType,numero_identidad:el.draftNumber,nombre:el.draftNombre,
+            apellido_paterno:el.draftApellidoPaterno,apellido_materno:el.draftApellidoMaterno,
+            telefono:el.draftTelefono,telefono_secundario:()=>document.getElementById('agenda-draft-phone-secondary'),
+            email:el.draftEmail,fecha_nacimiento:el.draftFechaNacimiento,
+            genero:el.draftGenero,service_id:draftService,direccion:el.draftDireccion,
+            channel_id:el.draftChannel,interaction_medium_id:el.draftInteractionMedium,
+        },
+    });
     const operationalWorkspace = window.AgendaOperationalWorkspace({
         endpoint: board.dataset.registrationStore, base: board.dataset.rescheduleUrl,
+        patientErrors:(errors,message)=>patientValidation?.show(errors,message),
+        clearPatientErrors:()=>patientValidation?.clear(),
         patientTemplate: el.patientDraft.dataset.detailTemplate, context: () => state.selection,
         isBusy:()=>state.appointmentBusy,
         extraState:()=>JSON.stringify([draftChanged()?draftModel.toPayload(state.draft):null,state.selection?.appointment_id?[document.getElementById('agenda-reschedule-date')?.value||'',document.getElementById('agenda-reschedule-time')?.value||'']:[state.identity?.patientId||'',el.documentType.value,el.documentNumber.value,el.serviceSelect.value,el.responsibleSelect.disabled?'':el.responsibleSelect.value]]),
@@ -1776,11 +1789,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (attachToSchedule && !requireService(true)) { return; }
+        patientValidation?.clear();
         const phoneError = draftModel.requiredPhoneMessage(state.draft);
-        if (phoneError) { el.draftMessage.textContent = phoneError; el.draftTelefono.focus(); return; }
+        if (phoneError) { el.draftMessage.textContent = phoneError; patientValidation?.show({telefono:[phoneError]}); el.draftTelefono.focus(); return; }
         const emailError = draftModel.emailMessage(state.draft.email);
         if (emailError) {
-            el.draftMessage.textContent = emailError;
+            el.draftMessage.textContent = emailError; patientValidation?.show({email:[emailError]});
             return;
         }
 
@@ -1791,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const dniError = draftModel.dniMessage(state.draft);
         if (dniError) {
-            el.draftMessage.textContent = dniError;
+            el.draftMessage.textContent = dniError; patientValidation?.show({numero_identidad:[dniError]});
             return;
         }
 
@@ -1841,7 +1855,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const payload = await response.json();
 
             if (!response.ok || !payload.patient) {
-                throw new Error(patientValidationMessage(payload));
+                const error = new Error(patientValidationMessage(payload));
+                error.errors = response.status === 422 ? (payload.errors || {}) : {};
+                throw error;
             }
 
             draftBaseline = savedDraft;
@@ -1876,6 +1892,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (error) {
             el.draftMessage.textContent = error.message || 'No se pudo guardar el paciente.';
+            patientValidation?.show(error.errors || {},el.draftMessage.textContent);
         } finally {
             state.appointmentBusy = false;
             if (state.draft) {
@@ -2247,6 +2264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         input.setAttribute('aria-invalid', 'true');
         input.focus();
         (inModal ? el.draftMessage : el.quickMessage).textContent = 'Selecciona un servicio para agendar la cita.';
+        if (inModal) patientValidation?.show({service_id:['Selecciona un servicio para agendar la cita.']});
         return false;
     }
     draftService.addEventListener('change', function () { el.serviceSelect.value = draftService.value; paintSelectedService(); });
