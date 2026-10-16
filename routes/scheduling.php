@@ -27,6 +27,14 @@ Route::middleware([
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
             ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
+        // Appointment-bound operational follow-up; task content never enters the agenda feed.
+        $taskController = \App\Http\Controllers\Scheduling\AdmissionTaskController::class;
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/tasks', [$taskController, 'store'])
+            ->whereNumber('appointmentId')->middleware('throttle:20,1')
+            ->name('scheduling.mvp.admission.tasks.store');
+        Route::patch('/scheduling-mvp/admission/appointments/{appointmentId}/tasks/{taskId}/completion', [$taskController, 'completion'])
+            ->whereNumber('appointmentId')->whereNumber('taskId')->middleware('throttle:30,1')
+            ->name('scheduling.mvp.admission.tasks.completion');
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
             ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');
