@@ -47,6 +47,101 @@
         function description(label,value){const box=node('div');append(box,node('dt',label),node('dd',value??'—'));return box;}
         function section(title){const box=node('section');box.appendChild(node('h4',title));return box;}
         function economic(dl,e){append(dl,description('Precio neto',money(e.precio)),description(e.fuente==='LEGACY_SNAPSHOT'?'Abonado histórico':'Pagos registrados',e.fuente==='UNALLOCATED'?'Por conciliar':money(e.pagado)),description('Crédito aplicado',money(e.credito)),description('Saldo',e.fuente==='UNALLOCATED'?'Por conciliar':money(e.saldo)));}
+        function renderOperationalTasks(payload) {
+            const canManage = payload.can_manage_operational_tasks === true;
+            const canComplete = payload.can_complete_operational_tasks === true;
+            if (!canManage && !canComplete) return null;
+
+            const appointmentId = Number(payload.appointment.id);
+            const area = section('Observaciones y pendientes');
+            area.classList.add('admission-task-panel', 'clarity-mask');
+            area.appendChild(node('p',
+                'Seguimiento operativo de esta cita. No sustituye una orden médica ni la historia clínica.',
+                'admission-task-help'));
+            const tasks = payload.operational_tasks || [];
+            if (!tasks.length) area.appendChild(node('p','Sin observaciones pendientes o registradas.','admission-empty'));
+            const list = node('ul',null,'admission-task-list');
+            tasks.forEach(task => {
+                const line = node('li',null,'admission-task'+(task.completed?' is-done':''));
+                const head = node('div',null,'admission-task-header');
+                if (canComplete) {
+                    const label = node('label',null,'admission-task-check');
+                    const checkbox = node('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = task.completed === true;
+                    checkbox.setAttribute('aria-label','Marcar como '+(checkbox.checked?'pendiente':'realizada')+
+                        ': '+String(task.text).slice(0,80));
+                    checkbox.addEventListener('change',async () => {
+                        const expected = task.completed === true;
+                        checkbox.checked = !expected;
+                        if (busy || confirming || selected !== appointmentId) return;
+                        busy = true;
+                        checkbox.disabled = true;
+                        try {
+                            await request(board.dataset.base+'/'+appointmentId+'/tasks/'+task.id+'/completion',{
+                                method:'PATCH',body:JSON.stringify({expected_completed:expected,completed:!expected})
+                            });
+                            busy = false;
+                            await select(appointmentId);
+                            notice('Estado de la tarea actualizado.');
+                        } catch(error) {
+                            busy = false;
+                            checkbox.checked = expected;
+                            notice(error.message);
+                            await select(appointmentId);
+                        }
+                    });
+                    append(label,checkbox,node('span',task.completed?'Realizado':'Pendiente'));
+                    head.appendChild(label);
+                } else {
+                    head.appendChild(tag(task.completed?'Realizado':'Pendiente'));
+                }
+                line.appendChild(head);
+                line.appendChild(node('p',task.text,'admission-task-text'));
+                if (canManage) {
+                    const audit = node('small','Registrado por '+(task.created_by||'Administración'),'admission-task-audit');
+                    if (task.completed && task.completed_by) audit.textContent += ' · Completado por '+task.completed_by;
+                    line.appendChild(audit);
+                }
+                list.appendChild(line);
+            });
+            area.appendChild(list);
+
+            if (canManage) {
+                const editor = node('div',null,'admission-task-editor');
+                const label = node('label','Nueva observación / tarea');
+                const field = node('textarea');field.rows=3;field.maxLength=1000;
+                field.placeholder='Ej.: Verificar si ya se realizó la radiografía indicada.';
+                field.setAttribute('aria-label','Nueva observación para esta cita');
+                const submit = node('button','Agregar observación','admission-btn admission-btn--primary');
+                submit.type='button';
+                const status=node('p',null,'admission-task-status');status.setAttribute('role','status');
+                let requestKey=null;
+                field.addEventListener('input',()=>{requestKey=null;});
+                submit.addEventListener('click',async()=>{
+                    const text=field.value.trim();
+                    if (text.length<3 || text.length>1000) {status.textContent='Ingresa entre 3 y 1000 caracteres.';field.focus();return;}
+                    if(busy||confirming||selected!==appointmentId)return;
+                    requestKey=requestKey||crypto.randomUUID();
+                    busy=true;submit.disabled=true;
+                    try {
+                        await request(board.dataset.base+'/'+appointmentId+'/tasks',{
+                            method:'POST',body:JSON.stringify({text,request_key:requestKey})
+                        });
+                        busy=false;
+                        await select(appointmentId);
+                        notice('Observación registrada. Queda pendiente hasta que el personal marque su realización.');
+                    }catch(error) {
+                        busy=false;submit.disabled=false;
+                        status.textContent=error.message;
+                    }
+                });
+                append(label,field);
+                append(editor,label,submit,status);
+                area.appendChild(editor);
+            }
+            return area;
+        }
         function presentationName(parent, name, presentation) {
             const label=node('span',name,'admission-patient-name');
             if(presentation?.strikethrough===true)label.style.textDecoration='line-through';
@@ -99,6 +194,7 @@
             const head=section('CITA '+a.numero),patientName=node('h3');presentationName(patientName,a.patient,a.presentation);append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.grupo==='desactivadas'?'inactive':''),node('p',bookingLabel(a.estado_agenda)),node('p',a.fecha+' · '+a.hora),node('small',a.doctor+' · '+a.servicio),node('small',a.sede||'Sede sin registrar; no se ha reasignado'));root.appendChild(head);
             const contact=section('Contacto y responsable');append(contact,node('p',payload.contact.telefono||'Teléfono sin registrar'),node('small',payload.contact.telefono_secundario||''),node('p','Responsable: '+(a.responsable||'—')),node('small','Canal: '+(payload.contact.canal||'—')+' · Medio: '+(payload.contact.medio||'—')));root.appendChild(contact);
             const journey=section('Recorrido de atención'),list=node('ol',null,'admission-journey');for(const[key,label]of Object.entries({llegada:'Llegada',llamado:'Llamado',inicio:'Inicio de atención',fin:'Fin de atención',salida:'Salida física'}))append(list,append(node('li'),node('time',time(a.tiempos[key])),node('span',label)));journey.appendChild(list);root.appendChild(journey);
+            const tasksPanel=renderOperationalTasks(payload);if(tasksPanel)root.appendChild(tasksPanel);
             const pricing=section('Situación económica'),dl=node('dl');economic(dl,a.economy);append(pricing,dl,node('small','Fuente: '+a.economy.fuente),node('small','Regla de precio registrada: '+(a.pricing_rule||'Histórica / sin clasificación')));for(const payment of payload.payments||[])pricing.appendChild(node('p',money(payment.amount)+' · '+payment.method+' · '+(payment.recorded_at?new Date(payment.recorded_at).toLocaleString('es-PE',{timeZone:'America/Lima'}):'Sin fecha registrada')));root.appendChild(pricing);
             const actions=section('Operaciones'),buttons=node('div',null,'admission-detail-actions');
             if(a.grupo!=='desactivadas')buttons.appendChild(link(a.estado_cita==='ATENDIDO'?'Consultar cita en Agenda':'Abrir cita · pago / OCR / confirmar',a.agenda_url,true));
