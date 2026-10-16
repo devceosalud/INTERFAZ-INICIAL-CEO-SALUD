@@ -221,6 +221,10 @@ class ClearConfirmedDemoOperations extends Command
             $this->error('Este comando solo opera con --execute --confirm=LIMPIAR-DATOS-FICTICIOS-CEO.');
             return self::FAILURE;
         }
+        if (app()->environment('production') && !app()->isDownForMaintenance()) {
+            $this->error('La aplicación debe estar en mantenimiento antes de limpiar. Sin cambios.');
+            return self::FAILURE;
+        }
 
         try {
             $report = DB::transaction(function () {
