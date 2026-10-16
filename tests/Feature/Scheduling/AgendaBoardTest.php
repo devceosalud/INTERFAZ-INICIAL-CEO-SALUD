@@ -100,9 +100,9 @@ class AgendaBoardTest extends TestCase
     {
         $this->assertSame(
             ['PROGRAMADO', 'PENDIENTE_CONFIRMACION', 'ADICIONAL', 'FUERA_HORARIO'],
-            array_column(\\App\\Support\\Scheduling\\AgendaLegend::compactForAgenda(), 'clave')
+            array_column(\App\Support\Scheduling\AgendaLegend::compactForAgenda(), 'clave')
         );
-        $all = \\App\\Support\\Scheduling\\AgendaLegend::ordered();
+        $all = \App\Support\Scheduling\AgendaLegend::ordered();
         $this->assertGreaterThan(4, count($all));
         $this->assertContains('PAGO_REAL', array_column($all, 'clave'));
         $this->assertContains('PRESENTE', array_column($all, 'clave'));
