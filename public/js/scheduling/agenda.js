@@ -226,6 +226,16 @@ document.addEventListener('DOMContentLoaded', function () {
         isBusy:()=>state.appointmentBusy,
         extraState:()=>JSON.stringify([draftChanged()?draftModel.toPayload(state.draft):null,state.selection?.appointment_id?[document.getElementById('agenda-reschedule-date')?.value||'',document.getElementById('agenda-reschedule-time')?.value||'']:[state.identity?.patientId||'',el.documentType.value,el.documentNumber.value,el.serviceSelect.value,el.responsibleSelect.disabled?'':el.responsibleSelect.value]]),
         quoteEndpoint: '/scheduling-mvp/agenda/quote',
+        quoted: (result) => {
+            const ready=result.status==='ready' && result.precio_programado!=='' && result.precio_programado!==undefined;
+            el.quickPrice.textContent=ready?'S/ '+Number(result.precio_programado).toFixed(2):(result.status==='error'?'Precio no disponible':result.status==='pending'?'Cotizando…':'—');
+            const status=document.getElementById('agenda-quick-quote-status'),retry=document.getElementById('agenda-quick-quote-retry');
+            if(status){status.textContent=result.status==='error'?result.message:(result.status==='pending'?'Consultando precio vigente…':'');status.hidden=!status.textContent;}
+            if(retry)retry.hidden=result.status!=='error';
+            const source=document.getElementById('agenda-quick-price-source');
+            if(source){const labels={INSTITUTIONAL:'Precio institucional',INSTITUTIONAL_DEFAULT:'Precio institucional por defecto',PROFESSIONAL:'Precio del profesional',QUIROZ_REFERRAL:'Referido acreditado',CLINICAL_SAME_DAY:'Reevaluación acreditada del mismo día'};if(!ready)source.textContent='';else if(result.price_source)source.textContent=labels[result.price_source]||'Precio vigente';else if(state.selection?.appointment_id)source.textContent='Precio registrado de esta cita';}
+            for(const [id,value] of [['agenda-quick-advance',result.advance],['agenda-quick-balance',result.balance]]){const node=document.getElementById(id);if(node)node.textContent=ready&&value!==undefined?'S/ '+Number(value||0).toFixed(2):'—';}
+        },
         quoteData: () => ({ doctor_id: state.selection?.doctor_id, service_id: el.serviceSelect.value,
             patient_id: el.quickPatientId.value || 0, fecha_cita: state.selection?.fecha }),
         patientLoaded: (patient) => {
@@ -1500,6 +1510,8 @@ document.addEventListener('DOMContentLoaded', function () {
             option.textContent = service.nombre + (service.motivo ? ' — ' + service.motivo : '');
             option.disabled = service.disponible === false;
             option.dataset.price = service.precio === null ? '' : String(service.precio);
+            option.dataset.serviceType=service.service_type||'';
+            option.dataset.reevaluationServices=JSON.stringify(service.reevaluation_services||[]);
             el.serviceSelect.appendChild(option);
         });
 
@@ -1517,10 +1529,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const selected = Boolean(el.serviceSelect.value && option);
 
         el.quickService.textContent = selected ? option.textContent.trim() : 'Pendiente de selección';
-        el.quickPrice.textContent = selected && option.dataset.price !== ''
-            ? 'S/ '+Number(option.dataset.price).toFixed(2)
-            : '—';
-        operationalWorkspace.quoteChanged(selected && option.dataset.price !== '' ? Number(option.dataset.price) : 0);
+        el.quickPrice.textContent = '—';
+        operationalWorkspace.quoteChanged(selected && option.dataset.price !== '' ? Number(option.dataset.price) : 0,
+            {serviceType:option?.dataset.serviceType||'',reevaluationServices:JSON.parse(option?.dataset.reevaluationServices||'[]')});
         syncModalBooking();
         if (selected) { clearServiceError(); }
         updateAppointmentAction();
@@ -1563,7 +1574,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const guidance = window.AgendaGuidance.copy;
         const paymentButton = document.getElementById('agenda-open-payment');
         if (paymentButton) {
-            paymentButton.disabled = state.appointmentBusy || !state.selection?.appointment_id || !operationalWorkspace.readiness().canPay;
+            const financial = operationalWorkspace.readiness();
+            const canPrepareAdvance = Boolean(slot && patient && service && canCreateAppointments && Number(financial.price) > 0);
+            paymentButton.disabled = state.appointmentBusy || !financial.canPay || (!state.selection?.appointment_id && !canPrepareAdvance);
         }
         const reason = document.getElementById('agenda-disabled-reason');
         if (reason) {
@@ -2269,6 +2282,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     draftService.addEventListener('change', function () { el.serviceSelect.value = draftService.value; paintSelectedService(); });
     el.serviceSelect.addEventListener('change', paintSelectedService);
+    document.getElementById('agenda-quick-quote-retry')?.addEventListener('click',()=>document.getElementById('agenda-op-quote-retry')?.click());
     el.responsibleSelect.addEventListener('change', function () {
         paintResponsible();
         if (state.draft) {

@@ -32,28 +32,33 @@ class AgendaBoardController extends Controller
 
         $resolver = app(ActiveDoctorServiceResolver::class);
         $doctorServices = $resolver->query()
-            ->with('service:id,nombre')
+            ->with('service')
             ->orderBy('doctor_id')
             ->orderBy('service_id')
-            ->get(['id', 'doctor_id', 'service_id', 'precio_primera_consulta'])
+            ->get(['id', 'doctor_id', 'service_id', 'precio_primera_consulta','precio_reconsulta','estado'])
             ->groupBy('doctor_id')
             ->map(fn ($rows) => $rows->groupBy('service_id')->map(function ($assignments) use ($resolver) {
                 $doctorService = $assignments->first();
                 try {
                     $doctorService = $resolver->uniqueAssignment($assignments);
-                    $available = (float) $doctorService->precio_primera_consulta > 0;
+                    // This list is configuration, not a quote. The selected appointment date is validated by quote().
+                    $price=app(\App\Services\Catalog\ServicePriceResolver::class)->resolve($doctorService,now(config('scheduling.operational_timezone'))->toDateString(),false,false,false);
+                    $available = true;
                 } catch (ValidationException $exception) {
                     $available = false;
+                    $price=null;
                 }
 
                 return [
                     'service_id' => (int) $doctorService->service_id,
                     'nombre' => $doctorService->service ? $doctorService->service->nombre : 'Servicio sin nombre',
-                    'precio' => $available ? (float) $doctorService->precio_primera_consulta : null,
+                    'precio' => $available ? (float) $price['price'] : null,
+                    'price_source'=>$price['source']??null,'service_type'=>$doctorService->service?->service_type,
+                    'reevaluation_services'=>\App\Models\Service::where('canonical_service_id',$doctorService->service_id)->where('service_type','REEVALUATION')->where('estado','ACTIVO')->get(['id','nombre'])->toArray(),
                     'disponible' => $available,
                     'motivo' => $assignments->count() > 1
                         ? 'Asignación duplicada: requiere revisión del catálogo'
-                        : ($available ? null : 'Sin precio normal válido'),
+                        : ($available ? null : ($exception->errors()['service_id'][0]??'Sin precio normal válido')),
                 ];
             })->values()->all())
             ->all();

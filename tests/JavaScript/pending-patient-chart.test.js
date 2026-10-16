@@ -15,5 +15,6 @@ test('completar ficha abre el paciente existente y la vista pendiente se recarga
     assert.match(script, /openExisting\(row \|\| \{ dataset: \{ patientId:/);
     assert.match(script, /get\('vista'\) === 'pendientes'/);
     assert.match(script, /location\.reload\(\)/);
-    assert.equal(script.includes('window.location'), false);
+    // PR #44 reads window.location to preserve filters; it must not redirect the patient editor.
+    assert.doesNotMatch(script, /window\.location(?:\.href)?\s*=(?!=)/);
 });

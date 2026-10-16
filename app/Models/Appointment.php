@@ -48,6 +48,8 @@ class Appointment extends Model
         'doctor_id',
         'service_id',
         'additional_rate_id',
+        'price_source',
+        'commercial_service_id',
         'fecha_cita',
         'hora_cita',
         'duracion_cita','duration_slots',

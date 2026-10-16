@@ -294,3 +294,11 @@
 .agenda-operational-fields .agenda-payment-entry .bootstrap-select { display:block; width:100%!important; min-width:0; }
 .agenda-operational-fields .agenda-payment-entry .bootstrap-select > .dropdown-toggle { min-height:38px; width:100%; }
 .agenda-operational-fields .agenda-payment-entry input.agenda-field__input { box-sizing:border-box; width:100%; min-width:0; }
+
+/* The server quote remains visible beside service selection, independently of payment details. */
+.agenda-board .agenda-quote-summary { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; border:0; margin:12px 0; }
+.agenda-board .agenda-quote-summary > div { padding:10px 8px; border:1px solid #dce6e9; border-radius:4px; background:#f5fafb; }
+.agenda-board .agenda-quote-summary dt { font-size:11px; line-height:1.35; letter-spacing:0; text-transform:none; }
+.agenda-board .agenda-quote-summary dd { font-size:16px; line-height:1.5; white-space:normal; overflow-wrap:anywhere; }
+.agenda-board .agenda-quote-summary #agenda-quick-price { font-size:20px; font-weight:700; }
+@media(max-width:650px) { .agenda-board .agenda-quote-summary {grid-template-columns:repeat(2,minmax(0,1fr));} .agenda-board .agenda-quote-summary > div:first-child {grid-column:1/-1;} }

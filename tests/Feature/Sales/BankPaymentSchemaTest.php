@@ -13,8 +13,11 @@ class BankPaymentSchemaTest extends TestCase
 
     public function test_additive_migration_handles_inherited_missing_bank_columns_without_backfill(): void
     {
-        Schema::drop('payments');
-        Schema::create('payments', function (Blueprint $t) { $t->id(); $t->decimal('monto', 10, 2); });
+        Schema::disableForeignKeyConstraints();
+        try {
+            Schema::drop('payments');
+            Schema::create('payments', function (Blueprint $t) { $t->id(); $t->decimal('monto', 10, 2); });
+        } finally { Schema::enableForeignKeyConstraints(); }
         DB::table('payments')->insert([['monto' => 10], ['monto' => 20]]);
         $migration = require database_path('migrations/2026_10_07_140000_add_bank_identity_to_payments_table.php');
         $migration->up();

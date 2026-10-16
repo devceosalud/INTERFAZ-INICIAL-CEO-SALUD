@@ -79,7 +79,7 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertSame($this->creator->id, (int) $appointment->user_id);
         $this->assertSame($responsible->id, (int) $appointment->responsible_user_id);
         $this->assertSame($this->creator->id, (int) $appointment->updated_by_user_id);
-        $this->assertSame($this->catalog['rate']->id, (int) $appointment->additional_rate_id);
+        $this->assertNull($appointment->additional_rate_id);
         $this->assertEquals(100, (float) $appointment->precio_programado);
         $this->assertEquals(0, (float) $appointment->total_pagado);
         $this->assertEquals(100, (float) $appointment->saldo_pendiente);
@@ -144,17 +144,14 @@ class AgendaAppointmentWriteTest extends TestCase
         $this->assertNull(Appointment::sole()->site_id);
     }
 
-    public function test_missing_or_ambiguous_standard_rate_prevents_creation(): void
+    public function test_normal_creation_does_not_require_a_neutral_surcharge(): void
     {
         AdditionalRate::query()->delete();
 
-        $this->postAppointment()
-            ->assertUnprocessable()
-            ->assertJsonPath(
-                'message',
-                'Debe existir exactamente una TARIFA ESTANDAR activa, fija, de importe cero y vigente.'
-            );
-        $this->assertDatabaseCount('appointments', 0);
+        $this->postAppointment()->assertCreated();
+        $this->assertDatabaseCount('appointments', 1);
+        $this->assertNull(Appointment::sole()->additional_rate_id);
+        $this->assertEquals(100, Appointment::sole()->precio_programado);
     }
 
     public function test_multiple_services_require_an_explicit_selection_and_keep_that_price(): void

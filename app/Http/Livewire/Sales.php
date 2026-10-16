@@ -258,7 +258,7 @@ class Sales extends Component
                 $results = $results->concat($assignments->map(fn ($row) => [
                     'id' => (int) $row->service_id, 'nombre' => $row->service->nombre,
                     'tipo_origen' => 'servicio', 'categoria' => 'CONSULTA MEDICA',
-                    'precio' => (float) $row->precio_primera_consulta, 'comision' => 0,
+                    'precio' => (float) app(\App\Services\Catalog\ServicePriceResolver::class)->resolve($row,now(config('scheduling.operational_timezone'))->toDateString())['price'], 'comision' => 0,
                     'afectacion_igv' => '10', 'codigo_sunat' => null, 'unidad_medida_sunat' => 'ZZ',
                 ]));
             } catch (ValidationException $exception) {
@@ -284,7 +284,7 @@ class Sales extends Component
             }
             try {
                 $assignment = app(ActiveDoctorServiceResolver::class)->resolve($this->filtroDoctorId, (int) $resultado['id']);
-                $resultado['precio'] = (float) $assignment->precio_primera_consulta;
+                $resultado['precio'] = (float) app(\App\Services\Catalog\ServicePriceResolver::class)->resolve($assignment,now(config('scheduling.operational_timezone'))->toDateString())['price'];
             } catch (ValidationException $exception) {
                 $this->addError('catalog', $exception->errors()['service_id'][0]);
                 return;
@@ -557,6 +557,7 @@ class Sales extends Component
             return;
         }
 
+        $this->assertServiceCartPrices();
         $calculo = $this->calculoCarrito;
         foreach ([$this->pagoEfectivo, $this->pagoTarjeta, $this->pagoYape, $this->pagoPlin] as $amount) {
             \App\Support\Billing\Money::cents($amount ?: 0);
@@ -583,6 +584,7 @@ class Sales extends Component
 
 
         $voucherId = DB::transaction(function () use ($calculo) {
+            $this->assertServiceCartPrices(true);
             $this->lockAppointmentSale();
             // Recheck under transaction locks; no duplicate ticket/child, no retired appointment.
             $this->assertCartAppointmentsVisible();
@@ -723,6 +725,26 @@ class Sales extends Component
 
 
     /** Public Livewire properties can be changed without going through add-to-cart. */
+    private function assertServiceCartPrices(bool $lock=false): void
+    {
+        foreach($this->carrito as $line) {
+            if(!in_array($line['item_type']??null,['servicio','service',\App\Models\Service::class],true))continue;
+            if($this->ticketOrigenId) {
+                // Liquidation uses the issued ticket snapshot, never today's catalogue.
+                $item=\App\Models\VoucherItem::where('voucher_id',$this->ticketOrigenId)->where('item_type',$line['item_type'])
+                    ->where('item_id',$line['item_id'])->where('doctor_id',$line['doctor_id']??null)->first();
+                if(!$item||(float)$item->precio_unitario!==(float)$line['precio']||(float)$item->cantidad!==(float)$line['cantidad'])
+                    throw ValidationException::withMessages(['catalog'=>'El servicio debe conservar los importes y la asignación del ticket original.']);
+                continue;
+            }
+            if($lock)\App\Models\Doctor::whereKey($line['doctor_id']??0)->lockForUpdate()->firstOrFail();
+            $assignment=app(ActiveDoctorServiceResolver::class)->resolve((int)($line['doctor_id']??0),(int)$line['item_id']);
+            $resolved=app(\App\Services\Catalog\ServicePriceResolver::class)->resolve($assignment,now(config('scheduling.operational_timezone'))->toDateString(),false,$lock);
+            if(\App\Support\Billing\Money::cents($line['precio']??0)!==$resolved['price_cents'])
+                throw ValidationException::withMessages(['catalog'=>'El precio del servicio cambió o fue alterado. Retíralo y vuelve a seleccionarlo antes de cobrar.']);
+        }
+    }
+
     private function assertCartAppointmentsVisible(): void
     {
         $ids = collect($this->carrito)

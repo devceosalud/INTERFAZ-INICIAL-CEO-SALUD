@@ -119,12 +119,12 @@ class OperationalRegistrationTest extends TestCase
         $this->assertSame('CONFIRMADA', Appointment::find($id)->estado_agenda);
         $this->assertSame('PAYMENTS', app(AppointmentEconomicPosition::class)->forAppointment(Appointment::find($id))['authority']);
     }
-    public function test_under_fifty_payment_stays_private_and_confirmation_adds_only_the_missing_money(): void
+    public function test_partial_payment_requires_explicit_confirmation_and_later_payments_are_separate(): void
     {
         $this->shift($this->actor);
         $id = $this->create($this->payload(['payment' => ['amount' => '40.00', 'method' => 'YAPE', 'operation' => 'FICTICIA-40']]))
             ->assertCreated()->assertJsonPath('economy.asegurada', false)->json('appointment.appointment_id');
-        $this->pay($id, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
+        $this->pay($id, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->assertEquals(40, Payment::sum('monto'));
         $this->pay($id, ['request_key' => (string) Str::uuid(), 'confirm' => false,
             'payment' => ['amount' => '1.00', 'method' => 'YAPE', 'operation' => 'FICTICIA-40']])->assertUnprocessable();
@@ -144,17 +144,17 @@ class OperationalRegistrationTest extends TestCase
         $this->assertSame($before, Appointment::findOrFail($one)->getAttributes());
         $this->assertDatabaseCount('appointments',1); $this->assertDatabaseCount('payments',1);
         $this->assertSame(1, Appointment::consumingRegularSlot()->count()); $this->assertEquals(20, Payment::sum('monto'));
-        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
+        $this->actingAs($this->actor)->pay($one, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->pay($one,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'30','method'=>'EFECTIVO']])
             ->assertOk()->assertJsonPath('appointment.tipo_agendamiento','REGULAR');
         $this->assertEquals(50,Payment::sum('monto'));
     }
-    public function test_missing_shift_operation_or_insufficient_confirmation_rolls_back_every_write(): void
+    public function test_missing_shift_operation_or_zero_confirmation_rolls_back_every_write(): void
     {
         $p = $this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '50.00', 'method' => 'YAPE']]);
         $this->create($p)->assertUnprocessable(); $this->assertDatabaseCount('appointments', 0);
         $this->shift($this->actor); $this->create($p)->assertUnprocessable();
-        $this->create($this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '49.00', 'method' => 'EFECTIVO']]))->assertUnprocessable();
+        $this->create($this->payload(['mode' => 'CONFIRM', 'payment' => ['amount' => '0.00', 'method' => 'EFECTIVO']]))->assertUnprocessable();
         $this->assertDatabaseCount('payments', 0); $this->assertDatabaseCount('vouchers', 0); $this->assertDatabaseCount('appointments', 0);
     }
     public function test_authorization_is_not_money_and_requires_explicit_capability(): void

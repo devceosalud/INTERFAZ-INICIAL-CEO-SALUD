@@ -1,0 +1,345 @@
+{
+  "code_sha": "fa3f5047949cdcf78c7dcd46d0bcf6b883ed469c",
+  "files": [
+    {
+      "path": "app/Console/Commands/AuditServiceCatalog.php",
+      "git_blob": "ad976c9fceaacd62654d6155c2493b86ada90d74"
+    },
+    {
+      "path": "app/Exceptions/Handler.php",
+      "git_blob": "695523e2650365f4fcf95e7ace4c4d0200efdc2a"
+    },
+    {
+      "path": "app/Http/Controllers/Api/appointment/AppointmentController.php",
+      "git_blob": "01163c570747f856e36c05bc8100f60a8c0b0767"
+    },
+    {
+      "path": "app/Http/Controllers/Api/service/ServiceController.php",
+      "git_blob": "11d83ee7dbe0520701fa75d8ed41aceea26f9d67"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaBoardController.php",
+      "git_blob": "a780e192f98c6d533d1339608673f2de28ab3a9b"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+      "git_blob": "1fefec4bfa919d0be788091a743f364b6febe3c6"
+    },
+    {
+      "path": "app/Http/Controllers/admin/master/additionalRate/AdditionalRateController.php",
+      "git_blob": "2d1d15329f7d7bf070e91fa677a1715d6c7c9220"
+    },
+    {
+      "path": "app/Http/Controllers/admin/master/doctorService/DoctorServiceController.php",
+      "git_blob": "530089912579bc06816b3212739aceb547429f82"
+    },
+    {
+      "path": "app/Http/Controllers/admin/master/service/ServiceController.php",
+      "git_blob": "04d9ba0c7b18dc29b8ad897118f933938e32178c"
+    },
+    {
+      "path": "app/Http/Livewire/Sales.php",
+      "git_blob": "e28183438d89f705da57f709acef553392eb021f"
+    },
+    {
+      "path": "app/Models/Appointment.php",
+      "git_blob": "fd583f9e311e7a1a9cd4ad4b668715581646d40f"
+    },
+    {
+      "path": "app/Models/Service.php",
+      "git_blob": "fc908ac4b5b99def48482511e8802becfd344533"
+    },
+    {
+      "path": "app/Services/Catalog/ActiveDoctorServiceResolver.php",
+      "git_blob": "da02330d1c1e47e0cd0aa050252f01fe2dd0edbf"
+    },
+    {
+      "path": "app/Services/Catalog/CatalogInput.php",
+      "git_blob": "76f51024202b93972d1fbe4cc3a14bd26200068e"
+    },
+    {
+      "path": "app/Services/Catalog/CatalogManagement.php",
+      "git_blob": "9932fc4b80a4a5a31273e5774e794ba61feadfeb"
+    },
+    {
+      "path": "app/Services/Catalog/ServiceCatalogDefinition.php",
+      "git_blob": "72eacbe07d45878b3b38c489be0268a4accfd612"
+    },
+    {
+      "path": "app/Services/Catalog/ServicePriceResolver.php",
+      "git_blob": "3836d21044a821e65d290bbb37aaf861dd7f63ea"
+    },
+    {
+      "path": "app/Services/Catalog/ServiceSpecialtyEligibility.php",
+      "git_blob": "773f345f61846faa346f06bb312ca2a8e90941e1"
+    },
+    {
+      "path": "app/Services/Scheduling/AppointmentPriceResolver.php",
+      "git_blob": "de69e3a29f830881bb2d7a311da5b9c4e594ecd5"
+    },
+    {
+      "path": "app/Services/Scheduling/CreateAppointmentService.php",
+      "git_blob": "d1320d54933af25d5b611cbd59f51085b04a0ab5"
+    },
+    {
+      "path": "app/Services/Scheduling/LegacyAppointmentRegistration.php",
+      "git_blob": "45db1cd953cf322bb421a5896497cca39a398c94"
+    },
+    {
+      "path": "app/Services/Scheduling/OperationalRegistrationService.php",
+      "git_blob": "0fe83e0efcfdf49429f1840b9c52492f1c418378"
+    },
+    {
+      "path": "app/Services/Scheduling/RescheduleAppointmentService.php",
+      "git_blob": "02c225f8155f8dc02aaaf40b001b816fd5dc3d0f"
+    },
+    {
+      "path": "app/Support/Scheduling/AppointmentPriceInput.php",
+      "git_blob": "4db221413629d3db558472f70f1fb713ed08e29b"
+    },
+    {
+      "path": "database/migrations/2026_10_16_190000_extend_service_price_catalog.php",
+      "git_blob": "84df332b8774e15f80a5f2d10a4b274d2c5cffce"
+    },
+    {
+      "path": "database/migrations/2026_10_16_190100_allow_appointments_without_price_surcharge.php",
+      "git_blob": "1412f4586b9b0648f9470b2db85f3f2f75ac18ca"
+    },
+    {
+      "path": "database/migrations/2026_10_16_190200_authorize_service_specialties.php",
+      "git_blob": "ef5cd8e3c04d170d7c3ffabb23926970b175ccb5"
+    },
+    {
+      "path": "phpunit.catalog-mariadb.xml",
+      "git_blob": "37cab608f0c26fc130e246236797874d5353377b"
+    },
+    {
+      "path": "public/css/admin/catalog.css",
+      "git_blob": "b6638864c6a977cecf2d1aec5aa03c5ff8ad25f2"
+    },
+    {
+      "path": "public/css/scheduling/agenda-layout.css",
+      "git_blob": "ce7ea9edeefbc99d78df5a3cfade3418f9d96925"
+    },
+    {
+      "path": "public/js/admin/master/additional-rate/additional-rate.js",
+      "git_blob": "f07b124fe7a1c1bf6cdd7d0d5b91401f9b834b75"
+    },
+    {
+      "path": "public/js/admin/master/catalog-editor.js",
+      "git_blob": "cf7954ccf1a81d377242c356d0f2cf631874ab57"
+    },
+    {
+      "path": "public/js/admin/master/doctor-service/doctor-service.js",
+      "git_blob": "d5a7a95e00d45b37001c2f0c44894605550356dc"
+    },
+    {
+      "path": "public/js/admin/master/service/service.js",
+      "git_blob": "1fa28e164d9c67c30d805c9d46c851a4e8a233e0"
+    },
+    {
+      "path": "public/js/scheduling/agenda-operational-workspace.js",
+      "git_blob": "7f2d81f04e38af726c2769541308f73a3cdcad5c"
+    },
+    {
+      "path": "public/js/scheduling/agenda.js",
+      "git_blob": "5c614547f21efb4c61a40c806a3c3284e5ff8e3a"
+    },
+    {
+      "path": "resources/views/admin/master/additional-rate/crud/create.blade.php",
+      "git_blob": "202238a645b0587549b11d4f4d533d8616e36197"
+    },
+    {
+      "path": "resources/views/admin/master/additional-rate/crud/edit.blade.php",
+      "git_blob": "d36931d24523c921c19ba8f8a3fdf1eb459d38df"
+    },
+    {
+      "path": "resources/views/admin/master/additional-rate/index.blade.php",
+      "git_blob": "83593e7f69b32e32c898e0bb12b585a8c0583eda"
+    },
+    {
+      "path": "resources/views/admin/master/doctor-service/crud/create.blade.php",
+      "git_blob": "356e189b4b38796dcdaf40880d50322509fe1bed"
+    },
+    {
+      "path": "resources/views/admin/master/doctor-service/crud/edit.blade.php",
+      "git_blob": "58af6ad83fe4e41cf4e657580483bdf6855971c9"
+    },
+    {
+      "path": "resources/views/admin/master/doctor-service/crud/specialty-authorization.blade.php",
+      "git_blob": "cf7726e6db448e2d74f1279ffe6ace7853cab4a8"
+    },
+    {
+      "path": "resources/views/admin/master/doctor-service/index.blade.php",
+      "git_blob": "1683fd12b7e1805981ddae31e80b1b95c7457e1f"
+    },
+    {
+      "path": "resources/views/admin/master/service/crud/create.blade.php",
+      "git_blob": "01a8602d24eed32b8487a5fae17251e877259969"
+    },
+    {
+      "path": "resources/views/admin/master/service/crud/edit.blade.php",
+      "git_blob": "e84543650d05e79977164653b612b3dd51c1051e"
+    },
+    {
+      "path": "resources/views/admin/master/service/crud/price-fields.blade.php",
+      "git_blob": "7cb73bbea6edbc73f1dc0266f4b7747eda89c99e"
+    },
+    {
+      "path": "resources/views/admin/master/service/index.blade.php",
+      "git_blob": "05589361338835619a3eae761e6dbf650e145970"
+    },
+    {
+      "path": "resources/views/admissionist/appointment/crud/create.blade.php",
+      "git_blob": "913015e55be2b37a89f6823598cfe3731558a6be"
+    },
+    {
+      "path": "resources/views/admissionist/patient/modal/appointment.blade.php",
+      "git_blob": "2fe382b515a89a02f5cf0e3000d4384bc8a77a92"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/operational-registration.blade.php",
+      "git_blob": "7c5b28e0c88583a5a497203d15f6431fe7b05ca0"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/partials/quick-registration.blade.php",
+      "git_blob": "09a5c0ad948454a1c477e23cf161f9aa970ac4cd"
+    },
+    {
+      "path": "routes/administrador.php",
+      "git_blob": "77af2ce4ceef2fa905d638b127c0fa58ca303add"
+    },
+    {
+      "path": "tests/CreatesApplication.php",
+      "git_blob": "6b46fa4685c188e3d3e5533cb128f538a74188ec"
+    },
+    {
+      "path": "tests/Feature/Baseline/ApplicationAndAuthenticationSmokeTest.php",
+      "git_blob": "268767d0c943ebe545d0b3283e18eda3bba8dfd0"
+    },
+    {
+      "path": "tests/Feature/Catalog/ActiveDoctorServiceCatalogTest.php",
+      "git_blob": "35e3ff73a7bf04b903078f2f184773b15dbaf412"
+    },
+    {
+      "path": "tests/Feature/Catalog/CatalogAdminWorkflowTest.php",
+      "git_blob": "d5be16b808cc62e4b3db78dcde747013273e8a7c"
+    },
+    {
+      "path": "tests/Feature/Catalog/CatalogMigrationCompatibilityTest.php",
+      "git_blob": "cda090d3a835aa876dfc3e0844598382022f7041"
+    },
+    {
+      "path": "tests/Feature/Catalog/CommercialReevaluationTest.php",
+      "git_blob": "32e18ac1387895d7e8ebe12dc7a1696d643aa1c3"
+    },
+    {
+      "path": "tests/Feature/Catalog/QuoteConfigurationErrorTest.php",
+      "git_blob": "087890db50513fe20cb8909045bf8e3bcefa8767"
+    },
+    {
+      "path": "tests/Feature/Catalog/ServicePriceCatalogTest.php",
+      "git_blob": "3dd5c1cd0cd233cb2110eddd4a2a45363719db3a"
+    },
+    {
+      "path": "tests/Feature/Catalog/ServiceSpecialtyAuthorizationTest.php",
+      "git_blob": "91ee51a08eb8f37849f1c0dae7f2ccc292ff48f3"
+    },
+    {
+      "path": "tests/Feature/Legacy/ParentDeletionCharacterizationTest.php",
+      "git_blob": "537f975dc7c1df4e6d2dc3af6efb2ffa87148a6d"
+    },
+    {
+      "path": "tests/Feature/Patients/OperationalPatientFormTest.php",
+      "git_blob": "d11e6cfe0beb44245cadf221729b231ffaecf410"
+    },
+    {
+      "path": "tests/Feature/Sales/BankPaymentSchemaTest.php",
+      "git_blob": "42fec8f6ad6acc86f9584334d232d90b7e8a0c8f"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AdmissionTaskTest.php",
+      "git_blob": "a7914e87f41848cc3ba98ee4e5bf1073e6416461"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AgendaAppointmentWriteTest.php",
+      "git_blob": "29b0430143a21f1dae3874c1f708fab30149e814"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AgendaHeatmapGeometryTest.php",
+      "git_blob": "2c8e7e40bf2809ad744aec3da67a25b72cf14e71"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AppointmentPaymentProofsTest.php",
+      "git_blob": "417dd39d2a87e7f63fdb1134e4cf260997e7c4e3"
+    },
+    {
+      "path": "tests/Feature/Scheduling/LegacyRegistrationParityTest.php",
+      "git_blob": "cc5f834667c058478c94eaa45a212abc28a5ef2b"
+    },
+    {
+      "path": "tests/Feature/Scheduling/MvpAllRolesFlowTest.php",
+      "git_blob": "5e320f12d0a68eb69a13faaad0c899458aeab7d1"
+    },
+    {
+      "path": "tests/Feature/Scheduling/OperationalRegistrationTest.php",
+      "git_blob": "d6d743fec1f5aecd63d986d04fea5f7ed65874f7"
+    },
+    {
+      "path": "tests/Feature/Scheduling/ReevaluationIndicationTest.php",
+      "git_blob": "bdcadf44da3b4c4b7ebdeba22cd2c7815ecef57a"
+    },
+    {
+      "path": "tests/Feature/Scheduling/RegularReservationExclusivityTest.php",
+      "git_blob": "090b5f0084c300d705a18bd97c504e23ea8f1573"
+    },
+    {
+      "path": "tests/JavaScript/agenda-payment-ux-closure.test.js",
+      "git_blob": "bcb6866a7f496ef5306be241becdc7b7c9ba5acb"
+    },
+    {
+      "path": "tests/JavaScript/agenda-permission-flow.test.js",
+      "git_blob": "8590f60777733b9d7cb378c757598813911edccc"
+    },
+    {
+      "path": "tests/JavaScript/catalog-editor.test.js",
+      "git_blob": "ae612902c01b62259092f479c19a2561e061bd3c"
+    },
+    {
+      "path": "tests/JavaScript/pending-patient-chart.test.js",
+      "git_blob": "62366f32b75f10bec4b61aa13b60adb0935046c8"
+    },
+    {
+      "path": "tests/Support/IsolatedCatalogQa.php",
+      "git_blob": "c9d2ec66f88ca6abec81072863f1950cdb673f19"
+    },
+    {
+      "path": "tests/Support/catalog-readback.php",
+      "git_blob": "189c00631949093d29743d33bb18d283a37d0e12"
+    },
+    {
+      "path": "tests/Support/catalog-restore-rehearsal.php",
+      "git_blob": "7db2932e4cc072731e1149fc4dd8f223994ec6a5"
+    },
+    {
+      "path": "tests/Support/catalog-router.php",
+      "git_blob": "3de7df31d72900033b5a81fc4ecb1c9db84479bc"
+    },
+    {
+      "path": "tests/Support/catalog-seed.php",
+      "git_blob": "606e9ebdb6170b72ab43b2808e6b985c56ed2c72"
+    },
+    {
+      "path": "tests/TestCase.php",
+      "git_blob": "f1ce912c79ce806867aedfebc30490abf69864e2"
+    },
+    {
+      "path": "tools/qa/browser-catalog.cjs",
+      "git_blob": "c010b5301699851414c436cb45eeedfbd03cd232"
+    },
+    {
+      "path": "tools/qa/run-catalog-browser.ps1",
+      "git_blob": "c6dada870831dd9320f4713eef5be63a8aa1e9d2"
+    }
+  ]
+}

@@ -125,9 +125,9 @@ class LegacyRegistrationParityTest extends TestCase
     }
 
     /** @dataProvider entries */
-    public function test_confirmation_below_half_rolls_back_all_money_and_rows(string $entry): void
+    public function test_confirmation_without_real_payment_rolls_back_all_money_and_rows(string $entry): void
     {
-        foreach (['0', '49.99'] as $amount) {
+        foreach (['0', '0.00'] as $amount) {
             $this->postJson($this->url($entry), $this->payload($entry, ['mode' => 'CONFIRM'] + $this->pay($entry, $amount)))
                 ->assertUnprocessable();
             $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0);

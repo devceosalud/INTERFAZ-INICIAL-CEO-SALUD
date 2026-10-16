@@ -89,10 +89,10 @@ class RegularReservationExclusivityTest extends TestCase
         $id=$this->postJson('/scheduling-mvp/agenda/registrations',$this->payload(['payment'=>['amount'=>'40','method'=>'EFECTIVO']]))
             ->assertCreated()->json('appointment.appointment_id');
         $url='/scheduling-mvp/agenda/appointments/'.$id.'/payments';
-        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertUnprocessable();
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->postJson($url,['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'60','method'=>'EFECTIVO']])->assertOk();
         $a=Appointment::find($id);$this->assertSame('PAGADO',$a->estado_pagado);$this->assertSame('PROGRAMADO',$a->estado_cita);
-        $this->assertSame('PENDIENTE_CONFIRMACION',$a->estado_agenda);
+        $this->assertSame('CONFIRMADA',$a->estado_agenda);
         $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->assertSame('CONFIRMADA',$a->fresh()->estado_agenda);$this->assertSame('PROGRAMADO',$a->fresh()->estado_cita);
         $this->assertDatabaseCount('payments',2);$this->assertEquals(100,Payment::sum('monto'));
@@ -101,14 +101,14 @@ class RegularReservationExclusivityTest extends TestCase
         return [['ADICIONAL','operational'],['FUERA_HORARIO','operational'],['ADICIONAL','old-special'],['FUERA_HORARIO','old-special']];
     }
     /** @dataProvider specialEntries */
-    public function test_special_modes_require_fifty_percent_and_keep_idempotency_and_explicit_permission(string $type,string $entry):void {
+    public function test_special_modes_require_positive_payment_and_keep_idempotency_and_explicit_permission(string $type,string $entry):void {
         $this->actor->givePermissionTo(Permission::findOrCreate(C::CREATE_ADDITIONAL,'web'));
         if($type==='ADICIONAL')$this->occupied();
         $data=$this->payload(['booking_type'=>$type,'mode'=>'CONFIRM','hora_cita'=>$type==='ADICIONAL'?'09:00':'06:00']);
         $url=$entry==='operational'?'/scheduling-mvp/agenda/registrations':
             '/scheduling-mvp/agenda/'.($type==='ADICIONAL'?'additional-appointments':'off-hours-appointments');
         $before=$this->snapshot();
-        foreach(['0','49.99'] as $amount){
+        foreach(['0','0.00'] as $amount){
             $data['request_key']=(string)Str::uuid();$data['payment']=['amount'=>$amount,'method'=>'EFECTIVO'];
             $this->postJson($url,$data)->assertUnprocessable();$this->assertSame($before,$this->snapshot());
         }
@@ -160,7 +160,7 @@ class RegularReservationExclusivityTest extends TestCase
         $this->assertSame($before,$this->snapshot());$this->assertEquals(20,Payment::sum('monto'));
         $this->getJson('/scheduling-mvp/agenda/appointments/'.$b.'/economy')->assertOk()->assertJsonPath('reservation_slot_available',false);
         $url='/scheduling-mvp/agenda/appointments/'.$a.'/payments';
-        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertUnprocessable();
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'30','method'=>'EFECTIVO']])->assertOk();
         $this->assertEquals(50,Payment::sum('monto'));$this->assertSame('CONFIRMADA',Appointment::find($a)->estado_agenda);
     }

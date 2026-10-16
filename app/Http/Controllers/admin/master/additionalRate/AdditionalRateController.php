@@ -4,128 +4,39 @@ namespace App\Http\Controllers\admin\master\additionalRate;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdditionalRate;
+use App\Services\Catalog\CatalogManagement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-
 class AdditionalRateController extends Controller
 {
-    //
     public function __construct()
     {
         $this->middleware('auth');
     }
-
     public function index()
     {
-        $additionalRates = AdditionalRate::where('estado', 'activo')->get();
-        return view('admin.master.additional-rate.index', [
-            'additionalRates' => $additionalRates
-        ]);
+        return view('admin.master.additional-rate.index', ['additionalRates' => AdditionalRate::orderBy('nombre')->get()]);
     }
-
-
-    //PARA GUARDAR LA TARIFA
-    public function store(Request $request)
+    private function data(Request $r, bool $edit): array
     {
-        //dd($request->all());
-        //VALIDATOR
-        $validator = Validator::make($request->all(), [
-            'nombre_tarifa' => 'required|string',
-            'tipo_tarifa' => 'required|string',
-            'saldo_tarifa' => 'required|numeric|min:0'
-        ]);
-
-        //ERRORES
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        //GUARDAR DATOS
-        $additionalRate = AdditionalRate::create([
-            'nombre' => $request->nombre_tarifa,
-            'tipo_tarifa' => $request->tipo_tarifa,
-            'tarifa' => $request->saldo_tarifa
-        ]);
-
-        //RESPUESTA DE CONSUMO
-        if ($additionalRate) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Tarifa guardada correctamente",
-            ], 200);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "No se registro la tarifa"
-            ]);
-        }
+        $d = $r->validate([$edit ? 'nombre_edit_tarifa' : 'nombre_tarifa' => 'required|string|max:255', 'tipo_tarifa' => 'required|in:MONTO_FIJO,PORCENTAJE', 'saldo_tarifa' => 'required|numeric|min:0|max:99999999.99|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/', 'fecha_inicio' => 'nullable|date_format:Y-m-d', 'fecha_fin' => 'nullable|date_format:Y-m-d' . ($r->filled('fecha_inicio') ? '|after_or_equal:fecha_inicio' : ''), 'estado' => 'sometimes|in:ACTIVO,INACTIVO', 'catalog_version' => ($edit ? 'required' : 'sometimes') . '|integer|min:0']);
+        return ['nombre' => $d[$edit ? 'nombre_edit_tarifa' : 'nombre_tarifa'], 'tipo_tarifa' => $d['tipo_tarifa'], 'tarifa' => $d['saldo_tarifa'], 'fecha_inicio' => $d['fecha_inicio'] ?? null, 'fecha_fin' => $d['fecha_fin'] ?? null, 'estado' => $d['estado'] ?? 'ACTIVO', 'catalog_version' => $d['catalog_version'] ?? 0];
     }
-
-
-    //PARA ACTUALIZAR LA TARIFA
-    public function update(Request $request)
+    public function store(Request $r, CatalogManagement $manager)
     {
-        $validator = Validator::make($request->all(), [
-            'nombre_edit_tarifa' => 'required|string',
-            'tipo_edit_tarifa' => 'required|string',
-            'saldo_edit_tarifa' => 'required|numeric|min:0'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        $additionalRate = AdditionalRate::find($request->additional_rate_id_edit);
-        if (!$additionalRate) {
-            return response()->json([
-                'code' => 2,
-                'msg' => 'Tarifa no encontrado'
-            ]);
-        }
-
-        $exito = $additionalRate->update([
-            'nombre' => $request->nombre_edit_tarifa,
-            'tipo_tarifa' => $request->tipo_edit_tarifa,
-            'tarifa' => $request->saldo_edit_tarifa
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Tarifa actualizada correctamente"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "Tarifa no actualizado"
-            ]);
-        }
+        $manager->rate($this->data($r, false), $r->user());
+        return response()->json(['code' => 1, 'msg' => 'Recargo guardado. Este importe se suma al precio base.']);
     }
-
-    //PARA DESACTIVAR TARIFA
-    public function delete(Request $request)
+    public function update(Request $r, CatalogManagement $manager)
     {
-        $additionalRate = AdditionalRate::find($request->id);
-        $exito = $additionalRate->update([
-            'estado' => 'INACTIVO'
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Tarifa inactivado"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => 'Tarifa no se inactivo'
-            ]);
-        }
+        $r->validate(['additional_rate_id_edit' => 'required|integer|exists:additional_rates,id']);
+        $manager->rate($this->data($r, true), $r->user(), (int) $r->additional_rate_id_edit);
+        return response()->json(['code' => 1, 'msg' => 'Recargo actualizado sin modificar citas existentes.']);
+    }
+    public function delete(Request $r, CatalogManagement $manager)
+    {
+        $d = $r->validate(['id' => 'required|integer|exists:additional_rates,id', 'catalog_version' => 'required|integer|min:0']);
+        $row = AdditionalRate::findOrFail($d['id']);
+        $manager->rate($row->only(['nombre', 'tipo_tarifa', 'tarifa', 'fecha_inicio', 'fecha_fin']) + ['estado' => 'INACTIVO', 'catalog_version' => $d['catalog_version']], $r->user(), $row->id);
+        return response()->json(['code' => 1, 'msg' => 'Recargo desactivado. Historial conservado.']);
     }
 }

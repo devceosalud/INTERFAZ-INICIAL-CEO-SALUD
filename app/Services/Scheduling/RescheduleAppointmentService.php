@@ -87,7 +87,7 @@ class RescheduleAppointmentService
                 }
                 $changes+=['precio_programado'=>$quote['precio_programado'],'catalog_price'=>$quote['catalog_price'],
                     'saldo_pendiente'=>$appointment->es_exonerado?0:\App\Support\Billing\Money::decimal(max(0,$quote['price_cents']-$position['effective_cents'])),
-                    'pricing_rule'=>$quote['pricing_rule'],'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents'])];
+                    'pricing_rule'=>$quote['pricing_rule'],'price_source'=>$quote['price_source'],'discount_amount'=>\App\Support\Billing\Money::decimal($quote['discount']['amount_cents'])];
                 app(AppointmentHistory::class)->record($appointment,'PRECIO_REPROGRAMACION_REEVALUACION',$actorId,
                     ['metadata'=>['indication_id'=>$indication->id,'from_price'=>$appointment->precio_programado,'to_price'=>$quote['precio_programado'],'pricing_rule'=>$quote['pricing_rule']]]);
             }

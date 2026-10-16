@@ -3,127 +3,35 @@
 namespace App\Http\Controllers\admin\master\service;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
-use App\Models\Specialty;
+use App\Models\{Service, Specialty};
+use App\Services\Catalog\{CatalogInput, CatalogManagement, ServiceCatalogDefinition};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-
 class ServiceController extends Controller
 {
-    //
     public function __construct()
     {
         $this->middleware('auth');
     }
-
     public function index()
     {
-        $services = Service::where('estado', 'ACTIVO')->get();
-        $specialties = Specialty::where('estado', 'ACTIVO')->get();
-        return view('admin.master.service.index', [
-            'services' => $services,
-            'specialties' => $specialties,
-        ]);
+        return view('admin.master.service.index', ['services' => Service::with(['specialty', 'sharedSpecialties', 'doctorServices.doctor'])->orderBy('nombre')->get(), 'specialties' => Specialty::where('estado', 'ACTIVO')->get(), 'catalogTypes' => ServiceCatalogDefinition::TYPES, 'canonicalServices' => Service::where('service_type', 'CONSULTATION')->where('estado', 'ACTIVO')->get()]);
     }
-
-    //PARA GUARDAR AL DOCTOR
-    public function store(Request $request)
+    public function store(Request $r, CatalogManagement $manager)
     {
-        //dd($request->all());
-        //VALIDATOR
-        $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string',
-        ]);
-
-        //ERRORES
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        //GUARDAR DATOS
-        $service = Service::create([
-            'specialty_id' => $request->specialty_id,
-            'nombre' => $request->nombre,
-            'estado' => 'ACTIVO'
-        ]);
-
-        //RESPUESTA DE CONSUMO
-        if ($service) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Servicio guardado correctamente",
-            ], 200);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "No se registro el servicio"
-            ]);
-        }
+        $s = $manager->service(CatalogInput::service($r), $r->user());
+        return response()->json(['code' => 1, 'msg' => 'Servicio guardado sin modificar citas existentes.', 'service' => $s]);
     }
-
-
-    //PARA ACTUALIZAR AL SERVICIO
-    public function update(Request $request)
+    public function update(Request $r, CatalogManagement $manager)
     {
-        $validator = Validator::make($request->all(), [
-            'nombre_edit' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 0,
-                'error' => $validator->errors()->toArray()
-            ]);
-        }
-
-        $service = Service::find($request->service_id_edit);
-        if (!$service) {
-            return response()->json([
-                'code' => 2,
-                'msg' => 'Service no encontrado'
-            ]);
-        }
-
-        $exito = $service->update([
-            'specialty_id' => $request->specialty_id_edit,
-            'nombre' => $request->nombre_edit,
-            'estado' => 'ACTIVO'
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Service actualizado correctamente"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "Service no actualizado"
-            ]);
-        }
+        $r->validate(['service_id_edit' => 'required|integer|exists:services,id']);
+        $s = $manager->service(CatalogInput::service($r, true), $r->user(), (int) $r->service_id_edit);
+        return response()->json(['code' => 1, 'msg' => 'Servicio actualizado. Los precios históricos se conservaron.', 'service' => $s]);
     }
-
-    //PARA DESACTIVAR SERVICE
-    public function delete(Request $request)
+    public function delete(Request $r, CatalogManagement $manager)
     {
-        $service = Service::find($request->id);
-        $exito = $service->update([
-            'estado' => "INACTIVO"
-        ]);
-
-        if ($exito) {
-            return response()->json([
-                'code' => 1,
-                'msg' => "Servicio inactivado"
-            ]);
-        } else {
-            return response()->json([
-                'code' => 0,
-                'msg' => "Servicio no se inactivo"
-            ]);
-        }
+        $d = $r->validate(['id' => 'required|integer|exists:services,id', 'catalog_version' => 'required|integer|min:0']);
+        $s = Service::findOrFail($d['id']);
+        $manager->service($s->only(['nombre', 'specialty_id', 'service_type', 'pricing_policy', 'institutional_price', 'price_valid_from', 'price_valid_until', 'pricing_notes', 'canonical_service_id']) + ['estado' => 'INACTIVO', 'catalog_version' => $d['catalog_version']], $r->user(), $s->id);
+        return response()->json(['code' => 1, 'msg' => 'Servicio desactivado. Historial conservado.']);
     }
 }

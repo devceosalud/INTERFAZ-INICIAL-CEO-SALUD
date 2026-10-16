@@ -34,6 +34,26 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        $this->renderable(function (\App\Exceptions\Scheduling\AppointmentConfigurationException $exception, $request) {
+            if ($request->expectsJson() || $request->is('scheduling-mvp/agenda/quote', 'api/appointment/calculated')) {
+                // A configuration error is actionable; never expose an underlying SQL/connection exception.
+                return response()->json([
+                    'code' => 'CATALOG_CONFIGURATION_REQUIRED',
+                    'message' => 'No se pudo cotizar por una configuración incompleta del catálogo o las tarifas. Solicita revisión al administrador.',
+                    'errors' => ['catalog_configuration' => ['Revisa la asignación, el precio y la configuración de tarifas del servicio.']],
+                ], 422);
+            }
+        });
+
+        $this->renderable(function (\Illuminate\Database\QueryException $e, $request) {
+            // MariaDB snapshot conflicts require a fresh operation, not authorization from an old snapshot.
+            if ((int) ($e->errorInfo[1] ?? 0) !== 1020) { return null; }
+            return response()->json([
+                'code' => 'DATA_CHANGED_DURING_OPERATION',
+                'message' => 'Los datos cambiaron durante la operación. Actualiza la información y reintenta con la misma solicitud; no dupliques el cobro.',
+            ], 409);
+        });
+
         $this->reportable(function (Throwable $e) {
             //
         });

@@ -93,6 +93,7 @@ class OperationalRegistrationService
                     ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
                         'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
+                        'commercial_service_id'=>$data['commercial_service_id']??null,'price_modality'=>$data['price_modality']??null,
                         'reevaluation_indication_id'=>$data['reevaluation_indication_id'] ?? null,'referral'=>$data['referral'] ?? [],
                         'discount'=>$data['discount'] ?? [],'is_postoperative'=>(bool)($data['is_postoperative'] ?? false),'has_diabetic_wound'=>(bool)($data['has_diabetic_wound'] ?? false),
                         'motivo_exoneracion'=>$data['motivo_exoneracion'] ?? null]);

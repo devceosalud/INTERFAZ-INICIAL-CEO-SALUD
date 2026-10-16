@@ -37,7 +37,7 @@ class ParentDeletionCharacterizationTest extends TestCase
         $parentId = $appointment->{$parent};
 
         $this->actingAs($this->createUserWithRole($role))
-            ->postJson($uri, ['id' => $parentId])
+            ->postJson($uri, ['id' => $parentId, 'catalog_version' => 0])
             ->assertOk()
             ->assertJsonPath('code', 1);
 

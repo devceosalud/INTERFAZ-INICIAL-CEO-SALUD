@@ -51,10 +51,9 @@
         <details id="agenda-op-advanced" class="agenda-payment-advanced">
             <summary>Tarifas, descuentos y autorizaciones · opciones avanzadas</summary>
             <div class="agenda-patient-form-grid">
-                <label class="agenda-field"><span>N.º de indicación médica acreditada · opcional</span><input id="agenda-op-indication" class="agenda-field__input" type="number" min="1" step="1"><small>Solo para una indicación médica registrada.</small></label>
                 <label class="agenda-field"><span><input id="agenda-op-referred" type="checkbox"> Referido acreditado del Dr. Julio Quiroz</span><input id="agenda-op-referral-origin" class="agenda-field__input" maxlength="255" placeholder="Origen verificable del referido"><small>Solo Traumatología y Pie Diabético; origen obligatorio.</small></label>
             </div>
-            <label class="agenda-field"><span>Tarifa</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Tarifa estándar</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
+            <label class="agenda-field"><span>Recargo opcional (se suma al precio)</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Sin recargo</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
             <div class="agenda-patient-form-grid">
                 <label class="agenda-field"><span>Descuento</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
                 <label class="agenda-field"><span>Valor de descuento</span><input id="agenda-op-discount-value" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canCreateAppointments)></label>

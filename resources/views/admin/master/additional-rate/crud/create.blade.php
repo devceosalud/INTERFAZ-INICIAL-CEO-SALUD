@@ -1,6 +1,6 @@
-<div class="modal fade" id="additonalRateModalCreate" tabindex="-1" aria-labelledby="additonalRateModalCreateLabel" aria-hidden="true">
+<div class="modal fade catalog-modal" id="additonalRateModalCreate" tabindex="-1" aria-labelledby="additonalRateModalCreateLabel" aria-hidden="true">
 
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
 
             <!-- Header -->
@@ -24,7 +24,7 @@
                         Datos de la Tarifa
                     </h6>
 
-                    <div class="row g-3">
+                    <p class="alert alert-info">Recargo opcional: se suma al precio base. No configura el precio normal del servicio.</p><input type="hidden" name="catalog_version" value="0"><div class="row g-3"><div class="col-md-4"><label class="form-label">Vigente desde</label><input class="form-control" name="fecha_inicio" type="date"></div><div class="col-md-4"><label class="form-label">Vigente hasta</label><input class="form-control" name="fecha_fin" type="date"></div><div class="col-md-4"><label class="form-label">Estado</label><select class="form-control" name="estado"><option value="ACTIVO">Activo</option><option value="INACTIVO">Inactivo</option></select></div>
                         <div class="col-md-4">
                             <label class="form-label text-primary">Nombre de la Tarifa<span
                                     class="text-danger">*</span></label>
@@ -44,9 +44,9 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Saldo<span
+                            <label class="form-label text-primary">Importe / porcentaje<span
                                     class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="saldo_tarifa" id="saldo_tarifa">
+                            <input type="number" min="0" step="0.01" class="form-control" name="saldo_tarifa" id="saldo_tarifa">
 
                             <span class="text-danger error-text saldo_tarifa_error"></span>
                         </div>

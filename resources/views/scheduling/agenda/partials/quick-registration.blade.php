@@ -61,7 +61,6 @@
             <div class="agenda-context-secondary"><dt>Duración</dt><dd id="agenda-quick-duration">—</dd></div>
             <div class="agenda-context-secondary"><dt>Sede</dt><dd id="agenda-quick-site">—</dd></div>
             <div class="agenda-context-secondary"><dt>Servicio</dt><dd id="agenda-quick-service">Pendiente de selección</dd></div>
-            <div class="agenda-context-secondary"><dt>Precio normal</dt><dd id="agenda-quick-price">—</dd></div>
             <div><dt>Estado</dt><dd id="agenda-quick-status">Sin cita</dd></div>
             <div><dt>Pago</dt><dd id="agenda-quick-payment">—</dd></div>
             <div class="agenda-context-secondary"><dt>H.C.</dt><dd id="agenda-quick-clinical-record">—</dd></div>
@@ -76,6 +75,17 @@
                     <option value="">Seleccione un intervalo</option>
                 </select>
             </label>
+            <label class="agenda-field"><span class="agenda-field__label">Modalidad</span><select id="agenda-op-price-modality" class="agenda-field__input"><option value="CONSULTATION">Primera consulta / atención normal</option><option value="REEVALUATION" disabled>Reevaluación indicada</option></select></label>
+            <div id="agenda-reevaluation-fields" hidden>
+                <label class="agenda-field"><span class="agenda-field__label">Reevaluación comercial vinculada</span><select id="agenda-op-commercial-service" class="agenda-field__input" disabled></select></label>
+                <label class="agenda-field"><span class="agenda-field__label">N.º de indicación médica acreditada</span><input id="agenda-op-indication" type="number" min="1" class="agenda-field__input" disabled></label>
+                <small>Solo admite indicación válida del mismo servicio. Mismo día: regla gratuita; días 1–15: reconsulta; desde el día 16: consulta normal.</small>
+            </div>
+        <dl class="agenda-quick__context agenda-quote-summary" aria-live="polite"><div><dt>Precio vigente</dt><dd id="agenda-quick-price">—</dd></div><div><dt>Adelanto ingresado</dt><dd id="agenda-quick-advance">—</dd></div><div><dt>Saldo previsto</dt><dd id="agenda-quick-balance">—</dd></div></dl>
+        <p id="agenda-quick-price-source" class="agenda-guidance"></p>
+        <p id="agenda-quick-quote-status" class="agenda-field-error" role="status" hidden></p>
+        <button type="button" id="agenda-quick-quote-retry" class="agenda-btn" hidden>Reintentar precio</button>
+
             <label class="agenda-field">
                 <span class="agenda-field__label">Comercial dueño</span>
                 <select class="agenda-field__input" id="agenda-responsible-select" @disabled(!$canAssignResponsible)>

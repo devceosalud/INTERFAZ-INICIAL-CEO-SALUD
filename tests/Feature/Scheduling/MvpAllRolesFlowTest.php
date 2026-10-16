@@ -43,7 +43,7 @@ class MvpAllRolesFlowTest extends TestCase
         $result=$this->postJson($url,$payload)->assertSuccessful();$id=$entry==='legacy'?$result->json('appointment_id'):$result->json('appointment.appointment_id');
         $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::findOrFail($id)->estado_agenda);$this->assertDatabaseCount('payments',0);
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',['request_key'=>(string)Str::uuid(),
-            'confirm'=>true,'payment'=>['amount'=>'49.00','method'=>'EFECTIVO']])->assertUnprocessable();$this->assertDatabaseCount('payments',0);
+            'confirm'=>true,'payment'=>['amount'=>'0.00','method'=>'EFECTIVO']])->assertUnprocessable();$this->assertDatabaseCount('payments',0);
         $payment=['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'50.00','method'=>'YAPE','operation'=>'QA-ONLY-131','origin'=>'YAPE']];
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',$payment)->assertOk();
         $this->postJson('/scheduling-mvp/agenda/appointments/'.$id.'/payments',$payment)->assertOk();$this->assertDatabaseCount('payments',1);

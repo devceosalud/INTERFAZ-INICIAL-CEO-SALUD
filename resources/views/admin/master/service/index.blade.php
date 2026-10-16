@@ -2,6 +2,7 @@
 
 
 @section('css_data')
+ <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/admin/catalog.css') }}" rel="stylesheet">
     <!-- Datatable -->
     <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
     <!-- Custom Stylesheet -->
@@ -45,14 +46,14 @@
                         <div class="card">
                             <div
                                 class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                                <h4 class="card-title">Servicios</h4>
+                                <h4 class="card-title">Catálogo de servicios y precios institucionales</h4>
 
                                 <a href="javascript:void(0);" class="btn btn-primary btn-rounded add-appointment"
                                     data-bs-toggle="modal" data-bs-target="#serviceModalCreate">
                                     + Agregar Servicio
                                 </a>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body"><a class="btn btn-outline-primary mb-3" href="{{ route('master.service.doctor.index') }}">Precios y asignaciones por profesional</a><p>Precio institucional: común para profesionales habilitados. En consultas, un precio particular tiene prioridad. Los recargos se administran por separado.</p>
                                 <div class="table-responsive">
                                     <table id="example4" class="display" style="min-width: 845px">
                                         <thead>
@@ -68,7 +69,7 @@
                                                 <tr>
                                                     <td><strong>{{ $service->id }}</strong></td>
                                                     <td><strong>{{ $service->specialty->nombre }}</strong> </td>
-                                                    <td>{{ $service->nombre}}</td>
+                                                    <td>{{ $service->nombre }}<br><small>{{ $service->estado }} · {{ $catalogTypes[$service->service_type] ?? 'Tipo pendiente' }} · {{ $service->pricing_policy === 'INSTITUTIONAL' ? 'Institucional' : ($service->pricing_policy === 'PROFESSIONAL' ? 'Por profesional' : 'Heredado por profesional') }}@if($service->institutional_price !== null) · S/ {{ $service->institutional_price }}@endif</small><br><small>{{ $service->doctorServices->where('estado','ACTIVO')->count() }} asignaciones activas: {{ $service->doctorServices->where('estado','ACTIVO')->map(fn($row)=>$row->doctor?->nombre)->filter()->join(', ') ?: 'ninguna' }} @if($service->canonical_service_id) · Consulta canónica #{{ $service->canonical_service_id }}@endif</small></td>
                                                     <td>
                                                         <strong>
                                                             <span class="me-3">
@@ -78,7 +79,7 @@
                                                                 </a>
                                                             </span>
                                                             <span>
-                                                                <a href="#" class="delete-service btn btn-sm btn-danger" data-id="{{ $service->id }}">
+                                                                <a href="#" class="delete-service btn btn-sm btn-danger" data-id="{{ $service->id }}" data-version="{{ $service->catalog_version }}">
                                                                     <i class="fa fa-trash fs-18"></i>
                                                                 </a>
                                                             </span>
@@ -118,7 +119,8 @@
         <script src="{{ asset('assets/js/custom.min.js') }}"></script>
         <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
 
-        <script src="{{ asset('js/admin/master/service/service.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admin/master/catalog-editor.js') }}"></script>
+        <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/admin/master/service/service.js') }}"></script>
     @endsection
 
 
