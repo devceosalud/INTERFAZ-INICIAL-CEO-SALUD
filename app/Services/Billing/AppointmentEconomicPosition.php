@@ -102,7 +102,8 @@ class AppointmentEconomicPosition
     /** Confirmation accepts any attributed real payment; secured still means 50% for other indicators. */
     public static function allowsConfirmation(array $position): bool
     {
-        return $position['secured'] || (!$position['allocation_required'] && $position['paid_cents'] > 0);
+        return $position['secured'] || (!$position['allocation_required']
+            && $position['authority'] === 'PAYMENTS' && $position['paid_cents'] > 0 && $position['effective_cents'] > 0);
     }
 
     public function publicPosition(Appointment $a): array
