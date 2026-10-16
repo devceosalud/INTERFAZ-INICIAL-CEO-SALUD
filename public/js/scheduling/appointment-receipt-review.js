@@ -79,7 +79,7 @@ root.AppointmentReceiptReview=function(config){
         }catch(e){status.textContent=e.message;input.value='';}
     });
     selector.addEventListener('change',async()=>{++version;await engine.cancel();busy=false;invalidate();suggestionBox.hidden=true;showPreview();});
-    removeButton.addEventListener('click',()=>{void reset(true);status.textContent='Comprobante retirado. Puedes guardar el pago manualmente.';});
+    removeButton.addEventListener('click',()=>{void reset(true).then(()=>{status.textContent='Comprobante retirado. Puedes guardar el pago manualmente.';config.onProofRemoved?.();});});
     readButton.addEventListener('click',async()=>{
         const file=input.files[Number(selector.value)||0];if(!file || busy)return;
         const current=++version;busy=true;invalidate();readButton.disabled=true;cancelButton.hidden=false;suggestionBox.hidden=true;
