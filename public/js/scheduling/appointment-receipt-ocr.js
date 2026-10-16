@@ -6,19 +6,51 @@
     'use strict';
     const MAX_BYTES = 8 * 1024 * 1024;
     function unique(values) { return [...new Set(values.filter(Boolean))]; }
+    // Canonical PEN amount. Do not reinterpret bare long identifiers as money.
     function amount(value) {
-        const compact = String(value).replace(/\s/g, '');
-        const match = compact.match(/^(\d{1,8})(?:[.,](\d{2}))?$/);
-        if (!match) return null;
-        const cents = Number(match[1]) * 100 + Number(match[2] || 0);
-        return cents > 0 && cents <= 9999999900 ? (cents / 100).toFixed(2) : null;
+        const raw = String(value || '').replace(/\s/g, '');
+        if (!/^\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?$|^\d{1,8}(?:[.,]\d{2})?$/.test(raw)) return null;
+        const comma = raw.lastIndexOf(','), dot = raw.lastIndexOf('.');
+        const decimalAt = Math.max(comma, dot);
+        const decimals = decimalAt >= 0 && raw.length - decimalAt - 1 === 2;
+        const whole = (decimals ? raw.slice(0, decimalAt) : raw).replace(/[.,]/g, '');
+        const cents = Number(whole) * 100 + (decimals ? Number(raw.slice(decimalAt + 1)) : 0);
+        return Number.isSafeInteger(cents) && cents > 0 && cents <= 9999999900 ? (cents / 100).toFixed(2) : null;
     }
     function parse(text) {
         const normalized = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\r/g, '');
-        const amounts = unique([...normalized.matchAll(/(?:S\s*\/\s*\.?|PEN\s+)\s*([0-9]{1,8}(?:[.,][0-9]{2})?)(?![0-9.,])/gi)].map(m => amount(m[1])));
-        const operations = unique([...normalized.matchAll(/(?:numero|nro\.?|n[°ºo.]|codigo)?\s*(?:de\s+)?operacion\s*[:#]?\s*([0-9]{6,20})(?![0-9])/gi)].map(m => m[1]));
+        const lines = normalized.split('\n').map(line => line.trim()).filter(Boolean);
+        const money = [];
+        for (const line of lines) {
+            // Never confuse a balance, phone, commission or unrelated price with the transfer amount.
+            if (/\b(saldo|comision|comisi[oó]n|disponible|celular|telefono|numero de cuenta)\b/i.test(line)) continue;
+            const eligible = /\b(monto|importe|total pagado|total enviado|enviaste|enviado|transferiste|transferencia realizada|pago realizado)\b/i.test(line);
+            const currency = /(?:S\s*\/\s*\.?|PEN\s+)\s*(\d{1,8}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,8}[.,]\d{2})\b/gi;
+            let m;
+            while ((m = currency.exec(line)) !== null) {
+                const v = amount(m[1]);
+                if (v) money.push({value:v,priority:eligible ? 2 : 1});
+            }
+            if (eligible && !/(?:S\s*\/|PEN\s+)/i.test(line)) {
+                const m = line.match(/(?:monto|importe|total pagado|total enviado|enviaste|enviado|transferiste)\s*(?:enviado|pagado|de la operacion)?\s*[:=]?\s*(\d{1,8}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d{1,8}[.,]\d{2})\b/i);
+                if (m) {const v = amount(m[1]);if (v) money.push({value:v,priority:2});}
+            }
+        }
+        const bestPriority = Math.max(0, ...money.map(item => item.priority));
+        const amounts = unique(money.filter(item=>item.priority===bestPriority).map(item=>item.value));
+
+        const operations = [];
+        const operationPattern = /\b(?:n(?:umer[o0])?|nro|num|codigo|cod|referencia|ref)?\s*(?:[.°º#]\s*)?(?:de(?:\s+la)?\s+)?(?:operacion|transaccion|transferencia|referencia)\s*(?:n(?:umero|ro)?[.°º#]?\s*)?[:#=-]?\s*([0-9][0-9\s-]{4,24}[0-9])(?!\d)/gi;
+        for (const line of lines) {
+            let m;
+            while ((m = operationPattern.exec(line)) !== null) {
+                const digits = m[1].replace(/[\s-]/g, '');
+                if (/^\d{6,20}$/.test(digits)) operations.push(digits);
+            }
+            operationPattern.lastIndex = 0;
+        }
+        const uniqueOperations = unique(operations);
         const banks = unique([...normalized.matchAll(/\b(YAPE|PLIN|BCP|BBVA|INTERBANK)\b/gi)].map(m => m[1].toUpperCase()));
-        // Yape receipts may name BCP as owner; never infer a second bank from that wording.
         const bank = banks.includes('YAPE') ? 'YAPE' : banks.includes('PLIN') ? 'PLIN' : banks.length === 1 ? banks[0] : null;
         const dates = unique([...normalized.matchAll(/\b([0-3][0-9])[/-]([01][0-9])[/-](20[0-9]{2})\b/g)].map(m => {
             const iso = m[3] + '-' + m[2] + '-' + m[1];
@@ -26,9 +58,14 @@
             return Number.isNaN(d.getTime()) || d.toISOString().slice(0,10) !== iso ? null : iso;
         }));
         const times = unique([...normalized.matchAll(/\b([01][0-9]|2[0-3]):([0-5][0-9])(?:[:][0-5][0-9])?\b/g)].map(m => m[1] + ':' + m[2]));
-        return { amount: amounts.length === 1 ? amounts[0] : null, operation: operations.length === 1 ? operations[0] : null,
-            bank, date: dates.length === 1 ? dates[0] : null, time: times.length === 1 ? times[0] : null,
-            needs_review: true, ambiguous: amounts.length > 1 || operations.length > 1 };
+        return {
+            amount: amounts.length === 1 ? amounts[0] : null,
+            operation: uniqueOperations.length === 1 ? uniqueOperations[0] : null,
+            bank, date: dates.length === 1 ? dates[0] : null,
+            time: times.length === 1 ? times[0] : null,
+            needs_review: true,
+            ambiguous: amounts.length > 1 || uniqueOperations.length > 1,
+        };
     }
     function createEngine(options) {
         const opts = options || {};

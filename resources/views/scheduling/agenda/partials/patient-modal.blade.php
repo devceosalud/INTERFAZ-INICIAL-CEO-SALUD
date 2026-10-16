@@ -23,6 +23,7 @@
             data-can-write="{{ $canWritePatients ? '1' : '0' }}"
             data-can-schedule="{{ $canCreateAppointments ? '1' : '0' }}">
             <div class="agenda-patient-dialog__body">
+                <div id="agenda-patient-error-summary" class="agenda-error-summary" role="alert" tabindex="-1" hidden></div>
                 <p class="agenda-patient-dialog__notice" id="agenda-draft-note">
                     Registra los datos básicos. Puedes completar la ficha después.
                 </p>
