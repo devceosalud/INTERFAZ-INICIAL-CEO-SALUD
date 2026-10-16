@@ -98,7 +98,7 @@
             Seleccione profesional, fecha, intervalo disponible, paciente y servicio.
         </p>
 
-        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
+        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
         <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <button type="button" class="agenda-btn" id="agenda-see-destination" hidden>Ver nueva fecha</button>
         <p id="agenda-disabled-reason" class="agenda-guidance" hidden></p>

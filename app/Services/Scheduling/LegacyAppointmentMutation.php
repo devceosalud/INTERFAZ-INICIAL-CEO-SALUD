@@ -69,8 +69,8 @@ class LegacyAppointmentMutation
             } elseif ($a->estado_cita !== $data['estado_cita'] && $data['estado_cita'] === 'CONFIRMADO') {
                 abort_unless($actor->can(C::CREATE), 403);
                 $position = app(AppointmentEconomicPosition::class)->forAppointment($a);
-                if (!$position['secured'] && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) {
-                    throw ValidationException::withMessages(['estado_cita' => 'Confirmar requiere adelanto real de al menos 50% o exoneración autorizada.']);
+                if (!AppointmentEconomicPosition::allowsConfirmation($position) && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) {
+                    throw ValidationException::withMessages(['estado_cita' => 'Confirmar requiere un pago real positivo o exoneración autorizada.']);
                 }
                 app(AppointmentSlotValidator::class)->assertValid($a->doctor_id, substr($a->fecha_cita, 0, 10),
                     substr($a->hora_cita, 0, 5), $a->duracion_cita, $a->site_id, $a->id, false, true);

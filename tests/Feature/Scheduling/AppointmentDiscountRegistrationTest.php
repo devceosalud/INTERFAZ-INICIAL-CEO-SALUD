@@ -37,7 +37,7 @@ class AppointmentDiscountRegistrationTest extends TestCase
     }
     protected function endpoint(string $entry): string { return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations'; }
     /** @dataProvider entries */
-    public function test_net_quote_audit_50_percent_and_idempotency_match_both_entries(string $entry,string $type,string $value,string $net): void
+    public function test_net_quote_audit_positive_payment_and_idempotency_match_both_entries(string $entry,string $type,string $value,string $net): void
     {
         $other=$this->createPatient($this->actor,['numero_identidad'=>'70004001','historia_clinica'=>'QA-HISTORIC-40']);
         $history=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_agenda'=>'LEGADO','estado_cita'=>'ATENDIDO',
@@ -50,11 +50,11 @@ class AppointmentDiscountRegistrationTest extends TestCase
         $this->assertSame($this->actor->id,(int)$a->discount_actor_user_id);$this->assertTrue($a->is_postoperative);
         $this->assertFalse((bool)$a->es_exonerado);$this->assertSame('PENDIENTE_CONFIRMACION',$a->estado_agenda);
         $event=$a->events()->where('event_type','PRECIO_REGISTRADO')->firstOrFail();$this->assertSame($this->actor->id,(int)$event->actor_user_id);
-        $minimum=(int)ceil(Money::cents($net)/2);$url='/scheduling-mvp/agenda/appointments/'.$id.'/payments';
-        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>Money::decimal($minimum-1),'method'=>'EFECTIVO']])->assertUnprocessable();$this->assertDatabaseCount('payments',0);
-        $payment=['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>Money::decimal($minimum),'method'=>'EFECTIVO']];
+        $paymentAmount=3000;$url='/scheduling-mvp/agenda/appointments/'.$id.'/payments';
+        $this->postJson($url,['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>'0.00','method'=>'EFECTIVO']])->assertUnprocessable();$this->assertDatabaseCount('payments',0);
+        $payment=['request_key'=>(string)Str::uuid(),'confirm'=>true,'payment'=>['amount'=>Money::decimal($paymentAmount),'method'=>'EFECTIVO']];
         $this->postJson($url,$payment)->assertOk();$this->postJson($url,$payment)->assertOk();
-        $this->assertDatabaseCount('payments',1);$this->assertEquals($minimum/100,Payment::sum('monto'));
+        $this->assertDatabaseCount('payments',1);$this->assertEquals($paymentAmount/100,Payment::sum('monto'));
         $this->assertEquals((float)$net,Voucher::firstOrFail()->total);$this->assertSame('CONFIRMADA',$a->fresh()->estado_agenda);
         $this->assertSame($before,$history->fresh()->getAttributes());
     }

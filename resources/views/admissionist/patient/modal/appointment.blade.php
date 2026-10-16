@@ -16,7 +16,7 @@
 
                 @csrf
                 <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
-                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (con dinero protege horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
+                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (con dinero protege horario)</option><option value="CONFIRM">Confirmar cita (requiere pago real positivo o exoneración autorizada)</option></select></label>
                 <p>El precio se calcula en el servidor. Registrar adelanto no confirma automáticamente.</p>
 
                 <div class="modal-body">
@@ -174,7 +174,7 @@
                         <div class="col-md-12"><label><input name="is_postoperative" type="checkbox" value="1"> Cita postoperatoria · no implica gratuidad</label></div>
                         <div class="col-md-12"><label for="motivo_exoneracion">Motivo de exoneración</label><textarea id="motivo_exoneracion" name="motivo_exoneracion" class="form-control" maxlength="2000"></textarea></div>
                     </div>
-                    <p id="legacy-quote-status" role="status">El precio y descuento se validan en servidor. Confirmar requiere el 50% neto.</p>
+                    <p id="legacy-quote-status" role="status">El precio y descuento se validan en servidor. Confirmar requiere un pago real positivo.</p>
 
                     <!-- ================= PAGO ================= -->
                     <h6 class="fw-bold mb-3">Información de Pago</h6>

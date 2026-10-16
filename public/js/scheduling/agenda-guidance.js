@@ -6,8 +6,8 @@
     'use strict';
 
     const copy = {
-        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con al menos 50% de adelanto real o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.',
-        insufficientAdvance: 'Para confirmar registra al menos el 50%. Si aún no pagó, usa Guardar reserva.',
+        reserveVsSchedule: 'Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.',
+        insufficientAdvance: 'Para confirmar registra un pago real mayor a S/0. Si aún no pagó, usa Guardar reserva.',
         reserveSaved: 'Reserva guardada. Pendiente de confirmación.',
         reserveSavedHere: 'Reserva guardada para esta hora.',
         appointmentSaved: 'Cita confirmada.',
@@ -96,7 +96,7 @@
         if (/archivo o agrega un enlace/i.test(text)) {
             return { domain: 'documents', text: copy.needDocument, focus: false };
         }
-        if (/50\s*%|adelanto real de al menos/i.test(text)) {
+        if (/pago real positivo|50\s*%|adelanto real de al menos/i.test(text)) {
             return { domain: 'payment', text: copy.insufficientAdvance, focus: true };
         }
         if (/https|links deben|enlace/i.test(text)) {
