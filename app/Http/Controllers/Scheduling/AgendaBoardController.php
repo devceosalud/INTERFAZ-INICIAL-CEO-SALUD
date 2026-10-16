@@ -92,7 +92,7 @@ class AgendaBoardController extends Controller
                 || (auth()->user()->can(SchedulingCapability::CREATE) && auth()->user()->can(SchedulingCapability::RESCHEDULE)),
             'canAudit' => auth()->user()->can(SchedulingCapability::VIEW_AUDIT),
             'doctorServices' => $doctorServices,
-            'legend' => AgendaLegend::ordered(),
+            'legend' => AgendaLegend::compactForAgenda(),
             'views' => AgendaRange::views(),
             'today' => Carbon::today(config('scheduling.operational_timezone','America/Lima'))->toDateString(),
         ])->header('Cache-Control', 'private, no-store');
