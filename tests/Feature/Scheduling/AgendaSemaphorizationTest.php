@@ -32,11 +32,11 @@ class AgendaSemaphorizationTest extends TestCase
         ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>0],'RESERVA_SIN_PAGO'],
         ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>2000],'PAGO_REAL'],
         ['CONFIRMADA',[],['paid_cents'=>10000],'PAGO_REAL'],
-        ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>10000,'authority'=>'LEGACY_SNAPSHOT'],'PENDIENTE_CONFIRMACION'],
-        ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>10000,'authority'=>'UNALLOCATED','allocation_required'=>true],'PENDIENTE_CONFIRMACION'],
+        ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>10000,'authority'=>'LEGACY_SNAPSHOT'],'SIN_PAGO_REAL'],
+        ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>10000,'authority'=>'UNALLOCATED','allocation_required'=>true],'SIN_PAGO_REAL'],
         ['PENDIENTE_CONFIRMACION',[],['paid_cents'=>0,'credit_cents'=>10000],'RESERVA_SIN_PAGO'],
-        ['PENDIENTE_CONFIRMACION',['is_postoperative'=>true],['paid_cents'=>0],'POSTOPERATORIO'],
-        ['PENDIENTE_CONFIRMACION',['has_diabetic_wound'=>true],['paid_cents'=>0],'HERIDA'],
+        ['PENDIENTE_CONFIRMACION',['is_postoperative'=>true],['paid_cents'=>0],'RESERVA_SIN_PAGO'],
+        ['PENDIENTE_CONFIRMACION',['has_diabetic_wound'=>true],['paid_cents'=>0],'RESERVA_SIN_PAGO'],
         ['CONFIRMADA',['estado_cita'=>'EN_ESPERA','has_diabetic_wound'=>true,'is_postoperative'=>true],['paid_cents'=>2000],'PRESENTE'],
         ['CONFIRMADA',['estado_cita'=>'CANCELADO','hora_llegada'=>'2026-10-15 09:00:00','is_postoperative'=>true],['paid_cents'=>10000],'DESACTIVADA'],
         ['CONFIRMADA',['estado_cita'=>'RETIRO','hora_llegada'=>'2026-10-15 09:00:00','has_diabetic_wound'=>true],['paid_cents'=>2000],'DESACTIVADA'],
@@ -48,10 +48,10 @@ class AgendaSemaphorizationTest extends TestCase
         $this->assertSame($key,$p['clave']);$this->assertSame($before,$a->getAttributes());$this->assertFalse($p['strikethrough']);
         if($key==='PRESENTE'){$this->assertContains('POSTOPERATORIO',array_column($p['badges'],'clave'));$this->assertContains('HERIDA',array_column($p['badges'],'clave'));}
     }
-    public function test_undefined_compound_priority_preserves_previous_base_and_all_labels_without_inventing_hierarchy():void{
+    public function test_paid_compound_uses_yellow_base_and_both_medical_chips():void{
         $a=new Appointment(['estado_agenda'=>'PENDIENTE_CONFIRMACION','is_postoperative'=>true,'has_diabetic_wound'=>true]);
         $p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>2000]);
-        $this->assertTrue($p['visual_priority_pending']);$this->assertSame('PENDIENTE_CONFIRMACION',$p['clave']);
+        $this->assertFalse($p['visual_priority_pending']);$this->assertSame('PAGO_REAL',$p['clave']);
         $this->assertSame(['PAGO_REAL','POSTOPERATORIO','HERIDA'],array_column($p['badges'],'clave'));
     }
     public function test_attended_does_not_imply_departure_or_a_reevaluation_decision():void{
@@ -105,7 +105,7 @@ class AgendaSemaphorizationTest extends TestCase
             }, str_split(ltrim($hex, '#'), 2));
             return $rgb[0] * 0.2126 + $rgb[1] * 0.7152 + $rgb[2] * 0.0722;
         };
-        foreach (['CONCILIAR_PAGO', 'PAGO_REAL', 'RESERVA_SIN_PAGO', 'POSTOPERATORIO', 'HERIDA', 'PRESENTE', 'DESACTIVADA'] as $key) {
+        foreach (['SALIDA_REGISTRADA', 'REEMBOLSO_SOLICITADO', 'SIN_PAGO_REAL', 'CONCILIAR_PAGO', 'PAGO_REAL', 'RESERVA_SIN_PAGO', 'POSTOPERATORIO', 'HERIDA', 'PRESENTE', 'DESACTIVADA'] as $key) {
             $entry = \App\Support\Scheduling\AgendaLegend::of($key);
             $this->assertNotEmpty($entry['etiqueta']);
             $this->assertNotEmpty($entry['glifo']);
@@ -127,6 +127,33 @@ class AgendaSemaphorizationTest extends TestCase
         $this->actingAs($other)->patchJson('/scheduling-mvp/agenda/appointments/'.$id.'/notes', ['has_diabetic_wound' => false])->assertNotFound();
         $this->assertTrue(Appointment::findOrFail($id)->has_diabetic_wound);
         $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_approved_base_priority_never_uses_medical_flags_as_slot_background(): void
+    {
+        foreach ([false,true] as $wound) foreach ([false,true] as $postop) {
+            foreach ([['PROGRAMADO',0,null,'#ffffff'],['PROGRAMADO',2000,null,'#fff2a6'],
+                ['EN_ESPERA',2000,now(),'#99f6e4'],['RETIRO',2000,now(),'#fecaca'],['CANCELADO',2000,now(),'#fecaca']] as [$state,$money,$arrival,$color]) {
+                $a = new Appointment(); $a->forceFill(['estado_agenda'=>'PENDIENTE_CONFIRMACION','estado_cita'=>$state,
+                    'hora_llegada'=>$arrival,'has_diabetic_wound'=>$wound,'is_postoperative'=>$postop]);
+                $p = Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>$money]);
+                $this->assertSame($color,$p['fondo']);
+                $this->assertSame($wound,in_array('HERIDA',array_column($p['badges'],'clave'),true));
+                $this->assertSame($postop,in_array('POSTOPERATORIO',array_column($p['badges'],'clave'),true));
+                $this->assertFalse($p['visual_priority_pending']);
+            }
+        }
+    }
+    public function test_refund_red_does_not_release_capacity_or_execute_money_and_departure_requires_attended(): void
+    {
+        $a = new Appointment();$a->forceFill(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'EN_ESPERA','hora_llegada'=>now()]);
+        $before=$a->getAttributes();$p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>5000,'refund_reserved_cents'=>2000]);
+        $this->assertSame('REEMBOLSO_SOLICITADO',$p['clave']);$this->assertSame('#fecaca',$p['fondo']);
+        $this->assertFalse($p['informational']);$this->assertTrue($p['present']);$this->assertSame($before,$a->getAttributes());
+        $a->forceFill(['hora_salida'=>now()]);$p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>5000]);$this->assertFalse($p['strikethrough']);
+        $a->forceFill(['estado_cita'=>'ATENDIDO']);$p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>5000]);
+        $this->assertSame('SALIDA_REGISTRADA',$p['clave']);$this->assertTrue($p['strikethrough']);$this->assertFalse($p['present']);
+        $this->assertSame('#99f6e4',$p['fondo']);$this->assertDatabaseCount('payments',0);
     }
 
 }

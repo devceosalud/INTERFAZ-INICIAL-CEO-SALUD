@@ -37,7 +37,7 @@ class Appointment extends Model
     }
     use HasFactory;
 
-    protected $casts = ['has_diabetic_wound'=>'boolean','is_postoperative'=>'boolean','catalog_price'=>'decimal:2','discount_value'=>'decimal:2','discount_amount'=>'decimal:2'];
+    protected $casts = ['hora_salida'=>'datetime','has_diabetic_wound'=>'boolean','is_postoperative'=>'boolean','catalog_price'=>'decimal:2','discount_value'=>'decimal:2','discount_amount'=>'decimal:2'];
     protected $fillable = [
         'numero_cita',
         'site_id',

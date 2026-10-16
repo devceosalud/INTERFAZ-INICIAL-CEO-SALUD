@@ -42,10 +42,13 @@ final class AgendaLegend
     {
         return [
             'CONCILIAR_PAGO' => ['clave'=>'CONCILIAR_PAGO','etiqueta'=>'Atribución de pago pendiente','glifo'=>'?','color'=>'#374151','fondo'=>'#e8eaed','descripcion'=>'Existe información económica sin atribución suficiente; no se presenta como pago real ni ausencia cierta de pago.'],
+            'SIN_PAGO_REAL' => ['clave'=>'SIN_PAGO_REAL','etiqueta'=>'Sin pago real acreditado','glifo'=>'—','color'=>'#374151','fondo'=>'#ffffff','descripcion'=>'No hay dinero real atribuido; revisar la etiqueta de conciliación si existe información histórica.'],
             'PAGO_REAL' => ['clave'=>'PAGO_REAL','etiqueta'=>'Pago real registrado','glifo'=>'S/','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Existe dinero registrado y atribuido. No implica confirmación ni adelanto suficiente.'],
             'RESERVA_SIN_PAGO' => ['clave'=>'RESERVA_SIN_PAGO','etiqueta'=>'Reserva sin pago real','glifo'=>'R','color'=>'#374151','fondo'=>'#ffffff','descripcion'=>'Reserva privada sin pago real atribuido; conserva su privacidad.'],
             'POSTOPERATORIO' => ['clave'=>'POSTOPERATORIO','etiqueta'=>'POSTOPERATORIO','glifo'=>'P','color'=>'#374151','fondo'=>'#e5e7eb','descripcion'=>'Control postoperatorio señalado expresamente; no implica gratuidad.'],
             'HERIDA' => ['clave'=>'HERIDA','etiqueta'=>'PIE DIABÉTICO CON HERIDA','glifo'=>'H','color'=>'#701347','fondo'=>'#f9a8d4','descripcion'=>'Indicador explícito de la cita, nunca inferido del servicio.'],
+            'SALIDA_REGISTRADA' => ['clave'=>'SALIDA_REGISTRADA','etiqueta'=>'ATENCIÓN FINALIZADA · SALIDA REGISTRADA','glifo'=>'S','color'=>'#115e59','fondo'=>'#99f6e4','descripcion'=>'Salida física registrada expresamente después de ATENDIDO; no decide reevaluación.'],
+            'REEMBOLSO_SOLICITADO' => ['clave'=>'REEMBOLSO_SOLICITADO','etiqueta'=>'REEMBOLSO SOLICITADO','glifo'=>'D','color'=>'#7f1d1d','fondo'=>'#fecaca','descripcion'=>'Solicitud registrada, no devolución ejecutada ni cancelación automática.'],
             'PRESENTE' => ['clave'=>'PRESENTE','etiqueta'=>'Paciente presente','glifo'=>'L','color'=>'#115e59','fondo'=>'#99f6e4','descripcion'=>'Llegada registrada desde Admisión; no modifica el estado financiero.'],
             'DESACTIVADA' => ['clave'=>'DESACTIVADA','etiqueta'=>'Cancelada / retiro','glifo'=>'×','color'=>'#7f1d1d','fondo'=>'#fecaca','descripcion'=>'Cancelación o retiro efectivo, informativo y sin ocupar un intervalo.'],
             'PENDIENTE_CONFIRMACION' => [

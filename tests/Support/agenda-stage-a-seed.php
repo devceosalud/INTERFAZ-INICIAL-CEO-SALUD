@@ -24,11 +24,11 @@ $fixture=new class {use \Tests\Concerns\BuildsAgendaLifecycleData;
     'site_id'=>$site->id,'responsible_user_id'=>$owner->id,'patient_id'=>$p->id,'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'fecha_cita'=>$date,'hora_cita'=>$time,'duracion_cita'=>30,'payment'=>['amount'=>(string)$amount,'method'=>'EFECTIVO']],$flags);
    $a=app(\App\Services\Scheduling\OperationalRegistrationService::class)->register($data,$key==='paid'?$admin:$owner);$ids[$key]=$a->id;return $a;
   };
-  $register('paid','09:00',50,true);$register('unpaid','10:00',0);$register('wound','11:00',0,false,['has_diabetic_wound'=>true]);
-  $register('postop','12:00',0,false,['is_postoperative'=>true]);$register('partial','13:00',20);
-  foreach(['cancel'=>['14:00','CANCELADO'],'present'=>['15:00','EN_ESPERA'],'attended'=>['16:00','ATENDIDO']] as $key=>[$time,$state]){
+  $register('paid','09:00',50,true,['has_diabetic_wound'=>true,'is_postoperative'=>true]);$register('unpaid','10:00',0);$register('wound','11:00',0,false,['has_diabetic_wound'=>true]);
+  $register('postop','12:00',0,false,['is_postoperative'=>true]);$register('partial','13:00',20);$register('compound','13:30',20,false,['has_diabetic_wound'=>true,'is_postoperative'=>true]);
+  foreach(['cancel'=>['14:00','CANCELADO'],'present'=>['15:00','EN_ESPERA'],'attended'=>['16:00','ATENDIDO'],'departureRace'=>['16:30','ATENDIDO']] as $key=>[$time,$state]){
    $a=$this->lifecycleAppointment($admin,$catalog,['fecha_cita'=>$date,'hora_cita'=>$time,'estado_cita'=>$state,'site_id'=>$site->id]);
-   $a->forceFill(['hora_llegada'=>now()]+($state==='ATENDIDO'?['hora_atendido'=>now()]:[]))->save();$ids[$key]=$a->id;
+   $a->forceFill(['hora_llegada'=>now(),'has_diabetic_wound'=>true,'is_postoperative'=>true]+($state==='ATENDIDO'?['hora_atendido'=>now()]:[]))->save();$ids[$key]=$a->id;
   }
   return ['date'=>$date,'users'=>$users,'ids'=>$ids,'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'patient_id'=>$patient->id,'document'=>'73000001'];
  }

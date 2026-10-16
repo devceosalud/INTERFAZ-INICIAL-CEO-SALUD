@@ -411,10 +411,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return state.compare && selectedDoctorIds().length > 1 && state.view !== 'mes';
     }
 
-    function appendPresentationBadges(parent, context) {
+    function appendPresentationBadges(parent, context, compact = false) {
         for (const badge of context.presentation?.badges || []) {
+            if (compact && !['HERIDA','POSTOPERATORIO'].includes(badge.clave)) continue;
             const node = document.createElement('small');
-            node.className = 'agenda-presentation-badge'; node.textContent = badge.etiqueta;
+            node.className = 'agenda-presentation-badge'; node.textContent = compact ? (badge.clave==='HERIDA'?'HERIDA':'POSTOP') : badge.etiqueta;
+            node.title=badge.etiqueta;node.setAttribute('aria-label',badge.etiqueta);
             node.style.backgroundColor = badge.fondo; node.style.color = badge.color;
             parent.appendChild(node);
         }
@@ -474,17 +476,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 timeEnd.textContent = '–' + presentation.end;
                 time.appendChild(timeEnd);
             }
+            patient.classList.add('agenda-patient-name'); patient.classList.toggle('is-departed',context.presentation?.strikethrough===true);
             patient.textContent = context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA · ' + presentation.patient : (context.tipo_agendamiento === 'ADICIONAL' ? 'ADICIONAL · ' : (context.tipo_agendamiento === 'FUERA_HORARIO' ? 'FH · ' : '')) + presentation.patient;
             primary.appendChild(time);
             primary.appendChild(patient);
+
             wrapper.appendChild(primary);
+            const signals=document.createElement('span');signals.className='agenda-week-signals';appendPresentationBadges(signals,context,true);if(signals.childNodes.length)wrapper.appendChild(signals);
             const booking=document.createElement('span');booking.className='agenda-week-event__booking';
             const summary=window.AgendaOperationalForm.stateSummary(context);
             const extended = extendedDurationText(context);
             booking.textContent = summary.agenda + ' · ' + summary.payment + (extended ? ' · ' + extended : '');
             wrapper.title = [summary.description, extended, selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
             wrapper.appendChild(booking);
-            appendPresentationBadges(wrapper, context);
 
             if (presentation.service) {
                 const service = document.createElement('span');
@@ -926,7 +930,7 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.setAttribute('role', 'gridcell');
             cell.textContent = value;
             if(item)cell.title=[window.AgendaOperationalForm.stateSummary(context).description,selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
-            if(appointment && index===4){appendPresentationBadges(cell,context);const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
+            if(appointment && index===4){cell.textContent='';const name=document.createElement('span');name.className='agenda-patient-name';name.classList.toggle('is-departed',context.presentation?.strikethrough===true);name.textContent=value;cell.appendChild(name);appendPresentationBadges(cell,context);const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
             entry.appendChild(cell);
         });
 
