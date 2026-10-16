@@ -19,7 +19,7 @@ function harness(recognize=async()=>({amount:'75.00',operation:'45000123',bank:'
  const find=text=>nodes.find(n=>n.textContent===text),id=key=>nodes.find(n=>n.id==='qa-'+key);
  return {api,input,paymentFields,nodes,picker,events,find,id,async select(files){input.files=files;await input.trigger('change');}};
 }
-test('OCR suggestions need explicit use and final human review; edits invalidate it',async()=>{
+test('OCR suggestions are optional and saving with attached evidence requires no extra checkbox',async()=>{
  const h=harness();await h.select([{name:'yape.png',type:'image/png',size:100},{name:'detail.png',type:'image/png',size:100}]);
  await h.find('Leer imagen con OCR').trigger('click');
  assert.equal(h.paymentFields.amount.value,'0');assert.equal(h.id('proof-reviewed').checked,false);
@@ -27,12 +27,11 @@ test('OCR suggestions need explicit use and final human review; edits invalidate
  assert.equal(h.paymentFields.amount.value,'75.00');assert.equal(h.paymentFields.method.value,'YAPE');assert.deepEqual(h.events,['method-change']);
  assert.equal(h.picker.length,0,'OCR no debe inicializar selectpicker en un select nativo');
  const body={files:[],append(k,v){this.files.push([k,v]);}},payload={};
- assert.throws(()=>h.api.append(body,payload),/revisión humana/);
- h.id('proof-reviewed').checked=true;h.api.append(body,payload);
+ assert.doesNotThrow(()=>h.api.append(body,payload));
  assert.equal(body.files.length,2);assert.equal(payload.proof_review.source,'BROWSER_OCR');assert.equal(payload.proof_review.reviewed,true);
  assert.equal(payload.proof_review.date,'2026-10-14');
  h.paymentFields.amount.value='70.00';h.paymentFields.amount.dispatchEvent({type:'input'});
- assert.throws(()=>h.api.append({append(){}},{}),/revisión humana/);
+ assert.doesNotThrow(()=>h.api.append({append(){}},{}));
  await h.api.reset();assert.equal(h.input.files.length,0);assert.equal(h.api.hasChanges(),false);
 });
 test('OCR does not replace a manually typed amount or operation',async()=>{
@@ -64,6 +63,27 @@ test('PDF is reviewed manually and never sent to the OCR worker',async()=>{
  assert.equal(h.find('Leer imagen con OCR').disabled,true);
  h.paymentFields.amount.value='20';h.id('proof-reviewed').checked=true;
  const payload={};h.api.append({append(){}},payload);assert.equal(payload.proof_review.source,'MANUAL');assert.equal(calls,0);
+});
+test('Manually removing proof allows cash and never sends stale image or operation',async()=>{
+ const h=harness();await h.select([{name:'old-yape.png',type:'image/png',size:120}]);
+ assert.equal(h.input.files.length,1);
+ await h.find('Quitar comprobante').trigger('click');
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.input.files.length,0);
+ h.paymentFields.method.value='EFECTIVO';h.paymentFields.amount.value='50';
+ const payload={};const body={files:[],append(key,value){this.files.push([key,value]);}};
+ h.api.append(body,payload);
+ assert.deepEqual(body.files,[]);
+ assert.equal(payload.proof_review,undefined);
+});
+test('Manual non-cash payment can attach image without loading OCR',async()=>{
+ let calls=0;const h=harness(async()=>{calls++;return {amount:null,operation:null}});
+ await h.select([{name:'receipt.png',type:'image/png',size:100}]);
+ h.paymentFields.method.value='YAPE';h.paymentFields.amount.value='50';h.paymentFields.operation.value='00123456';
+ const payload={};const body={files:[],append(key,value){this.files.push([key,value]);}};
+ assert.doesNotThrow(()=>h.api.append(body,payload));
+ assert.equal(payload.proof_review.source,'MANUAL');assert.equal(payload.proof_review.reviewed,true);
+ assert.equal(body.files.length,1);assert.equal(calls,0);
 });
 test('every legacy consumer loads local OCR and validation before the review widget',()=>{
  for(const profile of ['admin','admissionist','receptionist'])for(const module of ['patient','appointment']){
