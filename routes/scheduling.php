@@ -30,7 +30,9 @@ Route::middleware([
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
         Route::patch('/scheduling-mvp/admission/appointments/{appointmentId}/manual-reevaluation',
             [\App\Http\Controllers\Scheduling\ManualReevaluationController::class, 'update'])
-            ->whereNumber('appointmentId')->middleware('permission:'.SchedulingCapability::UPDATE)
+            // Access is restricted by ManualReevaluationService::canUpdate:
+            // COMERCIAL is permitted only for this endpoint, not general care updates.
+            ->whereNumber('appointmentId')->middleware('throttle:30,1')
             ->name('scheduling.mvp.admission.manual-reevaluation');
         $taskController = \App\Http\Controllers\Scheduling\AdmissionTaskController::class;
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/tasks', [$taskController, 'store'])
