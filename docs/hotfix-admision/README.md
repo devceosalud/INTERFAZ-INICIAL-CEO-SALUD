@@ -4,7 +4,7 @@ Base: main 9c3b93a5086172d30fbf59fc9c4c2c40df84a645. Rama: hotfix/admision-reeva
 
 ## Comportamiento
 
-- ATENDIDO se muestra en turquesa suave `#74DCCB` y texto oscuro `#174D4A` desde el PR #48. La marca manual usa naranja `#fed7aa` y texto `#7c2d12`.
+- ATENDIDO se muestra en turquesa suave `#74DCCB` y texto oscuro `#174D4A` desde el PR #48. La marca manual usa naranja `#ffc28a` y texto `#7c2d12`.
 - Un checkbox permite marcar/desmarcar la misma cita ATENDIDO con agenda LEGADO o CONFIRMADA. No exige procedimientos ni exámenes. No altera ningún atributo de appointments, ni genera cita, precio, pago o indicación clínica/comercial.
 - Cancelación/retiro, reembolso y salida conservan su prioridad. Salida mantiene el tachado. Las alertas de conciliación, pagos e indicadores médicos permanecen. Solo se reemplazan bases visuales no críticas conocidas; un estado visual futuro conserva su presentación.
 - La pestaña Reevaluaciones muestra las marcas activas del conjunto autorizado y filtrado; conserva fechas, sede, médico, especialidad, paciente, estado y grupo. Totales, indicadores y paginación usan el mismo conjunto. El límite existente de 2000 citas por consulta se mantiene.
