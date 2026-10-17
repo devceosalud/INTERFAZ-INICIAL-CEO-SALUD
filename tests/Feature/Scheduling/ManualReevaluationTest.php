@@ -54,7 +54,7 @@ class ManualReevaluationTest extends TestCase
         $a=$this->appointment(['total_pagado'=>30,'saldo_pendiente'=>70,'estado_pagado'=>'PARCIAL']);$before=$this->snapshot();
         $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#74dccb')->assertJsonPath('rows.0.presentation.color','#174d4a');
         $v=$this->toggle($a)->assertOk()->assertJsonPath('manual_reevaluation.marked',true)->json('manual_reevaluation.version');
-        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#fed7aa')->assertJsonPath('rows.0.estado_cita','ATENDIDO');
+        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#ffc28a')->assertJsonPath('rows.0.estado_cita','ATENDIDO');
         $this->toggle($a,['marked'=>false,'expected_marked'=>true,'expected_version'=>$v])->assertOk()->assertJsonPath('manual_reevaluation.marked',false);
         $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#74dccb');
         $this->assertSame($before,$this->snapshot());$this->assertDatabaseCount('appointment_operations',2);
