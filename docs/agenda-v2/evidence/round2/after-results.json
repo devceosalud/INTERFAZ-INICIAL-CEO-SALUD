@@ -1,0 +1,227 @@
+{
+  "stage": "after",
+  "browser": "155.0.8059.79",
+  "started": "2026-10-17T16:03:36.651Z",
+  "cases": [
+    {
+      "name": "Matriz de reevaluación y corrección entre tres sesiones",
+      "result": "PASS"
+    },
+    {
+      "name": "Matriz y corrección se sincronizan en ambas agendas y cola de Nicol sin recarga",
+      "result": "PASS"
+    },
+    {
+      "name": "Filtros de búsqueda, médico, especialidad, sede, estado, color y reevaluación conservan totales",
+      "result": "PASS"
+    },
+    {
+      "name": "Borradores sobreviven a filtros, pestañas, actualización remota y conflicto 409",
+      "result": "PASS"
+    },
+    {
+      "name": "Motivo histórico No registrado; observación de un carácter aceptada y espacios rechazados",
+      "result": "PASS"
+    },
+    {
+      "name": "Motivo obligatorio visible, foco y conservación ante 422; reserva y pago confirman una sola cita",
+      "result": "PASS"
+    },
+    {
+      "name": "Roles, supervisión y registro heredado se validan en servidor; CSRF permanece real",
+      "result": "PASS"
+    },
+    {
+      "name": "Retroceder atención funciona desde las acciones superiores",
+      "result": "PASS"
+    },
+    {
+      "name": "MFR se habilita visualmente sin DevTools y Traumatología permanece bloqueada",
+      "result": "PASS"
+    },
+    {
+      "name": "Paciente nuevo reutiliza un único motivo visible dentro y fuera del modal",
+      "result": "PASS"
+    },
+    {
+      "name": "Capturas revisables y geometría en 1366, 1440, 1920 y móvil",
+      "result": "PASS"
+    }
+  ],
+  "states": [
+    {
+      "label": "2 solicitados / 0 realizados",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 0,
+      "review": {
+        "status": "NOT_READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:00:58.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "2 solicitados / 1 realizado sin envío",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "NOT_READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:00:58.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "2/2 automático",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 2,
+      "review": {
+        "status": "READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:03:44.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "LISTO_REEVALUACION"
+    },
+    {
+      "label": "Corrección automática 2/2 a 1/2",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "NOT_READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:03:44.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "3/2 sin envío",
+      "id": 8,
+      "http_status": 200,
+      "requested": 3,
+      "done": 2,
+      "review": {
+        "status": "NOT_READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:00:45.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "3/3 automático",
+      "id": 8,
+      "http_status": 200,
+      "requested": 3,
+      "done": 3,
+      "review": {
+        "status": "READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T16:03:49.000000Z",
+        "reason": null,
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "LISTO_REEVALUACION"
+    },
+    {
+      "label": "Sin solicitudes",
+      "id": 9,
+      "http_status": 200,
+      "requested": 0,
+      "done": 0,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null,
+        "decision_by": null,
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "Parcial antes de autorización",
+      "id": 6,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "WITHDRAWN",
+        "origin": "MANUAL",
+        "ready_at": "2026-10-17T16:00:50.000000Z",
+        "reason": "Retirada explícita ficticia antes de repetir la matriz",
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "Parcial autorizado por ADMISION",
+      "id": 6,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "READY",
+        "origin": "MANUAL",
+        "ready_at": "2026-10-17T16:03:52.000000Z",
+        "reason": "Envío parcial ficticio explícito para investigar la ronda 2",
+        "decision_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        },
+        "authorized_by": {
+          "id": 5,
+          "name": "ADMISSION RONDA 2 FICTICIO"
+        }
+      },
+      "presentation": "LISTO_REEVALUACION"
+    }
+  ],
+  "page_errors": [],
+  "created": 18,
+  "finished": "2026-10-17T16:04:48.860Z"
+}

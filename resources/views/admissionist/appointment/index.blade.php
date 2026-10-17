@@ -45,6 +45,7 @@
         <!--**********************************Content body start***********************************-->
         <div class="content-body">
             <div class="container-fluid">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"><div><h1 class="h3 mb-1">Seguimiento de citas</h1><p class="mb-0">Consulta y seguimiento de citas existentes. Las nuevas citas se registran desde Agenda operativa.</p></div>@if(config('scheduling.enabled') && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS))<a class="btn btn-primary" href="{{ route('scheduling.mvp.agenda') }}">Abrir Agenda operativa</a>@endif</div>
                     
                 <!-- FILTRO CALENDARIO -->
                 <x-utils.calendar :specialties="$specialties" />
@@ -62,7 +63,7 @@
 
             </div>
 
-            @include('admissionist.appointment.crud.create')
+
 
             @include('admissionist.appointment.crud.edit')
 

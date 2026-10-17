@@ -16,8 +16,7 @@
     </details>
     <label><input id="agenda-op-double" type="checkbox"> Cita extendida · dos intervalos consecutivos, una sola consulta</label>
     <details id="agenda-op-notes-panel">
-        <summary>Motivo y observación · opcional</summary>
-        <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
+        <summary>Observación y datos complementarios · opcional</summary>
         <label class="agenda-field"><span>Observación operativa</span><textarea id="agenda-op-note" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label><input id="agenda-op-postoperative" type="checkbox"> Cita postoperatoria · no implica gratuidad</label>
         <label><input id="agenda-op-has-wound" type="checkbox"> Pie diabético con herida · selección explícita para esta cita</label>
@@ -70,10 +69,10 @@
         @unless($canSubmitPayment)<p class="agenda-payment-help">No tienes autorización para registrar adelantos. Puedes guardar una reserva sin pago si tu perfil lo permite.</p>@endunless
         <div class="agenda-payment-actions">
             <button id="agenda-op-submit-payment" class="agenda-btn" type="button" hidden @disabled(!$canSubmitPayment)>Registrar adelanto</button>
-            <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar cita</button>
+            <button id="agenda-op-confirm-reservation" class="agenda-btn" type="button" hidden aria-describedby="agenda-op-confirmation-reason">Confirmar autorización</button>
             <button id="agenda-op-convert-additional" class="agenda-btn" type="button" hidden>Resolver como ADICIONAL</button>
         </div>
-        <p id="agenda-op-confirmation-reason" class="agenda-guidance">Registrar adelanto no confirma automáticamente la reserva.</p>
+        <p id="agenda-op-confirmation-reason" class="agenda-guidance">Un nuevo pago real positivo confirma automáticamente la reserva.</p>
         <p id="agenda-op-conversion-reason" class="agenda-guidance" hidden></p>
     </details>
     <details id="agenda-op-indication-record-panel" hidden>

@@ -186,5 +186,6 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-refresh.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>
 @endsection

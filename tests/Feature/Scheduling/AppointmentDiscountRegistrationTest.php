@@ -29,13 +29,13 @@ class AppointmentDiscountRegistrationTest extends TestCase
     public function entries(): array { return [['operational','FIXED','30.00','70.00'],['legacy','FIXED','30.00','70.00'],['operational','PERCENT','12.50','87.50'],['legacy','PERCENT','12.50','87.50']]; }
     protected function payload(string $entry='operational',array $extra=[]): array
     {
-        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR',
+        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id'=>$this->patient->id,'doctor_id'=>$this->catalog['doctor']->id,
             'service_id'=>$entry==='legacy'?$this->catalog['doctorService']->id:$this->catalog['service']->id,
             'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>$this->catalog['schedule']->fecha_cita,
             'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
     }
-    protected function endpoint(string $entry): string { return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations'; }
+    protected function endpoint(string $entry): string { if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web')); return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations'; }
     /** @dataProvider entries */
     public function test_net_quote_audit_positive_payment_and_idempotency_match_both_entries(string $entry,string $type,string $value,string $net): void
     {
@@ -44,8 +44,8 @@ class AppointmentDiscountRegistrationTest extends TestCase
             'precio_programado'=>137.25,'total_pagado'=>50,'fecha_cita'=>now()->subDays(40)->toDateString()],$other);$before=$history->fresh()->getAttributes();
         $data=$this->payload($entry,['discount'=>['type'=>$type,'value'=>$value,'reason'=>'Prueba ficticia'],'is_postoperative'=>true]);
         $this->postJson($entry==='legacy'?'/api/appointment/calculated':'/scheduling-mvp/agenda/quote',$data)->assertOk()->assertJsonPath('catalog_price','100.00');
-        $response=$this->postJson($this->endpoint($entry),$data)->assertSuccessful();
-        $id=$entry==='legacy'?$response->json('appointment_id'):$response->json('appointment.appointment_id');$a=Appointment::findOrFail($id);
+        $response=$this->agendaCreationResponse($entry,$data)->assertSuccessful();
+        $id=$response->json('appointment.appointment_id');$a=Appointment::findOrFail($id);
         $this->assertEquals((float)$net,(float)$a->precio_programado);$this->assertSame('100.00',$a->catalog_price);
         $this->assertSame($this->actor->id,(int)$a->discount_actor_user_id);$this->assertTrue($a->is_postoperative);
         $this->assertFalse((bool)$a->es_exonerado);$this->assertSame('PENDIENTE_CONFIRMACION',$a->estado_agenda);
@@ -62,23 +62,23 @@ class AppointmentDiscountRegistrationTest extends TestCase
     /** @dataProvider invalidDiscounts */
     public function test_invalid_or_zero_net_discount_cannot_create_money_or_appointment(string $type,string $value): void
     {
-        foreach(['legacy','operational'] as $entry){$this->postJson($this->endpoint($entry),$this->payload($entry,['discount'=>['type'=>$type,'value'=>$value]]))->assertUnprocessable();}
+        foreach(['legacy','operational'] as $entry){$this->agendaCreationResponse($entry,$this->payload($entry,['discount'=>['type'=>$type,'value'=>$value]]))->assertUnprocessable();}
         $this->assertDatabaseCount('appointments',0);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointment_operations',0);
     }
     public function test_rounding_may_not_make_small_price_free_and_quote_needs_write_authority(): void
     {
         $this->catalog['doctorService']->update(['precio_primera_consulta'=>0.01]);
-        $this->postJson($this->endpoint('operational'),$this->payload('operational',['discount'=>['type'=>'PERCENT','value'=>'99.99']]))->assertUnprocessable();
+        $this->agendaCreationResponse('operational',$this->payload('operational',['discount'=>['type'=>'PERCENT','value'=>'99.99']]))->assertUnprocessable();
         $this->catalog['doctorService']->update(['precio_primera_consulta'=>100]);$this->actingAs($this->agendaReader('LECTOR'));
         $this->postJson('/scheduling-mvp/agenda/quote',$this->payload('operational',['discount'=>['type'=>'FIXED','value'=>'20']]))->assertForbidden();$this->assertDatabaseCount('appointments',0);
     }
     public function test_browser_cannot_spoof_actor_net_price_or_edit_existing_discount(): void
     {
         $data=$this->payload('operational',['discount'=>['type'=>'FIXED','value'=>'20','actor_user_id'=>999]]);
-        $this->postJson($this->endpoint('operational'),$data)->assertUnprocessable();
+        $this->agendaCreationResponse('operational',$data)->assertUnprocessable();
         unset($data['discount']['actor_user_id']);$data['precio_programado']='0.01';
-        $this->postJson($this->endpoint('operational'),$data)->assertUnprocessable();unset($data['precio_programado']);
-        $id=$this->postJson($this->endpoint('operational'),$data)->assertCreated()->json('appointment.appointment_id');$before=Appointment::findOrFail($id)->getAttributes();
+        $this->agendaCreationResponse('operational',$data)->assertUnprocessable();unset($data['precio_programado']);
+        $id=$this->agendaCreationResponse('operational',$data)->assertCreated()->json('appointment.appointment_id');$before=Appointment::findOrFail($id)->getAttributes();
         $this->patchJson('/scheduling-mvp/agenda/appointments/'.$id.'/notes',['discount'=>['type'=>'FIXED','value'=>'50']])->assertUnprocessable();
         $this->postJson('/admissionist/appointment/update',['appointment_id'=>$id,'estado_cita'=>'PROGRAMADO','discount'=>['type'=>'FIXED','value'=>'50']])->assertUnprocessable();
         $this->assertSame($before,Appointment::findOrFail($id)->getAttributes());
@@ -86,17 +86,17 @@ class AppointmentDiscountRegistrationTest extends TestCase
     public function test_postoperative_edit_and_exemption_reason_keep_authorization_separate(): void
     {
         $data=$this->payload('operational',['es_exonerado'=>true,'autorizado_por'=>'QA RESPONSABLE','mode'=>'CONFIRM']);
-        $this->postJson($this->endpoint('operational'),$data)->assertForbidden();$this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST,'web'));
-        $this->postJson($this->endpoint('operational'),$data)->assertUnprocessable()->assertJsonValidationErrors('motivo_exoneracion');
+        $this->agendaCreationResponse('operational',$data)->assertForbidden();$this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST,'web'));
+        $this->agendaCreationResponse('operational',$data)->assertUnprocessable()->assertJsonValidationErrors('motivo_exoneracion');
         $data['motivo_exoneracion']='Autorización ficticia documentada';
-        $id=$this->postJson($this->endpoint('operational'),$data)->assertCreated()->json('appointment.appointment_id');
+        $id=$this->agendaCreationResponse('operational',$data)->assertCreated()->json('appointment.appointment_id');
         $this->patchJson('/scheduling-mvp/agenda/appointments/'.$id.'/notes',['is_postoperative'=>true])->assertOk()->assertJsonPath('is_postoperative',true);
         $a=Appointment::findOrFail($id);$this->assertSame('100.00',$a->catalog_price);$this->assertSame($data['motivo_exoneracion'],$a->motivo_exoneracion);$this->assertDatabaseCount('payments',0);
         $this->assertSame(1,$a->events()->where('event_type','DATOS_OPERATIVOS_ACTUALIZADOS')->count());
     }
     public function test_empty_legacy_discount_keeps_form_compatible(): void
     {
-        $id=$this->postJson($this->endpoint('legacy'),$this->payload('legacy',['discount'=>['type'=>'','value'=>'0','reason'=>'']]))->assertSuccessful()->json('appointment_id');
+        $id=$this->agendaCreationResponse('legacy',$this->payload('legacy',['discount'=>['type'=>'','value'=>'0','reason'=>'']]))->assertSuccessful()->json('appointment.appointment_id');
         $this->assertEquals(100,Appointment::findOrFail($id)->precio_programado);$this->assertNull(Appointment::findOrFail($id)->discount_actor_user_id);
     }
 }

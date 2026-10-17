@@ -1,6 +1,6 @@
 @php
     $receptionAppointmentItems = [
-        ['label' => 'Registrar cita', 'route' => 'receptionist.appointment.index', 'patterns' => ['receptionist.appointment.*']],
+        ['label' => 'Seguimiento de citas', 'route' => 'receptionist.appointment.index', 'patterns' => ['receptionist.appointment.*']],
     ];
     if (config('scheduling.enabled')
         && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)

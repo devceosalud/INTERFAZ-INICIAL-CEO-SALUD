@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredAssets = ['FullCalendar', 'AgendaSelection', 'AgendaPatientLookup', 'AgendaPatientDraft',
         'AgendaAppointmentCreate', 'AgendaAppointmentActions', 'AgendaDayGrid', 'AgendaWeekEvent',
         'AgendaWeekBackground', 'AgendaWeekSlots', 'AgendaGuidance', 'AgendaOperationalForm',
-        'AgendaOperationalWorkspace', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
+        'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
     if (requiredAssets.some(name => !window[name])) {
         board.querySelectorAll('button').forEach(button => { button.disabled = true; });
         const notice = document.getElementById('agenda-load-state');
@@ -580,6 +580,11 @@ document.addEventListener('DOMContentLoaded', function () {
         el.doctorFilterSummary.textContent = selected.length + ' profesionales en comparación';
     }
 
+    let feedSequence = 0, feedRunning = false, sessionExpired = false, lastFeedJSON = null;
+    const canAutoRefresh = () => !document.hidden && !sessionExpired && !feedRunning
+        && (!state.selection || state.selection.tipo_contexto==='cita_existente') && !state.draft && !state.appointmentBusy && !operationalWorkspace.hasUnsavedChanges()
+        && !document.querySelector('.modal.show,.swal2-container')
+        && !board.contains(document.activeElement?.closest('input,textarea,select,[contenteditable="true"]'));
     let loadedFilters=null;
     function rememberFilters() {loadedFilters={date:state.date,view:state.view,miniAnchor:state.miniAnchor,compare:state.compare,comparisonDoctorId:state.comparisonDoctorId,
         site:el.site.value,specialty:el.specialty.value,checks:el.doctorChecks.map(c=>c.checked)};}
@@ -589,15 +594,17 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearIdentityContext() {state.identity=lookupModel.blank();state.draft=null;el.documentNumber.value='';el.responsibleSelect.value='';
         paintIdentity(state.identity);paintDraft(draftModel.discard(scheduleSnapshot()));el.serviceSelect.value='';}
     async function load(options={}) {
+        if (options.background && !canAutoRefresh()) return;
         if(!options.committed && !options.preserveContext && !await operationalWorkspace.prepareSelection(null)){restoreFilters();return false;}
         const revision=operationalWorkspace.pendingRevision();
+        const sequence=++feedSequence, snapshot=feedUrl();
+        feedRunning=true;
         if (state.requestController) {
             state.requestController.abort();
         }
 
         state.requestController = new AbortController();
-        board.classList.add('is-loading');
-        hideNotice();
+        if (!options.background) { board.classList.add('is-loading'); hideNotice(); }
 
         try {
             const response = await fetch(feedUrl(), {
@@ -605,12 +612,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 signal: state.requestController.signal,
             });
 
-            if (!response.ok) {
-                throw new Error('El servidor respondió ' + response.status);
+            if ([401,419].includes(response.status) || response.redirected || !(response.headers.get('content-type')||'').includes('application/json')) {
+                sessionExpired=true;
+                throw new Error('La sesión expiró. Conserva tus datos e inicia sesión nuevamente.');
             }
-
+            if (!response.ok) throw new Error('El servidor respondió ' + response.status);
             const payload=await response.json();
+            if (sequence!==feedSequence || snapshot!==feedUrl()) return;
+            if (options.background && (document.hidden || (state.selection && state.selection.tipo_contexto!=='cita_existente') || state.draft || state.appointmentBusy || operationalWorkspace.hasUnsavedChanges()
+                || document.querySelector('.modal.show,.swal2-container') || board.contains(document.activeElement?.closest('input,textarea,select,[contenteditable="true"]')))) return;
             if(!options.committed && !options.preserveContext && revision!==operationalWorkspace.pendingRevision() && !await operationalWorkspace.prepareSelection(null)){restoreFilters();return false;}
+            const fingerprint=JSON.stringify(payload);
+            if(options.background && fingerprint===lastFeedJSON)return;
+            lastFeedJSON=fingerprint;
+            const selectedId=state.selection?.appointment_id;
+            const scrollPositions=options.background?Array.from(board.querySelectorAll('.fc-scroller,#agenda-day-grid')).map(n=>n.scrollTop):[];
             state.payload = payload;
             withdrawalWorkspace.feed(state.payload);
             state.legend = {};
@@ -626,13 +642,26 @@ document.addEventListener('DOMContentLoaded', function () {
             renderTotals();
             resizeCalendar();
             updateDoctorFilterSummary();rememberFilters();
+            if(options.background){
+                // Only replace the calendar projection. An open workspace keeps its fields and selection.
+                if(selectedId){
+                    const current=(payload.eventos||[]).find(e=>String(e.extendedProps?.appointment_id)===String(selectedId));
+                    if(current){
+                        state.selection=current.extendedProps;
+                        el.contextPayment.textContent='Pago: '+(current.extendedProps.estado_pagado||'—');
+                        el.contextState.textContent=current.extendedProps.presentation?.etiqueta||current.extendedProps.estado_cita||'';
+                        board.querySelectorAll('[data-appointment-id="'+selectedId+'"]').forEach(n=>n.classList.add('is-selected'));
+                    }
+                }
+                window.requestAnimationFrame(()=>board.querySelectorAll('.fc-scroller,#agenda-day-grid').forEach((n,i)=>{if(scrollPositions[i]!==undefined)n.scrollTop=scrollPositions[i];}));
+            }
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error(error);
-                showNotice('No se pudo cargar la agenda. Revise la conexión e intente nuevamente.');
+                if(sequence===feedSequence) showNotice(sessionExpired ? error.message : 'Actualización pendiente. Se conservan los datos anteriores; revisa la conexión.');
             }
         } finally {
-            board.classList.remove('is-loading');
+            if(sequence===feedSequence){feedRunning=false;board.classList.remove('is-loading');}
         }
     }
 
@@ -1561,7 +1590,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const reserveReason = document.getElementById('agenda-reservation-reason');
         reserveReason.hidden = reservation.allowed;
         reserveReason.textContent = reservation.reason;
-        el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Confirmar cita');
+        el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Registrar pago y cita');
         const readiness = state.selection?.appointment_id
             ? operationalWorkspace.reservationConfirmation()
             : window.AgendaOperationalForm.bookingReadiness({
@@ -1627,6 +1656,8 @@ document.addEventListener('DOMContentLoaded', function () {
         state.draft = draft && draft.open ? draft : null;
         el.patientModal.hidden = !state.draft;
         document.getElementById(state.draft ? 'agenda-op-modal-host' : 'agenda-op-workspace-host').prepend(document.getElementById('agenda-operational-fields'));
+        const reasonHost=document.getElementById(state.draft?'agenda-reason-modal-host':'agenda-reason-workspace-host'),reasonField=document.getElementById('agenda-consultation-reason-field');
+        if(reasonHost&&reasonField)reasonHost.appendChild(reasonField);
         document.getElementById('agenda-op-capture-panel').hidden = Boolean(state.draft);
         if (state.draft) { document.getElementById('agenda-draft-more').open = false; }
         el.patientModal.setAttribute('aria-hidden', state.draft ? 'false' : 'true');
@@ -1692,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         el.draftSave.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
         el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.textContent = 'Guardar y confirmar cita';
+        el.draftSaveSchedule.textContent = 'Registrar pago y cita';
         window.requestAnimationFrame(function () {
             el.draftNombre.focus();
         });
@@ -2079,7 +2110,7 @@ document.addEventListener('DOMContentLoaded', function () {
     el.patientDraft.addEventListener('submit', function (event) {
         event.preventDefault();
         if (state.draft) {
-            el.draftMessage.textContent = 'Para guardar, utiliza «Guardar reserva» o «Guardar y confirmar cita».';
+            el.draftMessage.textContent = 'Para guardar, utiliza «Guardar reserva» o «Registrar pago y cita».';
         }
     });
     el.patientRegister.addEventListener('click', function () {
@@ -2533,4 +2564,10 @@ document.addEventListener('DOMContentLoaded', function () {
     applyDoctorVisibility();
     renderMiniCalendar();
     load();
+    const autoRefresh=window.AgendaRefresh.create({run:()=>load({background:true,preserveContext:true}),enabled:canAutoRefresh});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden){autoRefresh.stop();}else autoRefresh.start(true);});
+    window.addEventListener('pagehide',()=>{autoRefresh.stop();++feedSequence;state.requestController?.abort();feedRunning=false;});
+    window.addEventListener('pageshow',()=>autoRefresh.start(true));
+    window.addEventListener('focus',()=>{if(!document.hidden)autoRefresh.start(true);});
+    autoRefresh.start();
 });

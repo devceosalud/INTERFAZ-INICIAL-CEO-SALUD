@@ -41,6 +41,7 @@ final class AgendaLegend
     public static function entries(): array
     {
         return [
+            'LISTO_REEVALUACION' => ['clave'=>'LISTO_REEVALUACION','etiqueta'=>'Listo para reevaluación','glifo'=>'R','color'=>'#7c2d12','fondo'=>'#fed7aa','descripcion'=>'Regresa al médico dentro de la misma cita; sin nuevo horario ni cobro.'],
             'CONCILIAR_PAGO' => ['clave'=>'CONCILIAR_PAGO','etiqueta'=>'Atribución de pago pendiente','glifo'=>'?','color'=>'#374151','fondo'=>'#e8eaed','descripcion'=>'Existe información económica sin atribución suficiente; no se presenta como pago real ni ausencia cierta de pago.'],
             'SIN_PAGO_REAL' => ['clave'=>'SIN_PAGO_REAL','etiqueta'=>'Sin pago real acreditado','glifo'=>'—','color'=>'#374151','fondo'=>'#ffffff','descripcion'=>'No hay dinero real atribuido; revisar la etiqueta de conciliación si existe información histórica.'],
             'PAGO_REAL' => ['clave'=>'PAGO_REAL','etiqueta'=>'Pago real registrado','glifo'=>'S/','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Existe dinero registrado y atribuido. No implica confirmación ni adelanto suficiente.'],

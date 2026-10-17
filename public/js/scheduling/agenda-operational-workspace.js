@@ -16,7 +16,7 @@
             'proofs':ui.proof,'proof_review.reviewed':()=>byId('proof-reviewed'),
             'discount.value':()=>byId('discount-value'),'discount.type':()=>byId('discount-type'),
             'referral.origin':()=>byId('referral-origin'),'motivo_exoneracion':()=>byId('exemption-reason'),
-            'autorizado_por':ui.authorized,'service_id':()=>document.getElementById('agenda-service-select')
+            'autorizado_por':ui.authorized,'motivo_consulta':ui.reason,'service_id':()=>document.getElementById('agenda-service-select')
         }});
         const documentFile=byId('document-file');
         let replacementDocument=null,replacementKey=null;
@@ -70,7 +70,7 @@
         const base = config.base;
         let buttonsBeforeWork = [], lastPosition = null;
         function setWorking(value) {
-            working = value;
+            working = value;ui.reason.readOnly=value;
             const fieldsHost=document.getElementById('agenda-operational-fields');
             if(fieldsHost)fieldsHost.inert=value;
             if (value) {
@@ -124,7 +124,7 @@
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
-                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
+                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Un nuevo pago real positivo confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el profesional.';
             }
         }
@@ -338,6 +338,14 @@
         }
         async function register(options) {
             if (working) { return; }
+            const reasonText=ui.reason.value.replace(/^[\s\u200B\uFEFF]+|[\s\u200B\uFEFF]+$/g,'');
+            const reasonError=byId('reason-error');
+            if(!reasonText||reasonText.length>2000){
+                const message=!reasonText?'Escribe el motivo de consulta para registrar la cita o reserva.':'El motivo de consulta admite hasta 2000 caracteres.';
+                if(reasonError){reasonError.hidden=false;reasonError.textContent=message;}
+                ui.reason.setAttribute('aria-invalid','true');ui.reason.scrollIntoView?.({block:'nearest'});ui.reason.focus();config.notice(message,true);return;
+            }
+            if(reasonError){reasonError.hidden=true;reasonError.textContent='';}ui.reason.setAttribute('aria-invalid','false');
             // "Guardar reserva" never creates a payment/operation from a draft OCR suggestion.
             // Actual advances remain available through the explicit "Registrar adelanto" flow
             // on an existing reservation; that flow preserves all bank duplicate protections.
@@ -364,7 +372,7 @@
                 const payload = config.payload(context, options.patientId || 1, options.serviceId, options.ownerId);
                 registrationKey = registrationKey || root.crypto.randomUUID();
                 Object.assign(payload, { request_key: registrationKey, mode: options.pending ? 'RESERVE' : 'CONFIRM',
-                    booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
+                    booking_type: options.bookingType, motivo_consulta: reasonText, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null,
                     payment: options.pending ? model.payment('0','EFECTIVO','','') : payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
@@ -500,12 +508,20 @@
                 if(!confirm && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
+                const currentContext=config.context();
+                if(currentContext && String(currentContext.appointment_id)===String(id))currentContext.estado_agenda=response.appointment.estado_agenda;
+                ui['confirm-reservation'].hidden=response.appointment.estado_agenda!=='PENDIENTE_CONFIRMACION';
+                if(byId('confirmation-reason'))byId('confirmation-reason').hidden=ui['confirm-reservation'].hidden;
                 paymentKey = null; ui.amount.value = '0'; if(!confirm)await receipt.reset(); ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);
-                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
+                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Pago registrado y horario confirmado. Saldo: S/ ' + response.economy.saldo);
             } catch (e) { rejected(e, 'payment'); showPlaced(e, 'payment'); }
             finally { setWorking(false); }
         }
         function showPlaced(error, context) {
+            if(error.errors?.motivo_consulta){
+                const message=error.errors.motivo_consulta[0],fieldError=byId('reason-error');
+                if(fieldError){fieldError.hidden=false;fieldError.textContent=message;}ui.reason.setAttribute('aria-invalid','true');ui.reason.scrollIntoView?.({block:'nearest'});ui.reason.focus();config.notice(message,true);return;
+            }
             const placed = root.AgendaGuidance.place(error.message, error.status, context);
             const errors = error.errors || {};
             const paymentError = document.getElementById('agenda-op-payment-error');

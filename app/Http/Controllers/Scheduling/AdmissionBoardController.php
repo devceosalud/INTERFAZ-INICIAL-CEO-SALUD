@@ -21,7 +21,7 @@ class AdmissionBoardController extends Controller
             'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre']),
             'doctors'=>Doctor::orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
             'specialties'=>Specialty::orderBy('nombre')->get(['id','nombre']),
-            'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,
+            'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,'visuals'=>AdmissionBoardService::VISUAL_FILTERS,
         ])->header('Cache-Control','private, no-store')->header('Referrer-Policy','same-origin');
     }
 
@@ -33,6 +33,8 @@ class AdmissionBoardController extends Controller
             'doctor_id'=>'nullable|integer|exists:doctors,id','specialty_id'=>'nullable|integer|exists:specialties,id',
             'patient'=>'nullable|string|max:100','estado'=>['nullable',Rule::in(AdmissionStatus::STATES)],
             'grupo'=>['nullable',Rule::in(array_merge(array_diff(array_keys(AdmissionStatus::LABELS),['total']),['reservas','otros']))],
+            'visual'=>['nullable',Rule::in(array_keys(AdmissionBoardService::VISUAL_FILTERS))],
+            'only_reevaluations'=>'nullable|boolean',
             'page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.
@@ -54,6 +56,16 @@ class AdmissionBoardController extends Controller
         return response()->json(isset($input['revision'])&&hash_equals($revision,$input['revision'])
             ? ['unchanged'=>true,'revision'=>$revision] : $payload+['revision'=>$revision])
             ->header('Cache-Control','private, no-store');
+    }
+
+    public function reverseCare(Request $r, int $appointmentId, AdmissionCareService $service)
+    {
+        abort_unless($r->user()->hasAnyRole(['ADMINISTRADOR','ADMISION']), 403);
+        abort_if(array_diff(array_keys($r->all()), ['expected_event_id','expected_state','request_key','motivo','_token']),422);
+        $data = $r->validate(['request_key'=>'required|uuid','expected_event_id'=>'required|integer|min:1',
+            'expected_state'=>'required|string|max:40','motivo'=>'required|string|min:3|max:500']);
+        $a = $service->reverse($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
     }
 
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)

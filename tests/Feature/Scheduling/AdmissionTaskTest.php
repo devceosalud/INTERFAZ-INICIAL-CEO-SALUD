@@ -153,7 +153,7 @@ class AdmissionTaskTest extends TestCase
             'text' => 'Otra tarea', 'request_key' => (string) Str::uuid(), 'total_pagado' => 900,
         ])->assertUnprocessable();
         $this->createTask($a, '  ')->assertUnprocessable();
-        $this->createTask($a, str_repeat('A', 1001))->assertUnprocessable();
+        $this->createTask($a, str_repeat('A', 16001))->assertUnprocessable();
         $id = DB::table('appointment_admission_tasks')->value('id');
         $this->toggle($a, $id, false, true)->assertOk();
         $this->toggle($a, $id, false, true)->assertConflict();

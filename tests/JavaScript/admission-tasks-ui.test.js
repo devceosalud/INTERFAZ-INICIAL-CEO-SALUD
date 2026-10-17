@@ -13,7 +13,7 @@ test('Nicol tasks are per-appointment, editable only by admins and complete-only
     assert.match(source,/can_complete_operational_tasks === true/);
     assert.match(source,/const appointmentId = Number\(payload\.appointment\.id\)/);
     assert.match(source,/document\.createElement|const node=\(tag,text,className\)/);
-    assert.match(source,/method:'POST',body:JSON\.stringify\(\{text,request_key:requestKey\}\)/);
+    assert.match(source,/method:'POST',body:JSON\.stringify\(\{text,request_key:observationRequest\.key\}\)/);
     assert.match(source,/method:'PATCH',body:JSON\.stringify\(\{expected_completed:expected,completed:!expected\}\)/);
     assert.match(routes,/\/admission\/appointments\/\{appointmentId\}\/tasks'/);
     assert.match(routes,/\/tasks\/\{taskId\}\/completion'/);

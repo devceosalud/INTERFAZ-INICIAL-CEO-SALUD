@@ -88,6 +88,7 @@
                         <select class="agenda-field__input" id="agenda-draft-service" aria-required="true" aria-describedby="agenda-draft-service-error"></select>
                         <small id="agenda-draft-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</small>
                     </label>
+                    <div id="agenda-reason-modal-host" class="agenda-patient-form-grid__wide"></div>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Comercial dueño</span>
                             <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>
@@ -208,7 +209,7 @@
                 <p class="agenda-draft__message" id="agenda-draft-message" role="status" aria-live="polite"></p>
             </div>
 
-            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
+            <p class="agenda-guidance" id="agenda-draft-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. La exoneración requiere autorización expresa.</p>
             <footer class="agenda-patient-dialog__actions">
                 <span id="agenda-patient-write-policy">
                     {{ $canWritePatients ? 'Guardado habilitado para Administrador, Admisión, Recepción y Comercial.' : 'Solo lectura: guardar requiere Administrador, Admisión, Recepción o Comercial.' }}
@@ -216,7 +217,7 @@
                 <button type="button" class="agenda-btn" id="agenda-draft-cancel">Cancelar</button>
                 <button type="button" class="agenda-btn" id="agenda-draft-save" @disabled(!$canWritePatients)>Guardar reserva</button>
                 <button type="button" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
-                    Guardar y confirmar cita
+                    Registrar pago y cita
                 </button>
             </footer>
         </form>

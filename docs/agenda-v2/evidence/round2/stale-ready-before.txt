@@ -1,0 +1,17 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:26.809, Memory: 42.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\Scheduling\AgendaV2Round2Test::test_stale_automatic_ready_header_cannot_color_a_partial_appointment_or_enter_active_queue
+Failed asserting that true is identical to false.
+
+<worktree agenda-v2>\vendor\laravel\framework\src\Illuminate\Testing\AssertableJsonString.php:243
+<worktree agenda-v2>\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:664
+<worktree agenda-v2>\tests\Feature\Scheduling\AgendaV2Round2Test.php:40
+
+FAILURES!
+Tests: 1, Assertions: 4, Failures: 1.

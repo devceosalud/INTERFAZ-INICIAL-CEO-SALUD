@@ -16,8 +16,8 @@
 
                 @csrf
                 <input type="hidden" name="request_key" value="{{ (string) \Illuminate\Support\Str::uuid() }}">
-                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva (con dinero protege horario)</option><option value="CONFIRM">Confirmar cita (requiere 50% real o exoneración autorizada)</option></select></label>
-                <p>El precio se calcula en el servidor. Registrar adelanto no confirma automáticamente.</p>
+                <label class="form-label">Acción <select name="mode" class="form-control"><option value="RESERVE">Guardar reserva sin pago</option><option value="CONFIRM">Registrar pago y cita / exoneración autorizada</option></select></label>
+                <p>El precio se calcula en el servidor. Cualquier pago real positivo confirma automáticamente la cita. La exoneración requiere autorización expresa.</p>
 
                 <div class="modal-body">
 

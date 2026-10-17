@@ -21,6 +21,11 @@ class ApplicationAndAuthenticationSmokeTest extends TestCase
             $this->assertSame('ceosalud_qa_catalog_suite',config('database.connections.mysql.database'));
             $this->assertSame('127.0.0.1',config('database.connections.mysql.host'));
             $this->assertSame(33323,(int)config('database.connections.mysql.port'));
+        } elseif(($_ENV['AGENDA_V2_QA_RUNTIME']??getenv('AGENDA_V2_QA_RUNTIME'))==='agenda-v2-11.8.9') {
+            $this->assertSame('mysql',config('database.default'));
+            $this->assertSame('ceosalud_qa_agenda_v2_suite',config('database.connections.mysql.database'));
+            $this->assertSame('127.0.0.1',config('database.connections.mysql.host'));
+            $this->assertSame(33324,(int)config('database.connections.mysql.port'));
         } else {
             $this->assertSame('sqlite', config('database.default'));
             $this->assertSame(':memory:', config('database.connections.sqlite.database'));
