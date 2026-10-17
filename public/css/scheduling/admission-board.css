@@ -24,3 +24,15 @@
 .admission-detail .admission-task-editor textarea:focus-visible { outline: 2px solid #217d7c; outline-offset: 2px; }
 .admission-detail .admission-task-editor button { justify-self: start; }
 .admission-detail .admission-task-status { font-size: 12px; font-weight: 600; color: #97242f; margin: 0; }
+
+/* Admission hotfix: readable state chips, with compact rows and explicit flag. */
+.admission-tabs{display:flex;gap:8px;margin:0 0 12px}
+.admission-tabs [aria-selected="true"]{background:var(--ad-brand);border-color:var(--ad-brand);color:#fff}
+.admission-status{min-width:220px}
+.admission-status .admission-tag{display:inline-flex;align-items:center;margin-right:4px;font-size:12.5px;line-height:1.25;font-weight:700;padding:4px 8px;min-height:24px;white-space:normal;margin-bottom:4px}
+.admission-status .admission-tag--booking{font-size:12px}
+.admission-manual-check{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.3;margin:5px 0 0;cursor:pointer}
+.admission-manual-check input{width:16px;height:16px;flex:none;accent-color:#c2410c;cursor:pointer}
+.admission-table .admission-row--attended>td{color:#fff}
+.admission-table .admission-row--attended small{color:#f0fdf4}
+.admission-table tr.is-selected{box-shadow:inset 4px 0 0 #0e7490}

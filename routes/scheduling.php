@@ -28,6 +28,10 @@ Route::middleware([
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
             ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
+        Route::patch('/scheduling-mvp/admission/appointments/{appointmentId}/manual-reevaluation',
+            [\App\Http\Controllers\Scheduling\ManualReevaluationController::class, 'update'])
+            ->whereNumber('appointmentId')->middleware('permission:'.SchedulingCapability::UPDATE)
+            ->name('scheduling.mvp.admission.manual-reevaluation');
         $taskController = \App\Http\Controllers\Scheduling\AdmissionTaskController::class;
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/tasks', [$taskController, 'store'])
             ->whereNumber('appointmentId')->middleware('throttle:20,1')

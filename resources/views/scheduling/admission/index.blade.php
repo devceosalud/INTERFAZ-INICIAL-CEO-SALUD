@@ -22,7 +22,12 @@
         <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
         @foreach($labels as $key=>$label)<button type="button" class="admission-kpi" data-group="{{ $key === 'total' ? '' : $key }}"><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>@endforeach
         </section>
+        <nav class="admission-tabs" role="tablist" aria-label="Vista de citas">
+            <button type="button" id="admission-tab-citas" role="tab" aria-selected="true" aria-controls="admission-results" data-admission-tab="citas" class="admission-btn">Citas</button>
+            <button type="button" id="admission-tab-reevaluaciones" role="tab" aria-selected="false" tabindex="-1" aria-controls="admission-results" data-admission-tab="reevaluaciones" class="admission-btn">Reevaluaciones</button>
+        </nav>
         <form id="admission-filters" class="admission-filters" autocomplete="off">
+            <input type="hidden" name="tab" id="admission-tab" value="citas">
             <label>Desde<input id="admission-date" name="fecha" type="date" value="{{ $today }}" required></label>
             <label>Hasta<input id="admission-until" name="hasta" type="date" value="{{ $today }}" required></label>
             <label>Sede<select name="site_id" id="admission-site"><option value="">Todas / sin sede</option>
@@ -38,7 +43,7 @@
         <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
         <div class="admission-workspace">
             <section class="admission-main" aria-label="Citas y disponibilidad">
-                <div class="admission-table-card"><div class="admission-section-head"><h2>Citas <span id="admission-count"></span></h2><span id="admission-reservations"></span></div>
+                <div class="admission-table-card" id="admission-results" role="tabpanel" aria-labelledby="admission-tab-citas"><div class="admission-section-head"><h2>Citas <span id="admission-count"></span></h2><span id="admission-reservations"></span></div>
                     <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora / fecha</th><th>Paciente</th><th>Médico / servicio</th><th>Atención / Agenda</th><th>Llegada / inicio / fin</th><th>Precio / abonado / saldo</th><th>Responsable</th><th></th></tr></thead><tbody id="admission-rows"></tbody></table></div>
                     <div class="admission-pagination"><button type="button" id="admission-prev" class="admission-btn">Anterior</button><span id="admission-page"></span><button type="button" id="admission-next" class="admission-btn">Siguiente</button></div>
                     <dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales del conjunto filtrado; incluye todos los estados. Cobros acreditados y snapshots históricos se muestran por separado. Los casos sin atribución financiera se excluyen de abonados y saldos hasta conciliación. TICKET es un documento interno, no facturación electrónica.</p>

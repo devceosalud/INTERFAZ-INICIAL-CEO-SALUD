@@ -33,6 +33,7 @@ class AdmissionBoardController extends Controller
             'doctor_id'=>'nullable|integer|exists:doctors,id','specialty_id'=>'nullable|integer|exists:specialties,id',
             'patient'=>'nullable|string|max:100','estado'=>['nullable',Rule::in(AdmissionStatus::STATES)],
             'grupo'=>['nullable',Rule::in(array_merge(array_diff(array_keys(AdmissionStatus::LABELS),['total']),['reservas','otros']))],
+            'tab'=>'nullable|in:citas,reevaluaciones',
             'page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.
