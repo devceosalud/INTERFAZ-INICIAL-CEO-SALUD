@@ -405,7 +405,7 @@ class AgendaAppointmentWriteTest extends TestCase
     {
         return array_merge([
             'patient_id' => $this->patient->id,
-            'doctor_id' => $this->catalog['doctor']->id,
+            'motivo_consulta'=>'Motivo ficticio para prueba de registro','doctor_id' => $this->catalog['doctor']->id,
             'service_id' => $this->catalog['service']->id,
             'site_id' => $this->catalog['schedule']->site_id,
             'fecha_cita' => substr((string) $this->catalog['schedule']->fecha_cita, 0, 10),

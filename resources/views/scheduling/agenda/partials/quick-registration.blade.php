@@ -76,6 +76,12 @@
                 </select>
             </label>
             <label class="agenda-field"><span class="agenda-field__label">Modalidad</span><select id="agenda-op-price-modality" class="agenda-field__input"><option value="CONSULTATION">Primera consulta / atención normal</option><option value="REEVALUATION" disabled>Reevaluación indicada</option></select></label>
+            <div id="agenda-reason-workspace-host" class="agenda-consultation-reason"><label id="agenda-consultation-reason-field" class="agenda-field agenda-consultation-reason" for="agenda-op-reason">
+                <span class="agenda-field__label"><span>Motivo de consulta <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
+                <textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000" aria-required="true" aria-describedby="agenda-op-reason-error" placeholder="Describe brevemente por qué viene el paciente"></textarea>
+                <span id="agenda-op-reason-error" class="agenda-field-error" role="alert" hidden></span>
+            </label>
+            </div>
             <div id="agenda-reevaluation-fields" hidden>
                 <label class="agenda-field"><span class="agenda-field__label">Reevaluación comercial vinculada</span><select id="agenda-op-commercial-service" class="agenda-field__input" disabled></select></label>
                 <label class="agenda-field"><span class="agenda-field__label">N.º de indicación médica acreditada</span><input id="agenda-op-indication" type="number" min="1" class="agenda-field__input" disabled></label>

@@ -108,7 +108,7 @@ class ActiveDoctorServiceCatalogTest extends TestCase
             $row = $catalog[$this->current->doctor_id][0];
             return $row['disponible'] === true && $row['precio'] === 150.0;
         });
-        $this->postJson(route('scheduling.mvp.agenda.appointments.store'), ['patient_id' => $historical->patient_id, 'doctor_id' => $this->current->doctor_id, 'service_id' => $this->current->service_id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30])->assertCreated();
+        $this->postJson(route('scheduling.mvp.agenda.appointments.store'), ['motivo_consulta'=>'Motivo ficticio de regresión del catálogo','patient_id' => $historical->patient_id, 'doctor_id' => $this->current->doctor_id, 'service_id' => $this->current->service_id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30])->assertCreated();
         $this->assertDatabaseHas('appointments', ['precio_programado' => 150, 'estado_pagado' => 'PENDIENTE']);
         $this->assertSame($before, $historical->fresh()->getAttributes());
     }

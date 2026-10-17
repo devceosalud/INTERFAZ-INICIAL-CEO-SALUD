@@ -47,7 +47,7 @@ class AgendaV2ConcurrencyTest extends TestCase
     private function registration(int $patient):array
     {
         return ['path'=>'/scheduling-mvp/agenda/registrations','payload'=>['request_key'=>(string)Str::uuid(),
-            'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$patient,'doctor_id'=>$this->catalog['doctor']->id,
+            'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro','patient_id'=>$patient,'doctor_id'=>$this->catalog['doctor']->id,
             'service_id'=>$this->catalog['service']->id,'fecha_cita'=>$this->catalog['schedule']->fecha_cita,
             'hora_cita'=>'08:00','duracion_cita'=>30,'payment'=>['amount'=>'30','method'=>'EFECTIVO']]];
     }

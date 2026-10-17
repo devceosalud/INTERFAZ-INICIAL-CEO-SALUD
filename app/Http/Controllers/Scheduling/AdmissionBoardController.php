@@ -21,7 +21,7 @@ class AdmissionBoardController extends Controller
             'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre']),
             'doctors'=>Doctor::orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
             'specialties'=>Specialty::orderBy('nombre')->get(['id','nombre']),
-            'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,
+            'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,'visuals'=>AdmissionBoardService::VISUAL_FILTERS,
         ])->header('Cache-Control','private, no-store')->header('Referrer-Policy','same-origin');
     }
 
@@ -33,6 +33,8 @@ class AdmissionBoardController extends Controller
             'doctor_id'=>'nullable|integer|exists:doctors,id','specialty_id'=>'nullable|integer|exists:specialties,id',
             'patient'=>'nullable|string|max:100','estado'=>['nullable',Rule::in(AdmissionStatus::STATES)],
             'grupo'=>['nullable',Rule::in(array_merge(array_diff(array_keys(AdmissionStatus::LABELS),['total']),['reservas','otros']))],
+            'visual'=>['nullable',Rule::in(array_keys(AdmissionBoardService::VISUAL_FILTERS))],
+            'only_reevaluations'=>'nullable|boolean',
             'page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.

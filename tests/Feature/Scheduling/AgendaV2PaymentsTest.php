@@ -25,7 +25,7 @@ class AgendaV2PaymentsTest extends \Tests\Support\AgendaV2TestCase
     }
     private function payload(array $extra=[]): array
     {
-        return $extra+['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR',
+        return $extra+['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id'=>$this->createPatient($this->admission,['numero_identidad'=>(string)(79000000+\App\Models\Patient::count()),'historia_clinica'=>'V2-'.Str::uuid()])->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['service']->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','duracion_cita'=>30];
@@ -96,8 +96,8 @@ class AgendaV2PaymentsTest extends \Tests\Support\AgendaV2TestCase
             $this->get(route('admissionit.appointment.index'))->assertOk()->assertDontSee('id="appointmentModalCreate"',false)->assertDontSee('Registrar cita');
         }
         $this->admin->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
-        $this->actingAs($this->admin)->postJson(route('admissionit.appointment.store'),[])->assertUnprocessable();
-        $this->get(route('admissionit.appointment.index'))->assertOk()->assertSee('id="appointmentModalCreate"',false);
+        $this->actingAs($this->admin)->postJson(route('admissionit.appointment.store'),[])->assertForbidden();
+        $this->get(route('admissionit.appointment.index'))->assertOk()->assertDontSee('id="appointmentModalCreate"',false);
         $this->assertDatabaseCount('payments',0);
     }
 }

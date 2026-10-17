@@ -23,7 +23,7 @@ class AgendaSemaphorizationTest extends TestCase
         $this->catalog=$this->createAppointmentCatalog();$this->catalog['schedule']->update(['hora_fin'=>'18:00']);$this->catalog['rate']->update(['nombre'=>'TARIFA ESTANDAR','tipo_tarifa'=>'MONTO_FIJO']);
         $this->patient=$this->createPatient($this->actor,['nombre'=>'PACIENTE_PRIVADO_SEMAFORO_QLZ']);$this->actingAs($this->actor);
     }
-    private function payload(array $changes=[]):array{return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR',
+    private function payload(array $changes=[]):array{return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
         'patient_id'=>$this->patient->id,'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['service']->id,
         'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','duracion_cita'=>30],$changes);}
     private function feed(string $view='dia'){return $this->getJson('/scheduling-mvp/agenda/feed?'.http_build_query(['vista'=>$view,'fecha'=>$this->catalog['schedule']->fecha_cita,'doctor_id'=>[$this->catalog['doctor']->id]]));}
@@ -91,10 +91,10 @@ class AgendaSemaphorizationTest extends TestCase
     public function test_explicit_wound_is_audited_idempotent_and_never_inferred_or_financial(string $entry):void{
         $data=$this->payload(['has_diabetic_wound'=>true]);$url='/scheduling-mvp/agenda/registrations';
         if($entry==='legacy'){$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));$url='/admissionist/appointment/store';$data['service_id']=$this->catalog['doctorService']->id;}
-        $r=$this->postJson($url,$data)->assertSuccessful();$id=$entry==='legacy'?$r->json('appointment_id'):$r->json('appointment.appointment_id');
+        $r=$this->agendaCreationResponse($entry,$data)->assertSuccessful();$id=$r->json('appointment.appointment_id');
         $a=Appointment::findOrFail($id);$this->assertTrue($a->has_diabetic_wound);$this->assertFalse($a->is_postoperative);$this->assertEquals(100,$a->precio_programado);$this->assertDatabaseCount('payments',0);
-        $this->postJson($url,$data)->assertSuccessful();$this->assertDatabaseCount('appointments',1);
-        $this->postJson($url,array_replace($data,['has_diabetic_wound'=>false]))->assertConflict();
+        $this->agendaCreationResponse($entry,$data)->assertSuccessful();$this->assertDatabaseCount('appointments',1);
+        $this->agendaCreationResponse($entry,array_replace($data,['has_diabetic_wound'=>false]))->assertConflict();
         $this->assertTrue($a->events()->where('event_type','PRECIO_REGISTRADO')->firstOrFail()->metadata['has_diabetic_wound']);
         $this->actor->revokePermissionTo(C::UPDATE);$this->patchJson('/scheduling-mvp/agenda/appointments/'.$id.'/notes',['has_diabetic_wound'=>false])->assertForbidden();$this->assertTrue($a->fresh()->has_diabetic_wound);
     }

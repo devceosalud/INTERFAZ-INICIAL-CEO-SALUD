@@ -1,54 +1,57 @@
 # QA y evidencias
 
-## Ambiente y baseline
+## Resultados de la segunda ronda
 
-PHP 8.3.35 del runtime local existente, Laravel 9.52.21, PHPUnit 9.6.34, Node 26.3.0, MariaDB aislada 11.8.9 y Chrome headless 155.0.8059.79. Todos los pacientes, usuarios, pagos y comprobantes utilizados son ficticios. Servicios externos de la aplicación bloqueados con fakes; navegador limitado a localhost con CSP y bloqueo de conexiones externas. CSRF real habilitado en el router del navegador.
+Continuación de `58c5f927f1d5e333b68191b5396cca9671ca28bb` sobre el mismo PR Draft #46. PHP 8.3.35, Laravel 9.52.21, PHPUnit 9.6.34, Node 26.3.0, MariaDB aislada 11.8.9 y Chrome real headless 155.0.8059.79 con Playwright.
 
-Se extrajo una copia intacta de 9c3b93a y se ejecutó antes de adaptar los tests: **1.013 pruebas PHP, 8.230 aserciones, cero errores/fallos/omisiones**. JavaScript baseline: **302/302**. La primera ejecución dentro del sandbox encontró una limitación de is_writable de PHP en Windows; se corrigió ejecutando las suites autorizadas fuera del sandbox, manteniendo las conexiones ficticias verificadas.
+| Suite terminada | Pruebas | Aserciones | Fallos / errores / omisiones |
+|---|---:|---:|---|
+| PHP SQLite completa | 1053 | 8926 | 0 / 0 / 0 |
+| PHP MariaDB completa | 1058 | 8974 | 0 / 0 / 0 |
+| JavaScript completa | 312 | — | 0 / 0 / 0 |
+| Chrome, recorrido ronda 2 | 10 escenarios + matriz | — | 0 errores de página |
 
-## Resultados de verificación
+Los JUnit y logs completos se conservan localmente en `storage/app/qa-v2/round2/`. [Resumen sanitizado](evidence/RESUMEN.json), [estados/HTTP Chrome antes](evidence/round2/before-results.json), [después](evidence/round2/after-results.json) y [manifiesto SHA-256](evidence/FUENTES_SHA256.json). El SHA exacto de ejecución se registra aparte en el PR y en el registro local ignorado para no crear una referencia circular en su commit. CI se informa por separado con su estado real.
 
-La suite SQLite completa de v2 registra **1.039 pruebas / 8.513 aserciones**, sin fallos ni omisiones. JavaScript ampliado: **309/309**, sin fallos ni omisiones. La suite MariaDB completa registra **1.044 pruebas / 8.561 aserciones**, sin errores, fallos ni omisiones; incluye cinco carreras de procesos HTTP reales, Unit y Feature. Chrome registra **10/10 escenarios y cero errores JavaScript**. El SHA exacto probado se registra junto al resumen de ejecución y en el PR. No se presenta una compilación como prueba funcional.
+## Investigación y regresión
 
-Los 26 escenarios PHP nuevos cubren pagos, permisos negativos, cambios simultáneos/versiones, idempotencia, cola, colores críticos, Lima al cruzar medianoche UTC, migración sobre datos ficticios heredados y reversión. Las cinco carreras MariaDB comprueban: misma UUID con un pago/ticket/cita; dos cobros por el mismo intervalo con un único ganador; actualizaciones de procedimientos con una versión perdedora; reintento simultáneo de realización con una única auditoría; dos reversiones con una única corrección.
+La matriz se ejecutó primero en el código anterior: no hubo paso automático parcial. Auditoría original: SEND explícito anterior, origen MANUAL; véase [diagnóstico](RONDA_2_DIAGNOSTICO_Y_GUIA.md). Una prueba de integración nueva fuerza una cabecera READY/AUTOMATIC 2/1: [falla antes](evidence/round2/stale-ready-before.txt) y pasa con la defensa de lectura.
 
-Tres pruebas nuevas de `doctor-service-compatibility.test.js` verifican el refresco de Bootstrap Select después del cálculo, la conservación de selecciones válidas, apertura del modal, cambios de excepción y funcionamiento sin plugin. El escenario Chrome del maestro utiliza el desplegable visual real para MFR y Traumatología; comprueba además HTTP 422 sin autorización. No modifica registros reales de la profesional reportada.
+`AgendaV2Round2Test` añade 14 casos, incluida matriz parametrizada, ambos feeds y cola en otra sesión, desmarcar realización, origen/autor manual, retirada auditada, sin escrituras clínicas/económicas, motivo requerido en todos los tipos/entradas y modos de pago, normalización Unicode, acceso privado e historia sin backfill, observación de 1 carácter/espacios/1001 caracteres/máximo técnico, legado bloqueado para cuatro roles y filtros/resúmenes consistentes.
 
-Chrome usa tres sesiones de usuario (ADMINISTRADOR, ADMISION y COMERCIAL), escritorio 1440×1000 y móvil 390×844. El runner comprueba selección no guardada hasta confirmar, realizados, decisión manual, HTTP 403, actualización compartida sin recarga, cola ordenada, conservación de texto y casillas después de perder foco, reversión con motivo, confirmación automática desde panel de pago, ausencia del botón adicional tras pagar, CSRF 419 y exclusión de Clarity. Guarda capturas y errores JavaScript; cualquier error de página hace fallar la ejecución.
+Las suites completas conservan precios y compatibilidad del PR #45, confirmación automática con pago, Caja, adelantos, OCR, adicionales, fuera de horario, reprogramación, duplicados/UUID, acreditaciones clínicas días 0/1/15/16, auditoría, documentos privados y roles. MariaDB incluye las cinco carreras originales con procesos separados y barrera de sincronización: UUID/pago único, dos pagos por intervalo, versión de procedimientos, reintento de realización y reversión concurrente.
 
-## Contratos de tests existentes
+Los tests válidos reciben motivos ficticios explícitos. Se adapta el contrato deliberadamente retirado: cada caso económico de creación heredada primero comprueba 403 y luego ejecuta la creación por Agenda operativa conservando sus aserciones financieras, de evidencias y duplicados. `agendaCreationResponse` es exclusivamente un helper de tests; no altera rutas productivas ni respuestas. No hay override global de HTTP para introducir motivos, casos omitidos ni pruebas eliminadas. Los tests negativos nuevos envían directamente el motivo vacío a los endpoints reales.
 
-La primera suite v2 completa identificó expectativas incompatibles con el cambio solicitado: pagos positivos que debían permanecer pendientes y operadores ADMISION/COMERCIAL creando por el adaptador heredado. No se desactivaron casos ni se relajaron las comprobaciones de importes, duplicados, permisos o evidencias. Se actualizaron esas expectativas a CONFIRMADA, se ejercitó el adaptador conservado con autorización ADMINISTRADOR y se añadieron 403 para los roles bloqueados. Los perfiles bloqueados continúan el flujo completo por Agenda operativa.
+## Chrome y calidad visual
 
-Los tests de privacidad/conciliación de reservas pagadas pendientes usan ahora fixtures históricos explícitos: no se eliminó esa cobertura. Los tests económicos de días 0/1/15/16 conservan sus precios, acreditación y evidencias. Las pruebas de MariaDB reutilizan el aislamiento DDL existente y preservan únicamente URLs heredadas bajo 127.0.0.1:9, para que los fakes HTTP sigan verificándose sin tráfico externo.
+Tres contextos autenticados de Chrome (ADMINISTRADOR, ADMISION, COMERCIAL), CSRF real y únicamente datos ficticios. La matriz confirma 2/0, 2/1 sin autorización, 2/1 MANUAL explícito, 2/2 automático, corrección a 1/2, 3/2, 3/3 y 0/0. Se comprueban respuestas HTTP, origen y contadores; actualización entre las dos agendas y Nicol sin recarga.
 
-## Matriz de aceptación
+Diez recorridos: sincronización; búsqueda y todos los filtros; borradores al filtrar/cambiar pestaña/recibir cambios remotos y 409; motivo histórico y observación 1 carácter; motivo obligatorio/foco/422 conserva texto/reserva+pago30 confirma una sola cita; roles/403/CSRF419; retroceso por UI; Bootstrap Select visual MFR habilitado y Traumatología bloqueado; único motivo al mover el modal de paciente nuevo; geometría/capturas.
 
-| Criterios | Evidencia automatizada |
-|---|---|
-| CA-01 a CA-07 | AgendaV2PaymentsTest; suites de comprobantes/registro/exclusividad; carreras de UUID/intervalo |
-| CA-08 y CA-09 | HTTP y HTML en AgendaV2PaymentsTest; LegacyRegistrationParityTest y matrices de todos los roles |
-| CA-10 y CA-11 | agenda-v2-refresh.test.js; polling de Admisión existente; Chrome entre sesiones y borrador desenfocado |
-| CA-12 a CA-16 | AgendaV2ProceduresTest y carrera de expected_version; Chrome administrador/admisión/comercial |
-| CA-17 a CA-25 | Procedimientos + CompatibilityTest; dos feeds, cola cronológica, decisiones manuales, ausencia de dinero/citas nuevas |
-| CA-26 | ReevaluationIndicationTest y CommercialReevaluationTest, conservando días 0, 1, 15 y 16 |
-| CA-27 a CA-30 | AgendaV2ReversalTest; carrera de reversiones; historial y snapshots; Chrome |
-| CA-31 y CA-32 | Suite completa de catálogo PR #45, especialidad/asignación y precios por profesional; doctor-service-compatibility.test.js y Chrome con Bootstrap Select real MFR/Traumatología |
-| CA-33 | Suites completas PHP/JS de Caja, vouchers, reservas, OCR, documentos y autorizaciones |
-| CA-34 | Capturas e inspección en Chrome escritorio/móvil y comprobación de ancho |
+Capturas antes/después en 1366×768 y móvil; después además 1440×900 y 1920×1080. Se verifica ausencia de desbordamiento horizontal de página y casillas de procedimientos dentro del área inicial de escritorio. La inspección visual detectó y corrigió hora partida en 1920 y «Más filtros» mal ubicado en móvil. Se revisan imágenes de los cuatro tamaños, listado móvil y cola integrada. Aceptación humana del personal pendiente; no se equipara con que un test pase.
 
-## Reproducción
+El recorrido de pago respeta privacidad: la misma cuenta de ADMISION crea y cobra su reserva. ADMINISTRADOR mantiene el filtro previo de seguimiento por pago/presencia; no se cambia para facilitar un test. Cada repetición crea un paciente ficticio único y escoge un horario libre sin borrar la BD manual.
 
-En checkout aislado sin .env, dependencias de composer.lock, PHP 8.3 y Node:
+## Aislamiento y reproducción
+
+Worktree sin `.env`, sin caché productiva. `IsolatedAgendaV2Qa` verifica versión, host loopback, puerto33324, datadir exclusivo, nombres y usuarios ficticios antes de operar. SQLite usa memoria; MariaDB de suite usa `ceosalud_qa_agenda_v2_suite`; Chrome usa esquema separado `ceosalud_qa_agenda_v2_browser`. HTTP/correo/colas/notificaciones externos están sustituidos por fakes. Router localhost con CSP y CSRF real; navegador bloquea toda URL externa y resolución de hosts ajenos. No se accede a pacientes reales ni a Hostinger.
+
+En el runtime local ya preparado:
 
 ```powershell
 php vendor/phpunit/phpunit/phpunit --colors=never
-node --test tests/JavaScript/*.test.js
+$qaJsTests = @(Get-ChildItem tests/JavaScript -Filter '*.test.js' -File | ForEach-Object { $_.FullName })
+node --test @qaJsTests
 php vendor/phpunit/phpunit/phpunit -c phpunit.agenda-v2-mariadb.xml --colors=never
+$env:AGENDA_V2_ROUND2_STAGE = 'after'
+node tools/qa/browser-agenda-v2-round2.cjs
 ```
 
-La tercera orden solo funciona con el runtime exacto verificado; no reutiliza otra BD ni usa credenciales del desarrollador. Crear el datadir exclusivo con MariaDB 11.8.9, puerto 33324 y bind local; ejecutar tests/Support/agenda-v2-init.php únicamente con AGENDA_V2_QA_INIT=NEW_SYNTHETIC_RUNTIME. La inicialización rechaza esquemas preexistentes. Para navegador, usar tools/qa/run-agenda-v2-browser.ps1 -ResetSyntheticData; solo reinicia el esquema ficticio de navegador y detiene el servidor que crea.
+El runner ronda2 requiere los archivos locales ignorados de fixtures. Para una instalación QA nueva, reutilizar el bootstrap/seed original y luego el seed append-only de ronda2 con `AGENDA_V2_ROUND2_FIXTURES=APPEND_SYNTHETIC_ONLY`; se niega a sobrescribir su manifiesto. No usar el runner original con ResetSyntheticData mientras alguien navega: reinicializa su esquema y detiene el servidor que crea. Ronda2 conserva la sesión manual8092 y sus datos.
 
-Los logs/JUnit, contraseñas efímeras y capturas se conservan localmente en docs/agenda-v2/evidence y storage/app/qa-v2; no se suben credenciales ni fixtures de ejecución. El resumen sanitizado y el manifiesto SHA-256 identifican resultados y fuentes; los hashes de texto normalizan CRLF a LF como el almacenamiento de Git. El SHA del commit probado se registra aparte para no crear una referencia circular en el propio commit.
+## Baselines históricos
 
-Pendientes de liberación: aceptación del personal sobre los fixtures, backup productivo real, ensayo de despliegue autorizado, eventual concesión individual de supervisión y comprobación del entorno instalado. CI se informa con sus estados reales en el PR; una ejecución pendiente no se declara aprobada.
+Main `9c3b93a`: PHP1013/8230, JS302. Primera ronda58c5f92: SQLite1039/8513, MariaDB1044/8561, JS309, Chrome10. Esos resultados se conservan como baseline y no sustituyen la nueva ejecución.
+
+Pendientes de liberación: revisión humana de estas capturas/fixtures, backup productivo comprobado, autorización independiente de despliegue y eventual asignación individual de supervisión. Esta entrega mantiene Draft y no ejecuta esos pasos.

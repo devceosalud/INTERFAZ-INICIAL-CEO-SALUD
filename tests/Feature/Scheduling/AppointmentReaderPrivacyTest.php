@@ -194,11 +194,11 @@ class AppointmentReaderPrivacyTest extends TestCase
         foreach (['appointment.create', 'appointment.update'] as $p) $writer->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($p, 'web'));
         $patient = $this->createPatient($this->owner);
         $payload = ['patient_id' => $patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'fecha_cita' => now()->toDateString()];
-        $before = $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->json();
+        $before = $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertForbidden()->json();
         $this->lifecycleAppointment($this->owner, $this->catalog, ['estado_agenda' => Lifecycle::PENDING_CONFIRMATION], $patient);
-        $this->assertSame($before, $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->json());
+        $this->assertSame($before, $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertForbidden()->json());
         $this->lifecycleAppointment($this->owner, $this->catalog, [], $patient);
-        $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertUnprocessable()->assertJsonPath('code', 0);
+        $this->actingAs($writer)->postJson('/admissionist/appointment/store', $payload)->assertForbidden()->assertJsonMissing(['appointment_id'=>1]);
     }
 
     public function test_schedule_impact_filters_before_count_truncation_ids_and_messages(): void

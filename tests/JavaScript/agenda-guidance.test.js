@@ -108,7 +108,7 @@ test('un error de adelanto abre el bloque, enfoca el importe y no crea un modal'
     const focused = [];
     const element = () => ({
         hidden: true, value: '', checked: false, disabled: false, open: false, files: [], dataset: {}, classList: { add() {}, remove() {} },
-        addEventListener() {}, focus() { focused.push(this); }, scrollIntoView() {}, replaceChildren() {},
+        addEventListener() {}, setAttribute() {}, focus() { focused.push(this); }, scrollIntoView() {}, replaceChildren() {},
     });
     const method = element(); method.value = 'EFECTIVO';
     const amount = element(); amount.value = '0';
@@ -124,6 +124,7 @@ test('un error de adelanto abre el bloque, enfoca el importe y no crea un modal'
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-form.js'), context);
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-workspace.js'), context);
     context.window.AgendaOperationalForm = context.AgendaOperationalForm;
+    document.getElementById('agenda-op-reason').value='Motivo ficticio válido';
     const workspace = context.window.AgendaOperationalWorkspace({
         endpoint: '/registrations', base: '/appointments', patientTemplate: '/patients/__PATIENT__', canCreate: true,
         context: () => ({ tipo_contexto: 'slot_libre', seleccionable: true, doctor_id: 1, fecha: '2026-10-09', hora_inicio: '10:00', minutos: 20, site_id: 1 }),
@@ -245,7 +246,7 @@ test('un 403 de cita adicional no abre el pago', async () => {
     const element = () => ({
         hidden: true, value: '', checked: false, disabled: false, open: false, files: [], dataset: {}, textContent: '',
         classList: { add() {}, remove() {} },
-        addEventListener() {}, focus() {}, scrollIntoView() {}, replaceChildren() {},
+        addEventListener() {}, setAttribute() {}, focus() {}, scrollIntoView() {}, replaceChildren() {},
     });
     const method = element(); method.value = 'EFECTIVO';
     elements.set('agenda-op-method', method);
@@ -264,6 +265,7 @@ test('un 403 de cita adicional no abre el pago', async () => {
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-form.js'), context);
     vm.runInNewContext(source('public/js/scheduling/agenda-operational-workspace.js'), context);
     context.window.AgendaOperationalForm = context.AgendaOperationalForm;
+    document.getElementById('agenda-op-reason').value='Motivo ficticio válido';
     const workspace = context.window.AgendaOperationalWorkspace({
         endpoint: '/registrations', base: '/appointments', patientTemplate: '/patients/__PATIENT__', canCreate: true,
         context: () => ({ tipo_contexto: 'slot_libre', seleccionable: true, doctor_id: 1, fecha: '2026-10-09', hora_inicio: '10:00', minutos: 20, site_id: 1 }),

@@ -36,7 +36,7 @@ class AdmissionBoardTest extends TestCase
 
     public function test_default_is_actual_magdalena_id_and_today_in_lima_without_creating_site():void
     {
-        $this->get(route('scheduling.mvp.admission'))->assertOk()->assertSee('Magdalena del Mar aún no')->assertSee(now('America/Lima')->toDateString());
+        $this->get(route('scheduling.mvp.admission'))->assertOk()->assertSee('Magdalena del Mar no')->assertSee(now('America/Lima')->toDateString());
         $this->assertDatabaseCount('sites',0);
         $site=$this->createSite(['codigo'=>'PREEXISTENTE','nombre'=>'Magdalena del Mar']);
         $this->createSite(['codigo'=>'OTRA','nombre'=>'Otra sede']);
@@ -116,8 +116,9 @@ class AdmissionBoardTest extends TestCase
     {
         $a=$this->appointment(['observaciones'=>'DIAGNOSTICO_SECRETO','motivo_consulta'=>'MOTIVO_CLINICO']);
         $doc=$a->documents()->create(['actor_user_id'=>$this->actor->id,'type'=>'PAYMENT_PROOF','purpose'=>'REEVALUATION_ORDER','label'=>'ORDEN_PRIVADA','private_path'=>'private/sensitive.pdf','mime'=>'application/pdf']);
-        $result=$this->detail($a->id)->assertOk()->assertJsonPath('appointment.tiempos.llegada',null)->assertJsonCount(0,'documents');
-        foreach(['DIAGNOSTICO_SECRETO','MOTIVO_CLINICO','ORDEN_PRIVADA','sensitive.pdf','private_path','evidence_document_id'] as $secret)$this->assertStringNotContainsString($secret,$result->getContent());
+        $result=$this->detail($a->id)->assertOk()->assertJsonPath('appointment.motivo_consulta','MOTIVO_CLINICO')->assertJsonPath('appointment.tiempos.llegada',null)->assertJsonCount(0,'documents');
+        $this->assertStringNotContainsString('MOTIVO_CLINICO',json_encode($result->json('history')));
+        foreach(['DIAGNOSTICO_SECRETO','ORDEN_PRIVADA','sensitive.pdf','private_path','evidence_document_id'] as $secret)$this->assertStringNotContainsString($secret,$result->getContent());
     }
     public function test_all_six_mvp_role_names_use_effective_capabilities_without_role_bypass():void
     {
@@ -168,7 +169,7 @@ class AdmissionBoardTest extends TestCase
         CashierShift::create(['cashier_id'=>$c->id,'user_id'=>$this->actor->id,'monto_apertura'=>0,'abierto_en'=>now(),'estado'=>'ABIERTO']);
         VoucherSerie::create(['cashier_id'=>$c->id,'tipo_comprobante'=>'TICKET','serie'=>'TNIC','correlativo_actual'=>0,'estado'=>'ACTIVO']);
         $date=$this->catalog['schedule']->fecha_cita;
-        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$this->createPatient($this->actor)->id,
+        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para regresión de cobro','patient_id'=>$this->createPatient($this->actor)->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['service']->id,'fecha_cita'=>$date,'hora_cita'=>'08:00','duracion_cita'=>30];
         $id=$this->postJson(route('scheduling.mvp.agenda.registrations'),$payload)->assertCreated()->json('appointment.appointment_id');
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.reservas',1)->assertJsonPath('totals.pagos_reales','0.00');

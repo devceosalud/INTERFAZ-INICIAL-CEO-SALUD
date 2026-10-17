@@ -2146,3 +2146,5 @@ body.agenda-viewport .swal2-container {
     .agenda-operations__pair .agenda-doctors { max-height: none; }
     .agenda-operational-fields .agenda-patient-form-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.agenda-consultation-reason{grid-column:1/-1}.agenda-consultation-reason textarea{resize:vertical;min-height:64px;line-height:1.5}.agenda-consultation-reason textarea[aria-invalid="true"]{border-color:#a52c3e;outline-color:#a52c3e}

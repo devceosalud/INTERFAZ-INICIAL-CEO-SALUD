@@ -34,9 +34,9 @@ class MvpAllRolesFlowTest extends TestCase
             'fecha_cita'=>now()->subDays(20)->toDateString(),'precio_programado'=>137],$patient);$snapshot=$history->fresh()->getAttributes();
         $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','patient_id'=>$patientId,'doctor_id'=>$catalog['doctor']->id,
             'service_id'=>$entry==='legacy'?$catalog['doctorService']->id:$catalog['service']->id,'additional_rate_id'=>$catalog['rate']->id,
-            'fecha_cita'=>$catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','booking_type'=>'REGULAR','duracion_cita'=>30];
+            'fecha_cita'=>$catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para flujo de roles','duracion_cita'=>30];
         if($entry==='legacy'){$payload+=['total_pagado'=>'0','metodo_pago'=>'EFECTIVO','precio_programado'=>'100.00'];}
-        if($entry==='legacy' && in_array($role,['ADMISION','COMERCIAL'],true)){
+        if($entry==='legacy'){
             $this->postJson('/admissionist/appointment/store',$payload)->assertForbidden();
             // The approved operational path must still exercise the entire financial flow for these roles.
             $entry='operational';$payload['service_id']=$catalog['service']->id;unset($payload['total_pagado'],$payload['metodo_pago']);

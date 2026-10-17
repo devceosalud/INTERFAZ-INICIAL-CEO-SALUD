@@ -35,7 +35,7 @@ class BankPaymentIntegrityTest extends TestCase
 
     private function payload(array $changes = []): array
     {
-        return array_replace(['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR',
+        return array_replace(['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $this->catalog['service']->id,
             'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30,
             'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'origin' => 'BCP', 'operation' => 'ABC123']], $changes);

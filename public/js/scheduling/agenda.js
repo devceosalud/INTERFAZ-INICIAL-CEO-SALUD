@@ -1656,6 +1656,8 @@ document.addEventListener('DOMContentLoaded', function () {
         state.draft = draft && draft.open ? draft : null;
         el.patientModal.hidden = !state.draft;
         document.getElementById(state.draft ? 'agenda-op-modal-host' : 'agenda-op-workspace-host').prepend(document.getElementById('agenda-operational-fields'));
+        const reasonHost=document.getElementById(state.draft?'agenda-reason-modal-host':'agenda-reason-workspace-host'),reasonField=document.getElementById('agenda-consultation-reason-field');
+        if(reasonHost&&reasonField)reasonHost.appendChild(reasonField);
         document.getElementById('agenda-op-capture-panel').hidden = Boolean(state.draft);
         if (state.draft) { document.getElementById('agenda-draft-more').open = false; }
         el.patientModal.setAttribute('aria-hidden', state.draft ? 'false' : 'true');

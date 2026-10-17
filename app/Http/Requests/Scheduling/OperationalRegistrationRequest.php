@@ -15,6 +15,9 @@ class OperationalRegistrationRequest extends FormRequest
             if (is_array($payload)) { $this->merge($payload); }
         }
         \App\Support\Scheduling\AppointmentPriceInput::normalize($this);
+        if (is_string($this->input('motivo_consulta'))) {
+            $this->merge(['motivo_consulta' => \App\Support\Scheduling\OperationalText::trim($this->input('motivo_consulta'))]);
+        }
     }
     public function authorize(): bool { return $this->user()?->can(Capability::CREATE) ?? false; }
     protected function failedAuthorization()
@@ -40,7 +43,7 @@ class OperationalRegistrationRequest extends FormRequest
             'site_id' => ['nullable', 'integer', Rule::exists('sites', 'id')->where('estado', 'ACTIVO')],
             'fecha_cita' => 'required|date_format:Y-m-d', 'hora_cita' => 'required|date_format:H:i',
             'duracion_cita' => 'required|integer|between:1,255','cita_doble'=>'sometimes|boolean','duration_slots'=>'prohibited', 'responsible_user_id' => 'nullable|integer|exists:users,id',
-            'motivo_consulta' => 'nullable|string|max:2000', 'observaciones' => 'nullable|string|max:2000',
+            'motivo_consulta' => 'required|string|max:2000', 'observaciones' => 'nullable|string|max:2000',
             'es_exonerado' => 'sometimes|boolean', 'autorizado_por' => 'nullable|string|max:255',
             'payment' => 'nullable|array:amount,method,operation,origin',
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
@@ -50,5 +53,9 @@ class OperationalRegistrationRequest extends FormRequest
             'links.*.label' => 'required|string|max:120', 'links.*.url' => 'required|url|max:2048|starts_with:https://',
         ];
     }
-    public function messages(): array { return \App\Services\Scheduling\AppointmentPaymentProofs::messages()+['service_id.required' => 'Selecciona un servicio para agendar la cita.']; }
+    public function messages(): array { return \App\Services\Scheduling\AppointmentPaymentProofs::messages()+[
+        'service_id.required' => 'Selecciona un servicio para agendar la cita.',
+        'motivo_consulta.required' => 'Escribe el motivo de consulta para registrar la cita o reserva.',
+        'motivo_consulta.max' => 'El motivo de consulta admite hasta 2000 caracteres.',
+    ]; }
 }

@@ -1,5 +1,21 @@
 # Arquitectura y flujos
 
+## Cambios de arquitectura de la segunda ronda
+
+`OperationalProcedureService::status()` es la proyección compartida: READY automático exige origen AUTOMATIC, solicitados > 0 y realizados = solicitados; READY manual exige origen MANUAL, autor de decisión y al menos un realizado. WITHDRAWN conserva su decisión y las citas fuera de jornada/inactivas no esperan. El recálculo transaccional de selección/realización permanece como autoridad de escritura; la defensa de lectura no crea decisiones ni corrige BD silenciosamente. `AppointmentOperationalReview` convierte los contadores a enteros y expone la relación del autor.
+
+El detalle devuelve contadores reales de los procedimientos seleccionados, pendientes, estado efectivo y `authorized_by` para decisiones manuales vigentes/suspendidas. El último actor de decisión se distingue del autorizador: retirar una reevaluación no atribuye el envío al usuario que la retiró. La historia íntegra sigue en `appointment_procedure_events`.
+
+El endpoint de Nicol devuelve `rows` exclusivamente listas y `groups.active/pending/history` para distinguir colas. Pendientes incluye citas con solicitudes confirmadas que aún nunca estuvieron listas. El mismo estado efectivo alimenta Admisión y `AgendaAppointmentPresentation`; no se modifica el estado clínico, la hora ni el dinero.
+
+`OperationalText` normaliza espacios Unicode, caracteres de ancho cero y BOM. Motivo requerido y máximo 2000 caracteres tanto en FormRequest como en servicio, antes de cualquier escritura. El mismo textarea se mueve entre el registro principal y el modal, evitando duplicados. Pagos de citas existentes, procedimientos y reversión no exigen un motivo nuevo. Observaciones significativas de 1 a 16000 caracteres; el máximo protege la columna TEXT incluso con UTF-8 de cuatro bytes.
+
+Admisión usa cabecera e indicadores compactos, filtros frecuentes y «Más filtros», resumen económico superior, listado y detalle con scroll interno en escritorio. Móvil alterna listado/detalle con «Volver a la lista». El detalle prioriza paciente/motivo/atención y separa observaciones, pagos y documentos en pestañas. Disponibilidad se consulta al abrir su sección. Se reutilizan colores/controles del ERP y JS/Blade existentes, sin framework adicional.
+
+Borradores de observación y selección mantienen sus valores y la versión sobre la que comenzaron; refrescar remotamente no actualiza esa versión para encubrir un conflicto. Un 409 exige revisar y confirmar de nuevo. Cambiar filtros o pestañas preserva borradores; cambiar paciente o actualizar expresamente pide conservar/descartar. Las respuestas tardías y el polling mantienen abort/revisión, foco, visibilidad y exclusión de operaciones simultáneas. Los selectores nativos no reinicializan Bootstrap Select después de filtrar.
+
+Motivo completo únicamente en detalle autenticado y autorizado; resumen de 160 columnas visuales únicamente para las 30 citas visibles. El historial de otras citas, disponibilidad genérica y Nicol no lo incluyen. No se añaden logs, telemetría ni Clarity.
+
 ## Registro/pagos
 
 Se reutilizan OperationalRegistrationService, ReservationPaymentService, CreateAppointmentService, AppointmentSlotValidator, RegularReservationAvailability, AppointmentTicketService, VoucherPaymentRecorder y AppointmentPaymentProofs. El cambio de condición de confirmación ocurre **dentro** de la transacción financiera existente, con el mismo bloqueo por médico y operación idempotente. El caso fuera de horario revalida fuera de horario, el regular revalida ocupación y el adicional conserva su capacidad explícita.

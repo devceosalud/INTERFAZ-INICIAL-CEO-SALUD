@@ -27,7 +27,7 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
     }
     public function test_critical_financial_colors_win_over_orange_with_visible_readiness_badge():void
     {
-        $a=$this->a->fresh();$a->setRelation('operationalReview',new AppointmentOperationalReview(['status'=>'READY','requested_count'=>2,'completed_count'=>2]));
+        $a=$this->a->fresh();$a->setRelation('operationalReview',new AppointmentOperationalReview(['status'=>'READY','origin'=>'AUTOMATIC','requested_count'=>2,'completed_count'=>2]));
         $position=['authority'=>'PAYMENTS','paid_cents'=>3000,'allocation_required'=>false,'refund_reserved_cents'=>1000];
         $p=AgendaAppointmentPresentation::of($a,$position);
         $this->assertSame('REEMBOLSO_SOLICITADO',$p['clave']);$this->assertContains('LISTO_REEVALUACION',array_column($p['badges'],'clave'));

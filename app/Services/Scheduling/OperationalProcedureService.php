@@ -36,27 +36,48 @@ final class OperationalProcedureService
 
     public static function ready(Appointment $a): bool
     {
-        return self::active($a) && $a->relationLoaded('operationalReview')
-            && $a->operationalReview?->status === 'READY';
+        return $a->relationLoaded('operationalReview') && self::status($a) === 'READY';
+    }
+
+    /** A cached READY flag is insufficient: origin and current progress must agree. */
+    public static function status(Appointment $a): string
+    {
+        $review=$a->operationalReview;
+        if (!$review) return 'NOT_READY';
+        if ($review->status === 'WITHDRAWN') return 'WITHDRAWN';
+        if (!self::active($a)) return 'INACTIVE';
+        if ($review->status !== 'READY') return $review->status;
+        if ($review->origin === 'MANUAL') {
+            return $review->decided_by_user_id && $review->completed_count > 0 ? 'READY' : 'SUSPENDED';
+        }
+        return $review->origin === 'AUTOMATIC' && $review->requested_count > 0
+            && $review->completed_count === $review->requested_count ? 'READY' : 'NOT_READY';
     }
 
     public function detail(Appointment $a, User $u): array
     {
-        $a->loadMissing('operationalReview');
+        $a->loadMissing('operationalReview.decidedBy');
         $items = DB::table('appointment_requested_procedures')->where('appointment_id', $a->id)
             ->where('selected', true)->orderBy('id')->get();
         $review = $a->operationalReview;
+        $done=$items->whereNotNull('completed_at')->count();
+        $status=self::status($a);
         return [
             'version' => $review?->version ?? 0,
+            'requested_count' => $items->count(), 'completed_count' => $done,
+            'pending_count' => $items->count()-$done,
             'catalog' => $this->canSelect($u) ? self::CATALOG : [],
             'can_select' => $this->canSelect($u), 'can_complete' => $this->canComplete($u),
             'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty(),
-            'can_withdraw' => $this->canSend($u) && $review?->status === 'READY',
+            'can_withdraw' => $this->canSend($u) && $status === 'READY',
             'items' => $items->map(fn ($p) => ['key' => $p->procedure_key,
                 'label' => self::CATALOG[$p->procedure_key], 'completed' => $p->completed_at !== null,
                 'requested_at' => $p->requested_at, 'completed_at' => $p->completed_at])->all(),
-            'review' => ['status' => $review && $review->status === 'READY' && !self::active($a) ? 'INACTIVE' : ($review?->status ?? 'NOT_READY'),
-                'origin' => $review?->origin, 'ready_at' => $review?->ready_at?->toISOString(), 'reason' => $review?->reason],
+            'review' => ['status' => $status,
+                'origin' => $review?->origin, 'ready_at' => $review?->ready_at?->toISOString(), 'reason' => $review?->reason,
+                'decision_by' => $review?->decided_by_user_id ? ['id'=>(int)$review->decided_by_user_id,'name'=>$review->decidedBy?->name ?? 'Usuario no disponible'] : null,
+                'authorized_by' => $review?->origin === 'MANUAL' && in_array($status,['READY','SUSPENDED'],true) && $review->decided_by_user_id
+                    ? ['id'=>(int)$review->decided_by_user_id,'name'=>$review->decidedBy?->name ?? 'Usuario no disponible'] : null],
         ];
     }
 
@@ -147,15 +168,18 @@ final class OperationalProcedureService
         abort_unless($this->eligible($u), 403);
         return Appointment::visibleToAgendaUser($u->id)->whereDate('fecha_cita', now('America/Lima')->toDateString())
             ->join('appointment_operational_reviews as review', 'review.appointment_id', '=', 'appointments.id')
-            ->whereNotNull('review.ready_at')->select(['appointments.id','appointments.patient_id','appointments.doctor_id',
+            ->where(fn($q)=>$q->whereNotNull('review.ready_at')->orWhere('review.requested_count','>',0))
+            ->select(['appointments.id','appointments.patient_id','appointments.doctor_id',
                 'appointments.service_id','appointments.fecha_cita','appointments.hora_cita','appointments.estado_agenda',
                 'appointments.estado_cita','appointments.hora_salida'])
-            ->with(['operationalReview','patient:id,nombre,apellido_paterno,apellido_materno','doctor:id,nombre','service:id,nombre'])
+            ->with(['operationalReview.decidedBy:id,name','patient:id,nombre,apellido_paterno,apellido_materno','doctor:id,nombre','service:id,nombre'])
             ->orderBy('review.ready_at')->orderBy('review.id')->get()->map(function ($a) use ($u) {
                 $detail = $this->detail($a, $u);
                 return ['id' => $a->id, 'patient' => trim($a->patient?->apellido_paterno.' '.$a->patient?->apellido_materno.' '.$a->patient?->nombre),
                     'doctor' => $a->doctor?->nombre, 'service' => $a->service?->nombre, 'appointment_time' => substr($a->hora_cita, 0, 5),
-                    'review' => \Illuminate\Support\Arr::except($detail['review'], ['reason']), 'procedures' => $detail['items']];
+                    'review' => \Illuminate\Support\Arr::except($detail['review'], ['reason']), 'procedures' => $detail['items'],
+                    'requested_count'=>$detail['requested_count'],'completed_count'=>$detail['completed_count'],
+                    'pending_count'=>$detail['pending_count']];
             })->all();
     }
 }

@@ -25,7 +25,7 @@ class PilotAppointmentPaymentTest extends TestCase
         $catalog = $this->createAppointmentCatalog();
         $catalog['rate']->update(['nombre' => 'TARIFA ESTANDAR', 'tipo_tarifa' => 'MONTO_FIJO']);
         $patient = $this->createPatient($actor);
-        $payload = ['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR',
+        $payload = ['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id' => $patient->id, 'doctor_id' => $catalog['doctor']->id, 'service_id' => $catalog['service']->id,
             'fecha_cita' => $catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30,
             'payment' => ['amount' => '50.00', 'method' => 'YAPE', 'operation' => 'QA-PILOT-123', 'origin' => 'Yape']];

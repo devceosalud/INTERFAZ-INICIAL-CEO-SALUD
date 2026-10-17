@@ -29,7 +29,7 @@ class RegularReservationExclusivityTest extends TestCase
         $this->actingAs($this->actor);
     }
     protected function payload(array $changes=[]):array {
-        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR',
+        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id'=>$this->patient->id,'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['service']->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','duracion_cita'=>30],$changes);
     }
@@ -54,8 +54,8 @@ class RegularReservationExclusivityTest extends TestCase
             $url='/admissionist/appointment/store';$data['service_id']=$this->catalog['doctorService']->id;
             $data['total_pagado']=$amount;$data['metodo_pago']='EFECTIVO';unset($data['payment']);
         }
-        $this->postJson($url,$data)->assertConflict();
-        $this->postJson($url,$data)->assertConflict();
+        $this->agendaCreationResponse($entry,$data)->assertConflict();
+        $this->agendaCreationResponse($entry,$data)->assertConflict();
         $this->assertSame($before,$this->snapshot());$this->assertDatabaseCount('payments',1);
     }
     public function test_existing_paid_reservation_keeps_money_replay_but_rejects_every_new_deposit_after_conflict():void {
@@ -144,7 +144,7 @@ class RegularReservationExclusivityTest extends TestCase
             $url='/admissionist/appointment/store';$data['service_id']=$this->catalog['doctorService']->id;
             $data['total_pagado']=$amount;$data['metodo_pago']='EFECTIVO';unset($data['payment']);
         }
-        $this->postJson($url,$data)->assertConflict();$this->assertSame($before,$this->snapshot());
+        $this->agendaCreationResponse($entry,$data)->assertConflict();$this->assertSame($before,$this->snapshot());
         $a=Appointment::find($id);$this->assertSame('CONFIRMADA',$a->estado_agenda);
         $this->assertSame('PROGRAMADO',$a->estado_cita);$this->assertSame('PARCIAL',$a->estado_pagado);
         $this->assertSame([$id],Appointment::occupyingInterval()->pluck('id')->all());

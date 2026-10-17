@@ -16,8 +16,7 @@
     </details>
     <label><input id="agenda-op-double" type="checkbox"> Cita extendida · dos intervalos consecutivos, una sola consulta</label>
     <details id="agenda-op-notes-panel">
-        <summary>Motivo y observación · opcional</summary>
-        <label class="agenda-field"><span>Motivo de consulta</span><textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
+        <summary>Observación y datos complementarios · opcional</summary>
         <label class="agenda-field"><span>Observación operativa</span><textarea id="agenda-op-note" class="agenda-field__input" rows="2" maxlength="2000"></textarea></label>
         <label><input id="agenda-op-postoperative" type="checkbox"> Cita postoperatoria · no implica gratuidad</label>
         <label><input id="agenda-op-has-wound" type="checkbox"> Pie diabético con herida · selección explícita para esta cita</label>

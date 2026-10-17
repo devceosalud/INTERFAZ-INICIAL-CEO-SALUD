@@ -86,9 +86,9 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
     public function test_request_edit_and_unchecking_recalculate_automatic_queue_and_preserve_audit(): void
     {
         $this->select()->assertOk();$this->complete()->assertOk();$this->complete('laboratory')->assertOk();
-        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','NOT_READY');
+        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
         $this->select(['radiography'])->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','READY');
-        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','NOT_READY');
+        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
         $event=DB::table('appointment_procedure_events')->orderByDesc('id')->first();
         $this->assertStringContainsString('AUTOMATIC',$event->before);
         $this->assertDatabaseCount('appointment_requested_procedures',3);
@@ -105,9 +105,9 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->queue()->assertOk()->assertJsonPath('rows.0.review.status','READY')->assertJsonPath('rows.0.review.origin','MANUAL');
         $this->assertSame($ready,DB::table('appointment_operational_reviews')->value('ready_at'));
         $this->actingAs($this->admission);$this->complete('radiography',false)->assertOk();
-        $this->queue()->assertOk()->assertJsonPath('rows.0.review.status','SUSPENDED');
+        $this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.history.0.review.status','SUSPENDED');
         $this->complete()->assertOk();$this->change('withdraw',['confirmed'=>true,'reason'=>'Corrección ficticia'])->assertOk();
-        $this->complete('mri')->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','WITHDRAWN');
+        $this->complete('mri')->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.history.0.review.status','WITHDRAWN');
         $this->change('send',['confirmed'=>true])->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','READY');
     }
     public function test_visibility_and_no_patient_or_financial_details_in_queue(): void
@@ -129,9 +129,9 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->change('completion',['procedure'=>'radiography','completed'=>true],1,null,$second->id)->assertOk();
         DB::table('appointment_operational_reviews')->where('appointment_id',$second->id)->update(['ready_at'=>now()->subHour()]);
         $this->queue()->assertOk()->assertJsonPath('rows.0.id',$second->id)->assertJsonPath('rows.1.id',$this->a->id);
-        $this->a->update(['estado_cita'=>'CANCELADO']);$this->queue()->assertOk()->assertJsonPath('rows.1.review.status','INACTIVE');
+        $this->a->update(['estado_cita'=>'CANCELADO']);$this->queue()->assertOk()->assertJsonCount(1,'rows')->assertJsonPath('groups.history.0.review.status','INACTIVE');
         $this->detail()->assertOk()->assertJsonPath('appointment.presentation.clave','DESACTIVADA');
-        $second->update(['fecha_cita'=>now('America/Lima')->subDay()->toDateString()]);$this->queue()->assertOk()->assertJsonCount(1,'rows');
+        $second->update(['fecha_cita'=>now('America/Lima')->subDay()->toDateString()]);$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonCount(1,'groups.history');
     }
     public function test_invalid_catalog_and_injected_fields_are_rejected(): void
     {

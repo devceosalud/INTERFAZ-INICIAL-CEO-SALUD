@@ -183,7 +183,7 @@ class AgendaRefinementTest extends TestCase
     }
     private function payload(string $time): array
     {
-        return ['patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id,
+        return ['patient_id' => $this->patient->id, 'motivo_consulta'=>'Motivo ficticio para prueba de registro','doctor_id' => $this->catalog['doctor']->id,
             'service_id' => $this->catalog['service']->id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita,
             'hora_cita' => $time, 'duracion_cita' => 30, 'site_id' => null,'request_key'=>(string)\Illuminate\Support\Str::uuid(),'payment'=>['amount'=>'50','method'=>'EFECTIVO']];
     }

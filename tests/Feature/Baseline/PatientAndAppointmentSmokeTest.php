@@ -24,7 +24,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
             'numero_identidad' => '71111111',
             'fecha_nacimiento' => '1992-05-10',
             'email' => 'ana@example.invalid',
-        ])->assertOk()->assertJsonPath('code', 1);
+        ])->assertOk()->assertJsonPath('code',1);
 
         $this->assertDatabaseHas('patients', [
             'numero_identidad' => '71111111',
@@ -35,15 +35,16 @@ class PatientAndAppointmentSmokeTest extends TestCase
 
     public function test_authenticated_user_can_create_an_unpaid_appointment_with_current_contract(): void
     {
+        config(['scheduling.enabled'=>true]);
         $user = $this->createUserWithRole('ADMINISTRADOR');
-        foreach (['appointment.view', 'appointment.create'] as $permission) {
+        foreach (['appointment.mvp.access','appointment.view', 'appointment.create'] as $permission) {
             $user->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate($permission, 'web'));
         }
         $patient = $this->createPatient($user);
         $catalog = $this->createAppointmentCatalog();
         $catalog['rate']->update(['nombre' => 'TARIFA ESTANDAR', 'tipo_tarifa' => 'MONTO_FIJO']);
 
-        $this->actingAs($user)->postJson('/admissionist/appointment/store', [
+        $this->actingAs($user)->agendaCreationResponse('legacy', [
             'patient_id' => $patient->id,
             'doctor_id' => $catalog['doctor']->id,
             'service_id' => $catalog['doctorService']->id,
@@ -54,7 +55,7 @@ class PatientAndAppointmentSmokeTest extends TestCase
             'precio_programado' => 100,
             'total_pagado' => 0,
             'saldo_pendiente' => 100,
-        ])->assertOk()->assertJsonPath('code', 1);
+        ])->assertCreated();
 
         $this->assertDatabaseHas('appointments', [
             'patient_id' => $patient->id,

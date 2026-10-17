@@ -1,0 +1,153 @@
+{
+  "stage": "before",
+  "browser": "155.0.8059.79",
+  "started": "2026-10-17T15:03:13.207Z",
+  "cases": [
+    {
+      "name": "Matriz de reevaluación y corrección entre tres sesiones",
+      "result": "PASS"
+    }
+  ],
+  "states": [
+    {
+      "label": "2 solicitados / 0 realizados",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 0,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "2 solicitados / 1 realizado sin envío",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "2/2 automático",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 2,
+      "review": {
+        "status": "READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T15:04:02.000000Z",
+        "reason": null
+      },
+      "presentation": "LISTO_REEVALUACION"
+    },
+    {
+      "label": "Corrección automática 2/2 a 1/2",
+      "id": 5,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "NOT_READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T15:04:02.000000Z",
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "3/2 sin envío",
+      "id": 8,
+      "http_status": 200,
+      "requested": 3,
+      "done": 2,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "3/3 automático",
+      "id": 8,
+      "http_status": 200,
+      "requested": 3,
+      "done": 3,
+      "review": {
+        "status": "READY",
+        "origin": "AUTOMATIC",
+        "ready_at": "2026-10-17T15:04:42.000000Z",
+        "reason": null
+      },
+      "presentation": "LISTO_REEVALUACION"
+    },
+    {
+      "label": "Sin solicitudes",
+      "id": 9,
+      "http_status": 200,
+      "requested": 0,
+      "done": 0,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "Parcial antes de autorización",
+      "id": 6,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "NOT_READY",
+        "origin": null,
+        "ready_at": null,
+        "reason": null
+      },
+      "presentation": "SIN_PAGO_REAL"
+    },
+    {
+      "label": "Parcial autorizado por ADMISION",
+      "id": 6,
+      "http_status": 200,
+      "requested": 2,
+      "done": 1,
+      "review": {
+        "status": "READY",
+        "origin": "MANUAL",
+        "ready_at": "2026-10-17T15:04:52.000000Z",
+        "reason": "Envío parcial ficticio explícito para investigar la ronda 2"
+      },
+      "presentation": "LISTO_REEVALUACION"
+    }
+  ],
+  "page_errors": [],
+  "original_manual_fixture": {
+    "id": 1,
+    "requested": 2,
+    "done": 1,
+    "review": {
+      "status": "READY",
+      "origin": "MANUAL",
+      "ready_at": "2026-10-17T14:25:40.000000Z",
+      "reason": "Resultado parcial ficticio, pendiente laboratorio"
+    },
+    "presentation": "LISTO_REEVALUACION"
+  },
+  "finished": "2026-10-17T15:04:53.967Z"
+}

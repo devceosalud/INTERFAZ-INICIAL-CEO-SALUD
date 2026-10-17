@@ -40,7 +40,7 @@ class AppointmentPaymentProofsTest extends TestCase
     private function review(): array { return ['reviewed'=>true,'source'=>'BROWSER_OCR','date'=>'2026-10-14','time'=>'09:35']; }
     private function payload(array $extra=[]): array
     {
-        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR',
+        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id'=>$this->patient->id,'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['service']->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','duracion_cita'=>30],$extra);
     }
@@ -158,8 +158,8 @@ class AppointmentPaymentProofsTest extends TestCase
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','total_pagado'=>'20.00',
             'metodo_pago'=>'YAPE','numero_operacion'=>'QA-LEGACY','proof_review'=>$this->review()];
         $url=route('admissionit.appointment.store');
-        for($n=0;$n<2;$n++)$this->post($url,$data+['proofs'=>[$this->file(),$this->file('bcp.jpg')]],['Accept'=>'application/json'])
-            ->assertOk()->assertJsonPath('code',1)->assertJsonPath('estado_agenda','CONFIRMADA');
+        for($n=0;$n<2;$n++)$this->agendaCreationResponse('legacy',$data+['proofs'=>[$this->file(),$this->file('bcp.jpg')]],false)
+            ->assertCreated()->assertJsonPath('appointment.estado_agenda','CONFIRMADA');
         $this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('appointment_documents',2);
         $this->assertEquals(20,Payment::sum('monto'));
         foreach(AppointmentDocument::all() as $d)$this->assertSame(Payment::first()->id,$d->payment_id);
@@ -172,7 +172,7 @@ class AppointmentPaymentProofsTest extends TestCase
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$this->catalog['doctorService']->id,
             'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:30','total_pagado'=>'20.00',
             'metodo_pago'=>'YAPE','numero_operacion'=>'QA-TO-LEGACY','proof_review'=>$this->review(),'proofs'=>[$this->file()]];
-        $this->post(route('admissionit.appointment.store'),$data,['Accept'=>'application/json'])->assertUnprocessable()->assertJsonValidationErrors('proofs');
+        $this->agendaCreationResponse('legacy',$data,false)->assertUnprocessable()->assertJsonValidationErrors('proofs');
         $this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('appointment_documents',1);
     }
 

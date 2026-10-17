@@ -88,6 +88,7 @@
                         <select class="agenda-field__input" id="agenda-draft-service" aria-required="true" aria-describedby="agenda-draft-service-error"></select>
                         <small id="agenda-draft-service-error" class="agenda-field-error" role="alert" hidden>Selecciona un servicio para agendar la cita.</small>
                     </label>
+                    <div id="agenda-reason-modal-host" class="agenda-patient-form-grid__wide"></div>
                         <label class="agenda-field">
                             <span class="agenda-field__label">Comercial dueño</span>
                             <select class="agenda-field__input" id="agenda-draft-commercial-owner" @disabled(!$canAssignResponsible)>

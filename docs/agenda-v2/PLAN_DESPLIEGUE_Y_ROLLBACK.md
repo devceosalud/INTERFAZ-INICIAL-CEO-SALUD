@@ -1,5 +1,13 @@
 # Plan de despliegue y rollback — NO ejecutado
 
+## Candidato de segunda ronda
+
+Se actualiza el mismo PR #46 y se conserva Draft. Ninguna liberación se ha ejecutado. Además de los pasos posteriores, exigir revisión humana de las capturas 1366×768, 1440×900, 1920×1080 y móvil; aceptar motivo obligatorio y registro único para todos los roles. Validar 2/0, 2/1 sin envío, 2/1 con autorización, 2/2, 3/2, 3/3, 0/0 y desmarcar un realizado desde otra sesión. Comparar las dos agendas y Nicol.
+
+Esta ronda no requiere migración adicional; una instalación desde main aún requiere la migración aditiva de la primera ronda. Rollback de esta ronda a 58c5f92 conserva esquema y datos, pero restaura motivo opcional, mínimo anterior de observaciones y creador heredado de administrador. Esa consecuencia debe aprobarse si se revierte; no habilitarlo silenciosamente. Mantener tablas/auditoría y no revertir pagos. Para volver a main, aplicar la estrategia de conservación de las tres tablas descrita abajo.
+
+El entorno manual local sigue disponible en 127.0.0.1:8092. Los runners de ronda 2 no lo detienen ni reinicializan el esquema del navegador; las pruebas PHP usan únicamente su esquema ficticio separado.
+
 Esta entrega es un PR Draft para revisión. No autoriza ni ejecuta publicación productiva, merge, SSH, cambios en Hostinger, acceso a su BD, migraciones ni sincronización de archivos productivos. Solo se envía la rama de trabajo para crear el Draft solicitado. Los workflows inspeccionados realizan comprobaciones de PR; el workflow nuevo también es exclusivamente de QA.
 
 ## Revisión antes de autorizar una liberación

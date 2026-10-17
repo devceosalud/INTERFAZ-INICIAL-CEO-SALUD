@@ -25,23 +25,23 @@ class AgendaDoubleDurationTest extends TestCase {
  }
  public static function entries():array{return [['operational'],['legacy']];}
  protected function payload(string $entry='operational',array $extra=[]):array {
-  return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$this->patient->id,
+  return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro','patient_id'=>$this->patient->id,
     'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$entry==='legacy'?$this->catalog['doctorService']->id:$this->catalog['service']->id,
     'fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
  }
  protected function url(string $entry):string{ if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));return $entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations';}
- protected function id($response,string $entry):int{return (int)($entry==='legacy'?$response->json('appointment_id'):$response->json('appointment.appointment_id'));}
+ protected function id($response,string $entry):int{return (int)($response->json('appointment.appointment_id'));}
  /** @dataProvider entries */
  public function test_double_confirms_two_intervals_charges_one_fee_and_retry_is_idempotent(string $entry):void {
   $money=$entry==='legacy'?['total_pagado'=>'50','metodo_pago'=>'EFECTIVO']:['payment'=>['amount'=>'50','method'=>'EFECTIVO']];
   $data=$this->payload($entry,['mode'=>'CONFIRM','cita_doble'=>true,'duracion_cita'=>60]+$money);
-  $response = $this->postJson($this->url($entry),$data)->assertSuccessful();
+  $response = $this->agendaCreationResponse($entry,$data)->assertSuccessful();
   $id=$this->id($response,$entry);
   if($entry==='operational') {
     $response->assertJsonPath('appointment.duration_slots',2);
     $response->assertJsonPath('appointment.duracion_cita',60);
   }
-  $this->assertSame($id,$this->id($this->postJson($this->url($entry),$data)->assertSuccessful(),$entry));
+  $this->assertSame($id,$this->id($this->agendaCreationResponse($entry,$data)->assertSuccessful(),$entry));
   $a=Appointment::findOrFail($id);$this->assertSame(60,(int)$a->duracion_cita);$this->assertSame(2,(int)$a->duration_slots);
   $this->assertEquals(100,$a->precio_programado);$this->assertEquals(100,Voucher::firstOrFail()->total);
   $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);$this->assertEquals(50,Payment::sum('monto'));
@@ -56,29 +56,29 @@ class AgendaDoubleDurationTest extends TestCase {
   $old=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_agenda'=>'CONFIRMADA','fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:30'],$other);
   $before=$old->fresh()->getAttributes();
   $money=$entry==='legacy'?['total_pagado'=>'50','metodo_pago'=>'EFECTIVO']:['payment'=>['amount'=>'50','method'=>'EFECTIVO']];
-  $this->postJson($this->url($entry),$this->payload($entry,['mode'=>'CONFIRM','cita_doble'=>true,'duracion_cita'=>60]+$money))->assertConflict();
+  $this->agendaCreationResponse($entry,$this->payload($entry,['mode'=>'CONFIRM','cita_doble'=>true,'duracion_cita'=>60]+$money))->assertConflict();
   $this->assertSame($before,$old->fresh()->getAttributes());$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);
  }
  public function test_default_is_single_and_browser_cannot_request_three_intervals_or_spoof_slot_count():void {
-  $this->postJson($this->url('operational'),$this->payload('operational',['duracion_cita'=>90,'cita_doble'=>true]))->assertUnprocessable();
-  $this->postJson($this->url('operational'),$this->payload('operational',['duration_slots'=>3]))->assertUnprocessable();
-  $this->postJson($this->url('operational'),$this->payload('operational',['cita_doble'=>false,'duracion_cita'=>60]))->assertConflict();
-  $id=$this->id($this->postJson($this->url('operational'),$this->payload())->assertCreated(),'operational');
+  $this->agendaCreationResponse('operational',$this->payload('operational',['duracion_cita'=>90,'cita_doble'=>true]))->assertUnprocessable();
+  $this->agendaCreationResponse('operational',$this->payload('operational',['duration_slots'=>3]))->assertUnprocessable();
+  $this->agendaCreationResponse('operational',$this->payload('operational',['cita_doble'=>false,'duracion_cita'=>60]))->assertConflict();
+  $id=$this->id($this->agendaCreationResponse('operational',$this->payload())->assertCreated(),'operational');
   $this->assertSame(1,(int)Appointment::find($id)->duration_slots);$this->assertSame(30,(int)Appointment::find($id)->duracion_cita);
  }
  public function test_double_does_not_cross_end_or_medical_break_and_server_detects_changed_cadence():void {
-  $this->postJson($this->url('operational'),$this->payload('operational',['hora_cita'=>'11:30','cita_doble'=>true,'duracion_cita'=>60]))->assertConflict();
+  $this->agendaCreationResponse('operational',$this->payload('operational',['hora_cita'=>'11:30','cita_doble'=>true,'duracion_cita'=>60]))->assertConflict();
   $this->catalog['schedule']->update(['hora_fin'=>'10:00']);
   DoctorSchedule::create(['doctor_id'=>$this->catalog['doctor']->id,'fecha_cita'=>$this->catalog['schedule']->fecha_cita,
     'dia_semana'=>Carbon::parse($this->catalog['schedule']->fecha_cita)->dayOfWeekIso,'hora_inicio'=>'10:30','hora_fin'=>'12:00','duracion_cita'=>30,'estado'=>'ACTIVO']);
-  $this->postJson($this->url('operational'),$this->payload('operational',['hora_cita'=>'09:30','cita_doble'=>true,'duracion_cita'=>60]))->assertConflict();
+  $this->agendaCreationResponse('operational',$this->payload('operational',['hora_cita'=>'09:30','cita_doble'=>true,'duracion_cita'=>60]))->assertConflict();
   $this->catalog['schedule']->update(['duracion_cita'=>20]);
-  $this->postJson($this->url('operational'),$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60]))->assertUnprocessable();
+  $this->agendaCreationResponse('operational',$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60]))->assertUnprocessable();
   $this->assertDatabaseCount('appointments',0);$this->assertDatabaseCount('payments',0);
  }
  public function test_double_reservation_has_no_money_or_occupancy_and_reprogram_keeps_two_real_intervals():void {
   $data=$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60]);
-  $id=$this->id($this->postJson($this->url('operational'),$data)->assertCreated(),'operational');
+  $id=$this->id($this->agendaCreationResponse('operational',$data)->assertCreated(),'operational');
   $this->assertSame('PENDIENTE_CONFIRMACION',Appointment::find($id)->estado_agenda);$this->assertSame(0,Appointment::occupyingInterval()->count());
   $date=Carbon::parse($data['fecha_cita'])->addDay()->toDateString();
   DoctorSchedule::create(['doctor_id'=>$this->catalog['doctor']->id,'fecha_cita'=>$date,'dia_semana'=>Carbon::parse($date)->dayOfWeekIso,
@@ -97,14 +97,14 @@ class AgendaDoubleDurationTest extends TestCase {
  }
  public function test_double_obeys_create_and_payment_permissions():void {
   $data=$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60,'mode'=>'CONFIRM','payment'=>['amount'=>'50','method'=>'EFECTIVO']]);
-  $this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);$this->postJson($this->url('operational'),$data)->assertForbidden();
-  $this->actor->revokePermissionTo(C::CREATE);$this->postJson($this->url('operational'),$data)->assertForbidden();
+  $this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);$this->agendaCreationResponse('operational',$data)->assertForbidden();
+  $this->actor->revokePermissionTo(C::CREATE);$this->agendaCreationResponse('operational',$data)->assertForbidden();
   $this->assertDatabaseCount('appointments',0);$this->assertDatabaseCount('payments',0);
  }
 
  public function test_confirmed_double_uses_destination_cadence_at_end_of_block():void {
   $data=$this->payload('operational',['cita_doble'=>true,'duracion_cita'=>60,'mode'=>'CONFIRM','payment'=>['amount'=>'50','method'=>'EFECTIVO']]);
-  $id=$this->id($this->postJson($this->url('operational'),$data)->assertCreated(),'operational');
+  $id=$this->id($this->agendaCreationResponse('operational',$data)->assertCreated(),'operational');
   $date=Carbon::parse($data['fecha_cita'])->addDay()->toDateString();
   DoctorSchedule::create(['doctor_id'=>$this->catalog['doctor']->id,'fecha_cita'=>$date,'dia_semana'=>Carbon::parse($date)->dayOfWeekIso,
     'hora_inicio'=>'08:00','hora_fin'=>'10:00','duracion_cita'=>20,'estado'=>'ACTIVO']);
@@ -120,9 +120,9 @@ class AgendaDoubleDurationTest extends TestCase {
   $other=\App\Models\Site::create(['codigo'=>'QA-OTRA','nombre'=>'Otra sede ficticia','estado'=>'ACTIVO']);
   $this->catalog['schedule']->update(['site_id'=>$site->id]);
   $bad=$this->payload($entry,['cita_doble'=>true,'duracion_cita'=>60,'site_id'=>$other->id]);
-  $this->postJson($this->url($entry),$bad)->assertStatus($entry==='legacy'?422:409);
+  $this->agendaCreationResponse($entry,$bad)->assertConflict();
   $this->assertDatabaseCount('appointments',0);
-  $id=$this->id($this->postJson($this->url($entry),$this->payload($entry,['cita_doble'=>true,'duracion_cita'=>60,'site_id'=>$site->id]))->assertSuccessful(),$entry);
+  $id=$this->id($this->agendaCreationResponse($entry,$this->payload($entry,['cita_doble'=>true,'duracion_cita'=>60,'site_id'=>$site->id]))->assertSuccessful(),$entry);
   $a=Appointment::find($id);$this->assertSame($site->id,(int)$a->site_id);$this->assertSame(2,(int)$a->duration_slots);
   $this->assertDatabaseCount('payments',0);
  }

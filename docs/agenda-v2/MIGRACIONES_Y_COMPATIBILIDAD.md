@@ -1,5 +1,11 @@
 # Migraciones y compatibilidad
 
+## Segunda ronda: sin migración adicional
+
+Se inspeccionaron `appointments.motivo_consulta` y `appointment_admission_tasks.body`: ambas columnas son TEXT. Motivo conserva máximo técnico 2000 y pasa a requerido solo para nuevas citas/reservas. Observación pasa del mínimo de tres al mínimo de un carácter significativo, con máximo 16000 compatible con TEXT/utf8mb4. Históricos nulos permanecen nulos y muestran «No registrado»; no se escribe texto ficticio ni se hace backfill.
+
+Las tres tablas de la primera ronda se reutilizan. Contadores, origen y estado se proyectan defensivamente sin reconciliación masiva. Contrato de cola actualizado: `rows` activa; `groups` separa pendientes/historia. Publicar los JS, Blade, CSS y backend del mismo SHA. Los consumidores internos de la cola están actualizados juntos.
+
 Migración nueva: `database/migrations/2026_10_16_020000_create_appointment_operational_procedures.php`.
 
 Es aditiva: crea appointment_operational_reviews, appointment_requested_procedures y appointment_procedure_events. No altera columnas de appointments, patients, payments, vouchers, indicaciones clínicas ni tareas libres; no modifica filas históricas ni ejecuta backfills. Usa claves foráneas con restrictOnDelete, unicidad de cita, cita/procedimiento y actor/UUID, e índice de estado/ready_at/ID.

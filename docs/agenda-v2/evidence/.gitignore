@@ -9,3 +9,9 @@
 !agenda-mobile.png
 !nicol-desktop.png
 !master-mfr-compatible.png
+
+!round2/
+!round2/*.png
+!round2/*-results.json
+!round2/original-manual-audit.tsv
+!round2/stale-ready-before.txt

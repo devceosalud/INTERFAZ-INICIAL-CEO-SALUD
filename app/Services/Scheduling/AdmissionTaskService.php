@@ -86,8 +86,10 @@ final class AdmissionTaskService
     public function create(int $appointmentId, User $actor, string $body, string $requestKey): void
     {
         abort_unless($this->canManage($actor), 403);
-        $body = trim($body);
-        abort_unless(mb_strlen($body) >= 3 && mb_strlen($body) <= 1000, 422, 'Escribe una observación operativa de 3 a 1000 caracteres.');
+        $body = \App\Support\Scheduling\OperationalText::trim($body);
+        abort_if($body === '', 422, 'Escribe una observación antes de guardar.');
+        abort_if(mb_strlen($body) > \App\Support\Scheduling\OperationalText::OBSERVATION_MAX, 422,
+            'La observación supera el máximo técnico de 16000 caracteres.');
         $hash = hash('sha256', $appointmentId . "\n" . $body);
         DB::transaction(function () use ($appointmentId, $actor, $body, $requestKey, $hash) {
             $this->appointment($appointmentId, $actor, true);
