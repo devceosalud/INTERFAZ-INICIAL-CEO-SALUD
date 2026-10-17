@@ -95,10 +95,10 @@ class ManualReevaluationTest extends TestCase
         $this->toggle($a)->assertConflict(); // False again, but an old browser still has version zero.
         $this->assertDatabaseCount('appointment_events',2);$this->assertDatabaseCount('appointment_operations',2);
     }
-    public function test_only_admin_and_admission_with_effective_permissions_can_write(): void
+    public function test_admin_and_admission_need_update_permission_and_other_roles_remain_blocked(): void
     {
         $a=$this->appointment();
-        foreach(['COMERCIAL','RECEPCION','CAJA','FACTURACION','SIN_ROL'] as $role){
+        foreach(['RECEPCION','CAJA','FACTURACION','SIN_ROL'] as $role){
             $user=$this->agendaReader($role);$user->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));$this->actingAs($user);
             $this->toggle($a)->assertForbidden();$this->feed()->assertOk()->assertJsonPath('rows.0.manual_reevaluation.can_update',false);
         }
@@ -110,6 +110,40 @@ class ManualReevaluationTest extends TestCase
         }
         $this->assertDatabaseCount('appointment_events',2);
     }
+    public function test_all_commercial_users_can_toggle_without_general_appointment_update_permission(): void
+    {
+        $a=$this->appointment();
+        $one=$this->agendaReader('COMERCIAL');
+        $two=$this->agendaReader('COMERCIAL');
+        $this->assertFalse($one->can(C::UPDATE));
+        $this->assertFalse($two->can(C::UPDATE));
+
+        $this->actingAs($one);
+        $this->feed()->assertOk()->assertJsonPath('rows.0.manual_reevaluation.can_update',true);
+        $version=$this->toggle($a)->assertOk()->assertJsonPath('manual_reevaluation.marked',true)
+            ->json('manual_reevaluation.version');
+
+        $this->actingAs($two);
+        $this->feed()->assertOk()->assertJsonPath('rows.0.manual_reevaluation.can_update',true)
+            ->assertJsonPath('rows.0.manual_reevaluation.marked',true);
+        $this->toggle($a,['marked'=>false,'expected_marked'=>true,'expected_version'=>$version])
+            ->assertOk()->assertJsonPath('manual_reevaluation.marked',false);
+        $this->feed()->assertOk()->assertJsonPath('rows.0.manual_reevaluation.marked',false);
+        $this->postJson(route('scheduling.mvp.admission.care',$a->id),
+            ['state'=>'EN_ESPERA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()])
+            ->assertForbidden();
+
+        $this->assertSame('ATENDIDO',$a->fresh()->estado_cita);
+        $this->assertDatabaseCount('appointment_events',2);
+        $this->assertDatabaseCount('appointment_operations',2);
+        $one->revokePermissionTo(C::VIEW);
+        $this->actingAs($one);
+        $this->toggle($a)->assertForbidden();
+        $two->revokePermissionTo(C::MVP_ACCESS);
+        $this->actingAs($two);
+        $this->toggle($a)->assertForbidden();
+    }
+
     public function test_inactive_actor_and_private_appointment_are_blocked_even_for_admin(): void
     {
         $other=$this->agendaReader('COMERCIAL');
