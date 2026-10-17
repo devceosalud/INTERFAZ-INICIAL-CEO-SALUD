@@ -4,11 +4,11 @@ Base: main 9c3b93a5086172d30fbf59fc9c4c2c40df84a645. Rama: hotfix/admision-reeva
 
 ## Comportamiento
 
-- ATENDIDO se muestra en verde oscuro #166534 y texto blanco. La marca manual usa naranja #fed7aa y texto #7c2d12.
+- ATENDIDO se muestra en turquesa suave `#74DCCB` y texto oscuro `#174D4A` desde el PR #48. La marca manual usa naranja `#ffc28a` y texto `#7c2d12`.
 - Un checkbox permite marcar/desmarcar la misma cita ATENDIDO con agenda LEGADO o CONFIRMADA. No exige procedimientos ni exámenes. No altera ningún atributo de appointments, ni genera cita, precio, pago o indicación clínica/comercial.
 - Cancelación/retiro, reembolso y salida conservan su prioridad. Salida mantiene el tachado. Las alertas de conciliación, pagos e indicadores médicos permanecen. Solo se reemplazan bases visuales no críticas conocidas; un estado visual futuro conserva su presentación.
 - La pestaña Reevaluaciones muestra las marcas activas del conjunto autorizado y filtrado; conserva fechas, sede, médico, especialidad, paciente, estado y grupo. Totales, indicadores y paginación usan el mismo conjunto. El límite existente de 2000 citas por consulta se mantiene.
-- ADMINISTRADOR y ADMISION activos requieren acceso MVP, lectura y edición efectivos. COMERCIAL y los demás lectores consultan sin checkbox; el endpoint rechaza sus escrituras incluso con appointment.update. No se conceden permisos nuevos ni excepciones a reservas privadas.
+- ADMINISTRADOR y ADMISION activos mantienen la exigencia de acceso MVP, lectura y permiso `appointment.update` para marcar/desmarcar. **Todos los usuarios COMERCIAL activos** con acceso MVP y lectura de Agenda pueden marcar/desmarcar este indicador manual sin permiso general `appointment.update`. RECEPCION, CAJA, FACTURACION y demás roles siguen sin permiso; se conservan las restricciones de visibilidad de citas privadas. El endpoint vuelve a autorizar en servidor; no se alteran permisos de transición de atención ni operaciones financieras.
 - Todos los chips de Atención / Agenda usan fuente 12–12,5 px, negrita 700, padding 4×8 px y altura mínima 24 px. El resto del ERP conserva sus estilos.
 - Ajuste visual final: el chip Agenda heredada se oculta solo en la tabla principal con visibility:hidden y aria-hidden=true. Conserva su espacio, colores y dimensiones; no modifica LEGADO ni bookingLabel ni el detalle. Reserva pendiente, horario confirmado y etiquetas desconocidas siguen visibles. En navegador la fila de referencia midió 91,86 px antes y después del ajuste.
 

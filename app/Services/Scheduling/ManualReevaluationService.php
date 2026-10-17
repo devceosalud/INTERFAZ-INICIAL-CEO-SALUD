@@ -17,8 +17,11 @@ final class ManualReevaluationService
 
     public function canUpdate(User $actor): bool
     {
+        // All active COMERCIAL users may manage this isolated flag without appointment.update.
+        // Care transitions and unrelated appointment updates still require their own permissions.
         return (bool) $actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW)
-            && $actor->can(C::UPDATE) && $actor->hasAnyRole(['ADMINISTRADOR', 'ADMISION']);
+            && ($actor->hasRole('COMERCIAL')
+                || ($actor->can(C::UPDATE) && $actor->hasAnyRole(['ADMINISTRADOR', 'ADMISION'])));
     }
 
     public function eligible(Appointment $a): bool

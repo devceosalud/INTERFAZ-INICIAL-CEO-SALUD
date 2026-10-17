@@ -13,7 +13,7 @@ final class AdmissionAppointmentPresentation
         if ($a->estado_cita !== 'ATENDIDO' || !in_array($base['clave'],
             ['PRESENTE', 'PAGO_REAL', 'SIN_PAGO_REAL', 'RESERVA_SIN_PAGO'], true)) return $base;
         return array_replace($base, $manual
-            ? ['clave'=>'REEVALUACION_MANUAL', 'etiqueta'=>'Reevaluación manual', 'color'=>'#7c2d12', 'fondo'=>'#fed7aa']
+            ? ['clave'=>'REEVALUACION_MANUAL', 'etiqueta'=>'Reevaluación manual', 'color'=>'#7c2d12', 'fondo'=>'#ffc28a']
             : ['clave'=>'ATENDIDO_ADMISION', 'etiqueta'=>'Atendido', 'color'=>'#174d4a', 'fondo'=>'#74dccb']);
     }
 }
