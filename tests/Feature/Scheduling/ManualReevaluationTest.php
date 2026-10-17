@@ -52,11 +52,11 @@ class ManualReevaluationTest extends TestCase
     public function test_attended_toggle_without_exams_is_audited_and_changes_only_events_and_operations(): void
     {
         $a=$this->appointment(['total_pagado'=>30,'saldo_pendiente'=>70,'estado_pagado'=>'PARCIAL']);$before=$this->snapshot();
-        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#166534')->assertJsonPath('rows.0.presentation.color','#ffffff');
+        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#74dccb')->assertJsonPath('rows.0.presentation.color','#174d4a');
         $v=$this->toggle($a)->assertOk()->assertJsonPath('manual_reevaluation.marked',true)->json('manual_reevaluation.version');
         $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#fed7aa')->assertJsonPath('rows.0.estado_cita','ATENDIDO');
         $this->toggle($a,['marked'=>false,'expected_marked'=>true,'expected_version'=>$v])->assertOk()->assertJsonPath('manual_reevaluation.marked',false);
-        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#166534');
+        $this->feed()->assertOk()->assertJsonPath('rows.0.presentation.fondo','#74dccb');
         $this->assertSame($before,$this->snapshot());$this->assertDatabaseCount('appointment_operations',2);
         $events=$a->events()->orderBy('id')->get();$this->assertCount(2,$events);
         $this->assertSame([Manual::MARKED,Manual::CLEARED],$events->pluck('event_type')->all());
