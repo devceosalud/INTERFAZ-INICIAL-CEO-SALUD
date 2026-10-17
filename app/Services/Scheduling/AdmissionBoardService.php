@@ -52,6 +52,10 @@ class AdmissionBoardService
             })
             ->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
+        app(ManualReevaluationService::class)->load($rows);
+        if (($filters['tab'] ?? 'citas') === 'reevaluaciones') {
+            $rows = $rows->filter(fn ($a) => app(ManualReevaluationService::class)->state($a)['marked'])->values();
+        }
         if (!empty($filters['grupo'])) $rows = $rows->filter(fn ($a) => AdmissionStatus::group($a) === $filters['grupo'])->values();
         $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
         $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
@@ -71,19 +75,21 @@ class AdmissionBoardService
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
             'responsibleUser:id,name','user:id,name','site:id,nombre']);
         return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
-            'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id]))->values()->all()];
+            'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor))->values()->all()];
     }
 
-    private function row(Appointment $a, array $p): array
+    private function row(Appointment $a, array $p, User $actor): array
     {
-        return ['id'=>$a->id,'numero'=>$a->numero_cita,'fecha'=>substr($a->fecha_cita,0,10),'hora'=>substr($a->hora_cita,0,5),
+        $manual = app(ManualReevaluationService::class);
+        $mark = $manual->state($a);
+        return ['manual_reevaluation'=>$mark + ['can_update'=>$manual->canUpdate($actor) && $manual->eligible($a)], 'id'=>$a->id,'numero'=>$a->numero_cita,'fecha'=>substr($a->fecha_cita,0,10),'hora'=>substr($a->hora_cita,0,5),
             'patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre]))),
             'documento'=>$a->patient?->numero_identidad,'historia'=>$a->patient?->historia_clinica,
             'doctor'=>$a->doctor?->nombre,'especialidad'=>$a->doctor?->specialty?->nombre,'servicio'=>$a->service?->nombre,
             'responsable'=>$a->responsibleUser?->name,'sede'=>$a->site?->nombre,
             'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda,'estado_pagado'=>$a->estado_pagado,
             'payment_methods'=>array_values(array_unique(array_column($p['payment_details'],'method'))),
-            'presentation'=>\App\Support\Scheduling\AgendaAppointmentPresentation::of($a,$p),'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
+            'presentation'=>\App\Support\Scheduling\AdmissionAppointmentPresentation::of($a,$p,$mark['marked']),'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
             'tiempos'=>collect(['llegada'=>$a->hora_llegada,'llamado'=>$a->hora_llamado,'inicio'=>$a->hora_atencion,'fin'=>$a->hora_atendido,'salida'=>$a->hora_salida])->map(fn ($time) => $time ? Carbon::parse($time,config('app.timezone'))->toISOString() : null)->all(),
             'economy'=>['precio'=>Money::decimal($p['price_cents']),'pagado'=>Money::decimal($p['paid_cents']),
                 'credito'=>Money::decimal($p['credit_cents']),'saldo'=>Money::decimal($p['balance_cents']),'fuente'=>$p['authority']],
@@ -96,15 +102,16 @@ class AdmissionBoardService
             'patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad,telefono,telefono_secundario,channel_id,interaction_medium_id',
             'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
+        app(ManualReevaluationService::class)->load(collect([$a]));
         $previous = Appointment::visibleToAgendaUser($actor->id)->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
         $positions = $this->economics->forAppointments($previous->push($a));
-        $history = $previous->reject(fn ($item) => $item->id === $a->id)->map(function ($item) use ($positions) {
+        $history = $previous->reject(fn ($item) => $item->id === $a->id)->map(function ($item) use ($positions,$actor) {
             // Administrative history deliberately omits reason, observations and clinical content.
             return ['fecha'=>substr($item->fecha_cita,0,10),'hora'=>substr($item->hora_cita,0,5),
                 'doctor'=>$item->doctor?->nombre,'servicio'=>$item->service?->nombre,'estado_cita'=>$item->estado_cita,
-                'estado_agenda'=>$item->estado_agenda,'economy'=>$this->row($item,$positions[$item->id])['economy']];
+                'estado_agenda'=>$item->estado_agenda,'economy'=>$this->row($item,$positions[$item->id],$actor)['economy']];
         })->values();
         $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows($actor);
         $events = $a->events()->with('actor:id,name')->orderByDesc('occurred_at')->orderByDesc('id')->limit(30)->get()
@@ -123,7 +130,7 @@ class AdmissionBoardService
                     'url'=>$d->url?:route('scheduling.mvp.documents.download',[$a->id,$d->id])])
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
-        return ['appointment'=>$this->row($a,$positions[$a->id]),'contact'=>[
+        return ['appointment'=>$this->row($a,$positions[$a->id],$actor),'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
             'events'=>$events,'history'=>$history,'documents'=>$documents,'operational_documents'=>$operationalDocuments,

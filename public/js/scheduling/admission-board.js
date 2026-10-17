@@ -19,6 +19,14 @@
     }
     function money(value){return 'S/ '+Number(value||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
     function bookingLabel(state){return state==='CONFIRMADA'?'Horario confirmado':state==='PENDIENTE_CONFIRMACION'?'Reserva pendiente · horario sin confirmar':state==='LEGADO'?'Agenda heredada':String(state||'Sin clasificación');}
+    // Preserve the existing chip footprint in the main table; details keep the full booking label.
+    function bookingIndicator(doc,state){
+        const chip=doc.createElement('span');
+        chip.className='admission-tag admission-tag--booking';
+        chip.textContent=bookingLabel(state);
+        if(state==='LEGADO'){chip.style.visibility='hidden';chip.setAttribute('aria-hidden','true');}
+        return chip;
+    }
     function time(value){if(!value)return 'Sin registro';const date=new Date(value);return Number.isNaN(date.getTime())?'Sin registro':new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',hour:'2-digit',minute:'2-digit',hour12:false}).format(date);}
     async function readResponse(response){
         const generic='No se pudo completar la consulta. Actualiza y vuelve a intentar.';
@@ -148,12 +156,35 @@
             parent.appendChild(label);
             for(const badge of presentation?.badges||[]){const chip=tag(badge.etiqueta);chip.style.backgroundColor=badge.fondo;chip.style.color=badge.color;parent.appendChild(chip);}
         }
+        function manualControl(row) {
+            const mark=row.manual_reevaluation;
+            if(!mark?.can_update)return mark?.marked?tag('Reevaluación manual','pending'):null;
+            const label=node('label',null,'admission-manual-check');
+            const checkbox=node('input');checkbox.type='checkbox';checkbox.checked=mark.marked===true;
+            checkbox.setAttribute('aria-label','Reevaluación manual de '+row.patient+' a las '+row.hora);
+            checkbox.addEventListener('change',async()=>{
+                if(busy||confirming){checkbox.checked=mark.marked;return;}
+                busy=true;checkbox.disabled=true;detailRequest.cancel();listRequest.cancel();
+                let message;
+                try {
+                    await request(board.dataset.base+'/'+row.id+'/manual-reevaluation',{method:'PATCH',body:JSON.stringify({
+                        marked:!mark.marked,expected_marked:mark.marked,expected_version:mark.version,request_key:crypto.randomUUID()
+                    })});
+                    message=mark.marked?'Reevaluación manual desmarcada.':'Reevaluación manual marcada.';
+                } catch(error) {checkbox.checked=mark.marked;message=error.message;}
+                finally {busy=false;checkbox.disabled=false;await load(selected);notice(message);}
+            });
+            return append(label,checkbox,node('span','Reevaluación manual'));
+        }
         function renderRows(payload){
             total=payload.total;page=payload.page;const body=$('rows');body.replaceChildren();
             for(const row of payload.rows){const tr=node('tr');tr.dataset.appointmentId=row.id;if(row.id===selected)tr.className='is-selected';
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 cell(row.hora,row.fecha);const patient=cell();presentationName(patient,row.patient,row.presentation);patient.appendChild(node('small','H.C. '+(row.historia||'—')+' · '+(row.documento||'—')));
-                cell(row.doctor,row.servicio);const status=cell();if(row.presentation)tr.style.backgroundColor=row.presentation.fondo;append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.grupo==='desactivadas'?'inactive':''),node('small',bookingLabel(row.estado_agenda)));if(row.grupo==='otros')status.appendChild(tag('Revisar clasificación','review'));
+                cell(row.doctor,row.servicio);const status=cell();status.classList.add('admission-status');
+                if(row.presentation){tr.style.backgroundColor=row.presentation.fondo;tr.style.color=row.presentation.color;tr.classList.toggle('admission-row--attended',row.presentation.clave==='ATENDIDO_ADMISION');}
+                append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.grupo==='desactivadas'?'inactive':''),bookingIndicator(doc,row.estado_agenda));
+                const manual=manualControl(row);if(manual)status.appendChild(manual);if(row.grupo==='otros')status.appendChild(tag('Revisar clasificación','review'));
                 cell(time(row.tiempos.llegada)+' / '+time(row.tiempos.inicio)+' / '+time(row.tiempos.fin));
                 const e=row.economy;cell(money(e.precio)+' / '+(e.fuente==='UNALLOCATED'?'Por conciliar':money(e.pagado))+' / '+(e.fuente==='UNALLOCATED'?'Por conciliar':money(e.saldo)),e.fuente==='LEGACY_SNAPSHOT'?'Abonado histórico sin conciliación':e.credito!=='0.00'?'Crédito '+money(e.credito):e.fuente==='UNALLOCATED'?'Atribución pendiente':row.estado_pagado+' · '+(row.payment_methods.join(', ')||'Sin pago registrado'));
                 cell(row.responsable||'—',row.sede||'Sede sin registrar');const button=node('button','Ver','admission-btn');button.type='button';button.setAttribute('aria-label','Ver cita de '+row.patient+' a las '+row.hora);button.addEventListener('click',()=>select(row.id));cell().appendChild(button);body.appendChild(tr);
@@ -234,6 +265,22 @@
                 if(!background){$('count').textContent='';board.querySelectorAll('[data-kpi]').forEach(el=>el.textContent='—');$('totals').replaceChildren();}
             }finally{loading=false;if(pendingLoad){const next=pendingLoad;pendingLoad=null;load(next.reselect);}}
         }
+        const tabs=Array.from(board.querySelectorAll('[data-admission-tab]'));
+        function changeTab(button) {
+            if(busy||confirming)return;
+            $('tab').value=button.dataset.admissionTab;
+            for(const tab of tabs){const active=tab===button;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
+            $('results').setAttribute('aria-labelledby',button.id);
+            page=1;load();
+        }
+        tabs.forEach((button,index)=>{
+            button.addEventListener('click',()=>changeTab(button));
+            button.addEventListener('keydown',event=>{
+                if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+                event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+                tabs[next].focus();changeTab(tabs[next]);
+            });
+        });
         form.addEventListener('submit',event=>{event.preventDefault();page=1;load();});$('refresh').addEventListener('click',()=>load(selected));
         $('prev').addEventListener('click',()=>{if(page>1){page--;load();}});$('next').addEventListener('click',()=>{if(page*30<total){page++;load();}});
         $('date').addEventListener('change',()=>{if($('until').value<$('date').value)$('until').value=$('date').value;});
@@ -248,5 +295,5 @@
         load();
         poll.start();
     }
-    return {latest,polling,bookingLabel,time,money,readResponse,start};
+    return {latest,polling,bookingLabel,bookingIndicator,time,money,readResponse,start};
 }));
