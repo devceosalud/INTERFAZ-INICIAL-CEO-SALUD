@@ -14,6 +14,6 @@ final class AdmissionAppointmentPresentation
             ['PRESENTE', 'PAGO_REAL', 'SIN_PAGO_REAL', 'RESERVA_SIN_PAGO'], true)) return $base;
         return array_replace($base, $manual
             ? ['clave'=>'REEVALUACION_MANUAL', 'etiqueta'=>'Reevaluación manual', 'color'=>'#7c2d12', 'fondo'=>'#fed7aa']
-            : ['clave'=>'ATENDIDO_ADMISION', 'etiqueta'=>'Atendido', 'color'=>'#ffffff', 'fondo'=>'#166534']);
+            : ['clave'=>'ATENDIDO_ADMISION', 'etiqueta'=>'Atendido', 'color'=>'#174d4a', 'fondo'=>'#74dccb']);
     }
 }
