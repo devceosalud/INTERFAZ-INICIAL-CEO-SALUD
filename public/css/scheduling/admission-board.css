@@ -33,6 +33,6 @@
 .admission-status .admission-tag--booking{font-size:12px}
 .admission-manual-check{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.3;margin:5px 0 0;cursor:pointer}
 .admission-manual-check input{width:16px;height:16px;flex:none;accent-color:#c2410c;cursor:pointer}
-.admission-table .admission-row--attended>td{color:#fff}
-.admission-table .admission-row--attended small{color:#f0fdf4}
+.admission-table .admission-row--attended>td{color:#174d4a}
+.admission-table .admission-row--attended small{color:#285d58}
 .admission-table tr.is-selected{box-shadow:inset 4px 0 0 #0e7490}
