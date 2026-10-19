@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Scheduling;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Payment;
 use App\Models\Doctor;
 use App\Models\Site;
 use App\Services\Billing\AppointmentEconomicPosition;
@@ -11,9 +12,11 @@ use App\Services\Scheduling\DoctorAvailabilityService;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\ManagementCsv;
 use App\Support\Scheduling\ManagementXlsx;
+use App\Support\Scheduling\ManagementPaymentOperationNumbers;
 use App\Support\Scheduling\SchedulingCapability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -56,7 +59,7 @@ class ManagementExportController extends Controller
                 'Precio programado S/', 'Precio catálogo S/', 'Tipo descuento',
                 'Valor descuento', 'Monto descuento S/', 'Motivo descuento',
                 'Exonerada', 'Autorizada por', 'Motivo exoneración',
-                'Pago acreditado o snapshot S/', 'Fuente económica', 'Crédito aplicado S/',
+                'Pago acreditado o snapshot S/', 'Número(s) de operación de pagos atribuidos', 'Fuente económica', 'Crédito aplicado S/',
                 'Crédito utilizado S/', 'Devolución reservada S/', 'Saldo calculado S/',
                 'Asegurada económicamente según regla', 'Asignación requiere revisión',
                 'Método de pago legado', 'Número operación legado', 'Fecha exportación',
@@ -70,7 +73,8 @@ class ManagementExportController extends Controller
                 ])
                 ->chunkById(120, function ($appointments) use ($handle, $economics) {
                     // Reutilizar la proyección de pagos; total_pagado de citas NO es la fuente universal.
-                    $positions = $economics->forAppointments($appointments, []);
+                    $positions = $economics->forAppointments($appointments);
+                    $payments = $this->attributedPayments($positions);
                     foreach ($appointments as $a) {
                         $p = $positions[$a->id] ?? [];
                         $patient = $a->patient;
@@ -94,6 +98,7 @@ class ManagementExportController extends Controller
                             $a->discount_value, ManagementCsv::decimal($a->discount_amount), $a->discount_reason,
                             $a->es_exonerado ? 'SÍ' : 'NO', $a->autorizado_por, $a->motivo_exoneracion,
                             ManagementCsv::soles($p['paid_cents'] ?? 0),
+                            ManagementCsv::identifier(ManagementPaymentOperationNumbers::forDetails($p['payment_details'] ?? [], $payments)),
                             $p['authority'] ?? '', ManagementCsv::soles($p['credit_cents'] ?? 0),
                             ManagementCsv::soles($p['outgoing_credit_cents'] ?? 0),
                             ManagementCsv::soles($p['refund_reserved_cents'] ?? 0),
@@ -116,8 +121,8 @@ class ManagementExportController extends Controller
         return $this->download('pagos_citas', $filters, function ($handle) use ($filters, $economics) {
             ManagementCsv::begin($handle, [
                 'ID cita', 'Número de cita', 'Fecha cita', 'Profesional', 'ID paciente',
-                'Paciente', 'ID pago', 'Fecha pago', 'Método pago',
-                'Importe pago real S/', 'ID voucher', 'Tipo comprobante',
+                'Paciente', 'ID pago', 'Fecha pago', 'Método pago', 'Número de operación del pago',
+                'Número de operación legado de la cita', 'Importe pago real S/', 'ID voucher', 'Tipo comprobante',
                 'Serie', 'Correlativo', 'Estado voucher', 'Fuente económica',
                 'Asignación requiere revisión', 'Nota de conciliación',
             ]);
@@ -126,15 +131,7 @@ class ManagementExportController extends Controller
                 ->with(['patient:id,nombre,apellido_paterno,apellido_materno', 'doctor:id,nombre'])
                 ->chunkById(120, function ($appointments) use ($handle, $economics) {
                     $positions = $economics->forAppointments($appointments);
-                    $ids = [];
-                    foreach ($positions as $p) {
-                        foreach ($p['payment_details'] ?? [] as $detail) {
-                            $ids[] = $detail['id'];
-                        }
-                    }
-                    $payments = \App\Models\Payment::query()
-                        ->with('voucher:id,tipo_comprobante,serie,correlativo,estado')
-                        ->whereIn('id', array_unique($ids))->get()->keyBy('id');
+                    $payments = $this->attributedPayments($positions, true);
 
                     foreach ($appointments as $a) {
                         $p = $positions[$a->id] ?? [];
@@ -152,7 +149,8 @@ class ManagementExportController extends Controller
                                     : 'Sin pago individual atribuible');
                             ManagementCsv::row($handle, [
                                 $a->id, $a->numero_cita, $a->fecha_cita, $a->doctor?->nombre,
-                                $a->patient_id, $name, '', '', '', '', '', '', '', '', '',
+                                $a->patient_id, $name, '', '', '', '',
+                                ManagementCsv::identifier($a->numero_operacion), '', '', '', '', '', '',
                                 $p['authority'] ?? '', !empty($p['allocation_required']) ? 'SÍ' : 'NO', $note,
                             ]);
                             continue;
@@ -162,7 +160,9 @@ class ManagementExportController extends Controller
                             ManagementCsv::row($handle, [
                                 $a->id, $a->numero_cita, $a->fecha_cita, $a->doctor?->nombre,
                                 $a->patient_id, $name, $detail['id'], $detail['recorded_at'],
-                                $detail['method'], str_replace('.', ',', (string) $detail['amount']),
+                                $detail['method'], ManagementCsv::identifier($payment?->numero_operacion),
+                                ManagementCsv::identifier($a->numero_operacion),
+                                str_replace('.', ',', (string) $detail['amount']),
                                 $payment?->voucher_id, $payment?->voucher?->tipo_comprobante,
                                 $payment?->voucher?->serie, $payment?->voucher?->correlativo,
                                 $payment?->voucher?->estado,
@@ -231,6 +231,35 @@ class ManagementExportController extends Controller
                 }
             });
         });
+    }
+
+    /**
+     * Read payment references in batches, restricted to payment IDs already attributed
+     * by AppointmentEconomicPosition. Do not report unrelated/ambiguous vouchers.
+     *
+     * @param array<int, array<string, mixed>> $positions
+     * @return Collection<int, Payment>
+     */
+    private function attributedPayments(array $positions, bool $withVoucher = false): Collection
+    {
+        $ids = [];
+        foreach ($positions as $position) {
+            foreach ($position['payment_details'] ?? [] as $detail) {
+                if (isset($detail['id'])) {
+                    $ids[] = (int) $detail['id'];
+                }
+            }
+        }
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return Payment::query()
+            ->when($withVoucher, fn ($query) => $query->with('voucher:id,tipo_comprobante,serie,correlativo,estado'))
+            ->whereIn('id', array_unique($ids))
+            ->get()
+            ->keyBy('id');
     }
 
     private function authorizeExport(Request $request): void
