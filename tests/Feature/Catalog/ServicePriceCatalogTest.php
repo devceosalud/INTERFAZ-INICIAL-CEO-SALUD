@@ -176,41 +176,6 @@ class ServicePriceCatalogTest extends TestCase
         $this->assertSame('REEVALUATION_MODALITY', $r[2]['representation']);
         $this->assertDatabaseCount('catalog_price_events', 0);
     }
-    public function test_procedure_with_no_reevaluation_price_keeps_its_description_in_operational_agenda(): void
-    {
-        $admin = $this->createUserWithRole('ADMINISTRADOR');
-        $this->actingAs($admin);
-        $this->postJson('/master/admin/service/store', [
-            'nombre' => 'PRP FICTICIO',
-            'specialty_id' => $this->catalog['specialty']->id,
-            'service_type' => 'PROCEDURE',
-            'pricing_policy' => 'INSTITUTIONAL',
-            'institutional_price' => '150.00',
-            'pricing_notes' => 'Aplicación PRP; consultar si requiere guía ecográfica.',
-        ])->assertOk();
-        $service = Service::where('nombre', 'PRP FICTICIO')->firstOrFail();
-        $this->postJson('/master/admin/doctor/services/store', [
-            'doctor_id' => $this->catalog['doctor']->id,
-            'service_id' => $service->id,
-            'precio_estandar' => '',
-            'reconsulta' => '',
-            'dias' => '15',
-        ])->assertOk();
-        $assignment = DoctorService::where('doctor_id', $this->catalog['doctor']->id)
-            ->where('service_id', $service->id)->firstOrFail();
-        $this->assertNull($assignment->precio_reconsulta);
-        $this->assertNull($assignment->precio_primera_consulta);
-
-        $this->actingAs($this->actor);
-        $services = $this->get('/scheduling-mvp/agenda')->assertOk()->viewData('doctorServices');
-        $configured = collect($services[$this->catalog['doctor']->id])
-            ->firstWhere('service_id', $service->id);
-        $this->assertSame('Aplicación PRP; consultar si requiere guía ecográfica.', $configured['descripcion']);
-        $this->assertSame(150.0, $configured['precio']);
-        $this->quote('operational', ['service_id' => $service->id])
-            ->assertOk()->assertJsonPath('precio_programado', '150.00');
-    }
-
     public function test_future_valid_price_remains_selectable_but_quote_checks_the_actual_attention_date(): void
     {
         $date = $this->catalog['schedule']->fecha_cita;

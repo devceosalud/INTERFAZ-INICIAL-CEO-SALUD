@@ -52,7 +52,6 @@ class AgendaBoardController extends Controller
                 return [
                     'service_id' => (int) $doctorService->service_id,
                     'nombre' => $doctorService->service ? $doctorService->service->nombre : 'Servicio sin nombre',
-                    'descripcion' => trim((string) ($doctorService->service?->pricing_notes ?? '')),
                     'precio' => $available ? (float) $price['price'] : null,
                     'price_source'=>$price['source']??null,'service_type'=>$doctorService->service?->service_type,
                     'reevaluation_services'=>\App\Models\Service::where('canonical_service_id',$doctorService->service_id)->where('service_type','REEVALUATION')->where('estado','ACTIVO')->get(['id','nombre'])->toArray(),
