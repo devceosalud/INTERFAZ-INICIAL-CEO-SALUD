@@ -74,6 +74,7 @@
                 <select class="agenda-field__input" id="agenda-service-select" aria-required="true" aria-describedby="agenda-service-error" disabled>
                     <option value="">Seleccione un intervalo</option>
                 </select>
+                <small id="agenda-service-description" class="agenda-guidance" aria-live="polite" hidden></small>
             </label>
             <label class="agenda-field"><span class="agenda-field__label">Modalidad</span><select id="agenda-op-price-modality" class="agenda-field__input"><option value="CONSULTATION">Primera consulta / atención normal</option><option value="REEVALUATION" disabled>Reevaluación indicada</option></select></label>
             <div id="agenda-reevaluation-fields" hidden>
