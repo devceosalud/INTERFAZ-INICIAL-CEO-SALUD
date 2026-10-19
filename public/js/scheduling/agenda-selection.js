@@ -72,7 +72,7 @@
             status: appointment
                 ? (context.estado_cita || context.etiqueta || 'Ocupada')
                 : (offHours ? 'Fuera de horario' : (occupied ? 'Ocupado' : 'Sin cita')),
-            payment: appointment ? valueOrDash(context.estado_pagado) : '—',
+            payment: appointment ? valueOrDash(context.financial_status?.label || context.estado_pagado) : '—',
             clinicalRecord: appointment ? valueOrDash(context.historia_clinica) : '—',
             showCompleteRegistration: appointment,
             schedulable: !appointment && !offHours && !occupied && context.seleccionable === true,

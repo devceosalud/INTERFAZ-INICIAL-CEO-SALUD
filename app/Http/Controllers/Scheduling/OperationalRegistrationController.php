@@ -41,9 +41,10 @@ class OperationalRegistrationController extends Controller
     public function economy(Request $request, int $appointmentId, AppointmentEconomicPosition $position)
     {
         $a = Appointment::visibleToOperationalUser($request->user())->whereKey($appointmentId)->firstOr(fn () => abort(404));
-        $canEdit = $request->user()->can(\App\Support\Scheduling\SchedulingCapability::UPDATE);
+        $canEdit = \App\Services\Scheduling\AppointmentManagement::canEdit($a,$request->user());
         return response()->json($position->publicPosition($a) + app(\App\Services\Scheduling\RegularReservationAvailability::class)->describe($a) + [
             'additional_conversion'=>app(\App\Services\Scheduling\AdditionalReservationConversion::class)->offer($a,$request->user()),
+            'management'=>\App\Services\Scheduling\AppointmentManagement::payload($a,$request->user()),
             'can_confirm_additional'=>$a->tipo_agendamiento!=='ADICIONAL'||$request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE_ADDITIONAL),
             'can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
                 && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]

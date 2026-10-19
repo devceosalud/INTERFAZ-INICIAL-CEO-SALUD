@@ -152,4 +152,30 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertSame('ATENDIDO',$a->fresh()->estado_cita);$this->assertDatabaseCount('payments',0);
     }
 
+    public function test_simultaneous_mode_change_replay_has_one_event_and_no_economic_write():void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog);
+        $r=['method'=>'PATCH','path'=>'/scheduling-mvp/agenda/appointments/'.$a->id.'/notes','payload'=>[
+            'attendance_mode'=>'TELECONSULTA','confirmed_attendance_change'=>true,'expected_revision'=>\App\Services\Scheduling\AppointmentManagement::revision($a->fresh()),'request_key'=>(string)Str::uuid()]];
+        $this->assertSame([200,200],$this->race([$r,$r]));$this->assertSame('TELECONSULTA',$a->fresh()->attendance_mode);
+        $this->assertSame(1,$a->events()->where('event_type','MODALIDAD_ATENCION_ACTUALIZADA')->count());
+        $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);$this->assertDatabaseCount('appointment_operations',1);
+    }
+    public function test_simultaneous_management_edits_detect_same_snapshot_without_lost_update():void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog);$token=\App\Services\Scheduling\AppointmentManagement::revision($a->fresh());
+        $r=['method'=>'PATCH','path'=>'/scheduling-mvp/agenda/appointments/'.$a->id.'/notes','payload'=>[
+            'observaciones'=>'A ficticio','expected_revision'=>$token,'request_key'=>(string)Str::uuid()]];
+        $b=array_replace($r,['payload'=>array_replace($r['payload'],['observaciones'=>'B ficticio','request_key'=>(string)Str::uuid()])]);
+        $this->assertSame([200,409],$this->race([$r,$b]));$this->assertContains($a->fresh()->observaciones,['A ficticio','B ficticio']);
+        $this->assertSame(1,$a->events()->where('event_type','DATOS_OPERATIVOS_ACTUALIZADOS')->count());$this->assertDatabaseCount('appointment_operations',1);
+    }
+    public function test_simultaneous_favorites_cannot_exceed_per_user_limit():void
+    {
+        $preferences=app(\App\Services\Scheduling\AgendaProfessionalPreferences::class);$doctors=[];
+        for($i=0;$i<6;$i++){$d=\App\Models\Doctor::create(['nombre'=>'Favorito concurrente ficticio '.$i,'specialty_id'=>$this->catalog['specialty']->id,'estado'=>'ACTIVO']);$doctors[]=$d->id;if($i<4)$preferences->change($this->actor,$d->id,'favorite');}
+        $requests=array_map(fn($id)=>['path'=>'/scheduling-mvp/agenda/professional-preferences','payload'=>['doctor_id'=>$id,'action'=>'favorite']],array_slice($doctors,4));
+        $this->assertSame([200,422],$this->race($requests));$this->assertDatabaseCount('agenda_professional_preferences',5);$this->assertDatabaseCount('payments',0);
+    }
+
 }

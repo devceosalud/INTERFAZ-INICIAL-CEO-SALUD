@@ -27,6 +27,7 @@ class OperationalRegistrationRequest extends FormRequest
     public function rules(): array
     {
         return \App\Services\Scheduling\AppointmentPaymentProofs::rules() + \App\Support\Scheduling\AppointmentPriceInput::rules() + [
+            'attendance_mode'=>'sometimes|in:PRESENCIAL,TELECONSULTA',
             'request_key' => 'required|uuid', 'mode' => 'required|in:RESERVE,CONFIRM',
             'booking_type' => 'required|in:REGULAR,ADICIONAL,FUERA_HORARIO',
             'patient_id' => ['nullable', 'integer', 'required_without:patient', Rule::exists('patients', 'id')->where('estado', 'ACTIVO')],

@@ -21,6 +21,8 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        Route::post('/scheduling-mvp/agenda/professional-preferences', [\App\Http\Controllers\Scheduling\AgendaProfessionalPreferenceController::class, 'update'])
+            ->middleware('throttle:120,1')->name('scheduling.mvp.agenda.professional-preferences');
         $admission = \App\Http\Controllers\Scheduling\AdmissionBoardController::class;
         $procedures = \App\Http\Controllers\Scheduling\OperationalProcedureController::class;
         Route::get('/scheduling-mvp/admission/reevaluations', [$procedures, 'queue'])->name('scheduling.mvp.admission.reevaluations');

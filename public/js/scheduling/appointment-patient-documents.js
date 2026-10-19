@@ -5,7 +5,7 @@ function pdfOptions(bytes){return {data:bytes,isEvalSupported:false,enableXfa:fa
 function create({doc=document,url,appointmentId,initialData=null,readResponse,onDirty=()=>{},onBusy=()=>{},onUploaded=()=>{}}){
  const node=(tag,text)=>{const e=doc.createElement(tag);if(text)e.textContent=text;return e;};
  const area=node('section');area.className='patient-appointment-documents clarity-mask';area.dataset.clarityMask='true';
- area.appendChild(node('h4','Documentos de la cita'));area.appendChild(node('p','Archivos aportados por el paciente · JPG, PNG o PDF · hasta 8 MB. Acceso privado.'));
+ area.appendChild(node('h4','Documentos de la cita'));
  const previewDisposers=new Set();const disposePreviews=()=>{for(const dispose of previewDisposers)dispose();previewDisposers.clear();};
  const view=doc.defaultView;if(view?.MutationObserver){let mounted=false;const observer=new view.MutationObserver(()=>{if(area.isConnected)mounted=true;else if(mounted){disposePreviews();observer.disconnect();}});observer.observe(doc.body,{childList:true,subtree:true});}
  view?.addEventListener('pagehide',disposePreviews,{once:true});
@@ -15,20 +15,23 @@ function create({doc=document,url,appointmentId,initialData=null,readResponse,on
  const file=node('input');file.type='file';file.accept='.jpg,.jpeg,.png,.pdf';file.required=true;file.setAttribute('aria-label','Archivo del paciente');
  const reason=node('input');reason.hidden=true;reason.maxLength=500;reason.placeholder='Motivo del reemplazo';reason.setAttribute('aria-label','Motivo del reemplazo documental');
  const submit=node('button','Adjuntar documento');submit.type='submit';submit.className='admission-btn admission-btn--primary agenda-btn';
- const cancel=node('button','Cancelar reemplazo');cancel.type='button';cancel.className='admission-btn agenda-btn';cancel.hidden=true;
+ const add=node('button','+ Adjuntar archivo');add.type='button';add.className='admission-btn admission-btn--primary agenda-btn';add.hidden=true;add.setAttribute('aria-expanded','false');
+ const cancel=node('button','Cancelar');cancel.type='button';cancel.className='admission-btn agenda-btn';
  const field=(text,input)=>{const l=node('label',text);l.appendChild(input);return l;};
- form.append(field('Nombre / etiqueta',label),field('Tipo de documento',kind),field('Seleccionar archivo',file),reason,submit,cancel);area.append(list,form,status);
+ form.append(field('Nombre / etiqueta',label),field('Tipo de documento',kind),field('Seleccionar archivo · PDF, JPG o PNG, hasta 8 MB',file),reason,submit,cancel);area.append(list,add,form,status);
  let loaded=false,loading=null,busy=false,key=null,replacement=null;
  const dirty=()=>onDirty(Boolean(label.value||file.files.length||replacement));
  [label,kind,file,reason].forEach(e=>e.addEventListener('input',()=>{key=null;dirty();}));
- function reset(){label.value='';file.value='';reason.value='';reason.hidden=true;reason.required=false;replacement=null;key=null;cancel.hidden=true;submit.textContent='Adjuntar documento';dirty();}
- cancel.addEventListener('click',reset);
+ function reset(){label.value='';file.value='';reason.value='';reason.hidden=true;reason.required=false;replacement=null;key=null;form.hidden=true;add.setAttribute('aria-expanded','false');submit.textContent='Adjuntar documento';dirty();}
+ function openForm(){form.hidden=false;add.setAttribute('aria-expanded','true');label.focus();}
+ add.addEventListener('click',()=>{if(!busy)openForm();});
+ cancel.addEventListener('click',()=>{if(!busy){reset();add.focus();}});
  const headers=()=>({Accept:'application/json','X-CSRF-TOKEN':doc.querySelector('meta[name="csrf-token"]')?.content||''});
  async function load(force=false){if(loading)return loading;if(loaded&&!force)return;
-  loading=(async()=>{try{const data=initialData&&!force?initialData:await readResponse(await fetch(url,{credentials:'same-origin',headers:headers()}));initialData=null;disposePreviews();list.replaceChildren();form.hidden=!data.can_upload_patient;
-   if(!data.can_view_patient){list.appendChild(node('p','Acceso restringido a documentos aportados por el paciente.'));return;}
+  loading=(async()=>{try{const data=initialData&&!force?initialData:await readResponse(await fetch(url,{credentials:'same-origin',headers:headers()}));initialData=null;disposePreviews();list.replaceChildren();add.hidden=!data.can_upload_patient;if(!data.can_upload_patient)form.hidden=true;
+   if(!data.can_view_patient)list.appendChild(node('p','Acceso restringido a documentos aportados por el paciente.'));
    const documents=(data.documents||[]).filter(d=>d.purpose==='PATIENT_PROVIDED');
-   if(!documents.length)list.appendChild(node('p','Sin documentos aportados en esta cita.'));
+   if(!documents.length&&data.can_view_patient)list.appendChild(node('p','Sin documentos aportados en esta cita.'));
    for(const d of documents){const row=node('article');row.className='patient-document-item';row.dataset.patientDocumentId=d.id;
     row.append(node('strong',d.label),node('small',({REPORT:'Informe / resultado',PRESCRIPTION:'Receta aportada',ADMINISTRATIVE:'Otro documento'}[d.document_kind]||d.document_kind)+' · Cita #'+d.appointment_id+' · '+d.appointment_date),node('small',(d.created_at?new Date(d.created_at).toLocaleString('es-PE',{timeZone:'America/Lima'}):'Sin fecha')+' · '+(d.actor||'Responsable histórico')));
     const download=node('a','Descargar');download.href=d.download_url;download.className='admission-btn agenda-btn';row.appendChild(download);
@@ -55,17 +58,18 @@ function create({doc=document,url,appointmentId,initialData=null,readResponse,on
         const scale=Math.min(1.5,2048/original.width,2048/original.height,Math.max(240,area.clientWidth-24)/original.width),viewport=page.getViewport({scale});
         canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);canvas.setAttribute('aria-label','Página '+number+' de '+pdf.numPages+' · '+d.label);
         renderTask=page.render({canvasContext:canvas.getContext('2d'),viewport});await renderTask.promise;
-        if(current!==generation)return;canvas.dataset.rendered='true';pageNumber=number;counter.textContent='Página '+number+' de '+pdf.numPages;prev.disabled=number===1;next.disabled=number===pdf.numPages;message.textContent='Vista privada. No se ejecutan formularios ni scripts del documento.';page.cleanup();
+        if(current!==generation)return;canvas.dataset.rendered='true';pageNumber=number;counter.textContent='Página '+number+' de '+pdf.numPages;prev.disabled=number===1;next.disabled=number===pdf.numPages;message.textContent='';page.cleanup();
        }
        const change=number=>draw(number).catch(()=>{if(current===generation)message.textContent='No se pudo mostrar la página. Puedes descargar el archivo privado.';});
        prev.addEventListener('click',()=>change(pageNumber-1));next.addEventListener('click',()=>change(pageNumber+1));await draw(1);
       }catch(error){if(current===generation)message.textContent='Vista previa no disponible. Puedes descargar el archivo privado para revisarlo.';}
      });row.appendChild(preview);
     }
-    if(d.can_replace){const replace=node('button','Reemplazar archivo');replace.type='button';replace.className='admission-btn agenda-btn';replace.addEventListener('click',()=>{if(busy)return;replacement=d;label.value=d.label;kind.value=d.document_kind;file.value='';reason.hidden=false;reason.required=true;cancel.hidden=false;submit.textContent='Confirmar reemplazo';key=null;dirty();file.focus();});row.appendChild(replace);}
+    if(d.can_replace){const replace=node('button','Reemplazar archivo');replace.type='button';replace.className='admission-btn agenda-btn';replace.addEventListener('click',()=>{if(busy)return;replacement=d;label.value=d.label;kind.value=d.document_kind;file.value='';reason.hidden=false;reason.required=true;submit.textContent='Confirmar reemplazo';key=null;openForm();dirty();file.focus();});row.appendChild(replace);}
     if(d.replaces_document_id)row.appendChild(node('small','Reemplaza al documento #'+d.replaces_document_id+'; archivo anterior conservado en auditoría.'));
     list.appendChild(row);
-   }if(data.document_history?.length){const history=node('details'),summary=node('summary','Historial documental · versiones anteriores');history.appendChild(summary);for(const item of data.document_history){history.appendChild(node('p','#'+item.id+' · '+item.label+' · '+(item.actor||'Responsable histórico')+' · '+new Date(item.created_at).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · Archivo anterior conservado.'));}list.appendChild(history);}loaded=true;
+   }if(data.document_history?.length){const history=node('details'),summary=node('summary','Historial documental · versiones anteriores');history.appendChild(summary);for(const item of data.document_history){history.appendChild(node('p','#'+item.id+' · '+item.label+' · '+(item.actor||'Responsable histórico')+' · '+new Date(item.created_at).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · Archivo anterior conservado.'));}list.appendChild(history);}
+   const clinical=(data.documents||[]).filter(d=>d.purpose==='REEVALUATION_ORDER');if(clinical.length){const group=node('details');group.appendChild(node('summary','Documentos clínicos acreditados'));for(const d of clinical){const link=node('a',d.label);link.href=d.download_url;link.className='admission-btn agenda-btn';group.appendChild(link);}list.appendChild(group);}loaded=true;
   }catch(e){status.textContent=e.message;}finally{loading=null;}})();return loading;
  }
  form.addEventListener('submit',async e=>{e.preventDefault();e.stopPropagation();if(busy)return;const name=label.value.replace(/^[\s\u200B\uFEFF]+|[\s\u200B\uFEFF]+$/g,'');if(!name){status.textContent='Escribe un nombre para identificar el documento.';label.focus();return;}if(!file.files.length){status.textContent='Selecciona un archivo.';file.focus();return;}if(file.files[0].size>8192*1024){status.textContent='El archivo supera 8 MB.';return;}

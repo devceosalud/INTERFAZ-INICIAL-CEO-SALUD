@@ -16,18 +16,19 @@ class RescheduleAppointmentService
     {
     }
 
-    public function reschedule(int $id, int $actorId, string $date, string $time, string $expectedDate, string $expectedTime, ?string $confirmedType = null): Appointment
+    public function reschedule(int $id, int $actorId, string $date, string $time, string $expectedDate, string $expectedTime, ?string $confirmedType = null, ?string $expectedRevision = null): Appointment
     {
         // Hidden and absent IDs take the same path, before inspecting target fields.
         $original = Appointment::query()->visibleToAgendaUser($actorId)->find($id);
         abort_if($original === null, 404);
 
         $sourceIndication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
-        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication) {
+        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication,$expectedRevision) {
             Doctor::whereIn('id',array_unique(array_filter([$original->doctor_id,$sourceIndication?->doctor_id])))->orderBy('id')->lockForUpdate()->get();
             $doctor = Doctor::query()->lockForUpdate()->find($original->doctor_id);
             $appointment = Appointment::query()->visibleToAgendaUser($actorId)->lockForUpdate()->find($id);
             abort_if($appointment === null, 404);
+            if($expectedRevision!==null) abort_unless(hash_equals(AppointmentManagement::revision($appointment),$expectedRevision),409,'La cita cambió en otra sesión. Actualiza antes de reprogramar.');
             if (substr((string) $appointment->fecha_cita, 0, 10) !== $expectedDate
                 || substr((string) $appointment->hora_cita, 0, 5) !== $expectedTime) {
                 throw new AppointmentSlotUnavailableException('La cita cambió de fecha u hora. Actualiza la Agenda antes de reprogramar.');

@@ -42,6 +42,7 @@ class OperationalRegistrationService
             ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
             app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
         }
+        abort_unless(in_array($data['attendance_mode']??'PRESENCIAL',['PRESENCIAL','TELECONSULTA'],true),422);
         $files=AppointmentPaymentProofs::files($proof,$data);
         unset($data['proof'],$data['proofs']);
         $hash = hash('sha256', json_encode($data).AppointmentPaymentProofs::fingerprint($files));
@@ -97,7 +98,7 @@ class OperationalRegistrationService
                 }
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,
-                    ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
+                    ['attendance_mode' => $data['attendance_mode'] ?? 'PRESENCIAL', 'motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
                         'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
                         'commercial_service_id'=>$data['commercial_service_id']??null,'price_modality'=>$data['price_modality']??null,

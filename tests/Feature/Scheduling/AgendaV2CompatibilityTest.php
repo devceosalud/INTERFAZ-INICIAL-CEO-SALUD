@@ -18,6 +18,7 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
         $tables=['appointments','appointment_events','appointment_admission_tasks','appointment_admission_task_events','payments','vouchers'];
         $before=[];foreach($tables as $t)$before[$t]=DB::table($t)->orderBy('id')->get()->toJson();
         $migration->up();
+        Schema::table('appointment_requested_procedures',fn(\Illuminate\Database\Schema\Blueprint $t)=>$t->string('custom_label',500)->nullable());
         foreach($tables as $t)$this->assertSame($before[$t],DB::table($t)->orderBy('id')->get()->toJson(),$t);
         $this->assertDatabaseCount('appointment_operational_reviews',0);$this->assertDatabaseCount('appointment_requested_procedures',0);
         $this->select()->assertOk();

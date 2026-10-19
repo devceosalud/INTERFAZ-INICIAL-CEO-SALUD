@@ -1,6 +1,6 @@
 # Arquitectura y flujos
 
-Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Arquitectura integrada con los hotfixes
 
@@ -88,3 +88,7 @@ DESACTIVADA → REEMBOLSO_SOLICITADO → SALIDA_REGISTRADA → LISTO_REEVALUACIO
 ## Tercera ronda: lecturas y documentos aportados
 
 La lectura operativa tiene un scope específico para ADMIN activo con MVP_ACCESS/VIEW; no modifica el scope base ni las escrituras. PatientAppointmentDocumentUpload orquesta el almacén existente, ledger UUID y auditoría. PATIENT_PROVIDED mantiene separación frente a pagos e indicaciones. El componente compartido conserva borradores y usa PDF.js local para dibujar contenido, sin scripts/órdenes. La salida conserva su transacción y retorna el detalle ya actualizado, evitando dos lecturas HTTP inmediatas.
+
+## Extensión de cuarta ronda
+
+AppointmentManagement adapta permisos/revisión a economy y notes existentes; reschedule admite revisión opcional sin duplicar reservas. attendance_mode se mantiene separado del contrato económico y tipo_agendamiento. OperationalProcedureService admite custom_label con clave c:UUID. AgendaProfessionalPreferences guarda solo navegación individual en BD. financial_status es una lectura común y no autoriza dinero o confirmación. El dialog reutiliza el panel de cierre y el componente privado documental. [Detalle y secuencia](RONDA_4_DIAGNOSTICO_Y_GUIA.md).

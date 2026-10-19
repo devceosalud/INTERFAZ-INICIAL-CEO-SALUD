@@ -69,12 +69,13 @@
         return { allowed: !reason, reason };
     }
 
+    function financialLabel(context,compact=false){const status=context?.financial_status;if(!status)return context?.estado_pagado||'—';return compact?({EXEMPT:'Exonerada',CLINICAL_FREE:'Sin costo clínico',AUTHORIZED_DISCOUNT:'Desc. autorizado',VALIDATION:'Validar precio',DUE:'Pendiente',PAID:'Pagado',CREDIT:'Crédito aplicado'}[status.key]||status.label):status.label;}
     function stateSummary(context) {
         const c=context||{};
         const agenda={CONFIRMADA:'CONFIRMADA',PENDIENTE_CONFIRMACION:'RESERVA PENDIENTE',LEGADO:'AGENDA HISTÓRICA'}[c.estado_agenda]||'AGENDA SIN ACREDITAR';
         const care=String(c.estado_cita||'SIN ESTADO DE ATENCIÓN').replace(/_/g,' ');
-        const payment=String(c.estado_pagado||'SIN ESTADO FINANCIERO');
+        const payment=String(c.financial_status?.label||c.estado_pagado||'SIN ESTADO FINANCIERO');
         return {agenda,care,payment,description:'Horario: '+agenda+' · Atención: '+care+' · Pago: '+payment};
     }
-    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness, stateSummary };
+    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness, financialLabel, stateSummary };
 }));

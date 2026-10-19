@@ -1,4 +1,5 @@
 <div id="agenda-operational-fields" class="agenda-operational-fields">
+    <label class="agenda-field"><span>Modalidad de atención</span><select id="agenda-op-attendance-mode" class="agenda-field__input"><option value="PRESENCIAL">Presencial</option><option value="TELECONSULTA">Teleconsulta</option></select></label>
     <details id="agenda-op-capture-panel">
         <summary>Más datos del paciente</summary>
         <div class="agenda-patient-form-grid">
@@ -90,13 +91,14 @@
     <details id="agenda-op-documents-panel">
         <summary>Documentos de la cita</summary>
         <div id="agenda-op-patient-documents"></div>
-        <div id="agenda-op-legacy-document-upload" @unless(\App\Support\Scheduling\AppointmentDocumentAccess::write(auth()->user())) hidden @endunless>
+        <details id="agenda-op-legacy-document-upload" @unless(\App\Support\Scheduling\AppointmentDocumentAccess::write(auth()->user())) hidden @endunless>
+        <summary>Otros documentos operativos</summary>
         <label class="agenda-field"><span>Tipo de documento privado</span><select id="agenda-op-document-kind"><option value="ADMINISTRATIVE">Administrativo</option><option value="PRESCRIPTION">Receta</option><option value="REPORT">Informe</option></select></label>
         <label class="agenda-field"><span>Etiqueta del documento</span><input id="agenda-op-document-label" maxlength="120" value="Documento operativo"></label>
         <label class="agenda-field"><span>Documento operativo · JPG, PNG o PDF, hasta 8 MB</span><input id="agenda-op-document-file" type="file" accept="image/jpeg,image/png,application/pdf"></label>
         <label class="agenda-field"><span>+ Agregar link · etiqueta | URL HTTPS</span><textarea id="agenda-op-links" class="agenda-field__input" rows="2" placeholder="Documento | https://drive.google.com/…"></textarea></label>
         <button id="agenda-op-add-documents" class="agenda-btn" type="button" hidden>Adjuntar a esta cita</button>
-        </div>
+        </details>
         <p id="agenda-op-documents-status" class="agenda-action-notice" role="status" hidden></p>
         <p id="agenda-op-documents-error" class="agenda-field-error" role="alert" hidden></p>
         <div id="agenda-op-documents" aria-live="polite"></div>

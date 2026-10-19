@@ -3,6 +3,7 @@
 @section('body_class', 'agenda-viewport')
 
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda.css') }}" rel="stylesheet">
@@ -22,6 +23,7 @@
         <div class="content-body agenda-page">
             <div class="container-fluid agenda-page__container">
                 <main class="agenda-board agenda-board--day" id="agenda-board" data-ui-screen="agenda"
+                    data-professional-preferences="{{ route('scheduling.mvp.agenda.professional-preferences') }}"
                     data-capacity-url="{{ route('scheduling.mvp.agenda.regular-capacity') }}"
                     data-registration-store="{{ route('scheduling.mvp.agenda.registrations') }}"
                     data-auto-owner="{{ $autoOwner ? auth()->id() : '' }}"
@@ -40,6 +42,7 @@
                     data-today="{{ $today }}"
                     data-grid-minutes="20">
 
+                    <script type="application/json" id="agenda-professional-preferences">@json($professionalPreferences)</script>
                     <script type="application/json" id="agenda-doctor-services">@json($doctorServices)</script>
 
                     @include('scheduling.agenda.partials.toolbar')
@@ -160,6 +163,7 @@
 @endsection
 
 @section('script_data')
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-indicators.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/js/custom.min.js') }}"></script>
@@ -189,5 +193,7 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-refresh.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-manage-appointment.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-professional-preferences.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>
 @endsection

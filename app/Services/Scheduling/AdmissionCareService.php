@@ -13,6 +13,7 @@ class AdmissionCareService
 {
     public function reversalOffer(Appointment $a, User $actor): ?array
     {
+        if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return null;
         if (!$actor->is_active || !$actor->hasAnyRole(['ADMINISTRADOR','ADMISION']) || !$actor->can(C::UPDATE)
             || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true) || $a->hora_atendido || $a->hora_salida
             || !in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)) return null;

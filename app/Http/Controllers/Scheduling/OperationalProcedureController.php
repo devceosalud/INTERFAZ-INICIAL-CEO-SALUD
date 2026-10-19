@@ -27,8 +27,10 @@ final class OperationalProcedureController extends Controller
         }, 403);
         $rules = ['request_key' => 'required|uuid', 'expected_version' => 'required|integer|min:0'];
         $rules += match ($action) {
-            'selection' => ['procedures' => 'present|array|max:7', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(OperationalProcedureService::CATALOG))]],
-            'completion' => ['procedure' => ['required', Rule::in(array_keys(OperationalProcedureService::CATALOG))], 'completed' => 'required|boolean'],
+            'selection' => ['procedures' => 'present|array|max:7', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(OperationalProcedureService::CATALOG))],
+                'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label',
+                'custom_procedures.*.id'=>'required|uuid|distinct', 'custom_procedures.*.label'=>'required|string|max:500'],
+            'completion' => ['procedure' => 'required|string|max:40', 'completed' => 'required|boolean'],
             default => ['confirmed' => 'required|accepted', 'reason' => 'nullable|string|max:500'],
         };
         abort_if(array_diff(array_keys($r->all()), array_merge(array_keys($rules), ['_token'])), 422, 'Campos no permitidos para esta acción.');

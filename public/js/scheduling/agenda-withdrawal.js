@@ -66,7 +66,7 @@
         }
         function lines() { return moneyLines(Array.from(credit.querySelectorAll('input')).map(input => ({ voucher_id: input.dataset.voucher, amount: input.value, available: input.dataset.available }))); }
         async function mutate(action) {
-            if (!current || busy) { return; } busy = true;
+            if (!current || busy) { return; } busy = true;config.onBusy?.(true);
             const original = current;
             try {
                 key = key || root.crypto.randomUUID(); const data = { request_key: key, motivo: id('withdrawal-reason').value };
@@ -93,7 +93,7 @@
                 const placed = root.AgendaGuidance ? root.AgendaGuidance.place(e.message, e.status, 'withdraw') : { text: e.message };
                 const errorBox = id('withdrawal-error');
                 if (errorBox) { errorBox.hidden = false; errorBox.textContent = placed.text; }
-            } finally { busy = false; }
+            } finally { busy = false;config.onBusy?.(false); }
         }
         const actionSelect = id('withdrawal-action');
         const refundHint = id('withdrawal-refund-hint');

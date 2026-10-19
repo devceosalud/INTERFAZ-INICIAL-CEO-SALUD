@@ -1,6 +1,6 @@
 # Plan de despliegue y rollback — NO ejecutado
 
-Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Candidato integrado con dcb9b2b
 
@@ -51,3 +51,9 @@ Si se detecta un fallo financiero, suspender nuevas operaciones afectadas y pres
 ## Condiciones adicionales de tercera ronda
 
 No ejecutar despliegue sin aprobación. Entregar los dos módulos PDF.js de la misma versión junto con licencia/procedencia; verificar MIME JavaScript, almacenamiento privado y límites PHP/proxy para 8 MB (POST mayor). El código anterior a esta ronda no conserva PATIENT_PROVIDED al reemplazar: durante rollback bloquear escrituras documentales y mantener un lector/versionado compatible, preservando BD y archivos nuevos. No volver ciegamente a 840522e ni borrar propósitos, auditorías o versiones. El runtime local se corrigió de 2 a 8 MB; no se modificó la configuración de Hostinger.
+
+## Cuarta ronda: controles para una futura liberación autorizada
+
+PR46 continúa Draft. No hay publicación autorizada. Añadir al ensayo la migración de modalidad, etiqueta personalizada y preferencias; verificar defaults y FK, y publicar backend/Blade/JS/CSS del mismo SHA. Revalidar con datos ficticios teleconsulta, exoneración, otros procedimientos, documentos y roles antes de admitir tráfico. No se conoce ni se afirma el SHA o estado de Hostinger.
+
+Rollback no borra columnas, tabla de preferencias, solicitudes, ledgers o archivos posteriores. Antes de volver a un código anterior, conservar lectura de c:UUID y política que impide presencia física en teleconsulta; congelar escrituras si no existe paquete compatible probado. Conservar también PATIENT_PROVIDED y su versionado. No restaurar pagos ni BD a una copia anterior para perder operaciones posteriores. El flujo remoto de atención sigue pendiente por decisión del usuario.

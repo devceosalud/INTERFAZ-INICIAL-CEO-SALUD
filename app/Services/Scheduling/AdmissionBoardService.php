@@ -24,8 +24,8 @@ class AdmissionBoardService
         'CONCILIAR_PAGO'=>'Revisión financiera', 'RESERVA_SIN_PAGO'=>'Reserva sin pago', 'SIN_PAGO_REAL'=>'Sin pago real',
     ];
     private const COLUMNS = ['id','numero_cita','user_id','responsible_user_id','patient_id','doctor_id','service_id','site_id',
-        'fecha_cita','hora_cita','estado_cita','estado_agenda','estado_pagado','precio_programado','total_pagado',
-        'economic_source','es_exonerado','autorizado_por','pricing_rule','is_postoperative','has_diabetic_wound',
+        'tipo_agendamiento','fecha_cita','hora_cita','estado_cita','estado_agenda','estado_pagado','precio_programado','total_pagado',
+        'attendance_mode','catalog_price','discount_type','discount_amount','discount_actor_user_id','discount_reason','motivo_exoneracion','economic_source','es_exonerado','autorizado_por','pricing_rule','is_postoperative','has_diabetic_wound',
         'hora_llegada','hora_llamado','hora_atencion','hora_atendido','hora_salida'];
 
     public function __construct(private OperationalAgendaAppointmentService $appointments,
@@ -102,14 +102,14 @@ class AdmissionBoardService
             'documento'=>$a->patient?->numero_identidad,'historia'=>$a->patient?->historia_clinica,
             'doctor'=>$a->doctor?->nombre,'especialidad'=>$a->doctor?->specialty?->nombre,'servicio'=>$a->service?->nombre,
             'responsable'=>$a->responsibleUser?->name,'sede'=>$a->site?->nombre,
-            'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda,'estado_pagado'=>$a->estado_pagado,
+            'attendance_mode'=>$a->attendance_mode ?? 'PRESENCIAL','estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda,'estado_pagado'=>$a->estado_pagado,
             'payment_methods'=>array_values(array_unique(array_column($p['payment_details'],'method'))),
             'procedure_progress'=>['requested'=>(int)($a->operationalReview?->requested_count??0),'completed'=>(int)($a->operationalReview?->completed_count??0),
                 'status'=>OperationalProcedureService::status($a),'origin'=>$a->operationalReview?->origin],
             'presentation'=>\App\Support\Scheduling\AgendaAppointmentPresentation::of($a,$p),'grupo'=>AdmissionStatus::group($a),'pricing_rule'=>$a->pricing_rule,'postoperatorio'=>(bool)$a->is_postoperative,
             'tiempos'=>collect(['llegada'=>$a->hora_llegada,'llamado'=>$a->hora_llamado,'inicio'=>$a->hora_atencion,'fin'=>$a->hora_atendido,'salida'=>$a->hora_salida])->map(fn ($time) => $time ? Carbon::parse($time,config('app.timezone'))->toISOString() : null)->all(),
             'economy'=>['precio'=>Money::decimal($p['price_cents']),'pagado'=>Money::decimal($p['paid_cents']),
-                'credito'=>Money::decimal($p['credit_cents']),'saldo'=>Money::decimal($p['balance_cents']),'fuente'=>$p['authority']],
+                'credito'=>Money::decimal($p['credit_cents']),'saldo'=>Money::decimal($p['balance_cents']),'fuente'=>$p['authority'],'financial_status'=>$p['financial_status']],
             'agenda_url'=>route('scheduling.mvp.agenda',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'appointment_id'=>$a->id])];
     }
 
@@ -164,6 +164,7 @@ class AdmissionBoardService
 
     public function careActions(Appointment $a, User $actor): array
     {
+        if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         if (!$actor->can(C::UPDATE) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],

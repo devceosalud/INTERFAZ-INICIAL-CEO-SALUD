@@ -1,6 +1,6 @@
 # Matriz de permisos
 
-Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Operaciones integradas de retorno al médico
 
@@ -39,3 +39,7 @@ Las tareas **libres históricas** de AdmissionTaskService mantienen su comportam
 Las rutas de escritura validan datos y campos permitidos, tienen CSRF web y las nuevas rutas de procedimientos están limitadas a 60 solicitudes/minuto. El servidor vuelve a filtrar la cita dentro de la transacción. El expected_version es de toda la solicitud estructurada: ante dos operadores simultáneos se rechaza el cambio obsoleto y se exige consultar nuevamente; no se sobrescribe silenciosamente.
 
 La nueva cola no incluye documentos de identidad, contactos, diagnósticos, observaciones clínicas, comprobantes, datos bancarios ni precios. La información autorizada se renderiza con textContent. Los endpoints privados usan Cache-Control private/no-store. Las páginas de ambas agendas y las vistas heredadas de citas que muestran la cola no cargan Clarity.
+
+## Cuarta ronda
+
+ADMIN transcribe procedimientos personalizados por decisión expresa del usuario. Solo ADMIN/ADMISION con UPDATE y visibilidad de escritura cambian modalidad antes de iniciar atención y con confirmación, incluso con pagos; COMERCIAL no puede enviar el campo, aunque coincida con el valor actual. notes del gestor exige UUID/revisión y rechaza inyección financiera. Reprogramación conserva RESCHEDULE; favoritos solo requieren acceso activo de lectura y solo afectan al usuario autenticado. No se añaden privilegios generales ni un nuevo descuento100%. [Matriz detallada](RONDA_4_DIAGNOSTICO_Y_GUIA.md#permisos-de-cuarta-ronda).

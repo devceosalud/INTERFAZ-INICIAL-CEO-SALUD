@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('body_class', 'admission-viewport')
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
 @endsection
@@ -64,6 +65,7 @@
 </div>
 @endsection
 @section('script_data')
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-indicators.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>

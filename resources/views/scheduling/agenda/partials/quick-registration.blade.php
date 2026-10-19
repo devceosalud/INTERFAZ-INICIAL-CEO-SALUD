@@ -8,6 +8,7 @@
         <span class="agenda-quick__mode" id="agenda-quick-mode">Sin selección</span>
     </div>
 
+    <button type="button" id="agenda-manage-selected" class="agenda-btn" hidden>Gestionar cita</button>
     <div class="agenda-quick__body">
         <form class="agenda-lookup" id="agenda-patient-lookup" autocomplete="off"
             data-endpoint="{{ route('scheduling.mvp.agenda.patient-lookup') }}">

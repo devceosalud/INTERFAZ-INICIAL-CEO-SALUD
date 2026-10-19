@@ -346,6 +346,8 @@ class AgendaBoardPresenter
                 'estado_agenda' => $appointment->estado_agenda,
                 'tipo_agendamiento' => $appointment->tipo_agendamiento,
                 'estado_pagado' => $paymentState !== '' ? $paymentState : null,
+                'financial_status' => $presentation['financial_status'] ?? null,
+                'attendance_mode' => $appointment->attendance_mode ?? 'PRESENCIAL',
                 'historia_clinica' => $clinicalRecord !== '' ? $clinicalRecord : null,
                 'site_id' => $appointment->site_id ? (int) $appointment->site_id : null,
                 'seleccionable' => false,

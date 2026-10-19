@@ -198,7 +198,7 @@ test('selección del calendario consulta el aviso antes de modificar la cita ele
     const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
     const fn=source.slice(source.indexOf('    async function selectInterval('),source.indexOf('    function applyQuickState('));
     const original={appointment_id:5},next={appointment_id:6};let asks=0;
-    const sandbox={state:{selection:original},operationalWorkspace:{prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
+    const sandbox={state:{selection:original},selectionInFlight:null,manageSelected:{disabled:false},operationalWorkspace:{contextKey:c=>c?.appointment_id,prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
     vm.runInNewContext(fn+'\nglobalThis.choose=selectInterval;',sandbox);
     assert.equal(await sandbox.choose(next,null),false);assert.equal(sandbox.state.selection,original);assert.equal(asks,1);
 });

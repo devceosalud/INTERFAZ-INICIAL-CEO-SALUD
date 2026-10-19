@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredAssets = ['FullCalendar', 'AgendaSelection', 'AgendaPatientLookup', 'AgendaPatientDraft',
         'AgendaAppointmentCreate', 'AgendaAppointmentActions', 'AgendaDayGrid', 'AgendaWeekEvent',
         'AgendaWeekBackground', 'AgendaWeekSlots', 'AgendaGuidance', 'AgendaOperationalForm',
-        'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
+        'AgendaAppointmentIndicators', 'AgendaProfessionalPreferences', 'AgendaManageAppointment', 'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
     if (requiredAssets.some(name => !window[name])) {
         board.querySelectorAll('button').forEach(button => { button.disabled = true; });
         const notice = document.getElementById('agenda-load-state');
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const pendingStart = document.getElementById('agenda-pending-start');
     const withdrawalWorkspace = window.AgendaWithdrawal.start({ base: board.dataset.rescheduleUrl,
         inbox: '/scheduling-mvp/agenda/contingencies', canWorkflow: board.dataset.canWorkflow === '1',
-        error: appointmentCreateModel.validationMessage, notice: showNotice, refresh: load,
+        error: appointmentCreateModel.validationMessage, notice: showNotice, refresh:async()=>{if(manageAppointment.isOpen())await manageAppointment.refresh();else await load();},onBusy:value=>manageAppointment.setBusy(value),
         rebooked: (result, destination) => {
             showActionNotice(window.AgendaGuidance.rebooked(destination.fecha_cita.split('-').reverse().join('/'), destination.hora_cita), false);
             const see = document.getElementById('agenda-see-destination');
@@ -297,6 +297,15 @@ document.addEventListener('DOMContentLoaded', function () {
         },
     });
 
+
+    const manageAppointment=window.AgendaManageAppointment.create({doc:document,base:board.dataset.rescheduleUrl,
+        detailBase:'/scheduling-mvp/admission/appointments',onError:message=>showNotice(message),
+        onSelect:async context=>{if(state.draft||document.querySelector('.modal.show,.swal2-container'))return false;if(selectionInFlight)await selectionInFlight;if(operationalWorkspace.hasUnsavedChanges()){showActionNotice('Guarda o descarta primero los cambios de Registro rápido.',true);return false;}return await selectInterval(context,null);},
+        onRefresh:async context=>{state.revealAppointmentId=String(context.appointment_id);state.selection=context;await load({committed:true,preserveContext:true});const fresh=(state.payload?.eventos||[]).find(e=>String(e.extendedProps?.appointment_id)===String(context.appointment_id));if(fresh)state.selection=fresh.extendedProps;},
+        onClose:async()=>{if(state.selection?.appointment_id)await selectInterval(state.selection,null,true);}
+    });
+    const manageSelected=document.getElementById('agenda-manage-selected');
+    manageSelected.addEventListener('click',()=>manageAppointment.open(state.selection));
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
         initialView: VIEW_TO_FULLCALENDAR.semana,
@@ -357,8 +366,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (state.view === 'mes') { info.el.tabIndex = 0; info.el.addEventListener('keydown', function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();setView('dia');setDate(context.fecha);}}); }
             if (context.tipo_contexto === 'cita_existente') {
                 info.el.tabIndex = 0;
-                info.el.title = selectionModel.registrationDescription(context);
-                info.el.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectInterval(context, info.el); } });
+                info.el.title = selectionModel.registrationDescription(context)+' · Doble clic para gestionar';
+                info.el.addEventListener('dblclick',event=>{event.preventDefault();event.stopPropagation();manageAppointment.open(context);});
+                info.el.addEventListener('keydown', function (event) { if (event.key === 'Enter' && event.altKey) {event.preventDefault();manageAppointment.open(context);} else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectInterval(context, info.el); } });
             }
 
             if (['slot_libre','slot_ocupado'].includes(context.tipo_contexto)) {
@@ -435,14 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function appendPresentationBadges(parent, context, compact = false) {
-        for (const badge of context.presentation?.badges || []) {
-            if (compact && !['HERIDA','POSTOPERATORIO'].includes(badge.clave)) continue;
-            const node = document.createElement('small');
-            node.className = 'agenda-presentation-badge'; node.textContent = compact ? (badge.clave==='HERIDA'?'HERIDA':'POSTOP') : badge.etiqueta;
-            node.title=badge.etiqueta;node.setAttribute('aria-label',badge.etiqueta);
-            node.style.backgroundColor = badge.fondo; node.style.color = badge.color;
-            parent.appendChild(node);
-        }
+        window.AgendaAppointmentIndicators.append(document,parent,context.presentation?.badges||[],{limit:compact?2:3,compact});
     }
 
     function renderEventContent(info) {
@@ -469,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const badge = state.legend[key];
                 if (badge && count) {
                     const signal = document.createElement('span'); signal.className='agenda-month-signal';
-                    signal.textContent=count+' '+badge.glifo; signal.title=count+' · '+badge.etiqueta;
+                    signal.textContent=count+' '+(key==='TELECONSULTA'?'TELECONSULTA':badge.glifo); signal.title=count+' · '+badge.etiqueta;
                     signal.setAttribute('aria-label', signal.title); signal.style.color=badge.color;signal.style.backgroundColor=badge.fondo;wrapper.appendChild(signal);
                 }
             }
@@ -583,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let feedSequence = 0, feedRunning = false, sessionExpired = false, lastFeedJSON = null;
     const canAutoRefresh = () => !document.hidden && !sessionExpired && !feedRunning
         && (!state.selection || state.selection.tipo_contexto==='cita_existente') && !state.draft && !state.appointmentBusy && !operationalWorkspace.hasUnsavedChanges()
-        && !document.querySelector('.modal.show,.swal2-container')
+        && !manageAppointment.isOpen() && !document.querySelector('.modal.show,.swal2-container')
         && !board.contains(document.activeElement?.closest('input,textarea,select,[contenteditable="true"]'));
     let loadedFilters=null;
     function rememberFilters() {loadedFilters={date:state.date,view:state.view,miniAnchor:state.miniAnchor,compare:state.compare,comparisonDoctorId:state.comparisonDoctorId,
@@ -620,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const payload=await response.json();
             if (sequence!==feedSequence || snapshot!==feedUrl()) return;
             if (options.background && (document.hidden || (state.selection && state.selection.tipo_contexto!=='cita_existente') || state.draft || state.appointmentBusy || operationalWorkspace.hasUnsavedChanges()
-                || document.querySelector('.modal.show,.swal2-container') || board.contains(document.activeElement?.closest('input,textarea,select,[contenteditable="true"]')))) return;
+                || manageAppointment.isOpen() || document.querySelector('.modal.show,.swal2-container') || board.contains(document.activeElement?.closest('input,textarea,select,[contenteditable="true"]')))) return;
             if(!options.committed && !options.preserveContext && revision!==operationalWorkspace.pendingRevision() && !await operationalWorkspace.prepareSelection(null)){restoreFilters();return false;}
             const fingerprint=JSON.stringify(payload);
             if(options.background && fingerprint===lastFeedJSON)return;
@@ -648,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const current=(payload.eventos||[]).find(e=>String(e.extendedProps?.appointment_id)===String(selectedId));
                     if(current){
                         state.selection=current.extendedProps;
-                        el.contextPayment.textContent='Pago: '+(current.extendedProps.estado_pagado||'—');
+                        el.contextPayment.textContent='Economía: '+(current.extendedProps.financial_status?.label||current.extendedProps.estado_pagado||'—');
                         el.contextState.textContent=current.extendedProps.presentation?.etiqueta||current.extendedProps.estado_cita||'';
                         board.querySelectorAll('[data-appointment-id="'+selectedId+'"]').forEach(n=>n.classList.add('is-selected'));
                     }
@@ -930,7 +933,7 @@ document.addEventListener('DOMContentLoaded', function () {
             values = [
                 context.hora_inicio,
                 (context.estado_agenda === 'PENDIENTE_CONFIRMACION' ? 'RESERVA' : context.tipo_agendamiento === 'ADICIONAL' ? 'ADICIONAL' : (context.tipo_agendamiento === 'FUERA_HORARIO' ? 'FH · CONFIRMADA' : window.AgendaOperationalForm.stateSummary(context).agenda)) + (extended ? ' · EXTENDIDA' : ''),
-                context.estado_pagado || '—',
+                window.AgendaOperationalForm.financialLabel(context,true),
                 context.historia_clinica || '—',
                 (context.paciente || 'Paciente sin nombre') + (extended ? ' · ' + extended : ''),
             ];
@@ -951,6 +954,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (item) {
+            entry.addEventListener('dblclick',event=>{event.preventDefault();event.stopPropagation();manageAppointment.open(context);});
+            entry.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.altKey){event.preventDefault();event.stopImmediatePropagation();manageAppointment.open(context);}});
             entry.style.setProperty('--day-row-bg', item.backgroundColor || '#e8eaed');
             entry.style.setProperty('--day-row-border', item.borderColor || '#3f4a59');
             entry.style.setProperty('--day-row-ink', item.textColor || '#27313a');
@@ -1228,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rescheduleForm) { rescheduleForm.hidden = true; }
         if (additionalStart) { additionalStart.disabled = true; }
         if (offHoursStart) { offHoursStart.hidden = true; }
-        state.selection = null;
+        state.selection = null;document.getElementById('agenda-manage-selected').hidden=true;
         await operationalWorkspace.selectionChanged(null);
         withdrawalWorkspace.select(null);
         configureServices(null);
@@ -1270,18 +1275,28 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'Seleccione un intervalo disponible, un paciente y un servicio.';
     }
 
-    async function selectInterval(context, node, force=false) {
+    let selectionInFlight=null;
+    async function selectInterval(context,node,force=false) {
+        const same=operationalWorkspace.contextKey(context)===operationalWorkspace.contextKey(state.selection);
+        if(same&&selectionInFlight)return selectionInFlight;
+        // A second click must not rebuild the selected row between click and dblclick.
+        if(same&&context?.appointment_id&&!force)return true;
+        const task=performSelectInterval(context,node,force);selectionInFlight=task;manageSelected.disabled=true;
+        try{return await task;}finally{if(selectionInFlight===task){selectionInFlight=null;manageSelected.disabled=false;}}
+    }
+    async function performSelectInterval(context, node, force=false) {
         if(!force && !await operationalWorkspace.prepareSelection(context))return false;
         const changed=operationalWorkspace.contextKey(context)!==operationalWorkspace.contextKey(state.selection);
         if(changed)clearIdentityContext();
         state.additionalMode = false;
         state.offHoursMode = false;
         state.pendingMode = false;
-        state.selection = context;
+        state.selection = context;document.getElementById('agenda-manage-selected').hidden=!context?.appointment_id;
         if (changed && context.tipo_contexto === 'cita_existente') { state.identity = lookupModel.blank(); el.documentNumber.value = ''; }
         // Wait until the asynchronous workspace reset finishes before loading services
         // and requesting a quote; otherwise the reset invalidates the quote version.
         await operationalWorkspace.selectionChanged(context);
+        if(operationalWorkspace.contextKey(context)!==operationalWorkspace.contextKey(state.selection))return false;
         withdrawalWorkspace.select(context.appointment_id, context);
         if (pendingStart) { pendingStart.textContent = context.tipo_contexto === 'cita_existente' ? 'Preparar nueva reserva' : 'Guardar reserva'; }
         if (offHoursStart) { offHoursStart.hidden = context.tipo_contexto !== 'fuera_horario'; }
@@ -2465,8 +2480,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const professionalPreferences=window.AgendaProfessionalPreferences.create({doc:document,
+        initial:JSON.parse(document.getElementById('agenda-professional-preferences').textContent),url:board.dataset.professionalPreferences,
+        onError:message=>showNotice(message),onSelect:async id=>{
+            if(selectionInFlight)await selectionInFlight;
+            if(!await operationalWorkspace.prepareSelection(null))return false;
+            state.compare=false;el.compareToggle.checked=false;el.doctorChecks.forEach(check=>check.checked=check.value===id);
+            updateDoctorFilterSummary();await load();return selectedDoctorIds().includes(id);
+        }});
     el.doctorChecks.forEach((check) => {
-        check.addEventListener('change', function () {
+        check.addEventListener('change', async function () {
             if (!state.compare && check.checked) {
                 el.doctorChecks.forEach((other) => {
                     if (other !== check) {
@@ -2482,7 +2505,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             updateDoctorFilterSummary();
-            load();
+            await load();if(check.checked)professionalPreferences.selected(check.value);
         });
     });
 
@@ -2520,7 +2543,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     el.doctorFilter.addEventListener('click', () => el.doctorSearch.focus());
-    el.doctorSearch.addEventListener('input', applyDoctorVisibility);
+    el.doctorSearch.addEventListener('input', ()=>{document.getElementById('agenda-professional-shortcuts-panel').open=false;applyDoctorVisibility();professionalPreferences.render();});
     el.site.addEventListener('change', load);
     el.specialty.addEventListener('change', function () {
         el.doctorChecks.forEach((check) => {
@@ -2529,7 +2552,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 check.checked = false;
             }
         });
-        applyDoctorVisibility();
+        applyDoctorVisibility();professionalPreferences.render();
         load();
     });
 
@@ -2559,7 +2582,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (returnContext.doctor_id) { el.doctorChecks.forEach(check => { check.checked = check.value === returnContext.doctor_id; }); }
+    const restoredProfessional=returnContext.doctor_id||professionalPreferences.last();
+    if (restoredProfessional) { el.doctorChecks.forEach(check => { check.checked = check.value === restoredProfessional; }); }
     el.date.value = initialDate;
     applyDoctorVisibility();
     renderMiniCalendar();

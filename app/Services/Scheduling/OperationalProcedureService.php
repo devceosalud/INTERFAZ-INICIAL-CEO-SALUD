@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 /** Same appointment, same day. Never writes clinical states, money or booking data. */
 final class OperationalProcedureService
 {
+    public const CUSTOM_MAX = 500;
     public const SUPERVISE = 'appointment.operational_reevaluation.supervise';
     public const CATALOG = [
         'radiography' => 'Radiografía', 'ultrasound' => 'Ecografía',
@@ -59,6 +60,7 @@ final class OperationalProcedureService
         $a->loadMissing('operationalReview.decidedBy');
         $items = DB::table('appointment_requested_procedures')->where('appointment_id', $a->id)
             ->where('selected', true)->orderBy('id')->get();
+        $people=\App\Models\User::whereIn('id',$items->pluck('requested_by_user_id')->merge($items->pluck('verified_by_user_id'))->filter()->unique())->pluck('name','id');
         $review = $a->operationalReview;
         $done=$items->whereNotNull('completed_at')->count();
         $status=self::status($a);
@@ -71,7 +73,9 @@ final class OperationalProcedureService
             'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty(),
             'can_withdraw' => $this->canSend($u) && $status === 'READY',
             'items' => $items->map(fn ($p) => ['key' => $p->procedure_key,
-                'label' => self::CATALOG[$p->procedure_key], 'completed' => $p->completed_at !== null,
+                'label' => $p->custom_label ?? self::CATALOG[$p->procedure_key] ?? 'Procedimiento histórico', 'custom' => $p->custom_label !== null,
+                'requested_by' => $people[$p->requested_by_user_id] ?? 'Usuario no disponible',
+                'completed_by' => $p->verified_by_user_id ? ($people[$p->verified_by_user_id] ?? 'Usuario no disponible') : null, 'completed' => $p->completed_at !== null,
                 'requested_at' => $p->requested_at, 'completed_at' => $p->completed_at])->all(),
             'review' => ['status' => $status,
                 'origin' => $review?->origin, 'ready_at' => $review?->ready_at?->toISOString(), 'reason' => $review?->reason,
@@ -107,6 +111,17 @@ final class OperationalProcedureService
                 $keys = $data['procedures'];
                 abort_if(array_diff($keys, array_keys(self::CATALOG)), 422, 'Procedimiento desconocido.');
                 $existing = DB::table('appointment_requested_procedures')->where('appointment_id', $id)->get()->keyBy('procedure_key');
+                // Existing clients editing the seven preset choices must not silently withdraw custom requests.
+                $custom = array_key_exists('custom_procedures',$data) ? $data['custom_procedures']
+                    : $existing->filter(fn($p)=>$p->selected && $p->custom_label !== null)->map(fn($p)=>['id'=>substr($p->procedure_key,2),'label'=>$p->custom_label])->values()->all();
+                $labels=[];
+                foreach($custom as $item) {
+                    $label=\App\Support\Scheduling\OperationalText::trim($item['label']);
+                    \Illuminate\Support\Facades\Validator::make(['label'=>$label],['label'=>'required|string|max:500'],['label.required'=>'Escribe el procedimiento solicitado por el médico.'])->validate();
+                    $key='c:'.$item['id'];
+                    abort_if(isset($existing[$key]) && $existing[$key]->custom_label!==$label,409,'El nombre de una solicitud confirmada se conserva. Retírala y registra una nueva si necesitas corregirla.');
+                    $labels[$key]=$label;$keys[]=$key;
+                }
                 foreach ($existing as $key => $p) {
                     $selected = in_array($key, $keys, true);
                     if ($selected !== (bool) $p->selected) {
@@ -117,7 +132,7 @@ final class OperationalProcedureService
                 }
                 foreach (array_diff($keys, $existing->keys()->all()) as $key) {
                     DB::table('appointment_requested_procedures')->insert(['appointment_id' => $id, 'procedure_key' => $key,
-                        'selected' => true, 'requested_by_user_id' => $u->id, 'requested_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                        'custom_label' => $labels[$key] ?? null, 'selected' => true, 'requested_by_user_id' => $u->id, 'requested_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
                 }
             } elseif ($action === 'completion') {
                 $p = DB::table('appointment_requested_procedures')->where('appointment_id', $id)

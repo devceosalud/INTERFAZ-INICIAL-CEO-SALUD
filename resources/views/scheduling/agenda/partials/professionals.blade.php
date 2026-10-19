@@ -15,6 +15,7 @@
         <input type="search" id="agenda-doctor-search" placeholder="Buscar profesional" autocomplete="off">
     </label>
 
+    <details id="agenda-professional-shortcuts-panel"><summary>Favoritos y frecuentes</summary><div id="agenda-professional-shortcuts" aria-label="Profesionales favoritos y frecuentes"></div></details>
     <div class="agenda-doctor-list" id="agenda-doctor-list">
         @foreach ($doctors as $doctor)
             <div class="agenda-doctor-row" data-doctor-row data-doctor-id="{{ $doctor->id }}"

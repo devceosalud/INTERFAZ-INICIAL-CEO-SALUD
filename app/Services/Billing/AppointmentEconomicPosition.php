@@ -95,10 +95,36 @@ class AppointmentEconomicPosition
                 'authority' => $ambiguous ? 'UNALLOCATED' : ($fallback ? 'LEGACY_SNAPSHOT' : 'PAYMENTS'),
                 'payment_details' => $ambiguous ? [] : $paymentDetails,
                 'allocation_required' => $ambiguous, 'available_by_voucher' => array_map(fn ($c) => max(0, $c), $cash)];
+            $clinicalZero = $price===0 && $a->pricing_rule==='SAME_DAY_REEVALUATION' && $indications->has($a->id)
+                && (int)$a->patient_id===(int)$indications[$a->id]->patient_id
+                && (int)$a->service_id===(int)$indications[$a->id]->service_id
+                && substr($a->fecha_cita,0,10)===(string)$indications[$a->id]->attended_on;
+            $result[$a->id]['financial_status']=self::financialStatus($a,$result[$a->id],$clinicalZero);
             $result[$a->id]['credit_review_required'] = $ambiguous || $paid < 0 || $paid > $price;
         }
         return $result;
     }
+    /** Display only. Does not authorize a discount, confirm an appointment or synthesize a payment. */
+    public static function financialStatus(Appointment $a, array $p, bool $clinicalZero=false): array
+    {
+        $authorized=$a->es_exonerado && \App\Support\Scheduling\OperationalText::trim((string)$a->autorizado_por)!=='';
+        // A total ordinary discount is still forbidden. Historical full discounts need the
+        // already persisted express zero-cost authorization; amount=0 or actor alone cannot prove it.
+        $totalDiscount=$p['price_cents']===0 && (float)$a->catalog_price>0
+            && \App\Support\Billing\Money::cents($a->discount_amount??0)===\App\Support\Billing\Money::cents($a->catalog_price)
+            && $a->discount_actor_user_id && trim((string)$a->discount_reason)!=='' && $authorized;
+        if($p['allocation_required']) [$key,$label]=['VALIDATION','Pendiente de validación'];
+        elseif($totalDiscount) [$key,$label]=['AUTHORIZED_DISCOUNT','Sin saldo por descuento autorizado'];
+        elseif($authorized) [$key,$label]=['EXEMPT','Exonerada · sin cobro autorizado'];
+        elseif($clinicalZero) [$key,$label]=['CLINICAL_FREE','Sin costo por regla clínica'];
+        elseif($p['price_cents']===0) [$key,$label]=['VALIDATION','Pendiente de validación'];
+        elseif($p['balance_cents']>0) [$key,$label]=['DUE','Pendiente de pago'];
+        elseif($p['authority']==='PAYMENTS' && $p['paid_cents']>0 && $p['effective_cents']>=$p['price_cents']) [$key,$label]=['PAID','Pagado'];
+        elseif($p['credit_cents']>0) [$key,$label]=['CREDIT','Sin saldo · crédito aplicado'];
+        else [$key,$label]=['VALIDATION','Pendiente de validación'];
+        return ['key'=>$key,'label'=>$label,'no_charge_authorized'=>in_array($key,['EXEMPT','CLINICAL_FREE','AUTHORIZED_DISCOUNT'],true)];
+    }
+
     /** Confirmation accepts any attributed real payment; secured still means 50% for other indicators. */
     public static function allowsConfirmation(array $position): bool
     {
@@ -111,6 +137,6 @@ class AppointmentEconomicPosition
         $p = $this->forAppointment($a);
         return ['precio' => Money::decimal($p['price_cents']), 'pago_real' => Money::decimal($p['paid_cents']),
             'credito_aplicado' => Money::decimal($p['credit_cents']), 'saldo' => Money::decimal($p['balance_cents']),
-            'porcentaje_asegurado' => $p['secured_percentage'], 'asegurada' => $p['secured'], 'fuente' => $p['authority']];
+            'porcentaje_asegurado' => $p['secured_percentage'], 'asegurada' => $p['secured'], 'fuente' => $p['authority'], 'financial_status'=>$p['financial_status']];
     }
 }

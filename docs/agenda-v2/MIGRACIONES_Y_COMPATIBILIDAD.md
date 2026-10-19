@@ -1,6 +1,6 @@
 # Migraciones y compatibilidad
 
-Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Integración de #47–#49: lectura compatible sin transformación
 
@@ -33,3 +33,9 @@ No se ejecutó esta migración en Hostinger ni en una BD productiva. Un respaldo
 ## Tercera ronda
 
 No se requiere migración: PATIENT_PROVIDED cabe en purpose varchar(32); se reutilizan relaciones, actor, timestamps, versiones y operations.document_id. No hay transformaciones productivas ni backfill. Los ficheros previos y sus propósitos se conservan; una carga aportada no se acredita como orden ni comprobante. Rollback de código debe conservar compatibilidad documental y bloquear escrituras durante la reversión, porque el reemplazador anterior a esta ronda no preserva el propósito nuevo. Ver el plan vigente.
+
+## Cuarta ronda: una migración aditiva
+
+2026_10_19_040000_add_agenda_v2_attendance_and_preferences: attendance_mode varchar16 defaultPRESENCIAL en appointments; custom_label varchar500 nullable en solicitudes; agenda_professional_preferences con FK usuario/profesional restrictivas, unicidad, favorito, contador y last_selected_at timestamp(6). Clave personalizada c:UUID de38 caracteres cabe en procedure_key40; el texto no se almacena en la clave. No se transforman pagos, indicaciones, eventos o procedimientos anteriores. QA comprobada sobre la BD ficticia existente y migraciones de ambas suites. El ajuste de precisión de un borrador local se limita al helper QA guardado y no es un comando productivo.
+
+No ejecutar down ni revertir a código que desconozca modalidades/claves nuevas con datos de cuarta ronda. Conservar esquema/historia y usar lector/política compatible o bloquear escrituras durante reversión. No hay migración de pagos ni permisos de producción. [Impacto y rollback](RONDA_4_DIAGNOSTICO_Y_GUIA.md).

@@ -30,6 +30,7 @@ class AppointmentWithdrawalService
                 throw ValidationException::withMessages(['appointment' => 'Esta cita tiene dinero o documentos financieros vinculados. Requiere revisión antes de cancelarla o marcar inasistencia.']);
             }
             if ($state === 'NO_ASISTIO') {
+                abort_if(($a->attendance_mode??'PRESENCIAL')==='TELECONSULTA',422,'El registro de asistencia remota está pendiente de definición.');
                 abort_if($a->hora_llegada || in_array($a->estado_cita, ['PACIENTE_LLEGO', 'EN_ESPERA', 'LLAMANDO'], true),
                     409, 'Hay evidencia de llegada. NO ASISTIÓ corresponde a quien nunca llegó.');
                 abort_unless((int) $a->duracion_cita > 0, 409, 'No está definida la duración del intervalo. Requiere revisión.');
@@ -49,6 +50,7 @@ class AppointmentWithdrawalService
         abort_unless($actor->can(C::WITHDRAW), 403);
         return $this->execute('WITHDRAW', $id, $actor, $data, function ($a, $op) use ($actor, $data) {
             abort_if(in_array($a->estado_cita, ['RETIRO', 'CANCELADO', 'NO_ASISTIO', 'ATENDIDO'], true), 409, 'La cita no admite RETIRO.');
+            abort_if(($a->attendance_mode??'PRESENCIAL')==='TELECONSULTA',422,'RETIRO acredita presencia física. El flujo remoto está pendiente de definición.');
             // A human attestation is mandatory when the legacy arrival timestamp/state is absent.
             $arrived = $a->hora_llegada || in_array($a->estado_cita, ['PACIENTE_LLEGO', 'EN_ESPERA', 'LLAMANDO', 'EN_ATENCION'], true);
             if (!$arrived && !($data['was_present'] ?? false)) { throw ValidationException::withMessages(['was_present' => 'Confirma que el paciente estuvo en la clínica. RETIRO no es NO ASISTIÓ.']); }

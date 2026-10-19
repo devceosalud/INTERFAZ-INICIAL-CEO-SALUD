@@ -43,7 +43,7 @@
         let capturePatient = null;
         const pendingDocumentEdits=new Map();
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
-            'rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','price-modality','commercial-service','referred','referral-origin',
+            'attendance-mode','rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','price-modality','commercial-service','referred','referral-origin',
             'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
             'document-file','document-kind','document-label','replacement-file','replacement-reason','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
@@ -173,12 +173,14 @@
             const fields=[ui.reason,ui.note,postoperative,hasWound].filter(Boolean);
             const locks=fields.map(field=>field.disabled);
             const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,has_diabetic_wound:Boolean(hasWound?.checked),is_postoperative:Boolean(postoperative?.checked)});
+            if(lastPosition?.management?.revision){notes.request_key=root.crypto.randomUUID();notes.expected_revision=lastPosition.management.revision;}
             fields.forEach(field=>field.disabled=true);
             setWorking(true); inlineStatus('notes', '');
             try {
                 const result = await request(base + '/' + id + '/notes', json('PATCH', notes));
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
                 ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || ''; if(hasWound)hasWound.checked=Boolean(result.has_diabetic_wound); if (postoperative) postoperative.checked = Boolean(result.is_postoperative);
+                if(result.management)lastPosition.management=result.management;
                 captureClean(['reason','note','has-wound','postoperative']);inlineStatus('notes', result.message);
             } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
             finally { fields.forEach((field,i)=>field.disabled=locks[i]);setWorking(false); ui['save-notes'].disabled = ui.reason.disabled; }
@@ -372,7 +374,7 @@
                 const payload = config.payload(context, options.patientId || 1, options.serviceId, options.ownerId);
                 registrationKey = registrationKey || root.crypto.randomUUID();
                 Object.assign(payload, { request_key: registrationKey, mode: options.pending ? 'RESERVE' : 'CONFIRM',
-                    booking_type: options.bookingType, motivo_consulta: reasonText, observaciones: ui.note.value || null,
+                    attendance_mode: byId('attendance-mode')?.value || 'PRESENCIAL', booking_type: options.bookingType, motivo_consulta: reasonText, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null,
                     payment: options.pending ? model.payment('0','EFECTIVO','','') : payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
@@ -414,7 +416,7 @@
             if(root.AppointmentPatientDocuments){if(patientDocumentId!==id){patientDocumentId=id;patientDocumentDirty=false;patientDocuments=root.AppointmentPatientDocuments.create({doc:document,url:base+'/'+id+'/documents',appointmentId:id,initialData:result,readResponse:async response=>{const data=await response.json();if(!response.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||'No se pudo guardar el documento.');return data;},onDirty:value=>{patientDocumentDirty=value;},onBusy:value=>setWorking(value)});}byId('patient-documents').replaceChildren(patientDocuments.element);await patientDocuments.load();}
 
             const orderDocument=byId('indication-document'); if(orderDocument) orderDocument.replaceChildren();
-            (result.documents || []).filter(d=>d.purpose!=='PATIENT_PROVIDED').forEach(d => {
+            (result.documents || []).filter(d=>!['PATIENT_PROVIDED','REEVALUATION_ORDER'].includes(d.purpose)).forEach(d => {
                 if(orderDocument && d.download_url) {const option=document.createElement('option');option.value=String(d.id);option.textContent=d.label;orderDocument.appendChild(option);}
                 const row = document.createElement('div'); row.className = 'agenda-document-row'; row.dataset.documentId=String(d.id);
                 const link = document.createElement('a'); link.textContent = d.label; link.href = d.url || d.download_url;
@@ -476,6 +478,7 @@
 
             inlineStatus('notes', ''); ui['save-notes'].hidden = true;
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
+            byId('attendance-mode').value=context?.attendance_mode||'PRESENCIAL';byId('attendance-mode').disabled=Boolean(id)||!config.canCreate;
             if (!id) { ui.reason.value = ''; ui.note.value = '';captureClean(); byId('notes-tip').textContent = 'Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.'; return; }
             patientChanged(context.patient_id, true);
             try {
