@@ -150,7 +150,7 @@ class ManagementExportController extends Controller
                             ManagementCsv::row($handle, [
                                 $a->id, $a->numero_cita, $a->fecha_cita, $a->doctor?->nombre,
                                 $a->patient_id, $name, '', '', '', '',
-                                ManagementCsv::identifier($a->numero_operacion), '', '', '', '', '',
+                                ManagementCsv::identifier($a->numero_operacion), '', '', '', '', '', '',
                                 $p['authority'] ?? '', !empty($p['allocation_required']) ? 'SÍ' : 'NO', $note,
                             ]);
                             continue;
