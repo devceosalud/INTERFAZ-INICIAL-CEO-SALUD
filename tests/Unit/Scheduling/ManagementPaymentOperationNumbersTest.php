@@ -36,6 +36,27 @@ class ManagementPaymentOperationNumbersTest extends TestCase
         $this->assertSame('', ManagementCsv::identifier(''));
     }
 
+    public function test_operation_numbers_keep_leading_zeros_in_xlsx_and_are_not_formulas(): void
+    {
+        $csv = fopen('php://temp', 'w+b');
+        $xlsx = fopen('php://temp', 'w+b');
+        ManagementCsv::begin($csv, ['Número de operación del pago', 'Número(s) de operación de pagos atribuidos']);
+        ManagementCsv::row($csv, [ManagementCsv::identifier('000123'), ManagementCsv::identifier('000123 | 005678')]);
+
+        try {
+            \App\Support\Scheduling\ManagementXlsx::fromCsv($csv, $xlsx);
+            rewind($xlsx);
+            $content = stream_get_contents($xlsx);
+        } finally {
+            fclose($csv);
+            fclose($xlsx);
+        }
+
+        $this->assertStringContainsString('>000123</t>', $content);
+        $this->assertStringContainsString('>000123 | 005678</t>', $content);
+        $this->assertStringNotContainsString('<f>', $content);
+    }
+
     public function test_excel_formula_like_number_is_exported_as_text(): void
     {
         $payments = new Collection([7 => (object) ['numero_operacion' => '=HYPERLINK("bad")']]);
