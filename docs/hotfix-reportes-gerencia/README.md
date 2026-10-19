@@ -13,7 +13,7 @@ Tres descargas por rango de hasta 31 días, sede y profesional:
 
 Formato: CSV UTF-8 BOM, delimitador «;»; abre en Excel configurado para Perú. Texto que empiece como fórmula se neutraliza. Un CSV no soporta múltiples hojas, formatos o gráficos nativos: importar y guardar como XLSX si gerencia necesita presentación avanzada.
 
-Protección: permisos de servidor, descargas sin caché, registro de auditoría por actor/filtros/tipo sin datos médicos, no se escriben CSV a disco, consultas por lotes. No enlazar estos endpoints desde API pública ni otorgarlos a COMERCIAL/ADMISION automáticamente.
+Protección: scope vigente de visibilidad de citas (reservas pendientes ajenas excluidas), permisos de servidor, descargas sin caché, registro de auditoría por actor/filtros/tipo sin datos médicos, no se escriben CSV a disco, consultas por lotes. No enlazar estos endpoints desde API pública ni otorgarlos a COMERCIAL/ADMISION automáticamente.
 
 ## Verificación pendiente antes de publicar
 
