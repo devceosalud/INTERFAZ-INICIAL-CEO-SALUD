@@ -1,0 +1,32 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium}=require(path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'storage/app/qa-v2/round3'),base='http://127.0.0.1:8092';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,'')),f=read(path.join(out,'fixtures.json')),secret=read(path.join(root,'storage/app/qa-v2/browser-private.json')),stage=process.env.AGENDA_V2_ROUND3_STAGE||'before';
+if(process.env.AGENDA_V2_ROUND3_REPLAY==='APPEND_SYNTHETIC_ONLY'){
+ if(stage!=='after')throw new Error('Replay benchmarks only measure the current code; baseline evidence must remain unchanged.');
+ const php=path.join(root,'../entrega-urgente-1/storage/app/qa-final/equivalent/php-8.3.35/php.exe');
+ require('node:child_process').execFileSync(php,['tests/Support/agenda-v2-round3-seed.php','--benchmark'],{cwd:root,env:{...process.env,AGENDA_V2_ROUND3_FIXTURES:'APPEND_SYNTHETIC_ONLY'}});
+ Object.assign(f.round3,read(path.join(out,'latest-benchmark.json')).round3);
+}
+(async()=>{const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-background-networking','--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
+let lastPage;const replay=process.env.AGENDA_V2_ROUND3_REPLAY==='APPEND_SYNTHETIC_ONLY',runLabel=replay?'replay-'+Date.now():stage;const report={stage,browser:browser.version(),cases:[],exit:[],errors:[]};
+async function account(role){const c=await browser.newContext({viewport:{width:1366,height:768},timezoneId:'America/Lima'});await c.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());const p=await c.newPage();lastPage=p;p.on('response',async r=>{if(r.status()>=400&&r.request().resourceType()==='fetch')report.errors.push({url:new URL(r.url()).pathname,status:r.status(),body:(await r.text().catch(()=>'(response no longer available after navigation)')).slice(0,1000)});});p.setDefaultTimeout(30000);p.on('pageerror',e=>report.errors.push(e.message));await p.goto(base+'/');await p.locator('[name=email]').fill(f.users[role].email);await p.locator('[name=password]').fill(secret.password);await Promise.all([p.waitForURL('**/dashboard'),p.getByRole('button',{name:'Iniciar sesión',exact:true}).click()]);return p;}
+async function api(p,url,method='GET',body){return p.evaluate(async({url,method,body})=>{const r=await fetch(url,{method,headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,body:await r.json()};},{url,method,body});}
+async function open(p,id){await p.goto(base+'/scheduling-mvp/admission?appointment_id='+id);await p.locator('.admission-consultation-reason').waitFor();}
+try{const admin=await account('admin');
+await open(admin,f.round3.postoperative);
+for(const[width,height]of [[1366,768],[1440,900],[1920,1080],[390,844]]){await admin.setViewportSize({width,height});await admin.evaluate(()=>scrollTo(0,0));await admin.screenshot({path:path.join(out,runLabel+'-'+width+'.png'),fullPage:true});report.cases.push({viewport:[width,height],geometry:await admin.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,width:innerWidth,headerTop:document.querySelector('.admission-heading').getBoundingClientRect().top,navBottom:document.querySelector('.erp-shell-header')?.getBoundingClientRect().bottom??null,workspaceTop:document.querySelector('.admission-workspace').getBoundingClientRect().top}))});}
+await admin.setViewportSize({width:1366,height:768});
+for(let i=stage==='before'?0:6;i<(stage==='before'?6:12);i++){
+ const id=f.round3['exit'+i];await open(admin,id);const requests=[],responses=[];let clickAt=0;
+ const onReq=r=>{if(r.url().includes('/admission/')&&(r.resourceType()==='fetch'))requests.push({url:new URL(r.url()).pathname,method:r.method(),at:Date.now()});};
+ const onRes=async r=>{if(r.url().includes('/admission/')&&r.request().resourceType()==='fetch')responses.push({url:new URL(r.url()).pathname,status:r.status(),at:Date.now(),serverTiming:r.headers()['server-timing'],timing:r.request().timing()});};
+ admin.on('request',onReq);admin.on('response',onRes);
+ await admin.getByRole('button',{name:'Registrar salida',exact:true}).click();await admin.locator('.swal2-popup').waitFor();if(stage==='before')await admin.locator('.swal2-textarea').fill('Salida ficticia para medicion QA');else assert.equal(await admin.locator('.swal2-textarea').isVisible(),false);
+ const response=admin.waitForResponse(r=>r.url().endsWith('/'+id+'/care')&&r.request().method()==='POST');clickAt=Date.now();await admin.evaluate(()=>{window.__exitActualClick=null;document.querySelector('.swal2-confirm').addEventListener('click',()=>{window.__exitActualClick=Date.now();},{once:true,capture:true});});await admin.locator('.swal2-confirm').click();const r=await response;await r.finished();assert.equal(r.status(),200);
+ await admin.waitForFunction(()=>/actualizada|Salida registrada/.test(document.querySelector('#admission-notice').textContent));const done=Date.now();await admin.waitForTimeout(30);admin.off('request',onReq);admin.off('response',onRes);
+ assert.equal(requests.filter(r=>r.method==='POST'&&r.url.endsWith('/care')).length,1);
+ const actualClick=await admin.evaluate(()=>window.__exitActualClick);report.exit.push({id,actual_click_to_request_ms:requests.find(r=>r.url.endsWith('/care')).at-actualClick,actual_click_to_feedback_ms:done-actualClick,click_to_request_ms:requests.find(r=>r.url.endsWith('/care')).at-clickAt,click_to_feedback_ms:done-clickAt,requests:requests.map(r=>({...r,at:r.at-clickAt})),responses:responses.map(r=>({...r,at:r.at-clickAt}))});
+}
+assert.deepEqual(report.errors,[]);report.finished=new Date().toISOString();console.log('PASS round3 '+stage+' captures and six measured departures');
+}catch(e){report.error=e.message;if(lastPage){await lastPage.screenshot({path:path.join(out,'failure.png'),fullPage:true});fs.writeFileSync(path.join(out,'failure.txt'),await lastPage.locator('body').innerText());}process.exitCode=1;console.error(e);}finally{fs.writeFileSync(path.join(out,runLabel+'-results.json'),JSON.stringify(report,null,2));await browser.close();}})();

@@ -81,7 +81,7 @@ class AgendaSemaphorizationTest extends TestCase
         $before=app(DoctorAvailabilityService::class)->forRange($query)->map->toArray()->all();$rows=$this->snapshot();
         $this->actingAs($admin);$r=$this->feed()->assertOk()->assertJsonPath('vista_operativa','SEGUIMIENTO_ADMIN');
         $ids=collect($r->json('eventos'))->pluck('extendedProps.appointment_id')->filter()->all();
-        $this->assertEqualsCanonicalizing([$paid,$present->id,$cancel->id],$ids);$this->assertNotContains($unpaid,$ids);$this->assertNotContains($privatePaid,$ids);$this->assertNotContains($snapshot->id,$ids);
+        $this->assertEqualsCanonicalizing([$paid,$unpaid,$privatePaid,$snapshot->id,$present->id,$cancel->id],$ids);
         $event=collect($r->json('eventos'))->firstWhere('id','cita-'.$cancel->id);$this->assertTrue($event['extendedProps']['presentation']['informational']);$this->assertSame('DESACTIVADA',$event['extendedProps']['leyenda']);
         $this->assertSame($before,app(DoctorAvailabilityService::class)->forRange($query)->map->toArray()->all());$this->assertSame($rows,$this->snapshot());
         $this->actingAs($this->actor);$ids=collect($this->feed()->assertOk()->json('eventos'))->pluck('extendedProps.appointment_id')->filter()->all();$this->assertContains($unpaid,$ids);$this->assertContains($privatePaid,$ids);

@@ -115,12 +115,12 @@ class AdmissionBoardService
 
     public function detail(int $id, User $actor): array
     {
-        $a = Appointment::visibleToAgendaUser($actor->id)->select(array_merge(self::COLUMNS,['motivo_consulta']))->with([
+        $a = Appointment::visibleToOperationalUser($actor)->select(array_merge(self::COLUMNS,['motivo_consulta']))->with([
             'patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad,telefono,telefono_secundario,channel_id,interaction_medium_id',
             'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
         app(ManualReevaluationService::class)->load(collect([$a]));
-        $previous = Appointment::visibleToAgendaUser($actor->id)->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
+        $previous = Appointment::visibleToOperationalUser($actor)->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
         $positions = $this->economics->forAppointments($previous->push($a));
@@ -140,7 +140,7 @@ class AdmissionBoardService
         // Appointment-bound operational files only; no clinical narrative or medical-order evidence.
         $operationalDocuments = $actor->can(\App\Support\Scheduling\AppointmentDocumentAccess::VIEW)
             ? $a->documents()->whereNull('payment_id')->whereIn('document_kind',\App\Support\Scheduling\AppointmentDocumentAccess::KINDS)
-                ->where(fn($q)=>$q->whereNull('purpose')->orWhere('purpose','<>','REEVALUATION_ORDER'))
+                ->where(fn($q)=>$q->whereNull('purpose')->orWhereNotIn('purpose',['REEVALUATION_ORDER',\App\Support\Scheduling\AppointmentDocumentAccess::PATIENT_PURPOSE]))
                 ->whereNotIn('id',\App\Models\AppointmentReevaluationIndication::select('evidence_document_id')->whereNotNull('evidence_document_id'))
                 ->get(['id','appointment_id','document_kind','label','url','private_path'])->map(fn($d)=>[
                     'id'=>$d->id,'kind'=>$d->document_kind,'label'=>$d->label,
@@ -153,6 +153,7 @@ class AdmissionBoardService
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
             'events'=>$events,'history'=>$history,'documents'=>$documents,'operational_documents'=>$operationalDocuments,
+            'patient_documents_url'=>route('scheduling.mvp.documents.index',$a->id),
             'can_view_operational_documents'=>$actor->can(\App\Support\Scheduling\AppointmentDocumentAccess::VIEW),'payments'=>$positions[$a->id]['payment_details'],
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],

@@ -3,6 +3,7 @@
 @section('body_class', 'agenda-viewport')
 
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-layout.css') }}" rel="stylesheet">
@@ -183,6 +184,7 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('vendor/appointment-ocr/tesseract.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-ocr.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-review.js') }}"></script>
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>

@@ -27,7 +27,7 @@ class AgendaCreatorPrivacyTest extends TestCase
             }
         }
     }
-    public function test_admin_has_no_exception_to_assigned_or_unassigned_private_reservations():void
+    public function test_authorized_admin_reads_assigned_and_unassigned_reservations_while_other_roles_remain_private():void
     {
         config(['scheduling.enabled'=>true]);$admin=$this->agendaReader('ADMINISTRADOR');$owner=$this->agendaReader();$other=$this->agendaReader();$catalog=$this->createAppointmentCatalog();
         $assigned=$this->lifecycleAppointment($admin,$catalog,['fecha_cita'=>$catalog['schedule']->fecha_cita,'estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$owner->id]);
@@ -35,7 +35,7 @@ class AgendaCreatorPrivacyTest extends TestCase
         foreach([$admin,$owner,$other] as $actor){$this->actingAs($actor);foreach(['dia','semana','mes'] as $view){
             $r=$this->getJson('/scheduling-mvp/agenda/feed?'.http_build_query(['vista'=>$view,'fecha'=>substr($assigned->fecha_cita,0,10),'doctor_id'=>[$catalog['doctor']->id]]))->assertOk();
             $ids=collect($r->json('eventos'))->pluck('extendedProps.appointment_id')->filter()->all();
-            if($actor->id===$owner->id && $view!=='mes'){$this->assertContains($assigned->id,$ids);$this->assertContains($unassigned->id,$ids);}
+            if(in_array($actor->id,[$owner->id,$admin->id],true) && $view!=='mes'){$this->assertContains($assigned->id,$ids);$this->assertContains($unassigned->id,$ids);}
             else{$this->assertNotContains($assigned->id,$ids);$this->assertNotContains($unassigned->id,$ids);$this->assertStringNotContainsString($assigned->patient->nombre.' '.$assigned->patient->numero_identidad,$r->getContent());}
         }}
         $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointment_operations',0);

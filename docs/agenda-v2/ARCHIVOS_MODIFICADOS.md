@@ -1,19 +1,23 @@
-# Inventario de modificaciones — PR Draft #46 integrado
+# Inventario de modificaciones — PR Draft #46, tercera ronda
 
-Baseline GitHub `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace`; checkpoint v2 `38a0446e6c6c30e0a9ef1a9e03bf5a9563ea1849`. Se integra en el worktree agenda-v2 y la misma rama feat/agenda-operativa-flujo-reevaluaciones-v2. No incluye cambios del checkout original ni otros worktrees.
+Baseline remoto `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace`; inicio de esta ronda `840522eca91638d16a58ed1b40907c8ce6f749ea`. Rama `feat/agenda-operativa-flujo-reevaluaciones-v2`, worktree agenda-v2. Sin cambios en otros worktrees.
 
-El inventario siguiente refleja el diff final contra el main actualizado, no solo los conflictos textuales. Las fuentes se identifican por blobs Git en evidence/FUENTES_SHA256.json. Los archivos ya idénticos a main no se cuentan como cambios del PR.
+[Detalle de esta ronda](evidence/round3/ARCHIVOS_RONDA3.json), [fuentes y hashes](evidence/FUENTES_SHA256.json), [diagnóstico y guía](RONDA_3_DIAGNOSTICO_Y_GUIA.md). El inventario siguiente muestra el diff acumulado del PR contra main; las evidencias anteriores se conservan.
 
-## Backend, permisos y presentación
+## Backend y esquema
 
+- `app/Http/Controllers/Patients/OperationalPatientController.php`
 - `app/Http/Controllers/Scheduling/AdmissionBoardController.php`
 - `app/Http/Controllers/Scheduling/AdmissionTaskController.php`
 - `app/Http/Controllers/Scheduling/AgendaFeedController.php`
+- `app/Http/Controllers/Scheduling/AppointmentDocumentController.php`
 - `app/Http/Controllers/Scheduling/AppointmentReevaluationHistoryController.php`
 - `app/Http/Controllers/Scheduling/OperationalProcedureController.php`
+- `app/Http/Controllers/Scheduling/OperationalRegistrationController.php`
 - `app/Http/Controllers/admissionist/appointment/AppointmentController.php`
 - `app/Http/Requests/Scheduling/OperationalRegistrationRequest.php`
 - `app/Models/Appointment.php`
+- `app/Models/AppointmentDocument.php`
 - `app/Models/AppointmentOperationalReview.php`
 - `app/Services/Scheduling/AdmissionBoardService.php`
 - `app/Services/Scheduling/AdmissionCareService.php`
@@ -25,20 +29,28 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `app/Services/Scheduling/OperationalAgendaAppointmentService.php`
 - `app/Services/Scheduling/OperationalProcedureService.php`
 - `app/Services/Scheduling/OperationalRegistrationService.php`
+- `app/Services/Scheduling/PatientAppointmentDocumentUpload.php`
+- `app/Services/Scheduling/ReevaluationIndicationService.php`
+- `app/Services/Scheduling/ReplaceAppointmentDocument.php`
 - `app/Services/Scheduling/ReservationPaymentService.php`
 - `app/Support/Scheduling/AgendaAppointmentPresentation.php`
 - `app/Support/Scheduling/AgendaLegend.php`
+- `app/Support/Scheduling/AppointmentDocumentAccess.php`
+- `app/Support/Scheduling/AppointmentVisibility.php`
 - `app/Support/Scheduling/OperationalText.php`
-
-## Esquema y rutas
-
 - `database/migrations/2026_10_16_020000_create_appointment_operational_procedures.php`
 - `routes/scheduling.php`
 
-## Interfaz
+## Interfaz y assets
 
+- `public/assets/vendor/pdfjs/LICENSE`
+- `public/assets/vendor/pdfjs/PROVENANCE.json`
+- `public/assets/vendor/pdfjs/README.md`
+- `public/assets/vendor/pdfjs/pdf.min.js`
+- `public/assets/vendor/pdfjs/pdf.worker.min.js`
 - `public/css/scheduling/admission-board.css`
 - `public/css/scheduling/agenda.css`
+- `public/css/scheduling/appointment-patient-documents.css`
 - `public/css/scheduling/operational-reevaluations.css`
 - `public/js/admin/master/doctor-service/doctor-service.js`
 - `public/js/admissionist/appointment/appointment.js`
@@ -47,6 +59,7 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `public/js/scheduling/agenda-operational-workspace.js`
 - `public/js/scheduling/agenda-refresh.js`
 - `public/js/scheduling/agenda.js`
+- `public/js/scheduling/appointment-patient-documents.js`
 - `public/js/scheduling/operational-reevaluations.js`
 - `resources/views/admin/appointment/index.blade.php`
 - `resources/views/admissionist/appointment/crud/create.blade.php`
@@ -54,6 +67,7 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `resources/views/components/utils/operational-reevaluations.blade.php`
 - `resources/views/components/utils/reevaluations.blade.php`
 - `resources/views/layouts/app.blade.php`
+- `resources/views/patients/operational.blade.php`
 - `resources/views/receptionist/appointment/index.blade.php`
 - `resources/views/scheduling/admission/index.blade.php`
 - `resources/views/scheduling/agenda/index.blade.php`
@@ -66,9 +80,10 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `resources/views/templates/nav/mvp.blade.php`
 - `resources/views/templates/nav/recepcion.blade.php`
 
-## Pruebas y arneses
+## Pruebas y herramientas
 
-- `phpunit.agenda-v2-mariadb.xml`
+- `.gitattributes`
+- `.github/workflows/agenda-v2-checks.yml`
 - `tests/Concerns/BuildsBaselineData.php`
 - `tests/CreatesApplication.php`
 - `tests/Feature/Auth/WorkerAccessTest.php`
@@ -79,9 +94,11 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `tests/Feature/Catalog/ServicePriceCatalogTest.php`
 - `tests/Feature/Sales/BankPaymentIntegrityTest.php`
 - `tests/Feature/Scheduling/AdmissionBoardTest.php`
+- `tests/Feature/Scheduling/AdmissionDepartureTest.php`
 - `tests/Feature/Scheduling/AdmissionTaskTest.php`
 - `tests/Feature/Scheduling/AgendaAppointmentWriteTest.php`
 - `tests/Feature/Scheduling/AgendaBoardTest.php`
+- `tests/Feature/Scheduling/AgendaCreatorPrivacyTest.php`
 - `tests/Feature/Scheduling/AgendaDoubleDurationTest.php`
 - `tests/Feature/Scheduling/AgendaRefinementTest.php`
 - `tests/Feature/Scheduling/AgendaSemaphorizationTest.php`
@@ -91,6 +108,7 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `tests/Feature/Scheduling/AgendaV2ProceduresTest.php`
 - `tests/Feature/Scheduling/AgendaV2ReversalTest.php`
 - `tests/Feature/Scheduling/AgendaV2Round2Test.php`
+- `tests/Feature/Scheduling/AgendaV2Round3Test.php`
 - `tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php`
 - `tests/Feature/Scheduling/AppointmentPaymentProofsTest.php`
 - `tests/Feature/Scheduling/AppointmentReaderPrivacyTest.php`
@@ -106,9 +124,11 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `tests/Feature/Scheduling/UnifiedReevaluationTest.php`
 - `tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php`
 - `tests/JavaScript/admission-booking-indicator.test.js`
+- `tests/JavaScript/admission-row-selection.test.js`
 - `tests/JavaScript/admission-tasks-ui.test.js`
 - `tests/JavaScript/agenda-guidance.test.js`
 - `tests/JavaScript/agenda-modal-close.test.js`
+- `tests/JavaScript/agenda-payment-ocr-placement.test.js`
 - `tests/JavaScript/agenda-permission-flow.test.js`
 - `tests/JavaScript/agenda-quote.test.js`
 - `tests/JavaScript/agenda-v2-refresh.test.js`
@@ -118,21 +138,113 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `tests/Support/IsolatedAgendaV2Qa.php`
 - `tests/Support/agenda-v2-browser-router.php`
 - `tests/Support/agenda-v2-browser-seed.php`
+- `tests/Support/agenda-v2-health.php`
 - `tests/Support/agenda-v2-init.php`
 - `tests/Support/agenda-v2-integration-seed.php`
 - `tests/Support/agenda-v2-request.php`
 - `tests/Support/agenda-v2-round2-seed.php`
+- `tests/Support/agenda-v2-round3-seed.php`
 - `tests/TestCase.php`
 - `tools/qa/browser-agenda-v2-round2.cjs`
+- `tools/qa/browser-agenda-v2-round3-functional.cjs`
+- `tools/qa/browser-agenda-v2-round3.cjs`
 - `tools/qa/browser-agenda-v2.cjs`
 - `tools/qa/browser-catalog.cjs`
 - `tools/qa/run-agenda-v2-browser.ps1`
+- `tools/qa/start-agenda-v2-manual.ps1`
 
-## CI
+## Documentación y evidencia
 
-- `.github/workflows/agenda-v2-checks.yml`
+- `docs/agenda-v2/ANALISIS_FUNCIONAL.md`
+- `docs/agenda-v2/ARCHIVOS_MODIFICADOS.md`
+- `docs/agenda-v2/ARQUITECTURA_Y_FLUJOS.md`
+- `docs/agenda-v2/INTEGRACION_MAIN_Y_HOTFIXES.md`
+- `docs/agenda-v2/MATRIZ_PERMISOS.md`
+- `docs/agenda-v2/MIGRACIONES_Y_COMPATIBILIDAD.md`
+- `docs/agenda-v2/PLAN_DESPLIEGUE_Y_ROLLBACK.md`
+- `docs/agenda-v2/QA_Y_EVIDENCIAS.md`
+- `docs/agenda-v2/RONDA_2_DIAGNOSTICO_Y_GUIA.md`
+- `docs/agenda-v2/RONDA_3_DIAGNOSTICO_Y_GUIA.md`
+- `docs/agenda-v2/evidence/.gitignore`
+- `docs/agenda-v2/evidence/FUENTES_SHA256.json`
+- `docs/agenda-v2/evidence/RESUMEN.json`
+- `docs/agenda-v2/evidence/admin-procedures-desktop.png`
+- `docs/agenda-v2/evidence/admin-procedures-mobile.png`
+- `docs/agenda-v2/evidence/admission-desktop.png`
+- `docs/agenda-v2/evidence/admission-mobile.png`
+- `docs/agenda-v2/evidence/agenda-mobile.png`
+- `docs/agenda-v2/evidence/integration/after-1366.png`
+- `docs/agenda-v2/evidence/integration/after-1440.png`
+- `docs/agenda-v2/evidence/integration/after-1920.png`
+- `docs/agenda-v2/evidence/integration/after-390.png`
+- `docs/agenda-v2/evidence/integration/after-mobile-list.png`
+- `docs/agenda-v2/evidence/integration/after-queue.png`
+- `docs/agenda-v2/evidence/integration/after-results.json`
+- `docs/agenda-v2/evidence/integration/unified-1366.png`
+- `docs/agenda-v2/evidence/integration/unified-1440.png`
+- `docs/agenda-v2/evidence/integration/unified-1920.png`
+- `docs/agenda-v2/evidence/integration/unified-390.png`
+- `docs/agenda-v2/evidence/integration/unified-admin-1366.png`
+- `docs/agenda-v2/evidence/integration/unified-admin-1440.png`
+- `docs/agenda-v2/evidence/integration/unified-admin-1920.png`
+- `docs/agenda-v2/evidence/integration/unified-admin-390.png`
+- `docs/agenda-v2/evidence/integration/unified-audit-paged.png`
+- `docs/agenda-v2/evidence/integration/unified-audit.png`
+- `docs/agenda-v2/evidence/integration/unified-preview-results.json`
+- `docs/agenda-v2/evidence/master-mfr-compatible.png`
+- `docs/agenda-v2/evidence/nicol-desktop.png`
+- `docs/agenda-v2/evidence/round2/after-1366.png`
+- `docs/agenda-v2/evidence/round2/after-1440.png`
+- `docs/agenda-v2/evidence/round2/after-1920.png`
+- `docs/agenda-v2/evidence/round2/after-390.png`
+- `docs/agenda-v2/evidence/round2/after-mobile-list.png`
+- `docs/agenda-v2/evidence/round2/after-queue.png`
+- `docs/agenda-v2/evidence/round2/after-results.json`
+- `docs/agenda-v2/evidence/round2/before-1366.png`
+- `docs/agenda-v2/evidence/round2/before-mobile.png`
+- `docs/agenda-v2/evidence/round2/before-results.json`
+- `docs/agenda-v2/evidence/round2/original-manual-audit.tsv`
+- `docs/agenda-v2/evidence/round2/stale-ready-before.txt`
+- `docs/agenda-v2/evidence/round3/PERFORMANCE.json`
+- `docs/agenda-v2/evidence/round3/RESULTADOS.json`
+- `docs/agenda-v2/evidence/round3/after-1366.png`
+- `docs/agenda-v2/evidence/round3/after-1440.png`
+- `docs/agenda-v2/evidence/round3/after-1920.png`
+- `docs/agenda-v2/evidence/round3/after-390.png`
+- `docs/agenda-v2/evidence/round3/after-results.json`
+- `docs/agenda-v2/evidence/round3/before-1366.png`
+- `docs/agenda-v2/evidence/round3/before-1440.png`
+- `docs/agenda-v2/evidence/round3/before-1920.png`
+- `docs/agenda-v2/evidence/round3/before-390.png`
+- `docs/agenda-v2/evidence/round3/before-results.json`
+- `docs/agenda-v2/evidence/round3/documents-admin.png`
+- `docs/agenda-v2/evidence/round3/documents-operative.png`
+- `docs/agenda-v2/evidence/round3/documents-patient-history.png`
+- `docs/agenda-v2/evidence/round3/documents-version-history.png`
+- `docs/agenda-v2/evidence/round3/functional-browser.txt`
+- `docs/agenda-v2/evidence/round3/functional-results.json`
+- `docs/agenda-v2/evidence/round3/initial-state.json`
+- `docs/agenda-v2/evidence/round3/javascript.txt`
+- `docs/agenda-v2/evidence/round3/mariadb.txt`
+- `docs/agenda-v2/evidence/round3/mariadb.xml`
+- `docs/agenda-v2/evidence/round3/queue-1366.png`
+- `docs/agenda-v2/evidence/round3/red.txt`
+- `docs/agenda-v2/evidence/round3/red.xml`
+- `docs/agenda-v2/evidence/round3/regression-browser.txt`
+- `docs/agenda-v2/evidence/round3/regression-results.json`
+- `docs/agenda-v2/evidence/round3/replay-results.json`
+- `docs/agenda-v2/evidence/round3/rows-1366.png`
+- `docs/agenda-v2/evidence/round3/rows-1440.png`
+- `docs/agenda-v2/evidence/round3/rows-1920.png`
+- `docs/agenda-v2/evidence/round3/rows-390.png`
+- `docs/agenda-v2/evidence/round3/sql-departure-profile.json`
+- `docs/agenda-v2/evidence/round3/sqlite.txt`
+- `docs/agenda-v2/evidence/round3/sqlite.xml`
+- `docs/agenda-v2/evidence/round3/targeted-final.txt`
+- `docs/hotfix-admision/QA.md`
+- `docs/hotfix-admision/README.md`
 
-## Componentes temporales retirados
+## Componentes retirados en la integración anterior
 
 - `.github/workflows/admission-manual-reevaluation-checks.yml`
 - `app/Support/Scheduling/AdmissionAppointmentPresentation.php`
@@ -141,12 +253,6 @@ El inventario siguiente refleja el diff final contra el main actualizado, no sol
 - `tests/Support/manual-reevaluation-qa-seed.php`
 - `tests/Support/manual-reevaluation-qa-verify.php`
 
-Los reemplazan el lector unificado, la presentación compartida, las suites completas y el runtime QA v2. Se conservan todos los tests funcionales de hotfix y sus eventos productivos; no se borran datos ni SQLite/artefactos locales. El controlador PATCH y el ledger directo compatibles permanecen.
+La tercera ronda no elimina pruebas, tablas ni eventos. Los seis archivos retirados pertenecen a los mecanismos temporales ya sustituidos en840522e. Se conservan los eventos v1 y el diagnóstico del parcial con autorización manual anterior.
 
-## Documentación, evidencia y datos
-
-Los nueve documentos de docs/agenda-v2 incluyen diagnóstico original, resolución de los cinco conflictos, permisos, QA, inventario, arquitectura, esquema, liberación y rollback. docs/hotfix-admision se conserva como registro histórico con un enlace al procedimiento vigente. evidence/integration contiene capturas de los tres roles, cuatro resoluciones, auditoría paginada y JSON sanitizado; las capturas y diagnósticos de rondas anteriores se conservan.
-
-No hay migración nueva por integrar #47–#49. Las tres tablas aditivas de procedimientos de v2 siguen pendientes de una futura liberación autorizada desde main. No se altera motivo histórico, dinero, estados clínicos ni ledgers al leer marcas v1. El nuevo endpoint paginado es privado y de lectura.
-
-Los tests conservan importes, duplicados, indicaciones, días clínicos, adjuntos, privacidad, permisos y auditoría. ATENDIDO cambia su expectativa visual a la paleta aprobada sin atribuir salida ni reevaluación implícitas. El chip LEGADO deja de consumir espacio; el dato y su etiqueta interna permanecen. Los nuevos casos demuestran que retirar un origen no elimina otro y que la auditoría completa puede paginarse sin perder eventos.
+El visor PDF incorpora únicamente módulo/worker/licencia oficiales fijados en6.4.299, con integridad de paquete y archivos verificable. No se añade otro almacén, sistema de documentos, autenticación ni framework visual. El historial documental reutiliza los modelos y endpoints existentes; no requiere migración adicional. No se versionan credenciales, BD ficticias ni archivos médicos de prueba: únicamente capturas y reportes de QA seleccionados.

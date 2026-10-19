@@ -464,7 +464,7 @@ class LegacyRegistrationParityTest extends TestCase
         $missingResponse = $this->patchJson($path, ['appointment_id' => 999999, 'telefono' => '+51999000991'])->assertNotFound();
         $this->assertSame($missingResponse->json(), $hiddenResponse->json());
         $this->assertSame($before, $this->patient->fresh()->getAttributes());
-        $this->getJson(route('scheduling.mvp.agenda.economy', $hidden->id))->assertNotFound();
+        $this->getJson(route('scheduling.mvp.agenda.economy', $hidden->id))->assertOk(); // New explicit ADMIN read; contact writes above remain private.
     }
 
     public function test_administrator_still_needs_create_and_payment_permissions_when_registering_a_new_patient_and_appointment(): void

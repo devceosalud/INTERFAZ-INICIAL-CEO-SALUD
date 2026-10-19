@@ -1,5 +1,7 @@
 # Matriz de permisos
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Operaciones integradas de retorno al médico
 
 | Operación | ADMINISTRADOR | ADMISION | COMERCIAL | Otros |
@@ -10,13 +12,13 @@
 | Envío/retirada por procedimientos | Con supervisión específica | Sí | No | No |
 | Historial y cola visibles | Con acceso/visibilidad | Con acceso/visibilidad | Con acceso/visibilidad | Solo acceso de lectura ya autorizado |
 
-Todas requieren usuario activo, MVP_ACCESS, VIEW y visibilidad efectiva. No se conceden permisos/roles automáticamente. Marcar directamente no autoriza care, pagos, precios, documentos ni supervisión. Se conserva el contrato HTTP v1 y su auditoría. El endpoint de historial no requiere UPDATE y no permite consultar citas privadas ajenas.
+Todas requieren usuario activo, MVP_ACCESS, VIEW y visibilidad efectiva. No se conceden permisos/roles automáticamente. Marcar directamente no autoriza care, pagos, precios, documentos ni supervisión. Se conserva el contrato HTTP v1 y su auditoría. El historial no requiere UPDATE. En tercera ronda ADMIN autorizado dispone de lectura operativa de reservas ajenas; los demás roles conservan su visibilidad.
 
 ## Privacidad y permisos en la segunda ronda
 
 Motivo y resumen requieren el mismo acceso autenticado de Admisión (`appointment.mvp.access`, `appointment.view` y visibilidad de la cita). No se abre un endpoint público ni se concede supervisión. Las pruebas incluyen ADMINISTRADOR, ADMISION, COMERCIAL y RECEPCION para el bloqueo del creador heredado; consulta y seguimiento mantienen permisos previos. El envío manual de ADMINISTRADOR sin supervisión sigue en 403. La reserva privada conserva su responsable: otra sesión no puede cobrarla solo por conocer su ID.
 
-Base común: usuario activo, sesión válida, feature flag operativo, appointment.mvp.access, appointment.view y Appointment::visibleToAgendaUser. Una reserva privada ajena devuelve 404 también para ADMINISTRADOR; no hay bypass de visibilidad por rol.
+Base común: usuario activo, sesión válida, feature flag operativo, appointment.mvp.access, appointment.view y Appointment::visibleToAgendaUser. La tercera ronda añade el scope explícito de lectura visibleToOperationalUser para ADMIN activo con MVP_ACCESS/VIEW. El scope base y los escritores existentes conservan su privacidad; no se amplían pagos, vouchers ni cambios de estado.
 
 | Acción estructurada | ADMINISTRADOR | ADMISION | COMERCIAL / otros |
 |---|---|---|---|

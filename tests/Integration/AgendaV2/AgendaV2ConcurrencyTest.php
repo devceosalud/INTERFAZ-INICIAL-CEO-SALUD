@@ -132,4 +132,24 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
     }
 
+    public function test_simultaneous_patient_uploads_share_one_file_document_and_audit_event():void
+    {
+        $a=$this->lifecycleAppointment($this->admin,$this->catalog);
+        $r=['actor'=>$this->admin->id,'path'=>'/scheduling-mvp/agenda/appointments/'.$a->id.'/documents','patient_document_fixture'=>'qa-pdf',
+            'payload'=>['purpose'=>'PATIENT_PROVIDED','request_key'=>(string)Str::uuid(),'label'=>'PDF ficticio concurrente','document_kind'=>'REPORT']];
+        $this->assertSame([201,201],$this->race([$r,$r]));$this->assertDatabaseCount('appointment_documents',1);
+        $this->assertDatabaseCount('appointment_operations',1);$this->assertDatabaseCount('payments',0);
+        $this->assertDatabaseHas('appointment_documents',['purpose'=>'PATIENT_PROVIDED']);
+        $this->assertSame(1,\App\Models\AppointmentEvent::where('event_type','DOCUMENTO_PACIENTE_ADJUNTADO')->count());
+    }
+    public function test_simultaneous_departure_without_reason_has_one_audit_and_timestamp():void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO']);
+        $r=['path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/care',
+            'payload'=>['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()]];
+        $this->assertSame([200,200],$this->race([$r,$r]));$this->assertNotNull($a->fresh()->hora_salida);
+        $this->assertSame(1,\App\Models\AppointmentEvent::where('event_type','ADMISION_SALIDA_REGISTRADA')->count());
+        $this->assertSame('ATENDIDO',$a->fresh()->estado_cita);$this->assertDatabaseCount('payments',0);
+    }
+
 }

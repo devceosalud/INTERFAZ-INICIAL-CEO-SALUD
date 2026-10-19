@@ -1,9 +1,10 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
-const root=path.resolve(__dirname,'../..'),fixtureSet=process.env.AGENDA_V2_FIXTURE_SET||'round2',out=path.join(root,'storage/app/qa-v2',fixtureSet),base='http://127.0.0.1:8092';
-if(!['round2','integration-main'].includes(fixtureSet))throw new Error('Only owned synthetic fixture sets are allowed');
+const root=path.resolve(__dirname,'../..'),fixtureSet=process.env.AGENDA_V2_FIXTURE_SET||'round2',fixtureDir=path.join(root,'storage/app/qa-v2',fixtureSet),out=path.join(root,'storage/app/qa-v2',process.env.AGENDA_V2_EVIDENCE_SET==='round3-regression'?'round3/regression':fixtureSet),base='http://127.0.0.1:8092';
+if(!['round2','integration-main','round3-regression'].includes(fixtureSet))throw new Error('Only owned synthetic fixture sets are allowed');
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
-const f=read(path.join(out,'fixtures.json')),secret=read(path.join(root,'storage/app/qa-v2/browser-private.json'));
+fs.mkdirSync(out,{recursive:true});
+const f=read(path.join(fixtureDir,'fixtures.json')),secret=read(path.join(root,'storage/app/qa-v2/browser-private.json'));
 const stage=process.env.AGENDA_V2_ROUND2_STAGE||'before';
 (async()=>{
  const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-background-networking','--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
@@ -101,7 +102,7 @@ const stage=process.env.AGENDA_V2_ROUND2_STAGE||'before';
    await step('Paciente nuevo reutiliza un único motivo visible dentro y fuera del modal',admin,async()=>{
     await admin.goto(base+'/scheduling-mvp/agenda?fecha='+f.date+'&doctor_id='+f.doctor_id);await admin.locator('.agenda-day-row[data-row-start="17:30"] .agenda-day-entry[data-context-type="slot_libre"]').first().click();await admin.locator('#agenda-document-number').fill('79229999');await admin.locator('#agenda-document-search').click();await admin.locator('#agenda-patient-register').click();const reason=admin.locator('#agenda-op-reason');assert.equal(await reason.count(),1);assert.equal(await reason.evaluate(e=>Boolean(e.closest('#agenda-reason-modal-host'))),true);await reason.fill('Motivo ficticio único que se conserva');await admin.locator('#agenda-draft-close').click();if(await admin.locator('.swal2-confirm').isVisible())await admin.locator('.swal2-confirm').click();await admin.waitForFunction(()=>document.getElementById('agenda-patient-modal').hidden);assert.equal(await reason.evaluate(e=>Boolean(e.closest('#agenda-reason-workspace-host'))),true);assert.equal(await reason.inputValue(),'Motivo ficticio único que se conserva');
    });
-   if(fixtureSet==='integration-main'){
+   if(['integration-main','round3-regression'].includes(fixtureSet)){
     let directId=f.appointments.direct;
     async function toggleUi(marked){
      await commercial.goto(base+'/scheduling-mvp/admission?appointment_id='+directId);await commercial.locator('.admission-direct-return').waitFor();

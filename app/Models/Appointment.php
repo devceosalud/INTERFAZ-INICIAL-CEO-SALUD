@@ -77,6 +77,13 @@ class Appointment extends Model
     ];
 
     /** Opt-in scope; it does not change existing readers automatically. */
+    /** Explicit read authorization for authenticated operational boards, never public availability. */
+    public function scopeVisibleToOperationalUser(Builder $query, \App\Models\User $actor): Builder
+    {
+        if (\App\Support\Scheduling\AppointmentVisibility::operationalAdministrator($actor)) return $query;
+        return $query->visibleToAgendaUser($actor->id);
+    }
+
     public function scopeVisibleToAgendaUser(Builder $query, int $actorId): Builder
     {
         AppointmentVisibility::apply($query, $actorId, $query->getModel()->getTable());

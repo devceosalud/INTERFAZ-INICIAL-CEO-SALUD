@@ -1,5 +1,7 @@
 # Integración de Agenda 2.0 y hotfixes #47, #48 y #49
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Estado protegido y alcance
 
 El 19/10/2026 se encontró `agenda-v2` en `feat/agenda-operativa-flujo-reevaluaciones-v2`, HEAD `38a0446e6c6c30e0a9ef1a9e03bf5a9563ea1849`, sin cambios pendientes. Los 14 archivos mencionados por la UI anterior no estaban modificados según Git; no se descartó ningún archivo. El commit conocido ya incluye los cambios de la segunda ronda. Se conservan sus capturas, JUnit, logs y diagnóstico original.
@@ -67,7 +69,7 @@ Cancelación/retiro, reembolso y salida conservan su prioridad por encima del na
 
 COMERCIAL activo con MVP_ACCESS/VIEW puede marcar/desmarcar únicamente la marca directa de sus citas visibles y elegibles, sin appointment.update. ADMINISTRADOR/ADMISION conservan UPDATE para esa operación directa. Los permisos de solicitudes, realizados, supervisión parcial, atención, pagos, precios y documentos no se otorgan ni se amplían por este cambio.
 
-Se conservan CSRF real, rate limits, autorización backend, visibilidad dentro de transacción, UUID por actor, rechazo de payload adicional, conflictos de versión y auditoría atómica. Un reintento no revive una marca que fue retirada después. Una reserva privada ajena sigue en 404, incluso para administrador. La auditoría nueva es de lectura y no expone snapshots completos ni contenido en telemetría/Clarity.
+Se conservan CSRF real, rate limits, autorización backend, visibilidad dentro de transacción, UUID por actor, rechazo de payload adicional, conflictos de versión y auditoría atómica. Un reintento no revive una marca que fue retirada después. En 840522e una reserva privada ajena devolvía 404 también al administrador. En tercera ronda se amplía expresamente su lectura operativa; los escritores mantienen sus controles. La auditoría nueva es de lectura y no expone snapshots completos ni contenido en telemetría/Clarity.
 
 ## QA y prueba manual
 

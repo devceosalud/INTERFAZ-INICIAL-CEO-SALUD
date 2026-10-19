@@ -42,3 +42,18 @@
 .admission-more-filters>summary{width:fit-content;max-width:110px;left:auto;bottom:auto}.admission-more-filters[open]>summary{width:fit-content}
 
 .admission-tag--attended{background:#74dccb;color:#174d4a}.admission-tag--ready{background:#ffc28a;color:#7c2d12}.admission-direct-return{padding:9px 0;border-bottom:1px solid var(--ad-line);display:grid;gap:5px}.admission-direct-return>strong{font-size:11px}.admission-direct-return>small{color:#285d58}.admission-direct-return>.admission-btn{justify-self:start}.admission-reevaluation-audit{margin-top:10px;border-top:1px solid var(--ad-line);padding-top:8px}.admission-reevaluation-audit>summary{cursor:pointer;font-weight:600}.admission-reevaluation-audit p{font-size:11px;padding:6px 0;border-bottom:1px solid var(--ad-line)}
+
+/* Admission-only shell offset: erp-shell.css uses !important for its fixed navigation. */
+.admission-viewport .content-body.admission-page{padding-top:calc(var(--erp-shell-height,52px) + 16px)!important}
+.admission-heading{background:#fff;border:1px solid var(--ad-line);border-radius:7px;padding:6px 14px;margin-bottom:10px;min-height:52px}
+.admission-heading .admission-eyebrow{display:block;margin:0 0 3px;font-size:9px;line-height:1.1;letter-spacing:1.2px;font-weight:650;color:var(--ad-muted)}
+.admission-heading h1{font-size:21px;line-height:1.2;margin:0;font-weight:650}.admission-heading .admission-actions{gap:8px}
+.admission-kpis{margin-bottom:12px}.admission-kpi{padding-top:9px;padding-bottom:9px}
+.admission-table tbody tr[data-appointment-id]{cursor:pointer}.admission-table tbody tr[data-appointment-id]:focus-visible{outline:2px solid var(--ad-brand);outline-offset:-2px}
+.admission-table td:first-child{border-left-width:5px}.admission-table tr.is-selected{box-shadow:inset 0 0 0 1px #80b8b9;background:#edf6f6}.admission-table tr.is-selected:hover{background:#edf6f6}
+.admission-table th:nth-child(2){width:30%}.admission-table th:nth-child(3){width:24%}.admission-table th:nth-child(4){width:19%}.admission-table td:last-child{padding-left:8px;padding-right:8px;overflow-wrap:anywhere}
+.admission-tag--pending{background:#fff2a6;color:#684d0c}.admission-tag--ready{background:#ffc28a;color:#7c2d12;font-weight:650}.admission-tag--attended{background:#74dccb;color:#174d4a}
+#admission-queue-panel [data-ready=true]{border-left:5px solid #e58a40}.admission-detail[aria-busy=true]{cursor:progress}
+@media(max-width:600px){.admission-viewport .content-body.admission-page{padding-top:calc(var(--erp-shell-height,52px) + 12px)!important}.admission-heading{padding:10px;gap:8px}.admission-heading h1{font-size:20px}.admission-heading .admission-eyebrow{font-size:8px}.admission-table tr{grid-template-columns:54px minmax(0,1fr);border-left-width:5px}.admission-table td:last-child{padding:1px 0}.admission-table th:nth-child(2),.admission-table th:nth-child(3),.admission-table th:nth-child(4){width:auto}}
+
+#admission-queue-panel .operational-review-state{display:inline-block;border-radius:4px;padding:3px 7px;font-size:11px;font-weight:650}#admission-queue-panel [data-review-status=READY] .operational-review-state{background:#ffc28a;color:#7c2d12}#admission-queue-panel [data-review-status=NOT_READY] .operational-review-state{background:#fff2a6;color:#684d0c}#admission-queue-panel [data-review-status=WITHDRAWN] .operational-review-state,#admission-queue-panel [data-review-status=INACTIVE] .operational-review-state,#admission-queue-panel [data-review-status=SUSPENDED] .operational-review-state{background:#f1f4f5;color:#53686e}

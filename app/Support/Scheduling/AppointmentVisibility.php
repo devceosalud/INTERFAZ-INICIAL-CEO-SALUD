@@ -49,6 +49,12 @@ final class AppointmentVisibility
         });
     }
 
+    public static function operationalAdministrator(\App\Models\User $actor): bool
+    {
+        return $actor->is_active && $actor->hasRole('ADMINISTRADOR')
+            && $actor->can(SchedulingCapability::MVP_ACCESS) && $actor->can(SchedulingCapability::VIEW);
+    }
+
     private static function assertActor(int $actorId): void
     {
         if ($actorId <= 0) {

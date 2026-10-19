@@ -70,7 +70,7 @@
     </style>
     <!--ESTILOS LIVEWIRE"-->
     @livewireStyles
-@unless(request()->routeIs('scheduling.*','admissionit.appointment.*','admin.appointment.*','receptionist.appointment.*'))
+@unless(request()->routeIs('scheduling.*','patients.operational.*','admissionit.appointment.*','admin.appointment.*','receptionist.appointment.*'))
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};

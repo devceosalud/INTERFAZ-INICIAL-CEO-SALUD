@@ -95,7 +95,7 @@ class OperationalRegistrationTest extends TestCase
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000902', 'historia_clinica' => 'QA-2']);
         $this->create($this->payload(['patient_id' => $otherPatient->id]))->assertCreated(); $this->assertDatabaseCount('appointments', 2);
     }
-    public function test_delegated_private_owner_is_responsible_with_no_administrator_visibility_bypass(): void
+    public function test_delegated_private_owner_retains_voucher_privacy_while_admin_can_read_operational_booking(): void
     {
         $commercial = $this->actor('COMERCIAL'); $admin = $this->actor('ADMINISTRADOR');
         $admin->givePermissionTo(Permission::findOrCreate(C::ASSIGN_RESPONSIBLE, 'web'));
@@ -103,7 +103,7 @@ class OperationalRegistrationTest extends TestCase
         $id = $this->actingAs($admin)->create($this->payload(['responsible_user_id' => $commercial->id, 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
         // Historical paid pending fixture; new paid registrations are confirmed and shared.
         \Illuminate\Support\Facades\DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']);
-        $this->getJson(route('scheduling.mvp.agenda.economy', $id))->assertNotFound();
+        $this->getJson(route('scheduling.mvp.agenda.economy', $id))->assertOk();
         $this->assertSame(0, Voucher::visibleToAgendaUser($admin->id)->count());
         $this->actingAs($commercial)->getJson(route('scheduling.mvp.agenda.economy', $id))->assertOk();
         $this->assertSame(1, Voucher::visibleToAgendaUser($commercial->id)->count());

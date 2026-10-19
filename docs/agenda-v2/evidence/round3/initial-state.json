@@ -1,0 +1,13 @@
+{
+  "head": "840522eca91638d16a58ed1b40907c8ce6f749ea",
+  "initial_status": "clean",
+  "checkpoint": "codex/agenda-v2-pre-round3-20261019",
+  "main_verified": "dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace",
+  "primary_five_hashes_unchanged": {
+    "app/Http/Controllers/admin/master/doctor/DoctorController.php": true,
+    "app/Http/Controllers/admin/master/doctorService/DoctorServiceController.php": true,
+    "app/Http/Controllers/admin/master/user/UserController.php": true,
+    "app/Services/Scheduling/AgendaBoardPresenter.php": true,
+    "app/Services/Scheduling/OperationalAgendaAppointmentService.php": true
+  }
+}

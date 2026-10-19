@@ -72,10 +72,9 @@ class AdmissionCareService
             abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
             abort_unless(in_array($data['state'],app(AdmissionBoardService::class)->careActions($a,$actor),true),422,'La transición no está disponible. Confirma la reserva en Agenda antes de registrar atención.');
             if ($data['state'] === 'SALIDA_REGISTRADA') {
-                abort_unless(trim((string)($data['motivo'] ?? '')) !== '',422,'Registra el motivo o constancia de salida.');
                 $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
                 app(AppointmentHistory::class)->record($a,'ADMISION_SALIDA_REGISTRADA',$actor->id,
-                    ['motivo'=>$data['motivo'], 'metadata'=>['state'=>'ATENDIDO','timestamp_field'=>'hora_salida','operation_id'=>$op->id]]);
+                    ['motivo'=>$data['motivo']??null, 'metadata'=>['state'=>'ATENDIDO','timestamp_field'=>'hora_salida','operation_id'=>$op->id]]);
                 DB::table('appointment_operations')->where('id',$op->id)->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
                 return $a;
             }

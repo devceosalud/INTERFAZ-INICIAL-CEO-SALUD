@@ -1,0 +1,28 @@
+{
+  "before": {
+    "samples": 6,
+    "first_request_to_feedback_median_ms": 866.0,
+    "range_ms": [
+      743,
+      1304
+    ],
+    "http_requests_each": 3,
+    "sql_queries_each": 85
+  },
+  "after": {
+    "samples": 6,
+    "first_request_to_feedback_median_ms": 297.5,
+    "range_ms": [
+      267,
+      339
+    ],
+    "http_requests_each": 1,
+    "sql_queries_each": 50
+  },
+  "replay": {
+    "samples": 6,
+    "actual_click_to_request_median_ms": 4.5,
+    "actual_click_to_feedback_median_ms": 293.5
+  },
+  "measurement_notes": "Initial comparison excludes Playwright actionability wait by measuring from first network request. Separate replay measures actual DOM click. Six distinct fictional appointments per series; no claims about production."
+}

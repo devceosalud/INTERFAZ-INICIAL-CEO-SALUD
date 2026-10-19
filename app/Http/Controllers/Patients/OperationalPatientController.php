@@ -84,7 +84,7 @@ class OperationalPatientController extends Controller
             abort_unless(config('scheduling.enabled') && $request->user()->can($cap::MVP_ACCESS) && $request->user()->can($cap::VIEW), 403);
             $context = ['doctor_id' => $filters['doctor_id'] ?? null, 'fecha' => $filters['agenda_date'] ?? null];
             if (!empty($filters['appointment_id'])) {
-                $appointment = Appointment::visibleToAgendaUser($request->user()->id)->whereKey($filters['appointment_id'])
+                $appointment = Appointment::visibleToOperationalUser($request->user())->whereKey($filters['appointment_id'])
                     ->where('patient_id', $initialPatientId)->firstOr(fn () => abort(404));
                 $context = ['doctor_id' => $appointment->doctor_id, 'fecha' => substr($appointment->fecha_cita, 0, 10), 'appointment_id' => $appointment->id];
             }

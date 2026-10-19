@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('body_class', 'admission-viewport')
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
 @endsection
 @section('body')
@@ -12,7 +13,7 @@
         data-feed="{{ route('scheduling.mvp.admission.feed') }}" data-base="{{ url('/scheduling-mvp/admission/appointments') }}"
         data-availability="{{ route('scheduling.mvp.availability') }}" data-agenda="{{ route('scheduling.mvp.agenda') }}">
         <div class="admission-commandbar">
-            <header class="admission-heading"><div><p class="admission-eyebrow">CEO SALUD · OPERACIÓN DIARIA</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
+            <header class="admission-heading"><div><p class="admission-eyebrow">ATENCIÓN Y SEGUIMIENTO</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
                 <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
@@ -50,7 +51,7 @@
                 <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
                     <div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div>
-                    <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención</th><th>Procedimientos</th><th><span class="admission-sr-only">Acción</span></th></tr></thead><tbody id="admission-rows"></tbody></table></div>
+                    <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención</th><th>Procedimientos</th></tr></thead><tbody id="admission-rows"></tbody></table></div>
                     <div class="admission-pagination"><button type="button" id="admission-prev" class="admission-btn">Anterior</button><span id="admission-page"></span><button type="button" id="admission-next" class="admission-btn">Siguiente</button></div>
                 </div>
                 <div id="admission-queue-panel" role="tabpanel" aria-labelledby="admission-queue-tab" hidden><x-utils.operational-reevaluations :compact="true" /></div>
@@ -63,6 +64,7 @@
 </div>
 @endsection
 @section('script_data')
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/js/custom.min.js') }}"></script>

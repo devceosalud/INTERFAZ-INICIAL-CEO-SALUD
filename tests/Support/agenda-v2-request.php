@@ -20,8 +20,14 @@ foreach($input['proof_fixtures']??[] as $name){
     if(!in_array($name,['yape.png','bcp.jpg','ambiguous.png','unreadable.png'],true))throw new RuntimeException('Fixture no permitido.');
     $files['proofs'][]=new \Illuminate\Http\UploadedFile(base_path('tests/Fixtures/receipts/'.$name),$name,null,null,true);
 }
+if(isset($input['patient_document_fixture'])){
+    if($input['patient_document_fixture']!=='qa-pdf')throw new RuntimeException('Document fixture refused.');
+    $filePath=dirname($argv[1]).'/'.basename($argv[1]).'.pdf';
+    file_put_contents($filePath,"%PDF-1.4\n1 0 obj <</Type /Catalog>> endobj\n%%EOF");
+    $files['file']=new \Illuminate\Http\UploadedFile($filePath,'ficticio.pdf',null,null,true);
+}
 $request = $files
-    ? \Illuminate\Http\Request::create($input['path'],'POST',['payload'=>json_encode($input['payload'])],[],$files,['HTTP_ACCEPT'=>'application/json'])
+    ? \Illuminate\Http\Request::create($input['path'],'POST',isset($input['patient_document_fixture'])?$input['payload']:['payload'=>json_encode($input['payload'])],[],$files,['HTTP_ACCEPT'=>'application/json'])
     : \Illuminate\Http\Request::create($input['path'], $method, [], [], [],
         ['HTTP_ACCEPT' => 'application/json', 'CONTENT_TYPE' => 'application/json'], json_encode($input['payload']));
 $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);

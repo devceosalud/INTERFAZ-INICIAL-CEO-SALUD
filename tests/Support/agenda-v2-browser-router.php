@@ -7,4 +7,7 @@ if($path!=='/'&&$asset&&is_file($asset)&&str_starts_with($asset,realpath($root.'
 require $root.'/vendor/autoload.php';$app=\Tests\Support\IsolatedAgendaV2Qa::boot(true);
 // Browser tests exercise the real CSRF middleware, unlike PHPUnit's synthetic request workers.
 $app->bind(\App\Http\Middleware\VerifyCsrfToken::class,fn($app)=>new class($app,$app['encrypter']) extends \App\Http\Middleware\VerifyCsrfToken {protected function runningUnitTests(){return false;}});
-$kernel=$app->make(\Illuminate\Contracts\Http\Kernel::class);$request=\Illuminate\Http\Request::capture();$response=$kernel->handle($request);$response->send();$kernel->terminate($request,$response);
+// Local-only timing diagnostics contain no parameters, identity or clinical content.
+$qaStarted=microtime(true);$qaSqlMs=0;$qaSqlCount=0;
+\Illuminate\Support\Facades\DB::listen(function($query)use(&$qaSqlMs,&$qaSqlCount){$qaSqlMs+=$query->time;$qaSqlCount++;});
+$kernel=$app->make(\Illuminate\Contracts\Http\Kernel::class);$request=\Illuminate\Http\Request::capture();$response=$kernel->handle($request);$response->headers->set('Server-Timing','app;dur='.round((microtime(true)-$qaStarted)*1000,2).', sql;dur='.round($qaSqlMs,2).';desc="'.$qaSqlCount.' queries"');$response->send();$kernel->terminate($request,$response);

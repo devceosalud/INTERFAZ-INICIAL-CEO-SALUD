@@ -19,7 +19,7 @@
             'autorizado_por':ui.authorized,'motivo_consulta':ui.reason,'service_id':()=>document.getElementById('agenda-service-select')
         }});
         const documentFile=byId('document-file');
-        let replacementDocument=null,replacementKey=null;
+        let replacementDocument=null,replacementKey=null,patientDocuments=null,patientDocumentId=null,patientDocumentDirty=false;
         function clearReplacement(){replacementDocument=null;replacementKey=null;byId('replacement-panel').hidden=true;byId('replacement-file').value='';byId('replacement-reason').value='';captureClean(['replacement-file','replacement-reason']);}
         const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
         const catalogPrice = byId('catalog-price'), hasWound = byId('has-wound'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
@@ -50,7 +50,7 @@
         let cleanExtra='',detailsVersion=0,documentsVersion=0;
         function fieldValue(name) {const f=byId(name);return f?JSON.stringify([f.value||'',Boolean(f.checked),Array.from(f.files||[]).map(v=>[v.name||'',v.size||0])]):'';}
         function captureClean(names=tracked) {names.forEach(name=>cleanValues.set(name,fieldValue(name)));if(names===tracked)cleanExtra=config.extraState?.()||'';}
-        function hasUnsavedChanges() {return receipt.hasChanges() || pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
+        function hasUnsavedChanges() {return patientDocumentDirty || receipt.hasChanges() || pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
         function contextKey(c) {return [c?.appointment_id||'',c?.doctor_id||'',c?.fecha||'',c?.hora_inicio||'',c?.site_id||'',c?.tipo_contexto||''].join('|');}
         function pendingRevision() {return JSON.stringify([tracked.map(fieldValue),Array.from(pendingDocumentEdits),config.extraState?.()||'']);}
         async function confirmDiscard(message) {
@@ -410,8 +410,11 @@
             if (version!==documentsVersion || String(config.context()?.appointment_id) !== String(id)) { return; }
             ['document-file','document-kind','document-label','links','add-documents'].forEach(name=>byId(name).disabled=!result.can_upload_private);
             ui.documents.replaceChildren();
+            const legacyDocumentUpload=byId('legacy-document-upload');if(legacyDocumentUpload)legacyDocumentUpload.hidden=!result.can_upload_private;
+            if(root.AppointmentPatientDocuments){if(patientDocumentId!==id){patientDocumentId=id;patientDocumentDirty=false;patientDocuments=root.AppointmentPatientDocuments.create({doc:document,url:base+'/'+id+'/documents',appointmentId:id,initialData:result,readResponse:async response=>{const data=await response.json();if(!response.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||'No se pudo guardar el documento.');return data;},onDirty:value=>{patientDocumentDirty=value;},onBusy:value=>setWorking(value)});}byId('patient-documents').replaceChildren(patientDocuments.element);await patientDocuments.load();}
+
             const orderDocument=byId('indication-document'); if(orderDocument) orderDocument.replaceChildren();
-            (result.documents || []).forEach(d => {
+            (result.documents || []).filter(d=>d.purpose!=='PATIENT_PROVIDED').forEach(d => {
                 if(orderDocument && d.download_url) {const option=document.createElement('option');option.value=String(d.id);option.textContent=d.label;orderDocument.appendChild(option);}
                 const row = document.createElement('div'); row.className = 'agenda-document-row'; row.dataset.documentId=String(d.id);
                 const link = document.createElement('a'); link.textContent = d.label; link.href = d.url || d.download_url;
@@ -443,7 +446,7 @@
             validation?.clear();
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
-            if(key!==selectedKey){clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
+            if(key!==selectedKey){byId('patient-documents')?.replaceChildren();patientDocuments=null;patientDocumentId=null;patientDocumentDirty=false;clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
             if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if(hasWound)hasWound.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
@@ -470,6 +473,7 @@
             const confirmationReason = byId('confirmation-reason');
             if (confirmationReason) { confirmationReason.hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION'; confirmationReason.textContent = 'Consultando el requisito financiero de la reserva…'; }
             ui.documents.replaceChildren();
+
             inlineStatus('notes', ''); ui['save-notes'].hidden = true;
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
             if (!id) { ui.reason.value = ''; ui.note.value = '';captureClean(); byId('notes-tip').textContent = 'Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.'; return; }

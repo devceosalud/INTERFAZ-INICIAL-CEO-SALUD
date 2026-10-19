@@ -1,5 +1,7 @@
 # Plan de despliegue y rollback — NO ejecutado
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Candidato integrado con dcb9b2b
 
 PR #46 continúa Draft. El baseline verificado aquí es GitHub dcb9b2b; no se verificó el commit instalado en Hostinger. Antes de liberar, comprobar instalación, backup restaurable y autorización por un procedimiento independiente.
@@ -45,3 +47,7 @@ Preferir rollback **solo de código** al baseline aprobado, manteniendo las tres
 No ejecutar migrate:rollback sobre tablas pobladas: down lo bloquea expresamente. No borrar solicitudes, auditoría, citas ni pagos para forzar la reversión. No restaurar indiscriminadamente un backup que elimine operaciones posteriores; cualquier reparación requerirá conciliación específica y autorización independiente. Si otra versión cambia el esquema, comprobar su compatibilidad antes de revertir código.
 
 Si se detecta un fallo financiero, suspender nuevas operaciones afectadas y preservar evidencia; la cola operativa puede retirarse de la interfaz sin tocar cobros. Una inconsistencia clínica no autoriza reabrir ATENDIDO ni modificar indicaciones. Registrar incidentes y validación final del operador responsable.
+
+## Condiciones adicionales de tercera ronda
+
+No ejecutar despliegue sin aprobación. Entregar los dos módulos PDF.js de la misma versión junto con licencia/procedencia; verificar MIME JavaScript, almacenamiento privado y límites PHP/proxy para 8 MB (POST mayor). El código anterior a esta ronda no conserva PATIENT_PROVIDED al reemplazar: durante rollback bloquear escrituras documentales y mantener un lector/versionado compatible, preservando BD y archivos nuevos. No volver ciegamente a 840522e ni borrar propósitos, auditorías o versiones. El runtime local se corrigió de 2 a 8 MB; no se modificó la configuración de Hostinger.

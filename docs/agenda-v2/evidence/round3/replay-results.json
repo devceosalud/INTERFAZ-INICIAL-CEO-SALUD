@@ -1,0 +1,260 @@
+{
+  "stage": "after",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "geometry": {
+        "scrollWidth": 1366,
+        "width": 1366,
+        "headerTop": 68,
+        "navBottom": 52,
+        "workspaceTop": 340.953125
+      }
+    },
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "geometry": {
+        "scrollWidth": 1440,
+        "width": 1440,
+        "headerTop": 68,
+        "navBottom": 52,
+        "workspaceTop": 340.953125
+      }
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "geometry": {
+        "scrollWidth": 1920,
+        "width": 1920,
+        "headerTop": 68,
+        "navBottom": 52,
+        "workspaceTop": 340.953125
+      }
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "geometry": {
+        "scrollWidth": 390,
+        "width": 390,
+        "headerTop": 60,
+        "navBottom": 48,
+        "workspaceTop": 160
+      }
+    }
+  ],
+  "exit": [
+    {
+      "id": 69,
+      "actual_click_to_request_ms": 5,
+      "actual_click_to_feedback_ms": 298,
+      "click_to_request_ms": 838,
+      "click_to_feedback_ms": 1131,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/69/care",
+          "method": "POST",
+          "at": 838
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/69/care",
+          "status": 200,
+          "at": 1108,
+          "serverTiming": "app;dur=123.4, sql;dur=40.29;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421240914.272,
+            "domainLookupStart": 0.255,
+            "domainLookupEnd": 0.268,
+            "connectStart": 0.268,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.738,
+            "requestStart": 0.799,
+            "responseStart": 265.609,
+            "responseEnd": 274.899
+          }
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "actual_click_to_request_ms": 4,
+      "actual_click_to_feedback_ms": 429,
+      "click_to_request_ms": 824,
+      "click_to_feedback_ms": 1249,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/70/care",
+          "method": "POST",
+          "at": 824
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/70/care",
+          "status": 200,
+          "at": 1225,
+          "serverTiming": "app;dur=196.14, sql;dur=65.43;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421243578.957,
+            "domainLookupStart": 0.363,
+            "domainLookupEnd": 0.375,
+            "connectStart": 0.375,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.751,
+            "requestStart": 0.815,
+            "responseStart": 398.212,
+            "responseEnd": 405.816
+          }
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "actual_click_to_request_ms": 3,
+      "actual_click_to_feedback_ms": 260,
+      "click_to_request_ms": 825,
+      "click_to_feedback_ms": 1082,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/71/care",
+          "method": "POST",
+          "at": 825
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/71/care",
+          "status": 200,
+          "at": 1061,
+          "serverTiming": "app;dur=112.47, sql;dur=43.41;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421246342.022,
+            "domainLookupStart": 0.293,
+            "domainLookupEnd": 0.306,
+            "connectStart": 0.306,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.769,
+            "requestStart": 0.838,
+            "responseStart": 232.97,
+            "responseEnd": 239.987
+          }
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "actual_click_to_request_ms": 4,
+      "actual_click_to_feedback_ms": 288,
+      "click_to_request_ms": 824,
+      "click_to_feedback_ms": 1108,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/72/care",
+          "method": "POST",
+          "at": 824
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/72/care",
+          "status": 200,
+          "at": 1090,
+          "serverTiming": "app;dur=108.42, sql;dur=34.58;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421248857.931,
+            "domainLookupStart": 0.57,
+            "domainLookupEnd": 0.583,
+            "connectStart": 0.583,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.964,
+            "requestStart": 1.046,
+            "responseStart": 262.123,
+            "responseEnd": 269.963
+          }
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "actual_click_to_request_ms": 6,
+      "actual_click_to_feedback_ms": 289,
+      "click_to_request_ms": 828,
+      "click_to_feedback_ms": 1111,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/73/care",
+          "method": "POST",
+          "at": 828
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/73/care",
+          "status": 200,
+          "at": 1093,
+          "serverTiming": "app;dur=117.76, sql;dur=30.2;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421251401.171,
+            "domainLookupStart": 0.638,
+            "domainLookupEnd": 0.663,
+            "connectStart": 0.663,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.713,
+            "requestStart": 1.849,
+            "responseStart": 261.442,
+            "responseEnd": 270.909
+          }
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "actual_click_to_request_ms": 6,
+      "actual_click_to_feedback_ms": 323,
+      "click_to_request_ms": 826,
+      "click_to_feedback_ms": 1143,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/74/care",
+          "method": "POST",
+          "at": 826
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/74/care",
+          "status": 200,
+          "at": 1117,
+          "serverTiming": "app;dur=117.74, sql;dur=33.73;desc=\"50 queries\"",
+          "timing": {
+            "startTime": 1792421253878.272,
+            "domainLookupStart": 0.243,
+            "domainLookupEnd": 0.253,
+            "connectStart": 0.253,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.598,
+            "requestStart": 0.688,
+            "responseStart": 288.578,
+            "responseEnd": 298.114
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-19T14:47:34.238Z"
+}

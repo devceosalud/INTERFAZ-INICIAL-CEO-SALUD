@@ -1,5 +1,25 @@
 # QA y evidencias
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
+## Resultados finales de tercera ronda
+
+| Suite finalizada | Pruebas | Aserciones | Fallos / errores / omisiones |
+|---|---:|---:|---|
+| SQLite aislada | 1083 | 9468 | 0 / 0 / 0 |
+| MariaDB QA 11.8.9 | 1092 | 9556 | 0 / 0 / 0 |
+| JavaScript | 318 | — | 0 / 0 / 0 |
+| Chrome / Playwright | 29 recorridos (19 conservados +10 nuevos) | — | Cero errores JavaScript |
+
+MariaDB incluye nueve carreras: las siete anteriores, salida simultánea sin motivo y carga simultánea de un documento aportado con el mismo UUID. Códigos de salida cero y JUnit completos verificados. [Reportes completos](evidence/round3/RESULTADOS.json), [SQLite](evidence/round3/sqlite.txt), [MariaDB](evidence/round3/mariadb.txt), [JavaScript](evidence/round3/javascript.txt), [Chrome nuevo](evidence/round3/functional-results.json), [regresión Chrome](evidence/round3/regression-results.json).
+
+Chrome comprueba ADMIN/ADMISION/COMERCIAL, reserva ajena sin pago, indicadores persistidos, fila por teclado, filtros/borradores, PDF privado renderizado en canvas, carga en ambas agendas, descarga de bytes iguales, rechazo de MIME inválido, PDF de3 MB aceptado y9 MB rechazado, historial del paciente sin Clarity, reemplazo con motivo e historial restringido. Conserva MFR, matriz automática/manual, hotfixes, motivo obligatorio, precios/pagos, retroceso y capturas1366/1440/1920/móvil. Las imágenes fueron inspeccionadas; la aprobación humana final sigue pendiente.
+
+[Regresiones que fallaron antes](evidence/round3/red.txt) y [pruebas finales dirigidas](evidence/round3/targeted-final.txt). Los cuatro contratos anteriores de lectura ADMIN se actualizan al requerimiento nuevo conservando negativos de escritura, pagos y privacidad de terceros; la etiqueta esperada de documentos cambia manteniendo íntegra la prueba de ubicación OCR. No se eliminan ni se deshabilitan pruebas.
+
+Rendimiento: primer request a resultado visible, mediana866 →297,5 ms;85 →50 consultas y3 →1 HTTP inmediato. Repetición con clic DOM:293,5 ms. [Metodología y límites](RONDA_3_DIAGNOSTICO_Y_GUIA.md). CI se verificará sobre el SHA publicado; los reportes anteriores de840522e son antecedentes.
+
+
 ## Verificación final integrada con main dcb9b2b
 
 Resultados nuevos, posteriores a la integración de #47–#49 y de la auditoría paginada:
@@ -66,7 +86,7 @@ Diez recorridos: sincronización; búsqueda y todos los filtros; borradores al f
 
 Capturas antes/después en 1366×768 y móvil; después además 1440×900 y 1920×1080. Se verifica ausencia de desbordamiento horizontal de página y casillas de procedimientos dentro del área inicial de escritorio. La inspección visual detectó y corrigió hora partida en 1920 y «Más filtros» mal ubicado en móvil. Se revisan imágenes de los cuatro tamaños, listado móvil y cola integrada. Aceptación humana del personal pendiente; no se equipara con que un test pase.
 
-El recorrido de pago respeta privacidad: la misma cuenta de ADMISION crea y cobra su reserva. ADMINISTRADOR mantiene el filtro previo de seguimiento por pago/presencia; no se cambia para facilitar un test. Cada repetición crea un paciente ficticio único y escoge un horario libre sin borrar la BD manual.
+El recorrido de pago respeta privacidad: la misma cuenta de ADMISION crea y cobra su reserva. En la segunda ronda se mantuvo el filtro de seguimiento por pago/presencia. La tercera ronda lo retira por el nuevo requerimiento de negocio, con negativos de privacidad y escritura conservados. Cada repetición crea un paciente ficticio único y escoge un horario libre sin borrar la BD manual.
 
 ## Aislamiento y reproducción
 

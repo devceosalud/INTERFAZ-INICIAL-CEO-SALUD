@@ -1,5 +1,7 @@
 # Arquitectura y flujos
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Arquitectura integrada con los hotfixes
 
 `AppointmentReevaluationService` une en lectura el ledger directo v1 y el ledger de procedimientos, con tres orígenes identificables y una sola fila por cita. `AgendaAppointmentPresentation` usa esa unión y añade ATENDIDO al vocabulario compartido. Los escritores permanecen separados para conservar permisos, transacciones y datos históricos. Desactivar un origen no escribe en el otro.
@@ -82,3 +84,7 @@ DESACTIVADA → REEMBOLSO_SOLICITADO → SALIDA_REGISTRADA → LISTO_REEVALUACIO
 ## Sincronización del selector Profesional / Servicio
 
 `public/js/admin/master/doctor-service/doctor-service.js` recalcula las opciones desde `data-specialties`, aplica la excepción explícita y limpia únicamente valores incompatibles. A continuación refresca la caché visual de Bootstrap Select, sin volver a asignar el valor seleccionado. Carga inicial, cambio de profesional, cambio de excepción y `shown.bs.modal` comparten el mismo cálculo. La validación autoritativa continúa en CatalogManagement, independiente del estado del desplegable.
+
+## Tercera ronda: lecturas y documentos aportados
+
+La lectura operativa tiene un scope específico para ADMIN activo con MVP_ACCESS/VIEW; no modifica el scope base ni las escrituras. PatientAppointmentDocumentUpload orquesta el almacén existente, ledger UUID y auditoría. PATIENT_PROVIDED mantiene separación frente a pagos e indicaciones. El componente compartido conserva borradores y usa PDF.js local para dibujar contenido, sin scripts/órdenes. La salida conserva su transacción y retorna el detalle ya actualizado, evitando dos lecturas HTTP inmediatas.

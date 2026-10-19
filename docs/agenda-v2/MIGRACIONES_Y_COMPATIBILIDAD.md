@@ -1,5 +1,7 @@
 # Migraciones y compatibilidad
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Integración de #47–#49: lectura compatible sin transformación
 
 Los eventos REEVALUACION_MANUAL_MARCADA/DESMARCADA permanecen en appointment_events. La última identidad de evento determina la marca directa, con usuario y hora originales; no se importan como procedimientos ni indicaciones. Las nuevas escrituras mantienen ADMISSION_MANUAL_V1 para que un rollback a main dcb9b2b pueda leerlas.
@@ -27,3 +29,7 @@ La prueba AgendaV2CompatibilityTest recrea el esquema sin las tablas nuevas, reg
 Pruebas MariaDB: instancia exclusiva local 11.8.9, puerto 33324, datadir `storage/app/qa-v2/mariadb`. Esquemas ceosalud_qa_agenda_v2_suite y ceosalud_qa_agenda_v2_browser, usuarios limitados a cada esquema. IsolatedAgendaV2Qa rechaza .env, conexiones no locales, puerto/nombre/usuario/directory/version distintos, URL de BD o socket alternativo. CI usa únicamente un servicio desechable, con marcador explícito, host/puerto mapeado, versión y datadir propios del contenedor. El arnés de pruebas reutiliza el detector DDL existente para reinicializar fixtures tras commits implícitos de MariaDB; no cambia aislamiento productivo.
 
 No se ejecutó esta migración en Hostinger ni en una BD productiva. Un respaldo y un ensayo en fixtures no acreditan la existencia, integridad ni restaurabilidad de un respaldo productivo.
+
+## Tercera ronda
+
+No se requiere migración: PATIENT_PROVIDED cabe en purpose varchar(32); se reutilizan relaciones, actor, timestamps, versiones y operations.document_id. No hay transformaciones productivas ni backfill. Los ficheros previos y sus propósitos se conservan; una carga aportada no se acredita como orden ni comprobante. Rollback de código debe conservar compatibilidad documental y bloquear escrituras durante la reversión, porque el reemplazador anterior a esta ronda no preserva el propósito nuevo. Ver el plan vigente.

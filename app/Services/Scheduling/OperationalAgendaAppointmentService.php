@@ -71,7 +71,7 @@ class OperationalAgendaAppointmentService
     /** Shared authenticated range; callers decide whether to include released care states. */
     public function rangeQuery(AgendaQuery $query, int $actorId): Builder
     {
-        return Appointment::visibleToAgendaUser($actorId)
+        return Appointment::visibleToOperationalUser(\App\Models\User::findOrFail($actorId))
             ->whereIn('doctor_id', $query->doctorIds())
             ->whereBetween('fecha_cita', [$query->start()->toDateString(), $query->end()->toDateString()])
             ->when($query->siteId() !== null, function (Builder $builder) use ($query) {

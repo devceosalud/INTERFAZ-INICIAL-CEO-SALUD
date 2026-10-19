@@ -15,14 +15,14 @@ class AppointmentDocumentController extends Controller
     public function patientIndex(Request $r, int $patientId)
     {
         \App\Models\Patient::findOrFail($patientId);
-        $appointments = Appointment::visibleToAgendaUser($r->user()->id)->where('patient_id', $patientId)
-            ->whereHas('documents')->with('documents')->orderByDesc('fecha_cita')->limit(100)->get();
+        $appointments = Appointment::visibleToOperationalUser($r->user())->where('patient_id', $patientId)
+            ->whereHas('documents')->with(['documents.actor:id,name','documents.appointment:id,patient_id,fecha_cita'])->orderByDesc('fecha_cita')->limit(100)->get();
         return response()->json(['appointments' => $appointments->map(fn ($a) => ['appointment_id' => $a->id,
             'fecha' => substr($a->fecha_cita, 0, 10), 'documents' => $a->documents->filter(fn($d)=>$this->canReadEvidence($r,$d))->values()->map(fn ($d) => $this->payload($d))])]);
     }
     private function appointment(Request $r, int $id, bool $write = false): Appointment
     {
-        $a = Appointment::visibleToAgendaUser($r->user()->id)->whereKey($id)->firstOr(fn () => abort(404));
+        $a = Appointment::visibleToOperationalUser($r->user())->whereKey($id)->firstOr(fn () => abort(404));
         if ($write) { abort_unless($r->user()->can(Capability::UPDATE), 403); }
         return $a;
     }
@@ -31,22 +31,34 @@ class AppointmentDocumentController extends Controller
     }
     private function payload(AppointmentDocument $d): array
     {
-        return ['id' => $d->id, 'type' => $d->type, 'purpose'=>$d->purpose, 'label' => $d->label, 'url' => $d->url,
+        return ['appointment_id'=>$d->appointment_id,'patient_id'=>$d->appointment->patient_id,'appointment_date'=>substr($d->appointment->fecha_cita,0,10),'created_at'=>$d->created_at?->toISOString(),'actor_user_id'=>$d->actor_user_id,'actor'=>$d->actor?->name,'mime'=>$d->mime,'size'=>$d->size,'preview_url'=>$d->private_path?route('scheduling.mvp.documents.download',[$d->appointment_id,$d->id]).'?preview=1':null,'id' => $d->id, 'type' => $d->type, 'purpose'=>$d->purpose, 'label' => $d->label, 'url' => $d->url,
             'document_kind'=>$d->document_kind??'UNCLASSIFIED','version'=>ReplaceAppointmentDocument::version($d),
-            'can_replace'=>Access::write(auth()->user())&&!$d->payment_id&&$d->purpose!=='REEVALUATION_ORDER'
+            'can_replace'=>!$d->trashed()&&($d->purpose===Access::PATIENT_PURPOSE?Access::patientReplace(auth()->user()):Access::write(auth()->user()))&&!$d->payment_id&&$d->purpose!=='REEVALUATION_ORDER'
                 &&!\App\Models\AppointmentReevaluationIndication::where('evidence_document_id',$d->id)->exists(),
-            'payment_id'=>$d->payment_id,'reviewed_at'=>$d->reviewed_at?->toISOString(),
+            'replaces_document_id'=>$d->replaces_document_id,'payment_id'=>$d->payment_id,'reviewed_at'=>$d->reviewed_at?->toISOString(),
             'review_source'=>$d->receipt_review['source']??null,
             'download_url' => $d->private_path ? route('scheduling.mvp.documents.download', [$d->appointment_id, $d->id]) : null];
     }
     public function index(Request $r, int $appointmentId)
     {
         $a = $this->appointment($r, $appointmentId);
-        return response()->json(['documents' => $a->documents->filter(fn($d)=>$this->canReadEvidence($r,$d))->values()->map(fn ($d) => $this->payload($d)), 'can_write' => $r->user()->can(Capability::UPDATE),
-            'can_upload_private'=>Access::write($r->user())]);
+        $history=Access::patientReplace($r->user())?$a->documents()->onlyTrashed()->where('purpose',Access::PATIENT_PURPOSE)->with('actor:id,name')->orderByDesc('id')->limit(100)->get()->filter(fn($d)=>Access::read($r->user(),$d))->values()->map(fn($d)=>['id'=>$d->id,'label'=>$d->label,'document_kind'=>$d->document_kind,'actor'=>$d->actor?->name,'created_at'=>$d->created_at?->toISOString(),'retired_at'=>$d->deleted_at?->toISOString()]):collect();
+        return response()->json(['document_history'=>$history,'documents' => $a->documents()->with(['actor:id,name','appointment:id,patient_id,fecha_cita'])->get()->filter(fn($d)=>$this->canReadEvidence($r,$d))->values()->map(fn ($d) => $this->payload($d)), 'can_write' => $r->user()->can(Capability::UPDATE),
+            'can_upload_patient'=>Access::patientUpload($r->user()),'can_view_patient'=>Access::patientRead($r->user()),'can_upload_private'=>Access::write($r->user())]);
     }
     public function store(Request $r, int $appointmentId)
     {
+        if($r->input('purpose')===Access::PATIENT_PURPOSE){
+            $a=$this->appointment($r,$appointmentId);abort_unless(Access::patientUpload($r->user()),403);
+            abort_if($r->filled('url'),422,'Los documentos del paciente requieren un archivo privado.');
+            $r->merge(['label'=>\App\Support\Scheduling\OperationalText::trim((string)$r->input('label'))]);
+            $data=$r->validate(['request_key'=>'required|uuid','label'=>'required|string|max:120',
+                'document_kind'=>['required',\Illuminate\Validation\Rule::in(Access::KINDS)],
+                'file'=>['required','file',new \App\Rules\PrivateAppointmentFile(),'max:8192']]);
+            unset($data['file']);$document=app(\App\Services\Scheduling\PatientAppointmentDocumentUpload::class)->store($a,$r->user(),$data,$r->file('file'));
+            return response()->json($this->payload($document),201)->header('Cache-Control','private, no-store');
+        }
+        abort_if($r->filled('purpose'),422,'Tipo documental no permitido.');
         $a = $this->appointment($r, $appointmentId, true);
         abort_unless(Access::write($r->user()),403);
         $data = $r->validate(['label' => 'required|string|max:120', 'url' => 'nullable|url|max:2048|starts_with:https://|required_without:file',
@@ -75,7 +87,7 @@ class AppointmentDocumentController extends Controller
         return \Illuminate\Support\Facades\DB::transaction(function()use($d,$r,$data){
             $d->update($data);
             app(\App\Services\Scheduling\AppointmentHistory::class)->record($d->appointment,$d->payment_id?'COMPROBANTE_PAGO_ETIQUETADO':'DOCUMENTO_PRIVADO_ETIQUETADO',$r->user()->id,
-                ['metadata'=>['document_id'=>$d->id,'payment_id'=>$d->payment_id]]);
+                ['metadata'=>['document_id'=>$d->id,'replaces_document_id'=>$d->replaces_document_id,'payment_id'=>$d->payment_id]]);
             return response()->json($this->payload($d));
         });
     }
@@ -89,7 +101,7 @@ class AppointmentDocumentController extends Controller
         return \Illuminate\Support\Facades\DB::transaction(function()use($d,$r){
             $d->delete();
             app(\App\Services\Scheduling\AppointmentHistory::class)->record($d->appointment,$d->payment_id?'COMPROBANTE_PAGO_OCULTADO':'DOCUMENTO_PRIVADO_OCULTADO',$r->user()->id,
-                ['metadata'=>['document_id'=>$d->id,'payment_id'=>$d->payment_id,'private_file_retained'=>true]]);
+                ['metadata'=>['document_id'=>$d->id,'replaces_document_id'=>$d->replaces_document_id,'payment_id'=>$d->payment_id,'private_file_retained'=>true]]);
             return response()->noContent();
         });
     }
@@ -97,11 +109,16 @@ class AppointmentDocumentController extends Controller
     {
         $d = $this->appointment($r, $appointmentId)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
         abort_unless($this->canReadEvidence($r,$d) && $d->private_path && Storage::disk('local')->exists($d->private_path), 404);
-        return Storage::disk('local')->download($d->private_path, basename($d->private_path),
-            ['Content-Type' => $d->mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
+        abort_unless(preg_match('/\Aappointment-documents\/[a-f0-9-]+\.(?:pdf|png|jpg)\z/i',$d->private_path),404);
+        $preview=$r->validate(['preview'=>'sometimes|boolean'])['preview']??false;
+        $headers=['Content-Type'=>$d->mime,'X-Content-Type-Options'=>'nosniff','Cache-Control'=>'private, no-store',
+            'Referrer-Policy'=>'no-referrer','Content-Security-Policy'=>"sandbox; default-src 'none'; frame-ancestors 'self'"];
+        abort_unless(in_array($d->mime,['image/jpeg','image/png','application/pdf'],true),404);
+        return $preview ? Storage::disk('local')->response($d->private_path,basename($d->private_path),$headers,'inline')
+            : Storage::disk('local')->download($d->private_path,basename($d->private_path),$headers);
     }
     public function replace(Request $r,int $appointmentId,int $documentId,ReplaceAppointmentDocument $service){
-        abort_unless(Access::write($r->user()),403);
+        abort_unless(Access::write($r->user())||Access::patientReplace($r->user()),403);
         $data=$r->validate(['request_key'=>'required|uuid','expected_version'=>'required|string|regex:/\A[a-f0-9]{64}\z/',
             'label'=>'required|string|max:120','document_kind'=>['required',\Illuminate\Validation\Rule::in(Access::KINDS)],'reason'=>'required|string|min:3|max:500',
             'file'=>['required','file',new \App\Rules\PrivateAppointmentFile(),'max:8192']]);

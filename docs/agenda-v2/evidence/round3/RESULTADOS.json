@@ -1,0 +1,30 @@
+{
+  "sqlite": {
+    "tests": 1083,
+    "assertions": 9468,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "mariadb": {
+    "tests": 1092,
+    "assertions": 9556,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "chrome_new": {
+    "cases": 10,
+    "page_errors": 0
+  },
+  "chrome_regression": {
+    "cases": 19,
+    "page_errors": 0
+  },
+  "javascript": {
+    "tests": 318,
+    "failures": 0
+  },
+  "mariadb_concurrency_cases": 9,
+  "ci": "Pending final commit publication; inspect GitHub Actions for the final SHA."
+}

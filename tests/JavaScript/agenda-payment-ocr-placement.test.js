@@ -23,7 +23,7 @@ test('OCR del adelanto reside dentro de Registrar adelanto, no entre documentos 
     assert.ok(receiptHost > paymentStart && receiptHost < paymentEnd);
     assert.equal((source.match(/id="agenda-op-proof"/g) || []).length, 1);
     assert.equal((source.match(/id="agenda-op-receipt-review"/g) || []).length, 1);
-    assert.match(source.slice(documentsStart), /Documentos complementarios/);
+    assert.match(source.slice(documentsStart), /Documentos de la cita/);
 });
 
 test('OCR existente sigue entregando sugerencias a los campos de pago sin registrar automáticamente', () => {

@@ -47,7 +47,7 @@ final class AppointmentReevaluationService
     /** Stable append-only snapshot: later actions cannot shift or duplicate the next audit page. */
     public function history(int $id, User $actor, int $page=1, ?array $cursor=null): array
     {
-        Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
+        Appointment::visibleToOperationalUser($actor)->whereKey($id)->firstOr(fn()=>abort(404));
         $cursor??=['direct_until'=>(int)(DB::table('appointment_events')->where('appointment_id',$id)
             ->whereIn('event_type',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED])->max('id')??0),
             'procedure_until'=>(int)(DB::table('appointment_procedure_events')->where('appointment_id',$id)->max('id')??0)];
@@ -75,7 +75,7 @@ final class AppointmentReevaluationService
 
     public function queue(User $actor): array
     {
-        $appointments=Appointment::visibleToAgendaUser($actor->id)
+        $appointments=Appointment::visibleToOperationalUser($actor)
             ->whereDate('fecha_cita',now('America/Lima')->toDateString())
             ->where(function($q){
                 $q->whereHas('operationalReview',fn($r)=>$r->whereNotNull('ready_at')->orWhere('requested_count','>',0))

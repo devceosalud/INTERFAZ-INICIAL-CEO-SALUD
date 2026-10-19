@@ -272,7 +272,7 @@
                             @endif
                         </div>
 
-                        <div id="patient-appointment-documents" aria-live="polite"></div>
+                        <div id="patient-appointment-documents" class="clarity-mask" data-clarity-mask="true" aria-live="polite"></div>
                         <form class="patients-record-form" id="patient-record-form" novalidate>
                             <input type="hidden" id="patient-record-id" value="">
 
@@ -478,6 +478,7 @@
 @section('script_data')
     @include('telemetry.collector')
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
     <script src="{{ asset('js/patients/patient-phone.js') }}"></script>

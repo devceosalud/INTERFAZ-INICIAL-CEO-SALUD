@@ -1,5 +1,7 @@
 # Agenda operativa 2.0 — análisis funcional
 
+Estado vigente: [tercera ronda, permisos documentales, rendimiento y guía local](RONDA_3_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
+
 ## Integración final con main dcb9b2b
 
 Se integra el main confirmado con los hotfixes #47–#49 sobre el checkpoint38a0446. Una marca directa ATENDIDO y una reevaluación por procedimientos son orígenes independientes dentro de una sola interfaz y cola; no se pierden eventos v1 ni se inventan procedimientos. COMERCIAL conserva la operación directa sin permiso general UPDATE. [Resolución de conflictos, componentes retirados, compatibilidad y guía](INTEGRACION_MAIN_Y_HOTFIXES.md). Los apartados de rondas anteriores se conservan como antecedentes.
