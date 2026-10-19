@@ -1434,6 +1434,14 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAppointmentAction();
     }
 
+    function showServiceDescription(value) {
+        const note = document.getElementById('agenda-service-description');
+        if (!note) return;
+        const description = String(value || '').trim();
+        note.textContent = description;
+        note.hidden = !description;
+    }
+
     function showStoredAppointment(context) {
         if (!state.holdingResponsible) {
             state.responsibleBeforeExisting = el.responsibleSelect.value;
@@ -1450,6 +1458,7 @@ document.addEventListener('DOMContentLoaded', function () {
         service.selected = true;
         el.serviceSelect.appendChild(service);
         el.serviceSelect.disabled = true;
+        showServiceDescription(context.descripcion_servicio);
 
         if (context.responsible_user_id) {
             const id = String(context.responsible_user_id);
@@ -1510,6 +1519,7 @@ document.addEventListener('DOMContentLoaded', function () {
             option.textContent = service.nombre + (service.motivo ? ' — ' + service.motivo : '');
             option.disabled = service.disponible === false;
             option.dataset.price = service.precio === null ? '' : String(service.precio);
+            option.dataset.descripcion=service.descripcion||'';
             option.dataset.serviceType=service.service_type||'';
             option.dataset.reevaluationServices=JSON.stringify(service.reevaluation_services||[]);
             el.serviceSelect.appendChild(option);
@@ -1529,6 +1539,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selected = Boolean(el.serviceSelect.value && option);
 
         el.quickService.textContent = selected ? option.textContent.trim() : 'Pendiente de selección';
+        showServiceDescription(selected ? option.dataset.descripcion : '');
         el.quickPrice.textContent = '—';
         operationalWorkspace.quoteChanged(selected && option.dataset.price !== '' ? Number(option.dataset.price) : 0,
             {serviceType:option?.dataset.serviceType||'',reevaluationServices:JSON.parse(option?.dataset.reevaluationServices||'[]')});

@@ -355,6 +355,7 @@ class AgendaBoardPresenter
                 'paciente' => $patientName,
                 'service_id' => (int) $appointment->service_id,
                 'servicio' => $serviceName,
+                'descripcion_servicio' => trim((string) ($appointment->service?->pricing_notes ?? '')),
                 'precio_programado' => $appointment->precio_programado !== null
                     ? (float) $appointment->precio_programado
                     : null,

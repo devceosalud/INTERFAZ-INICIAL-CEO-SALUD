@@ -13,7 +13,7 @@
 <div class="col-md-4"><label class="form-label">Vigente desde</label><input class="form-control" type="date" name="price_valid_from"></div>
 <div class="col-md-4"><label class="form-label">Vigente hasta</label><input class="form-control" type="date" name="price_valid_until"></div>
 <div class="col-md-4"><label class="form-label">Estado</label><select class="form-control" name="estado"><option value="ACTIVO">Activo</option><option value="INACTIVO">Inactivo / pendiente de precio</option></select></div>
-<div class="col-12"><label class="form-label">Condiciones informativas</label><input class="form-control" name="pricing_notes" maxlength="500"><small>Esta nota no crea excepciones clínicas ni precios automáticos.</small></div>
+<div class="col-12"><label class="form-label">Descripción breve del servicio (opcional)</label><textarea class="form-control" name="pricing_notes" maxlength="500" rows="2" placeholder="Ej.: Infiltración PRP; preguntar si requiere guía ecográfica."></textarea><small>Visible en Agenda operativa al elegir o consultar el servicio. Solo informativa: no modifica el precio ni genera recargos automáticamente.</small></div>
 <input type="hidden" name="catalog_version" value="0">
 
 <div class="col-12"><input type="hidden" name="shared_specialties_present" value="1"><label class="form-label">Especialidades adicionales autorizadas para este servicio compartido</label><select class="form-control" name="shared_specialty_ids[]" multiple size="5">@foreach($specialties as $specialty)<option value="{{ $specialty->id }}">{{ $specialty->nombre }}</option>@endforeach</select><small>La especialidad principal se conserva. Compartir un servicio no asigna profesionales automáticamente. Ctrl/Cmd permite seleccionar varias.</small></div>

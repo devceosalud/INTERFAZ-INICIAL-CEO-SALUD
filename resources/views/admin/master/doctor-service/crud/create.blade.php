@@ -56,11 +56,11 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label text-primary">Reevaluación S/<span class="text-danger">*</span></label>
+                            <label class="form-label text-primary">Reevaluación S/ (opcional)</label>
                             <input type="number" class="form-control" name="reconsulta" id="reconsulta"
                                 min="0.01" step="0.01">
 
-                            <span class="text-danger error-text reconsulta_error"></span>
+                            <small class="text-muted">Déjalo vacío si este servicio no tiene tarifa de reevaluación. No habilita una reevaluación gratuita.</small><span class="text-danger error-text reconsulta_error"></span>
                         </div>
 
                         <div class="col-md-4">
