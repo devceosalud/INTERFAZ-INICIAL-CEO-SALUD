@@ -29,5 +29,8 @@ class ManagementCsvTest extends TestCase
         $this->assertStringContainsString('"Muñoz; Pérez";', $content);
         $this->assertStringContainsString("'=2+2", $content);
         $this->assertSame('123,45', ManagementCsv::soles(12345));
+        $this->assertSame('-12,50', ManagementCsv::decimal(-12.5));
+        $this->assertSame('-12,50', ManagementCsv::safeCell('-12,50'));
+        $this->assertSame("'001234", ManagementCsv::identifier('001234'));
     }
 }
