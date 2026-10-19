@@ -58,7 +58,7 @@ class ManagementExportController extends Controller
                 'Exonerada', 'Autorizada por', 'Motivo exoneración',
                 'Pago acreditado o snapshot S/', 'Fuente económica', 'Crédito aplicado S/',
                 'Crédito utilizado S/', 'Devolución reservada S/', 'Saldo calculado S/',
-                'Pago >= 50% según regla', 'Asignación requiere revisión',
+                'Asegurada económicamente según regla', 'Asignación requiere revisión',
                 'Método de pago legado', 'Número operación legado', 'Fecha exportación',
             ]);
 
@@ -78,20 +78,20 @@ class ManagementExportController extends Controller
                             $patient->apellido_paterno, $patient->apellido_materno, $patient->nombre,
                         ]))) : '';
                         ManagementCsv::row($handle, [
-                            $a->id, $a->numero_cita, $a->fecha_cita, $a->hora_cita, $a->duracion_cita,
+                            $a->id, ManagementCsv::identifier($a->numero_cita), $a->fecha_cita, $a->hora_cita, $a->duracion_cita,
                             $a->site?->nombre, $a->doctor?->nombre, $a->doctor?->cmp,
                             $a->doctor?->specialty?->nombre, $a->service?->nombre,
                             $a->estado_agenda, $a->tipo_agendamiento, $a->estado_cita, $a->estado_pagado,
-                            $a->patient_id, $patient?->historia_clinica, $patient?->tipo_identificacion,
-                            $patient?->numero_identidad, $name, $patient?->telefono, $patient?->email,
+                            $a->patient_id, ManagementCsv::identifier($patient?->historia_clinica), $patient?->tipo_identificacion,
+                            ManagementCsv::identifier($patient?->numero_identidad), $name, $patient?->telefono, $patient?->email,
                             $patient?->fecha_nacimiento, $patient?->channel?->nombre, $patient?->interactionMedium?->nombre,
                             $a->motivo_consulta, $a->observaciones, $a->is_postoperative ? 'SÍ' : 'NO',
                             $a->has_diabetic_wound ? 'SÍ' : 'NO',
                             $a->user?->name, $a->responsibleUser?->name, $a->updatedByUser?->name,
                             $a->fecha_registro, $a->created_at?->format('Y-m-d H:i:s'),
                             $a->updated_at?->format('Y-m-d H:i:s'),
-                            $a->precio_programado, $a->catalog_price, $a->discount_type,
-                            $a->discount_value, $a->discount_amount, $a->discount_reason,
+                            ManagementCsv::decimal($a->precio_programado), ManagementCsv::decimal($a->catalog_price), $a->discount_type,
+                            $a->discount_value, ManagementCsv::decimal($a->discount_amount), $a->discount_reason,
                             $a->es_exonerado ? 'SÍ' : 'NO', $a->autorizado_por, $a->motivo_exoneracion,
                             ManagementCsv::soles($p['paid_cents'] ?? 0),
                             $p['authority'] ?? '', ManagementCsv::soles($p['credit_cents'] ?? 0),
@@ -100,7 +100,7 @@ class ManagementExportController extends Controller
                             ManagementCsv::soles($p['balance_cents'] ?? 0),
                             !empty($p['secured']) ? 'SÍ' : 'NO',
                             !empty($p['allocation_required']) ? 'SÍ' : 'NO',
-                            $a->metodo_pago, $a->numero_operacion,
+                            $a->metodo_pago, ManagementCsv::identifier($a->numero_operacion),
                             now(config('scheduling.operational_timezone', 'America/Lima'))->format('Y-m-d H:i:s'),
                         ]);
                     }
