@@ -1,6 +1,6 @@
 # Hotfix: reportes CSV gerenciales de Agenda operativa
 
-**Base:** main 1ead9abc (19/10/2026). **Rama independiente:** hotfix/gerencia-export-csv-20261019.
+**Base de esta entrega aislada:** producción `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace` (17/10/2026). **Rama:** `release/reportes-gerencia-solo-51-20261019`. El PR #50 NO forma parte de esta rama. No desplegar usando `main` sin comprobar la rama configurada en Hostinger.
 No incluye Agenda 2.0 (PR #46), ni migra la BD ni modifica pagos.
 
 ## Alcance y contrato
