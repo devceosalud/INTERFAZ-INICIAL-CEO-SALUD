@@ -94,6 +94,20 @@ Route::middleware([
         Route::get('/scheduling-mvp/availability', DoctorAvailabilityController::class)
             ->name('scheduling.mvp.availability');
 
+        // Reportes sensibles: lectura exclusivamente gerencial y con permisos efectivos.
+        Route::middleware(['role:ADMINISTRADOR', 'permission:'.SchedulingCapability::VIEW_AUDIT, 'throttle:10,1'])
+            ->group(function () {
+                $reports = \App\Http\Controllers\Scheduling\ManagementExportController::class;
+                Route::get('/scheduling-mvp/agenda/reportes', [$reports, 'index'])
+                    ->name('scheduling.mvp.agenda.reports.index');
+                Route::get('/scheduling-mvp/agenda/reportes/citas.csv', [$reports, 'appointments'])
+                    ->name('scheduling.mvp.agenda.reports.appointments');
+                Route::get('/scheduling-mvp/agenda/reportes/pagos.csv', [$reports, 'payments'])
+                    ->name('scheduling.mvp.agenda.reports.payments');
+                Route::get('/scheduling-mvp/agenda/reportes/slots.csv', [$reports, 'slots'])
+                    ->name('scheduling.mvp.agenda.reports.slots');
+            });
+
         Route::get('/scheduling-mvp/agenda', AgendaBoardController::class)
             ->name('scheduling.mvp.agenda');
 
