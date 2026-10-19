@@ -1,7 +1,0 @@
-{
-  "name": "ceosalud-local-alerts",
-  "private": true,
-  "version": "1.0.0",
-  "dependencies": { "sweetalert2": "11.22.4" },
-  "scripts": { "build": "node build.cjs" }
-}

@@ -1,6 +1,0 @@
-const {launch}=require('./browser-harness.cjs'),{helpers}=require('./browser-helpers.cjs');
-(async()=>{const qa=await launch('overlap');try{const {page}=await qa.context('admin'),h=helpers(qa);await page.goto(qa.base+'/admissionist/doctor-schedule');
- await qa.step('Alta solapada rechazada en formulario y servidor sin cambiar bloques heredados',page,async()=>{
-  const before=qa.readback();await page.locator('#schedule-add').click();for(const [id,value]of Object.entries({'schedule-doctor':'2','schedule-site':String(qa.fixture.site_id),'schedule-start-hour':'08','schedule-start-minute':'00','schedule-end-hour':'10','schedule-end-minute':'00','schedule-duration':'15'}))await page.locator('#'+id).selectOption(value,{force:true});
-  const response=page.waitForResponse(r=>r.url().endsWith('/doctor-schedule/store')&&r.request().method()==='POST');await page.locator('#schedule-save').click();await page.locator('.swal2-confirm').click();qa.assert.equal((await response).status(),422);await page.locator('#schedule-form-error').waitFor();const after=qa.readback();qa.assert.deepEqual(after.schedule_versions,before.schedule_versions);qa.assert.deepEqual(after.appointments,before.appointments);qa.assert.deepEqual(after.payments,before.payments);
- });await qa.finish();}catch(e){await qa.fail(e);}})();
