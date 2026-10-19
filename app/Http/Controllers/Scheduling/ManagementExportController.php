@@ -261,7 +261,9 @@ class ManagementExportController extends Controller
 
     private function appointmentQuery(array $filters)
     {
+        // Preserve the current visibility contract, including private pending reservations.
         return Appointment::query()
+            ->visibleToAgendaUser((int) auth()->id())
             ->whereBetween('fecha_cita', [$filters['from'], $filters['to']])
             ->when($filters['doctor_id'], fn ($q) => $q->where('doctor_id', $filters['doctor_id']))
             ->when($filters['site_id'], fn ($q) => $q->where('site_id', $filters['site_id']))
