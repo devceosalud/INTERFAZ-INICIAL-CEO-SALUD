@@ -15,3 +15,7 @@
 !round2/*-results.json
 !round2/original-manual-audit.tsv
 !round2/stale-ready-before.txt
+
+!integration/
+!integration/*.png
+!integration/*-results.json

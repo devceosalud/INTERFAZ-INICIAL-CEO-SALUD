@@ -1,0 +1,70 @@
+{
+  "stage": "unified-preview",
+  "browser": "155.0.8059.79",
+  "started": "2026-10-19T13:25:10.772Z",
+  "cases": [
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "geometry": {
+        "width": 1366,
+        "scroll": 1366,
+        "height": 768,
+        "pageHeight": 828,
+        "workspaceTop": 306.875,
+        "detailTop": 306.875
+      },
+      "result": "CAPTURED"
+    },
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "geometry": {
+        "width": 1440,
+        "scroll": 1440,
+        "height": 900,
+        "pageHeight": 939,
+        "workspaceTop": 306.875,
+        "detailTop": 306.875
+      },
+      "result": "CAPTURED"
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "geometry": {
+        "width": 1920,
+        "scroll": 1920,
+        "height": 1080,
+        "pageHeight": 1119,
+        "workspaceTop": 306.875,
+        "detailTop": 306.875
+      },
+      "result": "CAPTURED"
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "geometry": {
+        "width": 390,
+        "scroll": 390,
+        "height": 844,
+        "pageHeight": 1269,
+        "workspaceTop": 123,
+        "detailTop": 123
+      },
+      "result": "CAPTURED"
+    }
+  ],
+  "states": [],
+  "page_errors": [],
+  "finished": "2026-10-19T13:25:19.614Z"
+}

@@ -1,12 +1,15 @@
-# Inventario de modificaciones — PR #46
+# Inventario de modificaciones — PR Draft #46 integrado
 
-Baseline main `9c3b93a5086172d30fbf59fc9c4c2c40df84a645`; ronda2 continúa desde58c5f92 en `feat/agenda-operativa-flujo-reevaluaciones-v2`, worktreeagenda-v2. No incluye archivos del checkout original ni otros worktrees.
+Baseline GitHub `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace`; checkpoint v2 `38a0446e6c6c30e0a9ef1a9e03bf5a9563ea1849`. Se integra en el worktree agenda-v2 y la misma rama feat/agenda-operativa-flujo-reevaluaciones-v2. No incluye cambios del checkout original ni otros worktrees.
 
-## Backend y modelos
+El inventario siguiente refleja el diff final contra el main actualizado, no solo los conflictos textuales. Las fuentes se identifican por blobs Git en evidence/FUENTES_SHA256.json. Los archivos ya idénticos a main no se cuentan como cambios del PR.
+
+## Backend, permisos y presentación
 
 - `app/Http/Controllers/Scheduling/AdmissionBoardController.php`
 - `app/Http/Controllers/Scheduling/AdmissionTaskController.php`
 - `app/Http/Controllers/Scheduling/AgendaFeedController.php`
+- `app/Http/Controllers/Scheduling/AppointmentReevaluationHistoryController.php`
 - `app/Http/Controllers/Scheduling/OperationalProcedureController.php`
 - `app/Http/Controllers/admissionist/appointment/AppointmentController.php`
 - `app/Http/Requests/Scheduling/OperationalRegistrationRequest.php`
@@ -16,7 +19,9 @@ Baseline main `9c3b93a5086172d30fbf59fc9c4c2c40df84a645`; ronda2 continúa desde
 - `app/Services/Scheduling/AdmissionCareService.php`
 - `app/Services/Scheduling/AdmissionTaskService.php`
 - `app/Services/Scheduling/AgendaBoardPresenter.php`
+- `app/Services/Scheduling/AppointmentReevaluationService.php`
 - `app/Services/Scheduling/LegacyAppointmentRegistration.php`
+- `app/Services/Scheduling/ManualReevaluationService.php`
 - `app/Services/Scheduling/OperationalAgendaAppointmentService.php`
 - `app/Services/Scheduling/OperationalProcedureService.php`
 - `app/Services/Scheduling/OperationalRegistrationService.php`
@@ -91,13 +96,16 @@ Baseline main `9c3b93a5086172d30fbf59fc9c4c2c40df84a645`; ronda2 continúa desde
 - `tests/Feature/Scheduling/AppointmentReaderPrivacyTest.php`
 - `tests/Feature/Scheduling/AppointmentWithdrawalTest.php`
 - `tests/Feature/Scheduling/LegacyRegistrationParityTest.php`
+- `tests/Feature/Scheduling/ManualReevaluationTest.php`
 - `tests/Feature/Scheduling/MvpAllRolesFlowTest.php`
 - `tests/Feature/Scheduling/OperationalRegistrationTest.php`
 - `tests/Feature/Scheduling/PilotAppointmentOperationsTest.php`
 - `tests/Feature/Scheduling/PilotAppointmentPaymentTest.php`
 - `tests/Feature/Scheduling/ReevaluationIndicationTest.php`
 - `tests/Feature/Scheduling/RegularReservationExclusivityTest.php`
+- `tests/Feature/Scheduling/UnifiedReevaluationTest.php`
 - `tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php`
+- `tests/JavaScript/admission-booking-indicator.test.js`
 - `tests/JavaScript/admission-tasks-ui.test.js`
 - `tests/JavaScript/agenda-guidance.test.js`
 - `tests/JavaScript/agenda-modal-close.test.js`
@@ -111,6 +119,7 @@ Baseline main `9c3b93a5086172d30fbf59fc9c4c2c40df84a645`; ronda2 continúa desde
 - `tests/Support/agenda-v2-browser-router.php`
 - `tests/Support/agenda-v2-browser-seed.php`
 - `tests/Support/agenda-v2-init.php`
+- `tests/Support/agenda-v2-integration-seed.php`
 - `tests/Support/agenda-v2-request.php`
 - `tests/Support/agenda-v2-round2-seed.php`
 - `tests/TestCase.php`
@@ -123,12 +132,21 @@ Baseline main `9c3b93a5086172d30fbf59fc9c4c2c40df84a645`; ronda2 continúa desde
 
 - `.github/workflows/agenda-v2-checks.yml`
 
-## Documentación y evidencia
+## Componentes temporales retirados
 
-Los ocho documentos de `docs/agenda-v2/` describen análisis, diagnóstico reproducido, flujos, permisos, QA, esquema, despliegue y rollback. `evidence/round2/` contiene capturas antes/después, estados sintéticos y fallo demostrado antes del guard. `RESUMEN.json` registra suites completadas; `FUENTES_SHA256.json` identifica fuentes normalizadas LF. Logs/JUnit, secretos, fixtures y datos del servidor quedan ignorados localmente.
+- `.github/workflows/admission-manual-reevaluation-checks.yml`
+- `app/Support/Scheduling/AdmissionAppointmentPresentation.php`
+- `tests/Support/IsolatedManualReevaluationQa.php`
+- `tests/Support/manual-reevaluation-qa-router.php`
+- `tests/Support/manual-reevaluation-qa-seed.php`
+- `tests/Support/manual-reevaluation-qa-verify.php`
 
-## Datos e impacto
+Los reemplazan el lector unificado, la presentación compartida, las suites completas y el runtime QA v2. Se conservan todos los tests funcionales de hotfix y sus eventos productivos; no se borran datos ni SQLite/artefactos locales. El controlador PATCH y el ledger directo compatibles permanecen.
 
-No hay migración adicional en ronda2. Se conservan las tres tablas aditivas de la primera ronda y todas las auditorías. Motivo requerido solo en nuevas creaciones; no se toca historia. Observación permite un carácter significativo y protección TEXT16000. Todos los roles reciben403 en creación heredada; consultas/ediciones permanecen autorizadas.
+## Documentación, evidencia y datos
 
-Los tests positivos se adaptaron al motivo requerido. Los casos que antes creaban por legado ahora comprueban403 y continúan el mismo flujo económico por el endpoint operativo. Se conservan aserciones de importes, indicaciones, días, adjuntos, duplicados, privacidad y permisos; no se eliminan ni omiten casos. Los helpers DOM simulan el nuevo campo compartido entre formulario y modal.
+Los nueve documentos de docs/agenda-v2 incluyen diagnóstico original, resolución de los cinco conflictos, permisos, QA, inventario, arquitectura, esquema, liberación y rollback. docs/hotfix-admision se conserva como registro histórico con un enlace al procedimiento vigente. evidence/integration contiene capturas de los tres roles, cuatro resoluciones, auditoría paginada y JSON sanitizado; las capturas y diagnósticos de rondas anteriores se conservan.
+
+No hay migración nueva por integrar #47–#49. Las tres tablas aditivas de procedimientos de v2 siguen pendientes de una futura liberación autorizada desde main. No se altera motivo histórico, dinero, estados clínicos ni ledgers al leer marcas v1. El nuevo endpoint paginado es privado y de lectura.
+
+Los tests conservan importes, duplicados, indicaciones, días clínicos, adjuntos, privacidad, permisos y auditoría. ATENDIDO cambia su expectativa visual a la paleta aprobada sin atribuir salida ni reevaluación implícitas. El chip LEGADO deja de consumir espacio; el dato y su etiqueta interna permanecen. Los nuevos casos demuestran que retirar un origen no elimina otro y que la auditoría completa puede paginarse sin perder eventos.

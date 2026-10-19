@@ -1,5 +1,17 @@
 # Matriz de permisos
 
+## Operaciones integradas de retorno al médico
+
+| Operación | ADMINISTRADOR | ADMISION | COMERCIAL | Otros |
+|---|---|---|---|---|
+| Marca directa ATENDIDO | Con UPDATE | Con UPDATE | Sí, sin UPDATE | No |
+| Selección de procedimientos | Sí | No | No | No |
+| Realizados solicitados | Sí | Sí | No | No |
+| Envío/retirada por procedimientos | Con supervisión específica | Sí | No | No |
+| Historial y cola visibles | Con acceso/visibilidad | Con acceso/visibilidad | Con acceso/visibilidad | Solo acceso de lectura ya autorizado |
+
+Todas requieren usuario activo, MVP_ACCESS, VIEW y visibilidad efectiva. No se conceden permisos/roles automáticamente. Marcar directamente no autoriza care, pagos, precios, documentos ni supervisión. Se conserva el contrato HTTP v1 y su auditoría. El endpoint de historial no requiere UPDATE y no permite consultar citas privadas ajenas.
+
 ## Privacidad y permisos en la segunda ronda
 
 Motivo y resumen requieren el mismo acceso autenticado de Admisión (`appointment.mvp.access`, `appointment.view` y visibilidad de la cita). No se abre un endpoint público ni se concede supervisión. Las pruebas incluyen ADMINISTRADOR, ADMISION, COMERCIAL y RECEPCION para el bloqueo del creador heredado; consulta y seguimiento mantienen permisos previos. El envío manual de ADMINISTRADOR sin supervisión sigue en 403. La reserva privada conserva su responsable: otra sesión no puede cobrarla solo por conocer su ID.

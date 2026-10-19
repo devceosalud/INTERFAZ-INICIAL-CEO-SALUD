@@ -40,3 +40,5 @@
 @media(max-width:600px){.admission-more-filters>summary{position:static;margin-top:4px;padding:4px 0}.admission-table td{padding-top:1px;padding-bottom:1px}}
 
 .admission-more-filters>summary{width:fit-content;max-width:110px;left:auto;bottom:auto}.admission-more-filters[open]>summary{width:fit-content}
+
+.admission-tag--attended{background:#74dccb;color:#174d4a}.admission-tag--ready{background:#ffc28a;color:#7c2d12}.admission-direct-return{padding:9px 0;border-bottom:1px solid var(--ad-line);display:grid;gap:5px}.admission-direct-return>strong{font-size:11px}.admission-direct-return>small{color:#285d58}.admission-direct-return>.admission-btn{justify-self:start}.admission-reevaluation-audit{margin-top:10px;border-top:1px solid var(--ad-line);padding-top:8px}.admission-reevaluation-audit>summary{cursor:pointer;font-weight:600}.admission-reevaluation-audit p{font-size:11px;padding:6px 0;border-bottom:1px solid var(--ad-line)}

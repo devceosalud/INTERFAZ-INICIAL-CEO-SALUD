@@ -13,7 +13,7 @@
         data-availability="{{ route('scheduling.mvp.availability') }}" data-agenda="{{ route('scheduling.mvp.agenda') }}">
         <div class="admission-commandbar">
             <header class="admission-heading"><div><p class="admission-eyebrow">CEO SALUD · OPERACIÓN DIARIA</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
-                <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">+ Agendar cita</a></div>
+                <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
                 @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)

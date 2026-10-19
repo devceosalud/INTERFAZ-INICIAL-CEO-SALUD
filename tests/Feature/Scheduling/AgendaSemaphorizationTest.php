@@ -56,7 +56,7 @@ class AgendaSemaphorizationTest extends TestCase
     }
     public function test_attended_does_not_imply_departure_or_a_reevaluation_decision():void{
         $a=new Appointment();$a->forceFill(['estado_cita'=>'ATENDIDO','hora_llegada'=>now(),'hora_atendido'=>now()]);
-        $p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>0]);$this->assertSame('PRESENTE',$p['clave']);$this->assertFalse($p['strikethrough']);
+        $p=Presentation::of($a,['authority'=>'PAYMENTS','paid_cents'=>0]);$this->assertSame('ATENDIDO',$p['clave']);$this->assertSame('#74dccb',$p['fondo']);$this->assertSame('#174d4a',$p['color']);$this->assertFalse($p['strikethrough']);$this->assertFalse($p['operational_reevaluation_ready']);
         $this->assertArrayNotHasKey('reevaluation',$p);$this->assertDatabaseCount('payments',0);
     }
     public function test_partial_real_payment_is_yellow_with_automatic_confirmation_and_feed_does_not_write():void{

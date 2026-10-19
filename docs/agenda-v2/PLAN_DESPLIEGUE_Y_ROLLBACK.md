@@ -1,5 +1,13 @@
 # Plan de despliegue y rollback — NO ejecutado
 
+## Candidato integrado con dcb9b2b
+
+PR #46 continúa Draft. El baseline verificado aquí es GitHub dcb9b2b; no se verificó el commit instalado en Hostinger. Antes de liberar, comprobar instalación, backup restaurable y autorización por un procedimiento independiente.
+
+Aplicar primero la migración aditiva v2, luego publicar backend/Blade/JS/CSS del mismo SHA. No ejecutar seeds/runtimes de QA ni conversiones masivas. Aceptar visualmente ATENDIDO/turquesa y retorno/naranja, COMERCIAL sin UPDATE, histórico v1, unión de orígenes, retirada independiente y consulta paginada de auditoría.
+
+Rollback de código a main dcb9b2b conserva las tablas v2 y todos los eventos. El hotfix puede seguir leyendo marcas directas nuevas con su contrato v1; la cola por procedimientos quedará temporalmente sin UI, con historia preservada. No borrar tablas ni reinterpretar decisiones al revertir y no alterar pagos confirmados. Los planes anteriores se mantienen como antecedentes; no elegir 38a0446 para rollback si se necesita conservar la operación directa del hotfix.
+
 ## Candidato de segunda ronda
 
 Se actualiza el mismo PR #46 y se conserva Draft. Ninguna liberación se ha ejecutado. Además de los pasos posteriores, exigir revisión humana de las capturas 1366×768, 1440×900, 1920×1080 y móvil; aceptar motivo obligatorio y registro único para todos los roles. Validar 2/0, 2/1 sin envío, 2/1 con autorización, 2/2, 3/2, 3/3, 0/0 y desmarcar un realizado desde otra sesión. Comparar las dos agendas y Nicol.

@@ -1,5 +1,9 @@
 # Agenda operativa 2.0 — análisis funcional
 
+## Integración final con main dcb9b2b
+
+Se integra el main confirmado con los hotfixes #47–#49 sobre el checkpoint38a0446. Una marca directa ATENDIDO y una reevaluación por procedimientos son orígenes independientes dentro de una sola interfaz y cola; no se pierden eventos v1 ni se inventan procedimientos. COMERCIAL conserva la operación directa sin permiso general UPDATE. [Resolución de conflictos, componentes retirados, compatibilidad y guía](INTEGRACION_MAIN_Y_HOTFIXES.md). Los apartados de rondas anteriores se conservan como antecedentes.
+
 ## Segunda ronda sobre PR Draft #46
 
 Se continuó desde `58c5f927f1d5e333b68191b5396cca9671ca28bb`, sin reiniciar la implementación. El worktree estaba limpio; se conservaron los cinco cambios del checkout original y los otros worktrees.

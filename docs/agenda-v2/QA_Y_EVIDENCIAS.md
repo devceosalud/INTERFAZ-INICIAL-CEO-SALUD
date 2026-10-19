@@ -1,5 +1,40 @@
 # QA y evidencias
 
+## Verificación final integrada con main dcb9b2b
+
+Resultados nuevos, posteriores a la integración de #47–#49 y de la auditoría paginada:
+
+| Suite terminada | Pruebas | Aserciones | Fallos / errores / omisiones |
+|---|---:|---:|---|
+| SQLite completa | 1074 | 9389 | 0 / 0 / 0 |
+| MariaDB 11.8.9 completa | 1081 | 9458 | 0 / 0 / 0 |
+| JavaScript completa | 315 | — | 0 / 0 / 0 |
+| Chrome real / Playwright | 19 casos | — | Cero errores JavaScript |
+
+MariaDB incluye siete carreras: las cinco previas, reintento simultáneo de marca directa con un solo evento y retirada directa concurrente con el último procedimiento realizado. El último caso conserva AUTOMATIC sin duplicar la cita ni el dinero.
+
+Se conservan los 14 tests funcionales del hotfix; se añaden siete casos de unión/historia: coexistencia y retirada independiente, permisos COMERCIAL, contadores sin inferencia, evento v1 sin backfill, estados críticos, paginación estable con timestamps iguales y cambios concurrentes, visibilidad/acceso de auditoría. La única expectativa visual heredada ajustada es ATENDIDO: ahora se afirma su estado y colores aprobados, manteniendo las aserciones de ausencia de salida/reevaluación implícitas. Los tests económicos, privados y de auditoría no se eliminaron ni debilitaron.
+
+Chrome ejecuta las once verificaciones anteriores y ocho integradas: historia v1; COMERCIAL sin UPDATE; negativos de atención/pagos/procedimientos/supervisión y CSRF; retirada de un origen con otro activo; autorización parcial y marca directa coexistentes; borrador ante decisión remota; auditoría paginada con acciones nuevas sin duplicados; capturas de retorno en cuatro resoluciones. Una revisión adicional comprueba que ADMINISTRADOR tenga visibles los realizados en laptop incluso en una cita ATENDIDO. Todas usan datos ficticios actuales del19/10, conservando los fixtures anteriores del17/10.
+
+Primera ejecución completa integrada: un fallo de expectativa PRESENTE frente al nuevo ATENDIDO, corregido mediante aserciones más específicas de color/semántica. Se corrigieron fixtures de historia (recarga de columnas persistidas/estados críticos históricos) y una identidad fija del runner. Para repetir el automático se usa DUAL_AUTO, sin borrar una retirada manual anterior del fixture DIRECT. La aplicación mantuvo correctamente esa retirada; no se alteró su regla para conseguir un test verde.
+
+[Resultados Chrome](evidence/integration/after-results.json), [inspección adicional](evidence/integration/unified-preview-results.json), [laptop administrador](evidence/integration/unified-admin-1366.png), [laptop comercial](evidence/integration/unified-1366.png), [móvil](evidence/integration/unified-390.png), [auditoría paginada](evidence/integration/unified-audit-paged.png). También se inspeccionaron1440×900 y1920×1080. No hubo desbordamiento horizontal innecesario ni errores de página. Aceptación humana final pendiente.
+
+Los JUnit/logs completos están en storage/app/qa-v2/integration-main; las imágenes y JSON sanitizados se incluyen en este PR. El SHA exacto y los resultados de CI se registran en el PR y en un acta local ignorada, evitando una referencia circular en su commit. Un workflow iniciado no se declara aprobado. Las ejecuciones históricas siguientes no sustituyen estos resultados.
+
+Reproducción Chrome en el mismo runtime manual, sin reset:
+
+```powershell
+$env:AGENDA_V2_INTEGRATION_FIXTURES = 'APPEND_SYNTHETIC_ONLY'
+php tests/Support/agenda-v2-integration-seed.php
+$env:AGENDA_V2_FIXTURE_SET = 'integration-main'
+$env:AGENDA_V2_ROUND2_STAGE = 'after'
+node tools/qa/browser-agenda-v2-round2.cjs
+```
+
+El seed solo añade claves ficticias faltantes. Las cuentas de COMERCIAL no reciben UPDATE ni permisos de cobro por probar esta operación. SQLite y MariaDB de suite se ejecutan con sus comandos previos y guardas; la BD manual usa otro esquema. La referencia inicial y las cinco huellas del checkout original están en INITIAL_STATE.json y se verifican al finalizar. Sin acceso a Hostinger ni datos reales.
+
 ## Resultados de la segunda ronda
 
 Continuación de `58c5f927f1d5e333b68191b5396cca9671ca28bb` sobre el mismo PR Draft #46. PHP 8.3.35, Laravel 9.52.21, PHPUnit 9.6.34, Node 26.3.0, MariaDB aislada 11.8.9 y Chrome real headless 155.0.8059.79 con Playwright.

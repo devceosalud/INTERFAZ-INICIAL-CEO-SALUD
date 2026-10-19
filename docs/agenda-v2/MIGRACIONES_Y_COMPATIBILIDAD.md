@@ -1,5 +1,11 @@
 # Migraciones y compatibilidad
 
+## Integración de #47–#49: lectura compatible sin transformación
+
+Los eventos REEVALUACION_MANUAL_MARCADA/DESMARCADA permanecen en appointment_events. La última identidad de evento determina la marca directa, con usuario y hora originales; no se importan como procedimientos ni indicaciones. Las nuevas escrituras mantienen ADMISSION_MANUAL_V1 para que un rollback a main dcb9b2b pueda leerlas.
+
+No hay migración nueva por esta integración, ni backfill productivo. Las tres tablas aditivas de v2 siguen siendo requisito previo al código cuando se libere desde main. Una cita con ambos mecanismos se deduplica al consultar, con sus orígenes independientes. No se elimina ni reescribe ningún ledger. La paginación de historia solo añade un endpoint de lectura. [Estrategia completa](INTEGRACION_MAIN_Y_HOTFIXES.md).
+
 ## Segunda ronda: sin migración adicional
 
 Se inspeccionaron `appointments.motivo_consulta` y `appointment_admission_tasks.body`: ambas columnas son TEXT. Motivo conserva máximo técnico 2000 y pasa a requerido solo para nuevas citas/reservas. Observación pasa del mínimo de tres al mínimo de un carácter significativo, con máximo 16000 compatible con TEXT/utf8mb4. Históricos nulos permanecen nulos y muestran «No registrado»; no se escribe texto ficticio ni se hace backfill.

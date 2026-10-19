@@ -28,7 +28,7 @@ class AdmissionBoardController extends Controller
     public function feed(Request $r, AdmissionBoardService $board)
     {
         $data = $r->validate(['fecha'=>'required|date_format:Y-m-d',
-            'hasta'=>'nullable|date_format:Y-m-d|after_or_equal:fecha',
+            'hasta'=>'nullable|date_format:Y-m-d|after_or_equal:fecha','tab'=>'nullable|in:citas,reevaluaciones',
             'site_id'=>['nullable','integer',Rule::exists('sites','id')->where('estado','ACTIVO')],
             'doctor_id'=>'nullable|integer|exists:doctors,id','specialty_id'=>'nullable|integer|exists:specialties,id',
             'patient'=>'nullable|string|max:100','estado'=>['nullable',Rule::in(AdmissionStatus::STATES)],

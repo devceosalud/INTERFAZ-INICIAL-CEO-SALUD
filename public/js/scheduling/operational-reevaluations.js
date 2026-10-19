@@ -18,13 +18,14 @@
                 const card=node('article');card.className='operational-review-entry';card.dataset.ready=String(row.review.status==='READY');card.dataset.reviewAppointment=row.id;
                 const head=node('div');head.className='operational-review-entry-head';head.appendChild(node('h3',row.patient));
                 const done=row.completed_count??row.procedures.filter(p=>p.completed).length,total=row.requested_count??row.procedures.length;
-                const progress=node('span',done+' de '+total+' realizados');progress.className='operational-review-progress';head.appendChild(progress);card.appendChild(head);
+                const progress=node('span',total?done+' de '+total+' realizados':'Sin procedimientos');progress.className='operational-review-progress';head.appendChild(progress);card.appendChild(head);
                 card.appendChild(node('p',labels[row.review.status]||row.review.status));card.appendChild(node('p',row.doctor+' · '+row.service));
                 card.appendChild(node('small','Cita '+row.appointment_time+' · '+(row.review.status==='READY'?'Ingreso '+time(row.review.ready_at):'Fuera de la cola activa')));
                 const pending=row.procedures.filter(p=>!p.completed).map(p=>p.label);if(pending.length)card.appendChild(node('p','Pendientes: '+pending.join(', ')));
-                if(row.review.origin==='MANUAL')card.appendChild(node('small','Envío manual autorizado por '+(row.review.authorized_by?.name||'Usuario no disponible')));
+                if(['MANUAL','MANUAL_DIRECT'].includes(row.review.origin))card.appendChild(node('small',(row.review.origin==='MANUAL_DIRECT'?'Marca manual directa · ':'Envío por procedimientos · ')+(row.review.authorized_by?.name||'Usuario no disponible')));
                 else if(row.review.status==='READY')card.appendChild(node('small','Ingreso automático: todos los solicitados realizados.'));
-                const link=node('a','Consultar procedimientos');link.href=panel.dataset.detailBase+'?appointment_id='+encodeURIComponent(row.id);
+                if(row.origins?.length>1)card.appendChild(node('small','Orígenes activos: '+row.origins.map(o=>({MANUAL_DIRECT:'marca directa',MANUAL_PARTIAL:'autorización parcial',AUTOMATIC:'procedimientos completos'}[o]||o)).join(' + ')));
+                const link=node('a','Consultar reevaluación');link.href=panel.dataset.detailBase+'?appointment_id='+encodeURIComponent(row.id);
                 link.addEventListener('click',event=>{if(doc.getElementById('admission-board')){event.preventDefault();doc.dispatchEvent(new CustomEvent('operational-queue-select',{detail:{id:Number(row.id)}}));}});card.appendChild(link);fragment.appendChild(card);
             }
             rows.replaceChildren(fragment);

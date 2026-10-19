@@ -166,20 +166,6 @@ final class OperationalProcedureService
     public function queue(User $u): array
     {
         abort_unless($this->eligible($u), 403);
-        return Appointment::visibleToAgendaUser($u->id)->whereDate('fecha_cita', now('America/Lima')->toDateString())
-            ->join('appointment_operational_reviews as review', 'review.appointment_id', '=', 'appointments.id')
-            ->where(fn($q)=>$q->whereNotNull('review.ready_at')->orWhere('review.requested_count','>',0))
-            ->select(['appointments.id','appointments.patient_id','appointments.doctor_id',
-                'appointments.service_id','appointments.fecha_cita','appointments.hora_cita','appointments.estado_agenda',
-                'appointments.estado_cita','appointments.hora_salida'])
-            ->with(['operationalReview.decidedBy:id,name','patient:id,nombre,apellido_paterno,apellido_materno','doctor:id,nombre','service:id,nombre'])
-            ->orderBy('review.ready_at')->orderBy('review.id')->get()->map(function ($a) use ($u) {
-                $detail = $this->detail($a, $u);
-                return ['id' => $a->id, 'patient' => trim($a->patient?->apellido_paterno.' '.$a->patient?->apellido_materno.' '.$a->patient?->nombre),
-                    'doctor' => $a->doctor?->nombre, 'service' => $a->service?->nombre, 'appointment_time' => substr($a->hora_cita, 0, 5),
-                    'review' => \Illuminate\Support\Arr::except($detail['review'], ['reason']), 'procedures' => $detail['items'],
-                    'requested_count'=>$detail['requested_count'],'completed_count'=>$detail['completed_count'],
-                    'pending_count'=>$detail['pending_count']];
-            })->all();
+        return app(AppointmentReevaluationService::class)->queue($u);
     }
 }

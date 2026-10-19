@@ -102,4 +102,34 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertSame('PROGRAMADO',$a->fresh()->estado_cita);$this->assertSame(1,$a->events()->where('event_type','ADMISION_ESTADO_REVERTIDO')->count());
         $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
     }
+    public function test_simultaneous_direct_return_retries_create_one_historical_event(): void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO','fecha_cita'=>now('America/Lima')->toDateString()]);
+        $r=['method'=>'PATCH','path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/manual-reevaluation',
+            'payload'=>['marked'=>true,'expected_marked'=>false,'expected_version'=>0,'request_key'=>(string)Str::uuid()]];
+        $this->assertSame([200,200],$this->race([$r,$r]));
+        $this->assertSame(1,$a->events()->where('event_type',\App\Services\Scheduling\ManualReevaluationService::MARKED)->count());
+        $this->assertDatabaseCount('appointment_operations',1);$this->assertDatabaseCount('appointment_requested_procedures',0);
+        $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
+    }
+    public function test_concurrent_direct_clear_and_last_procedure_completion_keep_the_remaining_origin(): void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO','fecha_cita'=>now('America/Lima')->toDateString()]);
+        $proc=app(OperationalProcedureService::class);
+        $proc->mutate($a->id,$this->admin,'selection',['request_key'=>(string)Str::uuid(),'expected_version'=>0,'procedures'=>['radiography','laboratory']]);
+        $proc->mutate($a->id,$this->actor,'completion',['request_key'=>(string)Str::uuid(),'expected_version'=>1,'procedure'=>'radiography','completed'=>true]);
+        $manual=app(\App\Services\Scheduling\ManualReevaluationService::class);
+        $marked=$manual->set($a->id,$this->actor,['marked'=>true,'expected_marked'=>false,'expected_version'=>0,'request_key'=>(string)Str::uuid()]);
+        $clear=['method'=>'PATCH','path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/manual-reevaluation',
+            'payload'=>['marked'=>false,'expected_marked'=>true,'expected_version'=>$manual->state($marked)['version'],'request_key'=>(string)Str::uuid()]];
+        $complete=['path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/procedures/completion',
+            'payload'=>['expected_version'=>2,'procedure'=>'laboratory','completed'=>true,'request_key'=>(string)Str::uuid()]];
+        $this->assertSame([200,200],$this->race([$clear,$complete]));
+        $a=$a->fresh()->load('operationalReview');$manual->load(collect([$a]));
+        $this->assertFalse($manual->state($a)['marked']);
+        $this->assertSame(['AUTOMATIC'],\App\Services\Scheduling\AppointmentReevaluationService::summary($a)['origins']);
+        $this->assertDatabaseCount('appointment_events',2);$this->assertDatabaseCount('appointment_procedure_events',3);
+        $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
+    }
+
 }

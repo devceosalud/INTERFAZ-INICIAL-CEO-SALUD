@@ -18,7 +18,7 @@ final class AgendaAppointmentPresentation
         $uncertain = ($position['authority'] ?? null) === 'UNALLOCATED'
             || (($position['authority'] ?? null) === 'LEGACY_SNAPSHOT' && ($position['paid_cents'] ?? 0) > 0);
         $refundRequested = ($position['refund_reserved_cents'] ?? 0) > 0;
-        $ready = \App\Services\Scheduling\OperationalProcedureService::ready($appointment);
+        $ready = \App\Services\Scheduling\AppointmentReevaluationService::ready($appointment);
 
         // Approved base priority: RED > TURQUOISE > YELLOW > WHITE. Medical
         // flags are chips only. Unattributed legacy amounts never become paid;
@@ -26,7 +26,8 @@ final class AgendaAppointmentPresentation
         if ($released) $key = 'DESACTIVADA';
         elseif ($refundRequested) $key = 'REEMBOLSO_SOLICITADO';
         elseif ($departed) $key = 'SALIDA_REGISTRADA';
-        elseif ($ready && !$uncertain) $key = 'LISTO_REEVALUACION';
+        elseif ($ready && (!$uncertain || \App\Services\Scheduling\AppointmentReevaluationService::directReady($appointment))) $key = 'LISTO_REEVALUACION';
+        elseif ($appointment->estado_cita === 'ATENDIDO') $key = 'ATENDIDO';
         elseif ($present) $key = 'PRESENTE';
         elseif ($paid) $key = 'PAGO_REAL';
         else $key = ! $uncertain && $appointment->estado_agenda === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
@@ -53,6 +54,7 @@ final class AgendaAppointmentPresentation
             'badges' => $chips,
             'paid_real' => $paid, 'present' => (bool) $present, 'departed' => $departed,
             'operational_reevaluation_ready' => $ready,
+            'reevaluation_origins' => \App\Services\Scheduling\AppointmentReevaluationService::summary($appointment)['origins'],
             'refund_requested' => $refundRequested,
             // A visual financial request never releases capacity or executes money.
             'informational' => $released,

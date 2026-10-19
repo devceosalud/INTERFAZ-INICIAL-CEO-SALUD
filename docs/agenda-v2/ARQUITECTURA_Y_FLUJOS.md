@@ -1,5 +1,11 @@
 # Arquitectura y flujos
 
+## Arquitectura integrada con los hotfixes
+
+`AppointmentReevaluationService` une en lectura el ledger directo v1 y el ledger de procedimientos, con tres orígenes identificables y una sola fila por cita. `AgendaAppointmentPresentation` usa esa unión y añade ATENDIDO al vocabulario compartido. Los escritores permanecen separados para conservar permisos, transacciones y datos históricos. Desactivar un origen no escribe en el otro.
+
+La auditoría unificada pagina ambos ledgers con una referencia de máximos de ID, preserva igualdad de timestamps, serializa ISO y muestra Lima. El nuevo GET privado aplica la misma visibilidad y acceso que Admisión. No hay backfill ni tabla agregada. [Detalles y resolución](INTEGRACION_MAIN_Y_HOTFIXES.md).
+
 ## Cambios de arquitectura de la segunda ronda
 
 `OperationalProcedureService::status()` es la proyección compartida: READY automático exige origen AUTOMATIC, solicitados > 0 y realizados = solicitados; READY manual exige origen MANUAL, autor de decisión y al menos un realizado. WITHDRAWN conserva su decisión y las citas fuera de jornada/inactivas no esperan. El recálculo transaccional de selección/realización permanece como autoridad de escritura; la defensa de lectura no crea decisiones ni corrige BD silenciosamente. `AppointmentOperationalReview` convierte los contadores a enteros y expone la relación del autor.

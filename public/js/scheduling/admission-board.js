@@ -19,6 +19,10 @@
     }
     function money(value){return 'S/ '+Number(value||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
     function bookingLabel(state){return state==='CONFIRMADA'?'Horario confirmado':state==='PENDIENTE_CONFIRMACION'?'Reserva pendiente · horario sin confirmar':state==='LEGADO'?'Agenda heredada':String(state||'Sin clasificación');}
+    function bookingIndicator(doc,state){
+        if(state==='LEGADO')return null;
+        const chip=doc.createElement('small');chip.className='admission-booking-indicator';chip.textContent=bookingLabel(state);return chip;
+    }
     function time(value){if(!value)return 'Sin registro';const date=new Date(value);return Number.isNaN(date.getTime())?'Sin registro':new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',hour:'2-digit',minute:'2-digit',hour12:false}).format(date);}
     async function readResponse(response){
         const generic='No se pudo completar la consulta. Actualiza y vuelve a intentar.';
@@ -34,7 +38,7 @@
         const board=doc.getElementById('admission-board');if(!board)return;
         const $=id=>doc.getElementById('admission-'+id), form=$('filters');
         const listRequest=latest(),detailRequest=latest(),availabilityRequest=latest();
-        let detailDirty=false, procedureRequest=null, observationDraft='', selectionDraft=null, selectionDraftVersion=null, observationRequest=null, activeDetailTab='care';
+        let detailDirty=false, procedureRequest=null, observationDraft='', selectionDraft=null, selectionDraftVersion=null, observationRequest=null, directRequest=null, activeDetailTab='care';
         const updateDirty=()=>{detailDirty=Boolean(observationDraft||selectionDraft);};
         const clearDraft=()=>{observationDraft='';selectionDraft=null;selectionDraftVersion=null;observationRequest=null;detailDirty=false;};
         let page=1,total=0,selected=null,busy=false,confirming=false,detail=null,filtersSnapshot='',revision='',loading=false,pendingLoad=null;
@@ -173,23 +177,45 @@
             }finally{confirming=false;}
             if(answer?.isConfirmed&&selected===id)await procedureChange(action,{confirmed:true,reason:String(answer.value||'').trim()});
         }
+        async function toggleDirect(){
+            if(busy||confirming||!detail?.reevaluation?.direct?.can_update||!window.Swal)return;
+            const id=detail.appointment.id,current=detail.reevaluation.direct;
+            confirming=true;let answer;
+            try{answer=await window.Swal.fire({title:current.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa',
+                text:current.marked?'Solo se desactiva esta marca. Otros orígenes válidos seguirán activos.':'Retorno al médico dentro de la misma cita ATENDIDO. Se registrará quién lo autoriza, sin crear cita ni cobro.',
+                showCancelButton:true,confirmButtonText:'Confirmar marca',cancelButtonText:'Volver',focusCancel:true});}finally{confirming=false;}
+            if(!answer?.isConfirmed||selected!==id)return;
+            const body={marked:!current.marked,expected_marked:current.marked,expected_version:current.version};
+            const signature=JSON.stringify([id,body]);if(directRequest?.signature!==signature)directRequest={signature,key:crypto.randomUUID()};
+            body.request_key=directRequest.key;busy=true;
+            try{await request(board.dataset.base+'/'+id+'/manual-reevaluation',{method:'PATCH',body:JSON.stringify(body)});directRequest=null;busy=false;await select(id);notice('Marca directa actualizada; los demás orígenes y el historial se conservan.');}
+            catch(error){busy=false;notice(error.message);}
+        }
         function renderProcedures(payload) {
             const data=payload.procedures;if(!data)return null;
-            const area=section('Procedimientos y reevaluación');area.classList.add('clarity-mask');
+            const area=section('Reevaluación y procedimientos');area.classList.add('clarity-mask');
             const requested=data.items.length,completed=data.items.filter(p=>p.completed).length,pending=data.items.filter(p=>!p.completed);
+            const unified=payload.reevaluation||{ready:data.review.status==='READY',origins:[]},direct=unified.direct;
             const labels={READY:'Listo para reevaluación',NOT_READY:requested?'Pendiente de procedimientos':'Sin procedimientos solicitados',WITHDRAWN:'Reevaluación retirada',SUSPENDED:'Autorización manual suspendida',INACTIVE:'Reevaluación inactiva'};
-            const status=node('div',null,'admission-procedure-status');append(status,node('strong',labels[data.review.status]||data.review.status),tag(completed+' de '+requested+' realizados',data.review.status==='READY'?'ready':'neutral'));area.appendChild(status);
+            const status=node('div',null,'admission-procedure-status');append(status,node('strong',unified.ready?'Listo para reevaluación':labels[data.review.status]||data.review.status),tag(requested?completed+' de '+requested+' realizados':'Sin procedimientos',unified.ready?'ready':'neutral'));area.appendChild(status);
+            if(direct&&(direct.version||direct.can_update)){
+                const box=node('div',null,'admission-direct-return');
+                box.appendChild(node('strong',direct.active?'Origen: marca manual directa de cita ATENDIDO':direct.marked?'Marca directa conservada · inactiva':'Retorno manual directo de cita ATENDIDO'));
+                if(direct.actor)box.appendChild(node('small',(direct.marked?'Autorizó: ':'Último cambio: ')+direct.actor.name+' · '+new Date(direct.at).toLocaleString('es-PE',{timeZone:'America/Lima'})));
+                if(direct.can_update){const button=node('button',direct.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa','admission-btn');button.type='button';button.dataset.directReevaluation='true';button.addEventListener('click',toggleDirect);box.appendChild(button);}area.appendChild(box);
+            }
             if(requested){const meter=node('progress',null,'admission-procedure-progress');meter.max=requested;meter.value=completed;meter.setAttribute('aria-label','Progreso de procedimientos');area.appendChild(meter);}
             let explanation=!requested?'El administrador todavía no ha confirmado procedimientos para esta cita.':completed+' de '+requested+' procedimientos realizados.';
             if(pending.length)explanation+=' Falta '+pending.map(p=>p.label).join(', ')+'.';
             if(data.review.status==='READY')explanation+=data.review.origin==='MANUAL'?' Envío manual autorizado; los pendientes se conservan.':' Paciente listo para volver al médico.';
             else if(data.can_send&&completed)explanation+=' Puedes enviarlo manualmente si corresponde.';
             else if(requested&&!completed)explanation+=' Registra al menos uno realizado antes de considerar un envío manual.';
+            if(direct?.active)explanation+=' Retorno manual directo autorizado; no acredita procedimientos.';
             area.appendChild(node('p',explanation,'admission-procedure-explanation'));
             if(data.review.status==='WITHDRAWN'){
-                const withdrawal=node('div',null,'admission-manual-authorization');append(withdrawal,node('strong','Retirada por '+(data.review.decision_by?.name||'Usuario no disponible')),node('p',data.review.reason||'Sin motivo registrado'));area.appendChild(withdrawal);
+                const withdrawal=node('div',null,'admission-manual-authorization');append(withdrawal,node('strong','Envío por procedimientos retirado por '+(data.review.decision_by?.name||'Usuario no disponible')),node('p',data.review.reason||'Sin motivo registrado'));area.appendChild(withdrawal);
             }else if(data.review.origin==='MANUAL'){
-                const auth=node('div',null,'admission-manual-authorization');auth.appendChild(node('strong','Autorización manual · '+(data.review.authorized_by?.name||'Usuario no disponible')));
+                const auth=node('div',null,'admission-manual-authorization');auth.appendChild(node('strong','Autorización por procedimientos parciales · '+(data.review.authorized_by?.name||'Usuario no disponible')));
                 auth.appendChild(node('p',data.review.reason||'Sin motivo adicional'));auth.appendChild(node('small','Ingreso registrado: '+time(data.review.ready_at)));area.appendChild(auth);
             }else if(data.review.origin==='AUTOMATIC'&&data.review.ready_at){area.appendChild(node('small',data.review.status==='READY'?'Ingreso automático · '+time(data.review.ready_at):'Ingreso automático anterior; la realización se recalculó.'));}
             const list=node('ul',null,'admission-procedure-items');
@@ -198,9 +224,10 @@
                 append(label,node('span',p.label));append(line,label,node('small',p.completed?'Realizado':'Pendiente'));list.appendChild(line);
             }
             area.insertBefore(list,area.querySelector('.admission-procedure-explanation'));
+            const directPanel=area.querySelector('.admission-direct-return');if(data.can_complete&&directPanel){const meter=area.querySelector('progress');if(meter)area.insertBefore(meter,directPanel);area.insertBefore(list,directPanel);}
             const decisions=node('div',null,'admission-detail-actions');
             if(data.can_send&&data.review.status!=='READY'){const send=node('button','Enviar a reevaluación','admission-btn');send.type='button';send.addEventListener('click',()=>reviewDecision('send'));decisions.appendChild(send);}
-            if(data.can_withdraw){const withdraw=node('button','Retirar de reevaluación','admission-btn');withdraw.type='button';withdraw.addEventListener('click',()=>reviewDecision('withdraw'));decisions.appendChild(withdraw);}
+            if(data.can_withdraw){const withdraw=node('button','Retirar envío por procedimientos','admission-btn');withdraw.type='button';withdraw.addEventListener('click',()=>reviewDecision('withdraw'));decisions.appendChild(withdraw);}
             area.appendChild(decisions);
             if(data.can_select){
                 const editor=node('details',null,'admission-procedure-editor');editor.open=!requested||selectionDraft!==null;
@@ -215,6 +242,20 @@
                 }
                 const confirm=node('button','Confirmar selección','admission-btn admission-btn--primary');confirm.type='button';confirm.addEventListener('click',()=>procedureChange('selection',{procedures:Array.from(selected)}));
                 append(picker,confirm,draftStatus);editor.appendChild(picker);area.appendChild(editor);
+            }
+            if(unified.history?.length){
+                const audit=node('details',null,'admission-reevaluation-audit'),title=node('summary','Historial de reevaluación'),entries=node('div');
+                append(audit,title,entries);let auditPage=unified.history_meta?.page||1,loaded=0;
+                const names={REEVALUACION_MANUAL_MARCADA:'Marca directa autorizada',REEVALUACION_MANUAL_DESMARCADA:'Marca directa retirada',SEND:'Envío por procedimientos autorizado',WITHDRAW:'Envío por procedimientos retirado',SELECTION:'Solicitud confirmada',COMPLETION:'Realización corregida'};
+                const states={READY:'Listo',NOT_READY:'Pendiente',SUSPENDED:'Autorización suspendida',WITHDRAWN:'Envío retirado'};
+                const addEvents=events=>{for(const event of events){const line=node('p',(names[event.action]||event.action)+' · '+event.actor.name+' · '+new Date(event.at).toLocaleString('es-PE',{timeZone:'America/Lima'}));line.dataset.auditEvent=event.id;
+                    if(event.source==='PROCEDURES')line.appendChild(node('small',event.completed+' de '+event.requested+' · '+(states[event.status]||event.status)+(event.reason&&['SEND','WITHDRAW'].includes(event.action)?' · '+event.reason:'')));entries.appendChild(line);loaded++;}title.textContent='Historial de reevaluación · '+loaded+' movimientos';};
+                addEvents(unified.history);
+                if(unified.history_meta?.has_more){const more=node('button','Ver movimientos anteriores','admission-btn'),status=node('small');more.type='button';
+                    more.addEventListener('click',async()=>{const id=payload.appointment.id;more.disabled=true;status.textContent='';
+                        try{const query=new URLSearchParams({page:auditPage+1,...unified.history_meta.cursor});const result=await request(board.dataset.base+'/'+id+'/reevaluation-history?'+query);if(selected!==id||!audit.isConnected)return;addEvents(result.rows);auditPage=result.page;more.hidden=!result.has_more;}
+                        catch(error){status.textContent=error.message;}finally{more.disabled=false;}});append(audit,more,status);}
+                area.appendChild(audit);
             }
             return area;
         }
@@ -241,16 +282,16 @@
         function renderRows(payload){
             total=payload.total;page=payload.page;const body=$('rows');body.replaceChildren();
             for(const row of payload.rows){const tr=node('tr');tr.dataset.appointmentId=row.id;if(row.id===selected)tr.className='is-selected';
-                const tones={LISTO_REEVALUACION:'#ce7a30',PRESENTE:'#32948c',PAGO_REAL:'#bd9c39',DESACTIVADA:'#bd5963',REEMBOLSO_SOLICITADO:'#bd5963',SALIDA_REGISTRADA:'#6f9c97'};
+                const tones={LISTO_REEVALUACION:'#ce7a30',PRESENTE:'#32948c',PAGO_REAL:'#bd9c39',DESACTIVADA:'#bd5963',REEMBOLSO_SOLICITADO:'#bd5963',SALIDA_REGISTRADA:'#6f9c97',ATENDIDO:'#74dccb'};
                 tr.style.setProperty('--ad-status-color',tones[row.presentation?.clave]||'#dce8e9');
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 const date=cell();append(date,node('strong',row.hora),node('small',row.fecha.slice(5).split('-').reverse().join('/')));
                 const patient=cell();presentationName(patient,row.patient,{...row.presentation,badges:(row.presentation?.badges||[]).filter(b=>['HERIDA','POSTOPERATORIO','CONCILIAR_PAGO'].includes(b.clave))});
                 patient.appendChild(node('small','H.C. '+(row.historia||'—')+' · '+(row.documento||'—')));patient.appendChild(node('small',row.motivo_resumen||'Motivo: no registrado','admission-reason-summary'));
-                cell(row.doctor,row.servicio);const status=cell();append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.grupo==='desactivadas'?'inactive':'neutral'),node('small',bookingLabel(row.estado_agenda)));
-                const procedures=cell(),progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'};
+                cell(row.doctor,row.servicio);const status=cell();append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.estado_cita==='ATENDIDO'?'attended':row.grupo==='desactivadas'?'inactive':'neutral'));const booking=bookingIndicator(doc,row.estado_agenda);if(booking)status.appendChild(booking);
+                const procedures=cell(),progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'},ready=row.reevaluation?.ready??progress.status==='READY';
                 if(progress.requested)procedures.appendChild(node('span',progress.completed+' de '+progress.requested+' realizados'));
-                procedures.appendChild(tag(progress.status==='READY'?'Listo para reevaluación':progress.status==='NOT_READY'?(progress.requested?'Pendientes':'Sin solicitud'):({WITHDRAWN:'Retirado',SUSPENDED:'Suspendido',INACTIVE:'Inactivo'}[progress.status]||progress.status),progress.status==='READY'?'ready':'neutral'));
+                procedures.appendChild(tag(ready?'Listo para reevaluación':progress.status==='NOT_READY'?(progress.requested?'Pendientes':'Sin solicitud'):({WITHDRAWN:'Retirado',SUSPENDED:'Suspendido',INACTIVE:'Inactivo'}[progress.status]||progress.status),ready?'ready':'neutral'));
                 const button=node('button','Ver','admission-btn');button.type='button';button.setAttribute('aria-label','Ver cita de '+row.patient+' a las '+row.hora);button.addEventListener('click',()=>select(row.id));cell().appendChild(button);body.appendChild(tr);
             }
             if(!payload.rows.length){const tr=node('tr'),td=node('td','No hay citas visibles que coincidan con estos filtros.');td.colSpan=6;tr.appendChild(td);body.appendChild(tr);}
@@ -295,7 +336,7 @@
 
         function renderDetail(payload){const root=$('detail'),a=payload.appointment;root.replaceChildren();
             const head=section('CITA '+a.numero),patientName=node('h3');presentationName(patientName,a.patient,{...a.presentation,badges:[]});
-            append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
+            append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.estado_cita==='ATENDIDO'?'attended':a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
             const reason=node('div',null,'admission-consultation-reason');append(reason,node('strong','MOTIVO DE CONSULTA'),node('p',a.motivo_consulta?.trim()||'No registrado'));head.appendChild(reason);root.appendChild(head);
             const actions=node('div',null,'admission-care-actions');
             for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(state==='EN_ATENCION'||state==='EN_ESPERA'?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>transition(state));actions.appendChild(button);}
@@ -336,7 +377,7 @@
             try{await availabilityRequest.run(async signal=>Promise.all(options.map(async option=>{const u=new URL(board.dataset.availability,location.origin);u.searchParams.set('doctor_id',option.value);u.searchParams.set('fecha',filters.fecha);if(filters.site_id)u.searchParams.set('site_id',filters.site_id);try{return {option,result:await request(u.href,{signal})};}catch(error){if(error.name==='AbortError')throw error;return {option,error:true};}})),results=>{for(const entry of results){const card=node('article');card.appendChild(node('h3',entry.option.textContent));if(entry.error)card.appendChild(node('p','No se pudo consultar el horario.'));else{const slots=entry.result.slots||[],free=slots.filter(s=>s.estado==='DISPONIBLE');append(card,node('p',slots.length?free.length+' intervalos libres / '+slots.length+' intervalos del horario':'Sin horario configurado'),node('p',free.length?'Primer intervalo libre: '+free[0].inicio:'Sin intervalos libres'),link('Abrir Agenda',agendaUrl(entry.option.value,filters.fecha)));}$('availability').appendChild(card);}});}catch(error){$('availability-note').textContent='No se pudo consultar disponibilidad. Usa Agenda para verificar horarios.';}
         }
 
-        const editing=()=>confirming||detailDirty||Boolean($('detail').contains(doc.activeElement)&&doc.activeElement?.matches('input,textarea,select,[contenteditable="true"]'));
+        const editing=()=>confirming||detailDirty||Boolean($('detail').querySelector?.('.admission-reevaluation-audit[open]'))||Boolean($('detail').contains(doc.activeElement)&&doc.activeElement?.matches('input,textarea,select,[contenteditable="true"]'));
         async function load(reselect=null,background=false){if(busy||confirming||(background&&editing()))return;
             const snapshot=JSON.stringify(data());if(background&&(doc.hidden||snapshot!==filtersSnapshot))return;
             if(loading){if(!background){pendingLoad={reselect};listRequest.cancel();}return;}
@@ -390,5 +431,5 @@
         load(Number.isSafeInteger(initialId)&&initialId>0?initialId:null).then(()=>{if(initialId>0&&!selected)select(initialId);});
         poll.start();
     }
-    return {latest,polling,bookingLabel,time,money,readResponse,start};
+    return {latest,polling,bookingLabel,bookingIndicator,time,money,readResponse,start};
 }));
