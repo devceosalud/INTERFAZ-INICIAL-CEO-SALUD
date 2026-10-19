@@ -1,0 +1,37 @@
+name: Management report exports QA
+
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Scheduling/ManagementExportController.php'
+      - 'app/Support/Scheduling/ManagementCsv.php'
+      - 'app/Support/Scheduling/ManagementXlsx.php'
+      - 'app/Support/Scheduling/ManagementPaymentOperationNumbers.php'
+      - 'tests/Unit/Scheduling/Management*Test.php'
+      - '.github/workflows/management-report-exports-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report-export-regression:
+    name: PHP syntax and report unit tests (isolated)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, zip, curl, fileinfo
+          coverage: none
+      - name: PHP syntax
+        run: |
+          php -l app/Http/Controllers/Scheduling/ManagementExportController.php
+          php -l app/Support/Scheduling/ManagementPaymentOperationNumbers.php
+          php -l tests/Unit/Scheduling/ManagementPaymentOperationNumbersTest.php
+      - name: Install locked dependencies in isolated CI
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Export regression tests
+        run: php vendor/bin/phpunit --filter 'Management(Csv|Xlsx|PaymentOperationNumbers|ReportFilters|ReportTemplate)Test'
