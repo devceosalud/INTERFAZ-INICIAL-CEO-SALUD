@@ -10,6 +10,7 @@ use App\Services\Billing\AppointmentEconomicPosition;
 use App\Services\Scheduling\DoctorAvailabilityService;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\ManagementCsv;
+use App\Support\Scheduling\ManagementXlsx;
 use App\Support\Scheduling\SchedulingCapability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,7 +33,6 @@ class ManagementExportController extends Controller
         return response()->view('scheduling.agenda.management-report', [
             'from' => $today->copy()->subDays(6)->toDateString(),
             'to' => $today->toDateString(),
-            'sites' => Site::orderBy('nombre')->get(['id', 'nombre']),
             'doctors' => Doctor::orderBy('nombre')->get(['id', 'nombre']),
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -247,7 +247,8 @@ class ManagementExportController extends Controller
             'from' => 'required|date_format:Y-m-d',
             'to' => 'required|date_format:Y-m-d|after_or_equal:from',
             'doctor_id' => 'nullable|integer|exists:doctors,id',
-            'site_id' => 'nullable|integer|exists:sites,id',
+            'site_id' => 'prohibited',
+            'format' => 'sometimes|in:csv,xlsx',
         ]);
         if (Carbon::parse($data['from'])->diffInDays(Carbon::parse($data['to'])) > 30) {
             throw ValidationException::withMessages(['to' => 'El rango máximo es de 31 días, inclusive.']);
@@ -255,7 +256,7 @@ class ManagementExportController extends Controller
         return [
             'from' => $data['from'], 'to' => $data['to'],
             'doctor_id' => isset($data['doctor_id']) ? (int) $data['doctor_id'] : null,
-            'site_id' => isset($data['site_id']) ? (int) $data['site_id'] : null,
+            'site_id' => null,
         ];
     }
 
@@ -272,16 +273,40 @@ class ManagementExportController extends Controller
 
     private function download(string $kind, array $filters, callable $write): StreamedResponse
     {
-        $filename = 'ceosalud_'.$kind.'_'.$filters['from'].'_'.$filters['to'].'.csv';
-        return response()->streamDownload(function () use ($write) {
-            $handle = fopen('php://output', 'wb');
+        // The same audited report produces either the legacy CSV or an Office XLSX
+        // with real column filters, a frozen heading, numeric amounts and text-safe IDs.
+        $format = request()->query('format', 'csv');
+        $xlsx = $format === 'xlsx';
+        $extension = $xlsx ? 'xlsx' : 'csv';
+        $filename = 'ceosalud_'.$kind.'_'.$filters['from'].'_'.$filters['to'].'.'.$extension;
+
+        return response()->streamDownload(function () use ($write, $xlsx) {
+            if (!$xlsx) {
+                $output = fopen('php://output', 'wb');
+                try {
+                    $write($output);
+                } finally {
+                    fclose($output);
+                }
+                return;
+            }
+
+            // The CSV projection is reused exactly to avoid duplicating financial,
+            // visibility and scheduling calculations. Streams may spill to system temp.
+            $intermediate = fopen('php://temp/maxmemory:2097152', 'w+b');
             try {
-                $write($handle);
+                $write($intermediate);
+                $output = fopen('php://output', 'wb');
+                try {
+                    ManagementXlsx::fromCsv($intermediate, $output, 'CEO Salud');
+                } finally {
+                    fclose($output);
+                }
             } finally {
-                fclose($handle);
+                fclose($intermediate);
             }
         }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => $xlsx ? ManagementXlsx::contentType() : 'text/csv; charset=UTF-8',
             'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
             'Pragma' => 'no-cache',
             'X-Content-Type-Options' => 'nosniff',
@@ -290,7 +315,8 @@ class ManagementExportController extends Controller
 
     private function audit(Request $request, string $kind, array $filters): void
     {
-        Log::notice('management_report.csv_download', [
+        Log::notice('management_report.download', [
+            'format' => $request->query('format', 'csv'),
             'actor_id' => $request->user()->id,
             'report' => $kind,
             'from' => $filters['from'], 'to' => $filters['to'],
