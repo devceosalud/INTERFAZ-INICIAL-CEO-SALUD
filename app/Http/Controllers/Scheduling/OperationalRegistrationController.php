@@ -57,7 +57,7 @@ class OperationalRegistrationController extends Controller
             $payload = json_decode((string) $request->input('payload'), true);
             abort_unless(is_array($payload), 422); $request->merge($payload);
         }
-        $data = $request->validate(\App\Services\Scheduling\AppointmentPaymentProofs::rules() + ['request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
+        $data = $request->validate(\App\Services\Scheduling\AppointmentPaymentProofs::rules() + ['expected_revision'=>'sometimes|required|string|size:64|regex:/^[a-f0-9]+$/', 'request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
             'payment' => 'nullable|array:amount,method,operation,origin',
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', \Illuminate\Validation\Rule::in(\App\Services\Billing\VoucherPaymentRecorder::METHODS)],

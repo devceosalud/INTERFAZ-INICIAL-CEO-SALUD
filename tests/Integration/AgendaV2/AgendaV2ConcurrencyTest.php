@@ -189,4 +189,24 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertContains(substr($a->fresh()->hora_cita,0,5),['09:00','10:00']);
     }
 
+    public function test_simultaneous_safe_patient_reassignment_has_one_winner_and_keeps_former_context_in_audit():void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00']);
+        $one=$this->createPatient($this->actor,['numero_identidad'=>'77777001','historia_clinica'=>'QA-QUICK-RACE-1']);
+        $two=$this->createPatient($this->actor,['numero_identidad'=>'77777002','historia_clinica'=>'QA-QUICK-RACE-2']);
+        $r=['method'=>'PATCH','path'=>'/scheduling-mvp/agenda/appointments/'.$a->id.'/quick-edit','payload'=>[
+            'action'=>'patient','patient_id'=>$one->id,'motivo'=>'Corrección concurrente ficticia','motivo_consulta'=>'Nuevo motivo ficticio',
+            'confirmed'=>true,'expected_revision'=>\App\Services\Scheduling\AppointmentManagement::revision($a->fresh()),'request_key'=>(string)Str::uuid()]];
+        $other=array_replace($r,['payload'=>array_replace($r['payload'],['patient_id'=>$two->id,'request_key'=>(string)Str::uuid()])]);
+        $this->assertSame([200,409],$this->race([$r,$other]));$this->assertContains($a->fresh()->patient_id,[$one->id,$two->id]);
+        $this->assertSame(1,$a->events()->where('event_type','PACIENTE_REASIGNADO')->count());$this->assertDatabaseCount('payments',0);
+    }
+    public function test_simultaneous_master_patient_edits_reject_stale_version():void
+    {
+        $patient=$this->createPatient($this->actor);$data=$patient->only(['tipo_identificacion','numero_identidad','nombre','apellido_paterno','apellido_materno','genero']);
+        $r=['method'=>'PUT','path'=>'/patients/'.$patient->id,'payload'=>$data+['expected_revision'=>\App\Services\Patients\PatientRecordRevision::for($patient)]];
+        $r['payload']['nombre']='QA concurrente A';$other=array_replace($r,['payload'=>array_replace($r['payload'],['nombre'=>'QA concurrente B'])]);
+        $this->assertSame([200,409],$this->race([$r,$other]));$this->assertContains($patient->fresh()->nombre,['QA concurrente A','QA concurrente B']);$this->assertDatabaseCount('payments',0);
+    }
+
 }

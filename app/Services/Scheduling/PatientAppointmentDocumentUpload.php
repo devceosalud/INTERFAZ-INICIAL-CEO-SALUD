@@ -19,6 +19,7 @@ class PatientAppointmentDocumentUpload {
    abort_unless(hash_equals($op->payload_hash,$hash),409,'El identificador pertenece a otra carga.');
    $fresh=$actor->fresh();abort_unless(Access::patientUpload($fresh),403);
    $a=Appointment::visibleToOperationalUser($fresh)->whereKey($visible->id)->lockForUpdate()->firstOr(fn()=>abort(404));
+   abort_if((int)$a->patient_id!==(int)$visible->patient_id || (int)$a->service_id!==(int)$visible->service_id,409,'La cita cambió de paciente o servicio. Revisa la cita antes de adjuntar.');
    if($op->document_id)return $a->documents()->whereKey($op->document_id)->firstOr(fn()=>abort(409,'El documento ya no está vigente.'));
    $d=app(AppointmentProofStorage::class)->store($a,$actor->id,$file,$data['label']);$paths[]=$d->private_path;
    $d->update(['type'=>'OTHER','purpose'=>Access::PATIENT_PURPOSE,'document_kind'=>$data['document_kind']]);

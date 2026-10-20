@@ -201,6 +201,7 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-refresh.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-reschedule-history.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/patients/patient-record-form.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-manage-appointment.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-professional-preferences.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>

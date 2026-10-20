@@ -184,6 +184,29 @@ class OperationalPatientController extends Controller
         ]);
     }
 
+    /** Same fields/catalogues as the full maintenance form; no separate write endpoint. */
+    public function editor(Request $request, int $patientId): JsonResponse
+    {
+        $request->validate(['appointment_id' => 'required|integer|min:1']);
+        abort_unless($request->user()->is_active && config('scheduling.enabled')
+            && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+            && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW), 403);
+        $appointment = Appointment::visibleToOperationalUser($request->user())->whereKey($request->integer('appointment_id'))
+            ->where('patient_id', $patientId)->firstOr(fn () => abort(404));
+        $patient = Patient::with('responsibles')->findOrFail($patientId);
+        return response()->json([
+            'patient' => self::patientPayload($patient) + ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient)],
+            'can_write' => PatientWriteAccess::allows($request->user()),
+            'html' => view('patients.partials.record-fields', [
+                'documentTypes' => self::DOCUMENT_TYPES, 'civilStatuses' => self::CIVIL_STATUSES,
+                'relationships' => self::RELATIONSHIPS, 'phonePrefixes' => PatientPhone::PREFIXES,
+                'channels' => Channel::where('estado','ACTIVO')->orderBy('nombre')->get(['id','nombre']),
+                'interactionMedia' => InteractionMedium::where('estado','ACTIVO')->orderBy('nombre')->get(['id','nombre']),
+                'filters' => ['fecha' => substr($appointment->fecha_cita,0,10)],
+            ])->render(),
+        ]);
+    }
+
     public function show(int $patientId): JsonResponse
     {
         // Resolve only after auth/role middleware has run. This avoids exposing a
@@ -212,7 +235,7 @@ class OperationalPatientController extends Controller
         ]);
 
         return response()->json([
-            'patient' => self::patientPayload($patient),
+            'patient' => self::patientPayload($patient) + ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient)],
             'encounter' => null,
         ]);
     }

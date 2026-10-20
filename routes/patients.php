@@ -14,6 +14,9 @@ Route::middleware(['auth', 'mvp-operational'])
         Route::post('/reniec-lookup', AgendaReniecLookupController::class)
             ->name('reniec-lookup');
 
+        Route::get('/{patientId}/editor', [OperationalPatientController::class, 'editor'])
+            ->whereNumber('patientId')->name('editor');
+
         Route::get('/{patientId}', [OperationalPatientController::class, 'show'])
             ->whereNumber('patientId')
             ->name('show');

@@ -76,6 +76,10 @@ Route::middleware([
             ->name('scheduling.mvp.agenda.contingencies');
         Route::patch('/scheduling-mvp/agenda/contingencies/{id}', [\App\Http\Controllers\Scheduling\AppointmentContingencyController::class, 'update'])
             ->whereNumber('id')->name('scheduling.mvp.agenda.contingencies.update');
+        Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/quick-edit', [\App\Http\Controllers\Scheduling\AppointmentQuickEditController::class,'show'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.quick-edit.show');
+        Route::patch('/scheduling-mvp/agenda/appointments/{appointmentId}/quick-edit', [\App\Http\Controllers\Scheduling\AppointmentQuickEditController::class,'update'])
+            ->whereNumber('appointmentId')->middleware(['permission:'.SchedulingCapability::UPDATE,'throttle:30,1'])->name('scheduling.mvp.agenda.quick-edit.update');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
         Route::post('/scheduling-mvp/agenda/quote', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'quote'])

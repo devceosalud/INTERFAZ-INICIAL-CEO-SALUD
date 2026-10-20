@@ -39,6 +39,8 @@ class ReservationPaymentService
             $doctor = Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->lockForUpdate()->whereKey($id)->firstOr(fn () => abort(404));
             abort_if((int)$a->doctor_id!==(int)$original->doctor_id,409,'La cita cambió; actualiza antes de operar.');
+            abort_if((int)$a->patient_id!==(int)$original->patient_id || (int)$a->service_id!==(int)$original->service_id,409,'La cita cambió de paciente o servicio. Actualiza antes de registrar el pago.');
+            if(isset($data['expected_revision'])) abort_unless(hash_equals(AppointmentManagement::revision($a),$data['expected_revision']),409,'La cita cambió. Revisa sus datos antes de registrar el pago.');
             if($indication) app(ReevaluationIndicationService::class)->eligible((int)$indication->id,(int)$a->patient_id,(int)$a->service_id,
                 substr($a->fecha_cita,0,10),$actor->id,$a->id,true,(int)$a->doctor_id);
             abort_if(in_array($a->estado_cita, ['CANCELADO', 'NO_ASISTIO', 'RETIRO', 'ATENDIDO'], true), 409, 'La cita no admite otro cobro.');

@@ -1,0 +1,15 @@
+<?php
+if(PHP_SAPI!=='cli'||getenv('AGENDA_QUICK_EDIT_QA')!=='APPEND_FICTIONAL_ONLY')throw new RuntimeException('Fictional QA append only.');
+require dirname(__DIR__,2).'/vendor/autoload.php';Tests\Support\IsolatedAgendaV2Qa::boot(true);
+$f=json_decode(file_get_contents(storage_path('app/qa-v2/round4/fixtures.json')),true,512,JSON_THROW_ON_ERROR);
+$admin=App\Models\User::findOrFail($f['users']['admin']['id']);Illuminate\Support\Facades\Auth::login($admin);
+$date=Carbon\Carbon::today('America/Lima')->addDays(25);while(App\Models\DoctorSchedule::where('doctor_id',$f['doctor_id'])->whereDate('fecha_cita',$date)->exists())$date->addDay();
+App\Models\DoctorSchedule::create(['doctor_id'=>$f['doctor_id'],'site_id'=>$f['site_id'],'fecha_cita'=>$date->toDateString(),'dia_semana'=>$date->dayOfWeekIso,'hora_inicio'=>'08:00','hora_fin'=>'12:00','duracion_cita'=>30,'estado'=>'ACTIVO']);
+$doctor=App\Models\Doctor::findOrFail($f['doctor_id']);$assign=app(App\Services\Catalog\ActiveDoctorServiceResolver::class)->resolve($doctor->id,$f['service_id']);
+$base=app(App\Services\Catalog\ServicePriceResolver::class)->resolve($assign,$date->toDateString())['price'];
+$ids=[];foreach(['same'=>0,'higher'=>20]as$key=>$extra){$s=App\Models\Service::create(['nombre'=>'QA EDICION '.strtoupper($key).' '.Illuminate\Support\Str::uuid(),'specialty_id'=>$doctor->specialty_id,'service_type'=>'CONSULTATION','pricing_policy'=>'PROFESSIONAL','estado'=>'ACTIVO']);App\Models\DoctorService::create(['doctor_id'=>$doctor->id,'service_id'=>$s->id,'precio_primera_consulta'=>(float)$base+$extra,'estado'=>'ACTIVO']);$ids[$key]=$s->id;}
+$make=function($name)use($admin){return App\Models\Patient::create(['user_id'=>$admin->id,'nombre'=>$name,'apellido_paterno'=>'QA','apellido_materno'=>'LOCAL','numero_identidad'=>(string)(79800000+App\Models\Patient::count()),'tipo_identificacion'=>'DNI','historia_clinica'=>'QA-QUICK-'.Illuminate\Support\Str::uuid(),'genero'=>'MUJER','fecha_nacimiento'=>'1990-01-01','estado'=>'ACTIVO','fecha_registro'=>now()->toDateString()]);};
+$patient=$make('EDICION SEGURA FICTICIA');$target=$make('PACIENTE DESTINO FICTICIO');
+$a=app(App\Services\Scheduling\OperationalRegistrationService::class)->register(['request_key'=>(string)Illuminate\Support\Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$patient->id,'doctor_id'=>$doctor->id,'service_id'=>$f['service_id'],'site_id'=>$f['site_id'],'fecha_cita'=>$date->toDateString(),'hora_cita'=>'08:00','duracion_cita'=>30,'motivo_consulta'=>'Motivo ficticio anterior para comprobar archivo seguro','is_postoperative'=>true,'has_diabetic_wound'=>true],$admin);
+$result=['appointment_id'=>$a->id,'patient_id'=>$patient->id,'target_patient_id'=>$target->id,'target_document'=>$target->numero_identidad,'date'=>$date->toDateString(),'doctor_id'=>$doctor->id,'site_id'=>$f['site_id'],'service_id'=>$f['service_id'],'same_service_id'=>$ids['same'],'higher_service_id'=>$ids['higher']];
+file_put_contents(storage_path('app/qa-v2/quick-edit/fixtures.json'),json_encode($result,JSON_PRETTY_PRINT));echo json_encode($result),PHP_EOL;

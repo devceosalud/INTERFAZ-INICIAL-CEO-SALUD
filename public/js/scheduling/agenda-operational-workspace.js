@@ -513,6 +513,7 @@
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
+                if(lastPosition?.management?.revision)payload.expected_revision=lastPosition.management.revision;
                 if(!confirm && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
