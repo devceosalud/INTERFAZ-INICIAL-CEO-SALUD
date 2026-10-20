@@ -653,6 +653,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if(current){
                         state.selection=current.extendedProps;
                         el.contextPayment.textContent='Economía: '+(current.extendedProps.financial_status?.label||current.extendedProps.estado_pagado||'—');
+                        el.contextState.hidden=current.extendedProps.leyenda==='PAGO_REAL';
                         el.contextState.textContent=current.extendedProps.presentation?.etiqueta||current.extendedProps.estado_cita||'';
                         board.querySelectorAll('[data-appointment-id="'+selectedId+'"]').forEach(n=>n.classList.add('is-selected'));
                     }
@@ -1338,6 +1339,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const entry = state.legend[context.leyenda] || {};
+        el.contextState.hidden = context.leyenda === 'PAGO_REAL';
         el.contextState.textContent = entry.etiqueta || context.estado || '';
         el.contextState.style.setProperty('--chip-bg', entry.fondo || '#f4f5f7');
         el.contextState.style.setProperty('--chip-fg', entry.color || '#1f2933');
