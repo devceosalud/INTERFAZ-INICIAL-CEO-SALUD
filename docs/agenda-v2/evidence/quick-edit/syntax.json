@@ -1,0 +1,127 @@
+[
+  {
+    "file": "app/Http/Controllers/Patients/OperationalPatientController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Patients/OperationalPatientController.php"
+  },
+  {
+    "file": "app/Http/Controllers/Patients/OperationalPatientMutationController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Patients/OperationalPatientMutationController.php"
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AppointmentQuickEditController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Scheduling/AppointmentQuickEditController.php"
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Scheduling/OperationalRegistrationController.php"
+  },
+  {
+    "file": "app/Services/Patients/PatientRecordRevision.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Patients/PatientRecordRevision.php"
+  },
+  {
+    "file": "app/Services/Scheduling/AppointmentQuickEdit.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/AppointmentQuickEdit.php"
+  },
+  {
+    "file": "app/Services/Scheduling/PatientAppointmentDocumentUpload.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/PatientAppointmentDocumentUpload.php"
+  },
+  {
+    "file": "app/Services/Scheduling/ReservationPaymentService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/ReservationPaymentService.php"
+  },
+  {
+    "file": "public/assets/js/custom.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/assets/js/custom.min.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/patients/operational.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/patients/patient-record-form.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/scheduling/agenda-manage-appointment.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/scheduling/agenda-operational-workspace.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "routes/patients.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in routes/patients.php"
+  },
+  {
+    "file": "routes/scheduling.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in routes/scheduling.php"
+  },
+  {
+    "file": "tests/Feature/Patients/AgendaPatientInlineEditTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Patients/AgendaPatientInlineEditTest.php"
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaSafeQuickEditTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Scheduling/AgendaSafeQuickEditTest.php"
+  },
+  {
+    "file": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php"
+  },
+  {
+    "file": "tests/JavaScript/patient-record-form.test.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "tests/Support/agenda-quick-edit-seed.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Support/agenda-quick-edit-seed.php"
+  },
+  {
+    "file": "tools/qa/browser-agenda-management-focused.cjs",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "tools/qa/browser-agenda-quick-management.cjs",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "tools/qa/browser-agenda-safe-quick-edit-baseline.cjs",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "tools/qa/browser-agenda-safe-quick-edit.cjs",
+    "exit_code": 0,
+    "output": ""
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "sha": "5984318",
+  "method": "Chrome rendering with original client assets from git show and shared equivalent patient markup without native opt-out; current fictional QA backend, no writes or source swapping",
+  "files": [
+    "public/css/patients/operational.css",
+    "public/assets/js/custom.min.js",
+    "public/js/patients/operational.js",
+    "public/js/scheduling/agenda-manage-appointment.js"
+  ],
+  "resolutions": [
+    1366,
+    1440,
+    1920,
+    390
+  ],
+  "finished": "2026-10-20T19:48:04.185Z"
+}

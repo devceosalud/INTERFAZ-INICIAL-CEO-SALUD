@@ -72,3 +72,8 @@ Desactivar el reloj de replay ficticio al terminar pruebas manuales: php tests/S
 No hay autorización de push, PR o despliegue. Esta revisión no añade migraciones. Para una liberación futura autorizada, revisar y publicar del mismo SHA el backend, Blade, gestor, estilos y nuevo agenda-reschedule-history.js; conservar versionado de AgendaAssets. Verificar reprogramación con otro paciente ocupando el origen, historial no bloqueante y pagos intactos.
 
 Revertir solo código conserva eventos REPROGRAMADA y sus motivos; ocupación sigue basada en fecha actual. No borrar eventos ni reconstruir reservas a partir de anotaciones. Esta compatibilidad no autoriza un futuro rollback que ignore ajustes financieros, aún no implementados. Conservar también requisitos de lectura de cuarta ronda, teleconsultas y documentos privados. [Informe actual](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+Solo commits locales. Una entrega futura debe incluir el parcial Blade, PatientRecordForm, controladores/servicios/rutas, CSS y custom.min.js alineado con su fuente. Los assets de ficha modificados se versionan. Rollback de código conserva paciente/servicio actuales y su auditoría; no ejecutar down, reasignar automáticamente ni borrar archivos/eventos. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).

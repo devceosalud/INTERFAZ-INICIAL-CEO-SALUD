@@ -1,0 +1,106 @@
+{
+  "base": "5984318fd43ba1eba02b806177c67c732f7a958c",
+  "functional_source_sha": "4743278d4b362f03df536106316340f2de7aac37",
+  "scope": "LOCAL_FICTIONAL_QA_ONLY",
+  "migrations_added": [],
+  "sqlite": {
+    "tests": 1151,
+    "assertions": 10182,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 191.734,
+    "status": "PASS"
+  },
+  "mariadb": {
+    "tests": 1166,
+    "assertions": 10319,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 214.779,
+    "status": "PASS"
+  },
+  "concurrency_scenarios": 15,
+  "javascript": {
+    "status": "PASS",
+    "tests": 333,
+    "failures": 0,
+    "skipped": 0
+  },
+  "chrome": {
+    "status": "PASS",
+    "cases": 61,
+    "reports": [
+      {
+        "file": "browser-quick-edit.json",
+        "status": "PASS",
+        "cases": 16,
+        "finished": "2026-10-20T20:05:16.503Z",
+        "browser": "155.0.8059.79",
+        "expected_csp_blocks": 138
+      },
+      {
+        "file": "browser-management.json",
+        "status": "PASS",
+        "cases": 13,
+        "finished": "2026-10-20T19:51:31.892Z",
+        "browser": "155.0.8059.79",
+        "expected_csp_blocks": 159
+      },
+      {
+        "file": "browser-focused.json",
+        "status": "PASS",
+        "cases": 3,
+        "finished": "2026-10-20T19:51:43.132Z",
+        "browser": "155.0.8059.79",
+        "expected_csp_blocks": 0
+      },
+      {
+        "file": "browser-reevaluations-mfr.json",
+        "status": "PASS",
+        "cases": 19,
+        "finished": "2026-10-20T19:57:58.031Z",
+        "browser": "155.0.8059.79",
+        "expected_csp_blocks": 0
+      },
+      {
+        "file": "browser-documents.json",
+        "status": "PASS",
+        "cases": 10,
+        "finished": "2026-10-20T19:58:49.145Z",
+        "browser": "155.0.8059.79",
+        "expected_csp_blocks": 0
+      }
+    ],
+    "resolutions": [
+      [
+        1366,
+        768
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "provenance": "16 new journeys exercise the final functional code. The other45 were rerun in this continuation before the final narrowed bank-history guard in AppointmentQuickEdit; their affected modules remained unchanged. Final full PHP suites cover that guard, with red/green evidence. No old delivery totals reused."
+  },
+  "syntax": {
+    "status": "PASS",
+    "files": 25
+  },
+  "ci": {
+    "status": "NOT_RUN",
+    "reason": "No push or PR operation authorized"
+  },
+  "final_failures": 0,
+  "final_skipped": 0
+}

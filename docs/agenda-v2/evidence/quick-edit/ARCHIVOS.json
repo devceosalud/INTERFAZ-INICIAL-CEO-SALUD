@@ -1,0 +1,372 @@
+{
+  "base": "5984318fd43ba1eba02b806177c67c732f7a958c",
+  "functional_source_sha": "4743278d4b362f03df536106316340f2de7aac37",
+  "source_files": 30,
+  "files_count_excluding_inventory": 91,
+  "files": [
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientController.php",
+      "sha256": "6672a195bd05b15b4c82f181e359a74513bed81254dc8aabeea54f944587895e"
+    },
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientMutationController.php",
+      "sha256": "5918c539f38714bc68eff578581004d859a088a062da9605871bec562b8812e4"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AppointmentQuickEditController.php",
+      "sha256": "577f3576b365d86b108523baa97a2be6657037de489ea9a17639a9797e421284"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+      "sha256": "3a9d7ffc0e8cf63cab47c8b920ac810f0dcbdf352847b49167cb70a527f13531"
+    },
+    {
+      "path": "app/Services/Patients/PatientRecordRevision.php",
+      "sha256": "5680bbe60ff4b28df7661591f10e6172bb33dfdd981e9a0364fe77f0e8a2b046"
+    },
+    {
+      "path": "app/Services/Scheduling/AppointmentQuickEdit.php",
+      "sha256": "bced373ebee9c4a864981594533ed4f43a451addc0f915567c2004c8d1971bcf"
+    },
+    {
+      "path": "app/Services/Scheduling/PatientAppointmentDocumentUpload.php",
+      "sha256": "c9f50194152d6ee31b5b76c3194c70578fdb1f5f33c24c4d915c230c69f80917"
+    },
+    {
+      "path": "app/Services/Scheduling/ReservationPaymentService.php",
+      "sha256": "ccbdf9bbe7a423893aefaf15dca272ac4a436520731aff9d7722e8f0f10fae20"
+    },
+    {
+      "path": "docs/agenda-v2/ARCHIVOS_MODIFICADOS.md",
+      "sha256": "ae6ff12dc24969a4ff2c5be29938aed3147bc80ebb55d133737b10bbf6870ba6"
+    },
+    {
+      "path": "docs/agenda-v2/ARQUITECTURA_Y_FLUJOS.md",
+      "sha256": "879cb300356727519aac44823aa681632efeed3aa4e726ac7d6669004c16edee"
+    },
+    {
+      "path": "docs/agenda-v2/CORRECCIONES_GESTOR_Y_FICHA.md",
+      "sha256": "e77574df2d3e3e7eab0fb550be2816ed2e65db20d00ba00349bfa0c508c20d0b"
+    },
+    {
+      "path": "docs/agenda-v2/GESTION_RAPIDA_Y_REPROGRAMACION.md",
+      "sha256": "95b0e1f08d036903c226139235eee15bd62d28253dd13835fb4da5d829d0d17c"
+    },
+    {
+      "path": "docs/agenda-v2/MATRIZ_CUMPLIMIENTO_RONDAS.md",
+      "sha256": "2c11c90a18567a38d1a65163cae6f1815988e96165725a0a31fad3521cc92775"
+    },
+    {
+      "path": "docs/agenda-v2/MATRIZ_PERMISOS.md",
+      "sha256": "2f01e75e61b04de6f9ef24614a11abfd8b78d9f4c35d2ff176281d87567fa74d"
+    },
+    {
+      "path": "docs/agenda-v2/MIGRACIONES_Y_COMPATIBILIDAD.md",
+      "sha256": "67a540f1d09a85499e95dd7679138bdfafc2fc238961547b4f2fa9b9ec39dfe6"
+    },
+    {
+      "path": "docs/agenda-v2/PLAN_DESPLIEGUE_Y_ROLLBACK.md",
+      "sha256": "2c16c0d20c009a2082d10346bdabb473c949fdc33b7a49efe3432f41f370b702"
+    },
+    {
+      "path": "docs/agenda-v2/QA_Y_EVIDENCIAS.md",
+      "sha256": "8b2acbc7ce323da267a9a88cf551af718b8c4339f881653af5f1270b08f0a157"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/CAPTURAS.md",
+      "sha256": "5091b434f5d4ddfbe30b2e71a6971222f4f0d72004f5a0405e495dd52fac6225"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/FUENTES_SHA256.json",
+      "sha256": "5636b43223649f9120b9f11ab233679f3be0db8fba6f093253687643a694df72"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/RESULTADOS.json",
+      "sha256": "3088deb8e8aaa0dc58b293eb61c98fe136b2012dc0140ed672bc0a182436aa3b"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-modal-1366.png",
+      "sha256": "b8e93bc54b396ed6421e1194d54bc5506dc57bcfc24cc019eaf241d56071fb72"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-modal-1440.png",
+      "sha256": "f30945edaee860cfc989e94c4b6e382f3688320b748ff8453f534c069c281aa9"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-modal-1920.png",
+      "sha256": "8e72c60d8a6c02c87d49665a60c55f1280ff6dbf86e628a216f48e3d86bf0f9d"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-modal-390.png",
+      "sha256": "94cebeab7327c3bfd499172ec6e93f085716a843bb090c187a75d6e16a7cac03"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-more-1366.png",
+      "sha256": "fe0755f8abe0fa1115a109b22237070ddd7520e11aebd673661ec57dfe331d3e"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-more-1440.png",
+      "sha256": "795ffe14314b30e769ad5c607df0ffab5f104ea306df4724e867dd70b3e57145"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-more-1920.png",
+      "sha256": "0909d1677bcfb68271991d115bb1d196a52c3082aeb727a86e18ba22fff40804"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-more-390.png",
+      "sha256": "c1d843769333389d57f322efd57203c74a9c1a23b5b3317e220fa288bcf11d70"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-patient-1366.png",
+      "sha256": "5b7c03004a0443878529d90de114a4f3e089b514304e0dc0078e9a2cfa4b2cac"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-patient-1440.png",
+      "sha256": "83a8d1af16d671d7c9c7b5a63f3115567bb16b0abe198f82ae5f16392d023311"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-patient-1920.png",
+      "sha256": "a66fef3930ee673191af1f99891e30fd82e9c16879b4fe02fd8cc85121d82dc4"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/after-patient-390.png",
+      "sha256": "61dbdec1fcd80e588e8ad8782b16503f0d91ce39f7f69797bd2a6a6bac449129"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/baseline-capture.json",
+      "sha256": "46d53ce031ac8be9c9e3819138a9a8f85bfaeeded725222d5b7bf0abc454d473"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-modal-1366.png",
+      "sha256": "97425a220c27c24c57bc5d8471a66225408e1c67380b72dd3bc8a73e55d12975"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-modal-1440.png",
+      "sha256": "791217d06ea3340c6a5cda1697a11da3e838b23f15357d5f419f81cff3531d71"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-modal-1920.png",
+      "sha256": "bd6c7c37b35cb04579e12dc5dd7796f96e84999dd2e214cd36ba3580326550fb"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-modal-390.png",
+      "sha256": "384936ddbfefe6704ba41cd0e3c8a8d3b122df965a28ea7ff6318db1ada3d518"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-patient-1366.png",
+      "sha256": "7fc4f812368bb1257ce7b6b77584828c2913885f1d085d4555a447b552adc333"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-patient-1440.png",
+      "sha256": "334a75ce13631cb6add0c426ecb032ff7df553bfcb59adc60542cc815bffa4da"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-patient-1920.png",
+      "sha256": "6d62c117523b68d9d71e0b46708392f8f11a93e58f731c65a54d47c26f331a26"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/before-patient-390.png",
+      "sha256": "d06649229bf44a4d01211cfc3910cc8f987b63ddd3da0663388d1ac6ed9a98e1"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-documents.json",
+      "sha256": "f6b83d10d0cbca850f599671accf0fbb3dfb12ef70e75de764b478c743d6a625"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-documents.log",
+      "sha256": "7621506b1ac79d912a93310cf1daf2dca4e1f4fd68a945f32481b652b2f2b871"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-focused.json",
+      "sha256": "a301ebb3f5cc890b2428ec4e76509b2d38652d90eb7f507dcb64ae1b46f25261"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-focused.log",
+      "sha256": "1cced49537107e28b3c3e72bd61cf1cea79bf0e514f9029e47609941bea3e54f"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-management.json",
+      "sha256": "31d8fb881b1207af2d6b7972f08e4d84b160de14a5c40c1d5574794f89040203"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-management.log",
+      "sha256": "790f27f144e7ea366cac7d9538bed0623cd06f65e4e4cfb0d6b0250b19b0db5f"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-quick-edit.json",
+      "sha256": "fd4adabea12920f064a849b542dfe9e5b42e4a6ae36c0484723275d9b8c17e74"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-quick-edit.log",
+      "sha256": "16f5dd1cec6ce568e9e136581709459d3632ce2b10777c9a99ca7e7f76e06b07"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-reevaluations-mfr.json",
+      "sha256": "481315fe06794a83a24ed45b86d6f0a797e611cacdadcb6f201516c361548468"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/browser-reevaluations-mfr.log",
+      "sha256": "9dbeaa8e2dcd16e040da7d72a4c6bb843e0beb0fd57607f61b459cde1f85f25b"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/fixtures-quick-edit.json",
+      "sha256": "238e4a57be451b380eda58bdbf27504d6c1db67951c0dbe3bc8f675873b9ea4f"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/fixtures-reprogramming.json",
+      "sha256": "b3df56129e8d09be9ea833760c580f672849e7f64d6edb7bae04806bbd797f35"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/guard-green.log",
+      "sha256": "39ccb39161528ce23a8db8213c2c782c54fbc568fa8c5dfd3b759b6a31adc296"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/guard-red.log",
+      "sha256": "2edae38364fc02421e1371c99be80df3c4eb9681f94a7a262f06ada3093734cc"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/javascript.log",
+      "sha256": "44bd4938b617d1a58216bde74fcb636d998420266281086fb2ea478b8f4b6cbb"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/mariadb.log",
+      "sha256": "a95e0a123f28834b17085157efd180a1b11909d3a567dd415a7268ba1feefa08"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/mariadb.xml",
+      "sha256": "ed75246675e19ba38d4547c02ea97f5084996d3a9b1343942227ce7a938d69dd"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/patient-final.log",
+      "sha256": "60239b9cf4e83020cfe4a17d7b113afaaab373cd74809e4722504e2dd4dc8f70"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/patient-final.xml",
+      "sha256": "8d49f3f98d4f01e88869b81aec877e2e1e1247ab03a8bcf73470bdea7aa0f7a3"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/patient-safe-comparison.png",
+      "sha256": "5163835e72ba08bc85c6c724c8c8be9adfb5654479bf9e5ec94977850d12cf0b"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/preservation.json",
+      "sha256": "82a1df32abf716f8ecdf1fd70ddb07f620de01d4cb8decfb5e9ad74f22f49e09"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/service-price-blocked.png",
+      "sha256": "b9b5d53849bf01b48d0cffc52c619cff18cefdc0c47037506d9241afd0fdbb5c"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/service-safe-comparison.png",
+      "sha256": "2522bca042d768d26d7b5811513e8758da79989ef2c564ac84a057bce1e186dc"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/sqlite.log",
+      "sha256": "4b9764115bc877d516b3e14045c43ec3db55ae605bd0372aaafe1a16956c9526"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/sqlite.xml",
+      "sha256": "f228d28deeb9408c76cd3599a80f7aeac753ed84dd14bc1df38e3dceb94b7ea9"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/syntax.json",
+      "sha256": "deee0f8c875a083c71dea0a42d4cdb337b6a573e8a4aa2c6df014ad980a59fdc"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/user-before-modal.png",
+      "sha256": "8331453dc89dc7534fe4998204740ceee2b18af551ca41e74db025bedbc8d114"
+    },
+    {
+      "path": "docs/agenda-v2/evidence/quick-edit/user-before-patient.png",
+      "sha256": "b054f5a925cf5d19cab9784cf4c263c63850899643b67172e88eeffb9be27aac"
+    },
+    {
+      "path": "public/assets/js/custom.js",
+      "sha256": "af284d69b166accda3fc1836a6368b160fabb8664a6376d9c09f60fafae75108"
+    },
+    {
+      "path": "public/assets/js/custom.min.js",
+      "sha256": "cf5c4f29a8172e21f2728ecd81b12fefd5b56acc698611b438a03518850c66d1"
+    },
+    {
+      "path": "public/css/patients/operational.css",
+      "sha256": "eee8f8fb7fdae21fbc4f4657e2e138d7632c8d98dcb8fd8660ed4e5079ce0245"
+    },
+    {
+      "path": "public/css/scheduling/agenda-layout.css",
+      "sha256": "4fef416a38d8edbf583f49454af7969e563b01d6e9ade63f6b88fea82eb97608"
+    },
+    {
+      "path": "public/js/patients/operational.js",
+      "sha256": "79420aeb479a4f8c5bf7f53708be9dbb36cf9ac88e2eed72d55d76428781a916"
+    },
+    {
+      "path": "public/js/patients/patient-record-form.js",
+      "sha256": "a9b8a84cde0f452c4e492b83e9815e99bbb72ab0587331362c861f34b4b52310"
+    },
+    {
+      "path": "public/js/scheduling/agenda-manage-appointment.js",
+      "sha256": "c58b74cabe49b40700349ab691f807198a73ae93d9a8fe0e0424ece6bf1a0015"
+    },
+    {
+      "path": "public/js/scheduling/agenda-operational-workspace.js",
+      "sha256": "bc8fb844e23c92de1f2e2e59ffa293af519e585c78253693c0ac56b25e25366b"
+    },
+    {
+      "path": "resources/views/patients/operational.blade.php",
+      "sha256": "69f9bc76f84e432d72bb30387116ec5a6154af58bc6b1271c05980e7c9c1b553"
+    },
+    {
+      "path": "resources/views/patients/partials/record-fields.blade.php",
+      "sha256": "ab2b56a68790e72108fa20b1e73f73b4199224b62db3db1972ce63287ea0fef8"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/index.blade.php",
+      "sha256": "29ef12b8e75fc4366b045d4287f1f86ee9ec57fedf124ab35db8568a0e82c03f"
+    },
+    {
+      "path": "routes/patients.php",
+      "sha256": "a3eb8884103b42c84f19f931a85f6c5b2dac18eab79b738b3afa4d93c5ab82a1"
+    },
+    {
+      "path": "routes/scheduling.php",
+      "sha256": "0c5c852065f855e7c5169185203412336957fbe20e54858dfb54d61de83d52ab"
+    },
+    {
+      "path": "tests/Feature/Patients/AgendaPatientInlineEditTest.php",
+      "sha256": "ae2ddd3a0e00b57a7ca1885f48c233fb61e22e3f1950912a90eed75f634e9050"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AgendaSafeQuickEditTest.php",
+      "sha256": "8040b9af5ea4130282cddb62d29f3b293f09488fdd02f230075d13284836d9b2"
+    },
+    {
+      "path": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+      "sha256": "6c7a119bf09b2f808e5c179004d86bc873920e06fdb058120803e50595a861f5"
+    },
+    {
+      "path": "tests/JavaScript/patient-record-form.test.js",
+      "sha256": "4e3e688195a110e3b9e7ee23a135f059dda1ef50e607eb8eba62823b7334dee2"
+    },
+    {
+      "path": "tests/Support/agenda-quick-edit-seed.php",
+      "sha256": "817d486938d8d1baff8bc75a9eaa8b6d84ab5e80246e7cda818aaac29678c082"
+    },
+    {
+      "path": "tools/qa/browser-agenda-management-focused.cjs",
+      "sha256": "e64644acf85003eb365c2a3321f76b0a3d3f3b6e3e5be864d920af7a8c031272"
+    },
+    {
+      "path": "tools/qa/browser-agenda-quick-management.cjs",
+      "sha256": "147074e250d4664d9704f48155fb3461c4f51dc8141e2c2121370d699ff39df3"
+    },
+    {
+      "path": "tools/qa/browser-agenda-safe-quick-edit-baseline.cjs",
+      "sha256": "17e0d94c33f138a114fdbdf37836eb6c944b71dd8b746e4aa8af3e72a22cfa88"
+    },
+    {
+      "path": "tools/qa/browser-agenda-safe-quick-edit.cjs",
+      "sha256": "9408331dc8d4b3a8cafc00677813488fcba95faf9b5a4b347ad48b47b72ca2aa"
+    }
+  ]
+}

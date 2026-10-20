@@ -58,3 +58,8 @@ La aceptación visual y funcional final corresponde al usuario. Ningún estado d
 ## Revisión local de gestión rápida
 
 Implementado: cinco acciones visuales con prioridad Reprogramar/Servicio, un panel, ficha reutilizada, reprogramación y motivo UI, referencias históricas separadas de ocupación y prioridad económica sobre OCR. No habilitado: cambio de servicio/paciente sensible, corrección bancaria o de monto y penalidad sobre citas existentes. La tarifa productiva no se copia ni se inventa en QA. [Resultados y pendientes](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+Corregir ficha inline, controles nativos sin duplicados y Más opciones: implementados. Servicio/paciente: operativos únicamente sin vínculos incompatibles y sin modificar contrato; motivos, confirmación, revisión e idempotencia obligatorios. Operaciones económicas pendientes permanecen bloqueadas. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).

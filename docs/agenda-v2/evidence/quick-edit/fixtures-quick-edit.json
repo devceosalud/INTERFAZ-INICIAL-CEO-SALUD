@@ -1,0 +1,12 @@
+{
+    "appointment_id": 171,
+    "patient_id": 130,
+    "target_patient_id": 131,
+    "target_document": "79800124",
+    "date": "2026-11-17",
+    "doctor_id": 8,
+    "site_id": 5,
+    "service_id": 7,
+    "same_service_id": 14,
+    "higher_service_id": 15
+}

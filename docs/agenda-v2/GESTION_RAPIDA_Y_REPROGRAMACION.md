@@ -116,3 +116,8 @@ Código final verificado: `4d436207a31d47eff001cb860c4b55ff57b52714`. Pruebas ap
 [Galería comparativa](evidence/management/CAPTURAS.md), [resultados](evidence/management/RESULTADOS.json), [inventario](evidence/management/ARCHIVOS.json) y [fuentes verificadas](evidence/management/FUENTES_SHA256.json). Antes del modal se capturó la UI anterior con la cohorte R4; después usa una nueva cohorte exclusivamente ficticia. No se comparan importes de pacientes distintos como medición de rendimiento.
 
 Cita de demostración final:158, profesional8, origen08/11/2026 y destino09/11/2026 a09:00. El origen ya tiene otra reserva ficticia y conserva la anotación. La guía usa esos fixtures; no son pacientes reales. El servidor manual permanece disponible y el replay clock está desactivado.
+
+
+## Actualización posterior aprobada — gestor y ficha
+
+La entrega de este documento corresponde al baseline5984318. La revisión siguiente incorpora ficha inline compartida y cambios seguros de paciente/servicio, sustituyendo los bloqueos generales descritos arriba únicamente donde el usuario lo autorizó. Mantiene bloqueadas las operaciones económicas o con vínculos incompatibles. [Estado actual, pruebas y guía](CORRECCIONES_GESTOR_Y_FICHA.md).

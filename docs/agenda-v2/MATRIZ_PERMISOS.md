@@ -59,8 +59,13 @@ CSV/XLSX exigen usuario activo ADMINISTRADOR y VIEW_AUDIT, además del acceso a 
 | Abrir/corregir ficha | Mantenimiento de pacientes y PatientWriteAccess existentes, sin elevar capacidades |
 | Cambiar modalidad | ADMINISTRADOR/ADMISION, canChangeMode, confirmación, revisión y auditoría previas |
 | Revisar pagos individuales en gestor | canEdit de AppointmentManagement; lectura administrativa ampliada no basta |
-| Modificar servicio/paciente | Nueva operación bloqueada, pendiente de aprobación funcional sensible |
+| Modificar servicio/paciente | canEdit + UPDATE efectivo, revisión, motivo y confirmación; solo sin vínculos incompatibles y conservando el contrato. Ver corrección20/10 |
 | Corregir referencia o monto / aplicar penalidad a cita existente | Bloqueado para todos; no hay endpoint nuevo ni privilegios asignados |
 | Referencias históricas | Visibilidad operativa autorizada; sin paciente/motivo en el feed; responsables según AgendaCreatorVisibility |
 
 No hay migración de permisos en esta revisión. Poder registrar dinero no concede corregirlo. [Diagnóstico](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+
+## Ficha inline y edición limitada — 20/10/2026
+
+La ficha usa PatientWriteAccess existente y cita visible autorizada; no concede permisos de atención o economía. Reasignar/cambiar servicio exige la visibilidad de escritura original y UPDATE, también en backend. COMERCIAL conserva su política de ficha y no recibe nuevas capacidades generales. Todos los bloqueos se revalidan bajo transacción. [Matriz y casos permitidos/bloqueados](CORRECCIONES_GESTOR_Y_FICHA.md).

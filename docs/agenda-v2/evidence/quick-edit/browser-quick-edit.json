@@ -1,0 +1,74 @@
+{
+  "browser": "155.0.8059.79",
+  "started": "2026-10-20T20:04:14.218Z",
+  "cases": [
+    {
+      "name": "Cinco acciones y Más opciones accesible, sin accesos secundarios amontonados",
+      "result": "PASS"
+    },
+    {
+      "name": "Edición inline reutiliza ficha, valida y conserva borrador sin abandonar Agenda",
+      "result": "PASS"
+    },
+    {
+      "name": "Guardado único bloquea controles y refleja identidad en modal, Agenda y ficha",
+      "result": "PASS"
+    },
+    {
+      "name": "Contacto, datos personales y responsable de menor reutilizan validación y persistencia del mantenimiento",
+      "result": "PASS"
+    },
+    {
+      "name": "Cancelación descarta edición y no modifica la ficha",
+      "result": "PASS"
+    },
+    {
+      "name": "Segunda sesión: conflicto409 conserva el borrador inline",
+      "result": "PASS"
+    },
+    {
+      "name": "Cita con adelanto: bloqueo específico sin perder consulta de servicios",
+      "result": "PASS"
+    },
+    {
+      "name": "Modal/ficha nativos y Más opciones sin desbordamiento 1366",
+      "result": "PASS"
+    },
+    {
+      "name": "Modal/ficha nativos y Más opciones sin desbordamiento 1440",
+      "result": "PASS"
+    },
+    {
+      "name": "Modal/ficha nativos y Más opciones sin desbordamiento 1920",
+      "result": "PASS"
+    },
+    {
+      "name": "Modal/ficha nativos y Más opciones sin desbordamiento 390",
+      "result": "PASS"
+    },
+    {
+      "name": "Servicio: muestra precio diferente y bloquea recotización no autorizada",
+      "result": "PASS"
+    },
+    {
+      "name": "Servicio seguro: confirma mismo precio, horario y duración y deja auditoría",
+      "result": "PASS"
+    },
+    {
+      "name": "Paciente seguro: búsqueda, comparación y nuevo motivo sin heredar condiciones",
+      "result": "PASS"
+    },
+    {
+      "name": "Permisos admission: ficha inline disponible, pagos bloquean reasignación, no privilegios nuevos",
+      "result": "PASS"
+    },
+    {
+      "name": "Permisos commercial: ficha inline disponible, pagos bloquean reasignación, no privilegios nuevos",
+      "result": "PASS"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "expectedCsp": 138,
+  "finished": "2026-10-20T20:05:16.503Z"
+}

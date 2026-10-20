@@ -46,3 +46,8 @@ No ejecutar down ni revertir a código que desconozca modalidades/claves nuevas 
 ## Revisión del gestor y reprogramaciones
 
 Sin migraciones nuevas ni backfill. Se reutilizan appointment_events.metadata/motivo; se conservan pagos, comprobantes, tarifas, documentos e indicaciones. El motivo se solicita en el modal/arrastre actuales y se admite en el endpoint sin inventar razones históricas. La anotación es una proyección, no una fila adicional de cita. Ajustes financieros o archivo de contexto al reasignar pacientes siguen pendientes y no crean tablas en esta entrega. [Detalle](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+Sin migración nueva. La reasignación segura archiva el contexto anterior en appointment_events.metadata y exige un motivo nuevo; no copia observaciones/banderas. Los vínculos financieros, documentales o clínicos impiden la operación. No ejecutar backfill ni borrar eventos. Esto reemplaza el bloqueo general anterior solo en los casos autorizados. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).

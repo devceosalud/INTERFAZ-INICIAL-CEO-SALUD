@@ -1,0 +1,18 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:00.727, Memory: 54.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\Scheduling\AgendaSafeQuickEditTest::test_same_price_service_is_previewed_and_changed_without_rewriting_economics_or_duration
+Failed to assert that the response count matched the expected 0
+Failed asserting that actual size 1 matches expected size 0.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\AssertableJsonString.php:72
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:771
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaSafeQuickEditTest.php:29
+
+FAILURES!
+Tests: 1, Assertions: 4, Failures: 1.

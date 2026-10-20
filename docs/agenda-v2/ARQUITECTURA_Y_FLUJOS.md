@@ -107,3 +107,8 @@ Los reportes integrados desde main76e6ad2 conservan su controlador/formatos de l
 ## Gestión rápida y referencias de reprogramación (revisión posterior)
 
 El gestor tiene cinco acciones y un panel activo; reprograma mediante el motor existente y abre la ficha por patient_url autorizado. Documentos, seguimiento y procedimientos conservan sus componentes en sus módulos. AppointmentPaymentReview solo proyecta pagos inequívocos a usuarios con canEdit; ninguna corrección está habilitada. RescheduleHistory lee REPROGRAMADA por período y visibilidad, separado de eventos/ocupación; las anotaciones no crean reservas. Se conserva la fecha actual en la misma Appointment y se agrega motivo desde los flujos UI. [Alcance, límites y decisiones pendientes](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+El editor comparte record-fields.blade.php, PatientRecordForm y el PUT de OperationalPatientMutationController. PatientRecordRevision protege ambas interfaces; el popup verifica contexto cita/paciente y registra auditoría en los eventos existentes. AppointmentQuickEdit proyecta restricciones/opciones y revalida bajo bloqueo las dos ediciones limitadas. No modifica contratos ni crea otro calendario. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).

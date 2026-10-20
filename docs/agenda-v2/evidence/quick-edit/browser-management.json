@@ -1,0 +1,62 @@
+{
+  "browser": "155.0.8059.79",
+  "started": "2026-10-20T19:50:29.843Z",
+  "cases": [
+    {
+      "name": "ADMINISTRADOR: five actions, priority order, one active panel and no embedded clinical documents",
+      "result": "PASS"
+    },
+    {
+      "name": "Multiple attributed advances, exact payment selection, amount/reference/both remain blocked",
+      "result": "PASS"
+    },
+    {
+      "name": "Existing mode operation and patient module reuse stay available",
+      "result": "PASS"
+    },
+    {
+      "name": "Validation preserves scheduling draft and conflict restores controls without sending money",
+      "result": "PASS"
+    },
+    {
+      "name": "Real reprogramming: one request, busy controls, original slot free and nonblocking audit reference",
+      "result": "PASS"
+    },
+    {
+      "name": "A real new reservation and advance can occupy original slot without losing historical reference",
+      "result": "PASS"
+    },
+    {
+      "name": "Two authenticated sessions racing to reschedule yield one success and one conflict",
+      "result": "PASS"
+    },
+    {
+      "name": "Cross-day modal reprogramming preserves advances and displays the appointment on the new day",
+      "result": "PASS"
+    },
+    {
+      "name": "Daily weekly monthly historical annotation never becomes an active calendar event",
+      "result": "PASS"
+    },
+    {
+      "name": "Responsive modal and quick registration order at 1366,1440,1920,390",
+      "result": "PASS"
+    },
+    {
+      "name": "Double click, Alt+Enter and nonblocking references remain accessible in all calendar views",
+      "result": "PASS"
+    },
+    {
+      "name": "Complementary OCR remains available and invalid uploads are rejected without registering money",
+      "result": "PASS"
+    },
+    {
+      "name": "ADMISION and COMERCIAL retain operation-specific permissions and blocked economic corrections",
+      "result": "PASS"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "expectedCsp": 159,
+  "finished": "2026-10-20T19:51:31.892Z"
+}

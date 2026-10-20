@@ -1,0 +1,125 @@
+{
+  "source_sha": "4743278d4b362f03df536106316340f2de7aac37",
+  "files": [
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientController.php",
+      "sha256": "6672a195bd05b15b4c82f181e359a74513bed81254dc8aabeea54f944587895e"
+    },
+    {
+      "path": "app/Http/Controllers/Patients/OperationalPatientMutationController.php",
+      "sha256": "5918c539f38714bc68eff578581004d859a088a062da9605871bec562b8812e4"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AppointmentQuickEditController.php",
+      "sha256": "577f3576b365d86b108523baa97a2be6657037de489ea9a17639a9797e421284"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+      "sha256": "3a9d7ffc0e8cf63cab47c8b920ac810f0dcbdf352847b49167cb70a527f13531"
+    },
+    {
+      "path": "app/Services/Patients/PatientRecordRevision.php",
+      "sha256": "5680bbe60ff4b28df7661591f10e6172bb33dfdd981e9a0364fe77f0e8a2b046"
+    },
+    {
+      "path": "app/Services/Scheduling/AppointmentQuickEdit.php",
+      "sha256": "bced373ebee9c4a864981594533ed4f43a451addc0f915567c2004c8d1971bcf"
+    },
+    {
+      "path": "app/Services/Scheduling/PatientAppointmentDocumentUpload.php",
+      "sha256": "c9f50194152d6ee31b5b76c3194c70578fdb1f5f33c24c4d915c230c69f80917"
+    },
+    {
+      "path": "app/Services/Scheduling/ReservationPaymentService.php",
+      "sha256": "ccbdf9bbe7a423893aefaf15dca272ac4a436520731aff9d7722e8f0f10fae20"
+    },
+    {
+      "path": "public/assets/js/custom.js",
+      "sha256": "af284d69b166accda3fc1836a6368b160fabb8664a6376d9c09f60fafae75108"
+    },
+    {
+      "path": "public/assets/js/custom.min.js",
+      "sha256": "cf5c4f29a8172e21f2728ecd81b12fefd5b56acc698611b438a03518850c66d1"
+    },
+    {
+      "path": "public/css/patients/operational.css",
+      "sha256": "eee8f8fb7fdae21fbc4f4657e2e138d7632c8d98dcb8fd8660ed4e5079ce0245"
+    },
+    {
+      "path": "public/css/scheduling/agenda-layout.css",
+      "sha256": "4fef416a38d8edbf583f49454af7969e563b01d6e9ade63f6b88fea82eb97608"
+    },
+    {
+      "path": "public/js/patients/operational.js",
+      "sha256": "79420aeb479a4f8c5bf7f53708be9dbb36cf9ac88e2eed72d55d76428781a916"
+    },
+    {
+      "path": "public/js/patients/patient-record-form.js",
+      "sha256": "a9b8a84cde0f452c4e492b83e9815e99bbb72ab0587331362c861f34b4b52310"
+    },
+    {
+      "path": "public/js/scheduling/agenda-manage-appointment.js",
+      "sha256": "c58b74cabe49b40700349ab691f807198a73ae93d9a8fe0e0424ece6bf1a0015"
+    },
+    {
+      "path": "public/js/scheduling/agenda-operational-workspace.js",
+      "sha256": "bc8fb844e23c92de1f2e2e59ffa293af519e585c78253693c0ac56b25e25366b"
+    },
+    {
+      "path": "resources/views/patients/operational.blade.php",
+      "sha256": "69f9bc76f84e432d72bb30387116ec5a6154af58bc6b1271c05980e7c9c1b553"
+    },
+    {
+      "path": "resources/views/patients/partials/record-fields.blade.php",
+      "sha256": "ab2b56a68790e72108fa20b1e73f73b4199224b62db3db1972ce63287ea0fef8"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/index.blade.php",
+      "sha256": "29ef12b8e75fc4366b045d4287f1f86ee9ec57fedf124ab35db8568a0e82c03f"
+    },
+    {
+      "path": "routes/patients.php",
+      "sha256": "a3eb8884103b42c84f19f931a85f6c5b2dac18eab79b738b3afa4d93c5ab82a1"
+    },
+    {
+      "path": "routes/scheduling.php",
+      "sha256": "0c5c852065f855e7c5169185203412336957fbe20e54858dfb54d61de83d52ab"
+    },
+    {
+      "path": "tests/Feature/Patients/AgendaPatientInlineEditTest.php",
+      "sha256": "ae2ddd3a0e00b57a7ca1885f48c233fb61e22e3f1950912a90eed75f634e9050"
+    },
+    {
+      "path": "tests/Feature/Scheduling/AgendaSafeQuickEditTest.php",
+      "sha256": "8040b9af5ea4130282cddb62d29f3b293f09488fdd02f230075d13284836d9b2"
+    },
+    {
+      "path": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+      "sha256": "6c7a119bf09b2f808e5c179004d86bc873920e06fdb058120803e50595a861f5"
+    },
+    {
+      "path": "tests/JavaScript/patient-record-form.test.js",
+      "sha256": "4e3e688195a110e3b9e7ee23a135f059dda1ef50e607eb8eba62823b7334dee2"
+    },
+    {
+      "path": "tests/Support/agenda-quick-edit-seed.php",
+      "sha256": "817d486938d8d1baff8bc75a9eaa8b6d84ab5e80246e7cda818aaac29678c082"
+    },
+    {
+      "path": "tools/qa/browser-agenda-management-focused.cjs",
+      "sha256": "e64644acf85003eb365c2a3321f76b0a3d3f3b6e3e5be864d920af7a8c031272"
+    },
+    {
+      "path": "tools/qa/browser-agenda-quick-management.cjs",
+      "sha256": "147074e250d4664d9704f48155fb3461c4f51dc8141e2c2121370d699ff39df3"
+    },
+    {
+      "path": "tools/qa/browser-agenda-safe-quick-edit-baseline.cjs",
+      "sha256": "17e0d94c33f138a114fdbdf37836eb6c944b71dd8b746e4aa8af3e72a22cfa88"
+    },
+    {
+      "path": "tools/qa/browser-agenda-safe-quick-edit.cjs",
+      "sha256": "9408331dc8d4b3a8cafc00677813488fcba95faf9b5a4b347ad48b47b72ca2aa"
+    }
+  ]
+}

@@ -277,3 +277,8 @@ El visor PDF incorpora únicamente módulo/worker/licencia oficiales fijados en6
 - Documentación y capturas: GESTION_RAPIDA_Y_REPROGRAMACION.md y evidence/management. El inventario exacto con SHA256 es evidence/management/ARCHIVOS.json.
 
 No se modifica la plantilla de correo ni se crea una tarifa de penalidad.
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+Inventario exacto y hashes de esta revisión en evidence/quick-edit/ARCHIVOS.json. Incluye servicio/controlador de edición limitada, revisión de pacientes, formulario Blade/serializador compartidos, controles nativos, CSS, regresiones PHP/JS/Chrome y evidencias ficticias. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).

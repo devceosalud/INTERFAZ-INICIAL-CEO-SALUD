@@ -165,3 +165,8 @@ La evidencia histórica anterior corresponde a sus SHAs. Resultados nuevos y cap
 Los fixtures de navegador se conservan; cuando agotaron slots se añadió un horario ficticio, sin borrar citas. Las fuentes/CDN/Clarity heredadas bloqueadas por CSP se separan de errores de aplicación mediante URLs exactas. No hay conexiones externas habilitadas para hacer pasar QA.
 
 Cierre:45 casos Chrome aprobados (13+3+19+10), sintaxis13 PHP/13 JS y328 pruebas JavaScript. Suites PHP finalizadas con salida0. [Galería](evidence/management/CAPTURAS.md). Las operaciones financieras no aprobadas permanecen bloqueadas; CI/publicación pendientes de autorización.
+
+
+## Correcciones de gestor y ficha — 20/10/2026
+
+La nueva ejecución y galería están en evidence/quick-edit. Incluye guardado inline, menores/responsables, validación, concurrencia, roles, ediciones seguras, bloqueos específicos y cuatro resoluciones. Los resultados anteriores no se usan como evidencia de esta revisión; consultar RESULTADOS.json y logs nuevos. [Informe y límites actuales](CORRECCIONES_GESTOR_Y_FICHA.md).
