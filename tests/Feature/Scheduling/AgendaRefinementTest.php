@@ -67,6 +67,7 @@ class AgendaRefinementTest extends TestCase
         $id = $this->legacyRegular('08:00')->id;
         $appointment = Appointment::findOrFail($id);
         $appointment->update(['total_pagado' => 50, 'saldo_pendiente' => 50, 'numero_operacion' => 'TEST-OP']);
+        $this->attributedPayment($appointment, '50.00');
         $before = $appointment->fresh()->getAttributes();
         $this->move($id, '08:00', '06:00')->assertConflict()->assertJsonPath('confirmation_required', true)->assertJsonPath('target_booking_type', 'FUERA_HORARIO');
         $this->assertSame($before, $appointment->fresh()->getAttributes());
@@ -144,10 +145,12 @@ class AgendaRefinementTest extends TestCase
         $schedule = $this->catalog['schedule'];
         $schedule->update(['hora_inicio' => '08:00', 'hora_fin' => '09:40', 'duracion_cita' => 1]);
         for ($i = 0; $i < $occupied; $i++) {
-            $this->lifecycleAppointment($this->actor, $this->catalog, [
+            $paidAppointment = $this->lifecycleAppointment($this->actor, $this->catalog, [
                 'fecha_cita' => $schedule->fecha_cita, 'hora_cita' => Carbon::parse('08:00')->addMinutes($i)->format('H:i'),
                 'duracion_cita' => 1, 'estado_agenda' => 'CONFIRMADA', 'tipo_agendamiento' => 'REGULAR', 'total_pagado' => 50,
             ], $this->patient);
+            $this->attributedPayment($paidAppointment, '0.01');
+            $this->assertFalse(app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($paidAppointment)['secured']);
         }
         $metric = $this->capacity();
         $this->assertSame(100, $metric['capacidad_regular']);
@@ -158,7 +161,7 @@ class AgendaRefinementTest extends TestCase
 
     public static function thresholds(): array { return [[0, 'verde'], [49, 'verde'], [50, 'amarillo'], [79, 'amarillo'], [80, 'rojo']]; }
 
-    public function test_capacity_ignores_insufficient_payment_specials_private_reservations_and_releasing_states(): void
+    public function test_capacity_ignores_legacy_snapshots_specials_private_reservations_and_releasing_states(): void
     {
         foreach ([
             ['total_pagado' => 49.99], ['precio_programado' => 0, 'total_pagado' => 100],
@@ -174,6 +177,25 @@ class AgendaRefinementTest extends TestCase
         $this->catalog['schedule']->update(['estado' => 'INACTIVO']);
         $this->assertSame('plomo', $this->capacity()['color']);
         $this->assertSame(0, $this->capacity()['capacidad_regular']);
+    }
+
+    private function attributedPayment(Appointment $a, string $amount): void
+    {
+        $box=\App\Models\Cashier::create(['nombre'=>'Caja capacidad ficticia','estado'=>'ACTIVO']);
+        $shift=\App\Models\CashierShift::create(['cashier_id'=>$box->id,'user_id'=>$this->actor->id,'monto_apertura'=>0,'estado'=>'ABIERTO','abierto_en'=>now()]);
+        $voucher=\App\Models\Voucher::create(['tipo_comprobante'=>'TICKET','serie'=>'CQ01','correlativo'=>$a->id,'patient_id'=>$a->patient_id,'subtotal'=>100,'total'=>100,'estado'=>'PENDIENTE','cashier_shift_id'=>$shift->id,'user_id'=>$this->actor->id]);
+        $voucher->items()->create(['item_type'=>'cita','item_id'=>$a->id,'descripcion'=>'Consulta ficticia','cantidad'=>1,'precio_unitario'=>100,'total'=>100]);
+        $voucher->payments()->create(['metodo_pago'=>'EFECTIVO','monto'=>$amount,'user_id'=>$this->actor->id,'cashier_shift_id'=>$shift->id]);
+    }
+    public function test_month_capacity_counts_one_cent_attributed_payment_without_changing_confirmation_or_money(): void
+    {
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','duracion_cita'=>60,'estado_agenda'=>'CONFIRMADA','tipo_agendamiento'=>'REGULAR','total_pagado'=>0],$this->patient);
+        $this->attributedPayment($a,'0.01');$before=$a->fresh()->getAttributes();
+        $p=app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointment($a);
+        $this->assertFalse($p['secured']);$this->assertSame(1,$p['paid_cents']);$this->assertSame('PAYMENTS',$p['authority']);
+        $this->assertSame(2,$this->capacity()['ocupacion_segura']);
+        $this->assertSame($before,$a->fresh()->getAttributes());$this->assertDatabaseCount('payments',1);
+        $this->assertEquals('0.01',\App\Models\Payment::sum('monto'));
     }
 
     private function capacity(): array

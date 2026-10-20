@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (state.view === 'mes') { info.el.tabIndex = 0; info.el.addEventListener('keydown', function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();setView('dia');setDate(context.fecha);}}); }
             if (context.tipo_contexto === 'cita_existente') {
                 info.el.tabIndex = 0;
-                info.el.title = selectionModel.registrationDescription(context)+' · Doble clic para gestionar';
+                info.el.title = [context.hora_inicio,context.paciente,selectionModel.registrationDescription(context),...(context.presentation?.badges||[]).filter(b=>b.clave!=='PAGO_REAL').map(b=>b.etiqueta),'Doble clic para gestionar'].filter(Boolean).join(' · ');
                 info.el.addEventListener('dblclick',event=>{event.preventDefault();event.stopPropagation();manageAppointment.open(context);});
                 info.el.addEventListener('keydown', function (event) { if (event.key === 'Enter' && event.altKey) {event.preventDefault();manageAppointment.open(context);} else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectInterval(context, info.el); } });
             }
@@ -401,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     context.servicio,
                     context.doctor,
                     context.fecha,
+                    ...(context.presentation?.badges||[]).filter(b=>b.clave!=='PAGO_REAL').map(b=>b.etiqueta),
                 ].filter(Boolean).join(', ')
             );
             info.el.tabIndex = 0;
@@ -513,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const summary=window.AgendaOperationalForm.stateSummary(context);
             const extended = extendedDurationText(context);
             booking.textContent = summary.agenda + ' · ' + summary.payment + (extended ? ' · ' + extended : '');
-            wrapper.title = [summary.description, extended, selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
+            wrapper.title = [presentation.patient,summary.description, extended, selectionModel.registrationDescription(context),...(context.presentation?.badges||[]).filter(b=>b.clave!=='PAGO_REAL').map(b=>b.etiqueta)].filter(Boolean).join(' · ');
             wrapper.appendChild(booking);
 
             if (presentation.service) {
@@ -966,6 +967,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 context.estado_pagado,
                 context.historia_clinica,
                 context.paciente,
+                ...(context.presentation?.badges||[]).filter(b=>b.clave!=='PAGO_REAL').map(b=>b.etiqueta),
             ].filter(Boolean).join(', '));
             entry.tabIndex = 0;
             entry.addEventListener('click', function (event) {
@@ -987,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.setAttribute('role', 'gridcell');
             cell.textContent = value;
             if(item)cell.title=[window.AgendaOperationalForm.stateSummary(context).description,selectionModel.registrationDescription(context)].filter(Boolean).join(' · ');
-            if(appointment && index===4){cell.textContent='';const name=document.createElement('span');name.className='agenda-patient-name';name.classList.toggle('is-departed',context.presentation?.strikethrough===true);name.textContent=value;cell.appendChild(name);appendPresentationBadges(cell,context);const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
+            if(appointment && index===4){cell.textContent='';const name=document.createElement('span');name.className='agenda-patient-name';name.classList.toggle('is-departed',context.presentation?.strikethrough===true);name.textContent=value;cell.appendChild(name);const indicators=document.createElement('span');indicators.className='agenda-day-indicators';appendPresentationBadges(indicators,context);cell.appendChild(indicators);const care=document.createElement('small');care.className='agenda-day-attention';care.textContent='Atención: '+window.AgendaOperationalForm.stateSummary(context).care;cell.appendChild(care);}
             entry.appendChild(cell);
         });
 
@@ -1218,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const day = byDate.get(cell.dataset.date);
                 if (!day || !['plomo','verde','amarillo','rojo'].includes(day.color)) { return; }
                 cell.dataset.capacity = day.color;
-                cell.title = doctor.nombre + ': ' + (day.color === 'plomo' ? 'Sin horario' : day.ocupacion_segura + '/' + day.capacidad_regular + ' intervalos asegurados ≥50% (' + day.porcentaje + '%)');
+                cell.title = doctor.nombre + ': ' + (day.color === 'plomo' ? 'Sin horario' : day.ocupacion_segura + '/' + day.capacidad_regular + ' intervalos con pago real positivo atribuible (' + day.porcentaje + '%)');
                 cell.setAttribute('aria-label', DAY_FORMAT.format(parseIso(day.fecha)) + '. ' + cell.title);
             });
         } catch (_) { if (request === capacityRequest) { el.miniMonth.title = 'Semáforo temporalmente no disponible'; } }

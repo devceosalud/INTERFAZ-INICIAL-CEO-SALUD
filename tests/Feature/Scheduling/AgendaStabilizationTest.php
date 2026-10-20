@@ -40,7 +40,7 @@ class AgendaStabilizationTest extends TestCase
         $shift = CashierShift::create(['cashier_id' => $box->id, 'user_id' => $actor ?? $this->actor->id,
             'monto_apertura' => 0, 'abierto_en' => now(), 'estado' => 'ABIERTO']);
         for ($i = 0; $i < $series; $i++) {
-            VoucherSerie::create(['cashier_id' => $box->id, 'tipo_comprobante' => 'TICKET', 'serie' => 'Q'.str_pad($box->id * 10 + $i, 3, '0', STR_PAD_LEFT),
+            VoucherSerie::create(['cashier_id' => $box->id, 'tipo_comprobante' => 'TICKET', 'serie' => 'Q'.str_pad(strtoupper(base_convert((string) ($box->id * 10 + $i), 10, 36)), 3, '0', STR_PAD_LEFT),
                 'correlativo_actual' => 0, 'estado' => 'ACTIVO']);
         }
         return $shift;

@@ -25,7 +25,13 @@ class RegularCapacityService
             ->when($query->siteId() !== null, fn ($q) => $q->where(fn ($s) => $s->where('site_id', $query->siteId())->orWhereNull('site_id')))
             ->get(['id', 'doctor_id', 'fecha_cita', 'hora_cita', 'duracion_cita', 'precio_programado', 'total_pagado', 'estado_agenda', 'economic_source']);
         $positions = app(\App\Services\Billing\AppointmentEconomicPosition::class)->forAppointments($paid);
-        $paid = $paid->filter(fn ($a) => $positions[$a->id]['secured']);
+        // Display occupied regular slots with real, individually attributed positive money.
+        // This metric does not redefine secured (50%), confirmation or availability.
+        $paid = $paid->filter(function ($a) use ($positions) {
+            $p = $positions[$a->id];
+            return $p['authority'] === 'PAYMENTS' && !$p['allocation_required']
+                && $p['paid_cents'] > 0 && $p['effective_cents'] > 0;
+        });
 
         $result = [];
         foreach ($query->doctorIds() as $doctorId) {

@@ -44,6 +44,20 @@ final class IsolatedAgendaV2Qa
         $normalize=fn($v)=>strtolower(rtrim(str_replace('\\','/',$v),'/'));
         if($identity->db!==$db||(int)$identity->port!==($ci?3306:33324)||!str_starts_with($identity->version,'11.8.9-MariaDB')
             ||$normalize($identity->dir)!==$normalize($ci?'/var/lib/mysql':$root.'/storage/app/qa-v2/mariadb'))throw new \RuntimeException('V2 QA identity mismatch.');
+        // Browser replays may use the original fictional cohort's day without changing any
+        // appointment or weakening same-day eligibility. Never active in PHP suites or production.
+        $clock=$root.'/storage/app/qa-v2/browser-clock.json';
+        if($browser && is_file($clock)) {
+            $qaClock=json_decode(file_get_contents($clock),true,512,JSON_THROW_ON_ERROR);
+            if(($qaClock['scope']??'')!=='LOCAL_FICTITIOUS_CLOCK_ONLY'
+                || !preg_match('/^\d{4}-\d{2}-\d{2}$/D',$qaClock['date']??''))throw new \RuntimeException('Invalid QA replay clock.');
+            $instant=\Carbon\Carbon::createFromFormat('!Y-m-d',$qaClock['date'],'America/Lima');
+            if(!$instant || $instant->format('Y-m-d')!==$qaClock['date'])throw new \RuntimeException('Invalid QA replay day.');
+            \Carbon\Carbon::setTestNow($instant->setTime(23,59));
+            // Session cookies avoid browser expiry in the real clock while replaying a prior day.
+            // Authentication, CSRF and server-side session checks remain enabled.
+            config(['session.expire_on_close'=>true]);
+        }
         Http::preventStrayRequests();Mail::fake();Queue::fake();Notification::fake();
         return $app;
     }
