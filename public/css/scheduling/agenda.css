@@ -18,7 +18,7 @@
     --agenda-surface-muted: #f3f5f6;
     --agenda-accent: #176b70;
     --agenda-accent-dark: #0f5054;
-    --agenda-day-columns: 64px 62px 104px 90px minmax(280px, 1fr);
+    --agenda-day-columns: 55px 108px 90px 90px minmax(260px, 1fr);
     --agenda-day-min-width: 600px;
     display: flex;
     flex-direction: column;
@@ -2146,3 +2146,5 @@ body.agenda-viewport .swal2-container {
     .agenda-operations__pair .agenda-doctors { max-height: none; }
     .agenda-operational-fields .agenda-patient-form-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.agenda-consultation-reason{grid-column:1/-1}.agenda-consultation-reason textarea{resize:vertical;min-height:64px;line-height:1.5}.agenda-consultation-reason textarea[aria-invalid="true"]{border-color:#a52c3e;outline-color:#a52c3e}

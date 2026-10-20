@@ -1,0 +1,641 @@
+{
+  "baseline": "dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace",
+  "branch": "feat/agenda-operativa-flujo-reevaluaciones-v2",
+  "scope": "Exclusively synthetic data; no production access or deployment",
+  "versions": {
+    "php": "8.3.35",
+    "laravel": "9.52.21",
+    "phpunit": "9.6.34",
+    "mariadb": "11.8.9",
+    "node": "26.3.0",
+    "chrome": "155.0.8059.79"
+  },
+  "php_sqlite": {
+    "tests": 1074,
+    "assertions": 9389,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "php_mariadb": {
+    "tests": 1081,
+    "assertions": 9458,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "javascript": {
+    "tests": 315,
+    "passed": 315,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "stage": "after",
+    "browser": "155.0.8059.79",
+    "started": "2026-10-19T13:30:45.795Z",
+    "cases": [
+      {
+        "name": "Matriz de reevaluación y corrección entre tres sesiones",
+        "result": "PASS"
+      },
+      {
+        "name": "Matriz y corrección se sincronizan en ambas agendas y cola de Nicol sin recarga",
+        "result": "PASS"
+      },
+      {
+        "name": "Filtros de búsqueda, médico, especialidad, sede, estado, color y reevaluación conservan totales",
+        "result": "PASS"
+      },
+      {
+        "name": "Borradores sobreviven a filtros, pestañas, actualización remota y conflicto 409",
+        "result": "PASS"
+      },
+      {
+        "name": "Motivo histórico No registrado; observación de un carácter aceptada y espacios rechazados",
+        "result": "PASS"
+      },
+      {
+        "name": "Motivo obligatorio visible, foco y conservación ante 422; reserva y pago confirman una sola cita",
+        "result": "PASS"
+      },
+      {
+        "name": "Roles, supervisión y registro heredado se validan en servidor; CSRF permanece real",
+        "result": "PASS"
+      },
+      {
+        "name": "Retroceder atención funciona desde las acciones superiores",
+        "result": "PASS"
+      },
+      {
+        "name": "MFR se habilita visualmente sin DevTools y Traumatología permanece bloqueada",
+        "result": "PASS"
+      },
+      {
+        "name": "Paciente nuevo reutiliza un único motivo visible dentro y fuera del modal",
+        "result": "PASS"
+      },
+      {
+        "name": "Eventos históricos del hotfix se reconocen sin procedimientos inventados ni pagos",
+        "result": "PASS"
+      },
+      {
+        "name": "COMERCIAL sin edición general marca y desmarca ATENDIDO; colores aprobados y misma cita",
+        "result": "PASS"
+      },
+      {
+        "name": "Permiso directo no habilita estados, pagos, solicitudes, realizados ni supervisión",
+        "result": "PASS"
+      },
+      {
+        "name": "Desmarcar origen directo mantiene el automático y corregir progreso mantiene la marca directa",
+        "result": "PASS"
+      },
+      {
+        "name": "Retirar autorización parcial conserva marca directa y la auditoría de ambos orígenes",
+        "result": "PASS"
+      },
+      {
+        "name": "Cambio directo desde segunda sesión conserva borrador y actualiza el detalle después de guardar",
+        "result": "PASS"
+      },
+      {
+        "name": "Historial completo paginado conserva snapshot, fechas y posición mientras llegan acciones nuevas",
+        "result": "PASS"
+      },
+      {
+        "name": "Capturas de retorno unificado y permisos en escritorio y móvil",
+        "result": "PASS"
+      },
+      {
+        "name": "Capturas revisables y geometría en 1366, 1440, 1920 y móvil",
+        "result": "PASS"
+      }
+    ],
+    "states": [
+      {
+        "label": "2 solicitados / 0 realizados",
+        "id": 19,
+        "http_status": 200,
+        "requested": 2,
+        "done": 0,
+        "review": {
+          "status": "NOT_READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:21:43.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "2 solicitados / 1 realizado sin envío",
+        "id": 19,
+        "http_status": 200,
+        "requested": 2,
+        "done": 1,
+        "review": {
+          "status": "NOT_READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:21:43.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "2/2 automático",
+        "id": 19,
+        "http_status": 200,
+        "requested": 2,
+        "done": 2,
+        "review": {
+          "status": "READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:30:55.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "LISTO_REEVALUACION"
+      },
+      {
+        "label": "Corrección automática 2/2 a 1/2",
+        "id": 19,
+        "http_status": 200,
+        "requested": 2,
+        "done": 1,
+        "review": {
+          "status": "NOT_READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:30:55.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "3/2 sin envío",
+        "id": 22,
+        "http_status": 200,
+        "requested": 3,
+        "done": 2,
+        "review": {
+          "status": "NOT_READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:21:20.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "3/3 automático",
+        "id": 22,
+        "http_status": 200,
+        "requested": 3,
+        "done": 3,
+        "review": {
+          "status": "READY",
+          "origin": "AUTOMATIC",
+          "ready_at": "2026-10-19T13:31:00.000000Z",
+          "reason": null,
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "LISTO_REEVALUACION"
+      },
+      {
+        "label": "Sin solicitudes",
+        "id": 23,
+        "http_status": 200,
+        "requested": 0,
+        "done": 0,
+        "review": {
+          "status": "NOT_READY",
+          "origin": null,
+          "ready_at": null,
+          "reason": null,
+          "decision_by": null,
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "Parcial antes de autorización",
+        "id": 20,
+        "http_status": 200,
+        "requested": 2,
+        "done": 1,
+        "review": {
+          "status": "WITHDRAWN",
+          "origin": "MANUAL",
+          "ready_at": "2026-10-19T13:21:27.000000Z",
+          "reason": "Retirada explícita ficticia antes de repetir la matriz",
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": null
+        },
+        "presentation": "SIN_PAGO_REAL"
+      },
+      {
+        "label": "Parcial autorizado por ADMISION",
+        "id": 20,
+        "http_status": 200,
+        "requested": 2,
+        "done": 1,
+        "review": {
+          "status": "READY",
+          "origin": "MANUAL",
+          "ready_at": "2026-10-19T13:31:06.000000Z",
+          "reason": "Envío parcial ficticio explícito para investigar la ronda 2",
+          "decision_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          },
+          "authorized_by": {
+            "id": 8,
+            "name": "ADMISSION INTEGRACION FICTICIO"
+          }
+        },
+        "presentation": "LISTO_REEVALUACION"
+      }
+    ],
+    "page_errors": [],
+    "created": 35,
+    "finished": "2026-10-19T13:33:41.228Z"
+  },
+  "source_manifest": "FUENTES_SHA256.json",
+  "tested_commit": "Exact execution SHA is recorded in the PR and the local ignored execution record; this avoids self-reference inside the commit.",
+  "ci": "See PR checks for the exact commit; local results do not imply CI success.",
+  "previous_round_58c5f92": {
+    "php_sqlite": {
+      "tests": 1039,
+      "assertions": 8513,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "php_mariadb": {
+      "tests": 1044,
+      "assertions": 8561,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "javascript": {
+      "tests": 309,
+      "passed": 309,
+      "failures": 0,
+      "skipped": 0
+    },
+    "browser": {
+      "cases": [
+        {
+          "name": "Maestro Profesional/Servicio: MFR seleccionable al cambiar profesional y reabrir; Traumatología bloqueada sin excepción",
+          "result": "PASS"
+        },
+        {
+          "name": "ADMINISTRADOR selecciona exactamente dos procedimientos mediante confirmación explícita",
+          "result": "PASS"
+        },
+        {
+          "name": "ADMISION solo ve lo solicitado, registra realizado y envía manualmente con motivo",
+          "result": "PASS"
+        },
+        {
+          "name": "COMERCIAL consulta pero recibe 403 en solicitudes, realizados y envío; creación heredada bloqueada",
+          "result": "PASS"
+        },
+        {
+          "name": "Reevaluación automática se sincroniza en Agenda operativa y cola de Nicol sin recargar",
+          "result": "PASS"
+        },
+        {
+          "name": "Refresco de admisión conserva checkboxes y texto sin guardar incluso después de perder foco",
+          "result": "PASS"
+        },
+        {
+          "name": "Retroceder estado requiere motivo, restaura el anterior y conserva auditoría",
+          "result": "PASS"
+        },
+        {
+          "name": "Pago real desde reserva confirma automáticamente y oculta confirmación adicional",
+          "result": "PASS"
+        },
+        {
+          "name": "CSRF real rechaza escrituras sin token y páginas sensibles excluyen Clarity",
+          "result": "PASS"
+        },
+        {
+          "name": "Escritorio y móvil 390×844 muestran procedimientos, botones y cola legibles",
+          "result": "PASS"
+        }
+      ],
+      "page_errors": [],
+      "started": "2026-10-16T22:03:18.918Z",
+      "finished": "2026-10-16T22:04:24.355Z",
+      "viewports": [
+        "1440x1000",
+        "390x844"
+      ],
+      "csrf": "real middleware, missing token HTTP 419",
+      "network": "loopback-only, CSP and browser route blocking"
+    }
+  },
+  "round": "Integration of main and hotfixes 47, 48, 49",
+  "previous_round_38a0446": {
+    "php_sqlite": {
+      "tests": 1053,
+      "assertions": 8926,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "php_mariadb": {
+      "tests": 1058,
+      "assertions": 8974,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "javascript": {
+      "tests": 312,
+      "passed": 312,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser": {
+      "stage": "after",
+      "browser": "155.0.8059.79",
+      "started": "2026-10-17T16:03:36.651Z",
+      "cases": [
+        {
+          "name": "Matriz de reevaluación y corrección entre tres sesiones",
+          "result": "PASS"
+        },
+        {
+          "name": "Matriz y corrección se sincronizan en ambas agendas y cola de Nicol sin recarga",
+          "result": "PASS"
+        },
+        {
+          "name": "Filtros de búsqueda, médico, especialidad, sede, estado, color y reevaluación conservan totales",
+          "result": "PASS"
+        },
+        {
+          "name": "Borradores sobreviven a filtros, pestañas, actualización remota y conflicto 409",
+          "result": "PASS"
+        },
+        {
+          "name": "Motivo histórico No registrado; observación de un carácter aceptada y espacios rechazados",
+          "result": "PASS"
+        },
+        {
+          "name": "Motivo obligatorio visible, foco y conservación ante 422; reserva y pago confirman una sola cita",
+          "result": "PASS"
+        },
+        {
+          "name": "Roles, supervisión y registro heredado se validan en servidor; CSRF permanece real",
+          "result": "PASS"
+        },
+        {
+          "name": "Retroceder atención funciona desde las acciones superiores",
+          "result": "PASS"
+        },
+        {
+          "name": "MFR se habilita visualmente sin DevTools y Traumatología permanece bloqueada",
+          "result": "PASS"
+        },
+        {
+          "name": "Paciente nuevo reutiliza un único motivo visible dentro y fuera del modal",
+          "result": "PASS"
+        },
+        {
+          "name": "Capturas revisables y geometría en 1366, 1440, 1920 y móvil",
+          "result": "PASS"
+        }
+      ],
+      "states": [
+        {
+          "label": "2 solicitados / 0 realizados",
+          "id": 5,
+          "http_status": 200,
+          "requested": 2,
+          "done": 0,
+          "review": {
+            "status": "NOT_READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:00:58.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "2 solicitados / 1 realizado sin envío",
+          "id": 5,
+          "http_status": 200,
+          "requested": 2,
+          "done": 1,
+          "review": {
+            "status": "NOT_READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:00:58.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "2/2 automático",
+          "id": 5,
+          "http_status": 200,
+          "requested": 2,
+          "done": 2,
+          "review": {
+            "status": "READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:03:44.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "LISTO_REEVALUACION"
+        },
+        {
+          "label": "Corrección automática 2/2 a 1/2",
+          "id": 5,
+          "http_status": 200,
+          "requested": 2,
+          "done": 1,
+          "review": {
+            "status": "NOT_READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:03:44.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "3/2 sin envío",
+          "id": 8,
+          "http_status": 200,
+          "requested": 3,
+          "done": 2,
+          "review": {
+            "status": "NOT_READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:00:45.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "3/3 automático",
+          "id": 8,
+          "http_status": 200,
+          "requested": 3,
+          "done": 3,
+          "review": {
+            "status": "READY",
+            "origin": "AUTOMATIC",
+            "ready_at": "2026-10-17T16:03:49.000000Z",
+            "reason": null,
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "LISTO_REEVALUACION"
+        },
+        {
+          "label": "Sin solicitudes",
+          "id": 9,
+          "http_status": 200,
+          "requested": 0,
+          "done": 0,
+          "review": {
+            "status": "NOT_READY",
+            "origin": null,
+            "ready_at": null,
+            "reason": null,
+            "decision_by": null,
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "Parcial antes de autorización",
+          "id": 6,
+          "http_status": 200,
+          "requested": 2,
+          "done": 1,
+          "review": {
+            "status": "WITHDRAWN",
+            "origin": "MANUAL",
+            "ready_at": "2026-10-17T16:00:50.000000Z",
+            "reason": "Retirada explícita ficticia antes de repetir la matriz",
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": null
+          },
+          "presentation": "SIN_PAGO_REAL"
+        },
+        {
+          "label": "Parcial autorizado por ADMISION",
+          "id": 6,
+          "http_status": 200,
+          "requested": 2,
+          "done": 1,
+          "review": {
+            "status": "READY",
+            "origin": "MANUAL",
+            "ready_at": "2026-10-17T16:03:52.000000Z",
+            "reason": "Envío parcial ficticio explícito para investigar la ronda 2",
+            "decision_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            },
+            "authorized_by": {
+              "id": 5,
+              "name": "ADMISSION RONDA 2 FICTICIO"
+            }
+          },
+          "presentation": "LISTO_REEVALUACION"
+        }
+      ],
+      "page_errors": [],
+      "created": 18,
+      "finished": "2026-10-17T16:04:48.860Z",
+      "viewports": [
+        "1366x768",
+        "1440x900",
+        "1920x1080",
+        "390x844"
+      ]
+    }
+  },
+  "checkpoint": "38a0446e6c6c30e0a9ef1a9e03bf5a9563ea1849",
+  "concurrency_races": 7,
+  "visual_review": "Chrome 1366x768, 1440x900, 1920x1080, 390x844; additional admin procedure visibility check",
+  "historical_baseline_9c3b93a": {
+    "sha": "9c3b93a5086172d30fbf59fc9c4c2c40df84a645",
+    "php": {
+      "tests": 1013,
+      "assertions": 8230,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "javascript": 302
+  },
+  "baseline_verification": "Remote Git reference and merge parent; reported suites are the integrated candidate, not standalone main."
+}

@@ -30,7 +30,7 @@ class AgendaStabilizationTest extends TestCase
     private function grant(string $permission): void { $this->actor->givePermissionTo(Permission::findOrCreate($permission, 'web')); }
     private function payload(array $changes = []): array
     {
-        return array_replace(['request_key' => (string) Str::uuid(), 'mode' => 'RESERVE', 'booking_type' => 'REGULAR',
+        return array_replace(['request_key' => (string) Str::uuid(), 'mode' => 'RESERVE', 'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro',
             'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $this->catalog['service']->id,
             'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30], $changes);
     }
@@ -40,7 +40,7 @@ class AgendaStabilizationTest extends TestCase
         $shift = CashierShift::create(['cashier_id' => $box->id, 'user_id' => $actor ?? $this->actor->id,
             'monto_apertura' => 0, 'abierto_en' => now(), 'estado' => 'ABIERTO']);
         for ($i = 0; $i < $series; $i++) {
-            VoucherSerie::create(['cashier_id' => $box->id, 'tipo_comprobante' => 'TICKET', 'serie' => 'Q'.str_pad($box->id * 10 + $i, 3, '0', STR_PAD_LEFT),
+            VoucherSerie::create(['cashier_id' => $box->id, 'tipo_comprobante' => 'TICKET', 'serie' => 'Q'.str_pad(strtoupper(base_convert((string) ($box->id * 10 + $i), 10, 36)), 3, '0', STR_PAD_LEFT),
                 'correlativo_actual' => 0, 'estado' => 'ACTIVO']);
         }
         return $shift;
@@ -168,14 +168,14 @@ class AgendaStabilizationTest extends TestCase
         $this->assertDatabaseCount('appointments', 0); $this->assertDatabaseCount('payments', 0);
     }
 
-    public function test_register_advance_and_confirm_are_distinct_and_confirmation_does_not_require_another_charge(): void
+    public function test_register_advance_confirms_automatically_and_compatibility_confirmation_does_not_charge(): void
     {
         $this->grant(C::SUBMIT_PAYMENT); $this->shift();
         $id = $this->sendAppointment('scheduling.mvp.agenda.appointments.store', $this->payload())->assertCreated()->json('appointment.appointment_id');
         $url = route('scheduling.mvp.agenda.payments', $id);
         $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => true])->assertUnprocessable();
         $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => false, 'payment' => ['amount' => '30.00', 'method' => 'EFECTIVO']])
-            ->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION');
+            ->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
         $this->actor->revokePermissionTo(C::SUBMIT_PAYMENT);
         $key = (string) Str::uuid();
         $this->postJson($url, ['request_key' => $key, 'confirm' => true])->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA');
@@ -188,19 +188,19 @@ class AgendaStabilizationTest extends TestCase
         return ['omitted' => [[]], 'false' => [['confirm' => false]], 'zero' => [['confirm' => 0]], 'form-zero' => [['confirm' => '0']]];
     }
     /** @dataProvider nonConfirmationIntents */
-    public function test_advance_at_fifty_percent_never_confirms_without_explicit_true(array $intent): void
+    public function test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent(array $intent): void
     {
         $this->grant(C::SUBMIT_PAYMENT); $this->shift();
         $id = $this->sendAppointment('scheduling.mvp.agenda.registrations', $this->payload())->assertCreated()->json('appointment.appointment_id');
         $url = route('scheduling.mvp.agenda.payments', $id);
         $data = $intent + ['request_key' => (string) Str::uuid(), 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']];
         for ($i = 0; $i < 2; $i++) {
-            $this->postJson($url, $data)->assertOk()->assertJsonPath('appointment.estado_agenda', 'PENDIENTE_CONFIRMACION')
+            $this->postJson($url, $data)->assertOk()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA')
                 ->assertJsonPath('appointment.tipo_agendamiento', 'REGULAR')->assertJsonPath('economy.pago_real', '50.00');
         }
         $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('vouchers', 1);
         $this->assertDatabaseCount('appointment_operations', 2); $this->assertEquals(50, Payment::sum('monto'));
-        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); // Paid pending protects time without confirming.
+        $this->assertSame(1, Appointment::consumingRegularSlot()->count()); // A new positive payment confirms and occupies once.
         $this->postJson($url, ['request_key' => (string) Str::uuid(), 'confirm' => 'true'])->assertUnprocessable()->assertJsonValidationErrors('confirm');
         $this->assertDatabaseCount('payments', 1); $this->assertDatabaseCount('appointment_operations', 2);
     }

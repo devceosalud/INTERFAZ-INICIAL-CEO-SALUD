@@ -111,6 +111,7 @@ class ServicePriceCatalogTest extends TestCase
     /** @dataProvider entries */
     public function test_paid_confirmation_and_price_snapshot_survive_catalogue_edits(string $entry): void
     {
+        if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         foreach ([C::CREATE, C::SUBMIT_PAYMENT] as $p) {
             $this->actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
         }
@@ -118,9 +119,9 @@ class ServicePriceCatalogTest extends TestCase
         $box = Cashier::create(['nombre' => 'CAJA FICTICIA', 'estado' => 'ACTIVO']);
         CashierShift::create(['cashier_id' => $box->id, 'user_id' => $this->actor->id, 'monto_apertura' => 0, 'abierto_en' => now(), 'estado' => 'ABIERTO']);
         VoucherSerie::create(['cashier_id' => $box->id, 'tipo_comprobante' => 'TICKET', 'serie' => 'Q001', 'correlativo_actual' => 0, 'estado' => 'ACTIVO']);
-        $d = ['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR', 'patient_id' => $p->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $entry === 'legacy' ? $this->catalog['doctorService']->id : $this->catalog['service']->id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30, 'payment' => ['amount' => '30.00', 'method' => 'EFECTIVO'], 'total_pagado' => '30.00', 'metodo_pago' => 'EFECTIVO'];
+        $d = ['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM', 'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro', 'patient_id' => $p->id, 'doctor_id' => $this->catalog['doctor']->id, 'service_id' => $entry === 'legacy' ? $this->catalog['doctorService']->id : $this->catalog['service']->id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00', 'duracion_cita' => 30, 'payment' => ['amount' => '30.00', 'method' => 'EFECTIVO'], 'total_pagado' => '30.00', 'metodo_pago' => 'EFECTIVO'];
         $url = $entry === 'legacy' ? '/admissionist/appointment/store' : '/scheduling-mvp/agenda/registrations';
-        $this->postJson($url, $d)->assertSuccessful();
+        $this->agendaCreationResponse($entry, $d)->assertSuccessful();
         $a = Appointment::firstOrFail();
         $before = $a->getAttributes();
         $this->assertSame('CONFIRMADA', $a->estado_agenda);
@@ -128,7 +129,7 @@ class ServicePriceCatalogTest extends TestCase
         $this->assertEquals(30, Payment::sum('monto'));
         $this->assertNull($a->additional_rate_id);
         $this->assertSame('PROFESSIONAL', $a->price_source);
-        $this->postJson($url, $d)->assertSuccessful();
+        $this->agendaCreationResponse($entry, $d)->assertSuccessful();
         $this->assertDatabaseCount('payments', 1);
         $this->catalog['doctorService']->update(['precio_primera_consulta' => 300]);
         $this->quote()->assertOk()->assertJsonPath('precio_programado', '300.00');

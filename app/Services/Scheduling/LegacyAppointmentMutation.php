@@ -29,7 +29,7 @@ class LegacyAppointmentMutation
         $actor = $request->user();
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($data['appointment_id'])->firstOr(fn () => abort(404));
         foreach (['precio_programado', 'total_pagado', 'saldo_pendiente', 'estado_pagado', 'metodo_pago', 'numero_operacion',
-            'es_exonerado', 'autorizado_por', 'motivo_exoneracion', 'pricing_rule','referral','reevaluation_indication_id','referral_origin','referral_recorded_by_user_id','discount', 'catalog_price', 'discount_amount', 'discount_actor_user_id', 'payment', 'estado_agenda', 'tipo_agendamiento', 'duracion_cita', 'patient_id', 'additional_rate_id'] as $field) {
+            'attendance_mode', 'es_exonerado', 'autorizado_por', 'motivo_exoneracion', 'pricing_rule','referral','reevaluation_indication_id','referral_origin','referral_recorded_by_user_id','discount', 'catalog_price', 'discount_amount', 'discount_actor_user_id', 'payment', 'estado_agenda', 'tipo_agendamiento', 'duracion_cita', 'patient_id', 'additional_rate_id'] as $field) {
             if ($request->exists($field)) {
                 throw ValidationException::withMessages([$field => 'Esta edición no modifica dinero, precio ni autorización. Usa las acciones operativas de Agenda.']);
             }
@@ -39,6 +39,7 @@ class LegacyAppointmentMutation
             Doctor::whereIn('id', $doctorIds)->orderBy('id')->lockForUpdate()->get();
             $a = Appointment::visibleToAgendaUser($actor->id)->lockForUpdate()->whereKey($original->id)->firstOr(fn () => abort(404));
             abort_if((int) $a->doctor_id !== (int) $original->doctor_id, 409, 'La cita cambió de médico. Actualiza antes de editar.');
+            abort_if(($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA' && in_array($data['estado_cita'],['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','EN_ATENCION','ATENDIDO'],true) && $a->estado_cita!==$data['estado_cita'],422,'El flujo de atención remota está pendiente de definición. No se registra presencia física.');
             AppointmentClosingGuard::assertLegacyUpdate($a, $data['estado_cita']);
             if ($a->estado_cita === 'ATENDIDO' && $data['estado_cita'] !== 'ATENDIDO') {
                 throw ValidationException::withMessages(['estado_cita' => 'Una cita atendida no se reabre desde la edición.']);

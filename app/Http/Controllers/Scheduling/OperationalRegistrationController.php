@@ -40,12 +40,13 @@ class OperationalRegistrationController extends Controller
     }
     public function economy(Request $request, int $appointmentId, AppointmentEconomicPosition $position)
     {
-        $a = Appointment::visibleToAgendaUser($request->user()->id)->whereKey($appointmentId)->firstOr(fn () => abort(404));
-        $canEdit = $request->user()->can(\App\Support\Scheduling\SchedulingCapability::UPDATE);
+        $a = Appointment::visibleToOperationalUser($request->user())->whereKey($appointmentId)->firstOr(fn () => abort(404));
+        $canEdit = \App\Services\Scheduling\AppointmentManagement::canEdit($a,$request->user());
         return response()->json($position->publicPosition($a) + app(\App\Services\Scheduling\RegularReservationAvailability::class)->describe($a) + [
             'additional_conversion'=>app(\App\Services\Scheduling\AdditionalReservationConversion::class)->offer($a,$request->user()),
+            'management'=>\App\Services\Scheduling\AppointmentManagement::payload($a,$request->user()),
             'can_confirm_additional'=>$a->tipo_agendamiento!=='ADICIONAL'||$request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE_ADDITIONAL),
-            'can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
+            'payment_review'=>app(\App\Services\Scheduling\AppointmentPaymentReview::class)->payload($a,$request->user()), 'can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
                 && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]
             + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'has_diabetic_wound', 'motivo_exoneracion',
                 'duration_slots','pricing_rule', 'referral_origin', 'discount_reason', 'catalog_price', 'discount_type', 'discount_value', 'discount_amount']));
@@ -56,7 +57,7 @@ class OperationalRegistrationController extends Controller
             $payload = json_decode((string) $request->input('payload'), true);
             abort_unless(is_array($payload), 422); $request->merge($payload);
         }
-        $data = $request->validate(\App\Services\Scheduling\AppointmentPaymentProofs::rules() + ['request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
+        $data = $request->validate(\App\Services\Scheduling\AppointmentPaymentProofs::rules() + ['expected_revision'=>'sometimes|required|string|size:64|regex:/^[a-f0-9]+$/', 'request_key' => 'required|uuid', 'confirm' => 'sometimes|boolean',
             'payment' => 'nullable|array:amount,method,operation,origin',
             'payment.amount' => 'nullable|numeric|min:0|max:99999999|regex:/\A[0-9]+(?:\.[0-9]{1,2})?\z/',
             'payment.method' => ['nullable', \Illuminate\Validation\Rule::in(\App\Services\Billing\VoucherPaymentRecorder::METHODS)],

@@ -105,14 +105,14 @@ class AdmissionTaskTest extends TestCase
         $this->assertStringNotContainsString('CONTROL OPERATIVO MUY PRIVADO', $agenda->getContent());
     }
 
-    public function test_private_reservation_is_not_exposed_to_admin_creator_or_unrelated_commercial(): void
+    public function test_admin_can_read_private_reservation_but_task_writes_and_unrelated_commercial_remain_restricted(): void
     {
         $owner = $this->agendaReader('COMERCIAL');
         $other = $this->agendaReader('COMERCIAL');
         $a = $this->appointment();
         $this->createTask($a, 'Pendiente sólo de su responsable')->assertCreated();
         $a->forceFill(['estado_agenda' => 'PENDIENTE_CONFIRMACION', 'responsible_user_id' => $owner->id])->save();
-        $this->getJson(route('scheduling.mvp.admission.detail', $a->id))->assertNotFound();
+        $this->getJson(route('scheduling.mvp.admission.detail', $a->id))->assertOk()->assertJsonPath('operational_tasks.0.text', 'Pendiente sólo de su responsable');
         $this->createTask($a)->assertNotFound();
         $this->actingAs($other);
         $this->getJson(route('scheduling.mvp.admission.detail', $a->id))->assertNotFound();
@@ -153,7 +153,7 @@ class AdmissionTaskTest extends TestCase
             'text' => 'Otra tarea', 'request_key' => (string) Str::uuid(), 'total_pagado' => 900,
         ])->assertUnprocessable();
         $this->createTask($a, '  ')->assertUnprocessable();
-        $this->createTask($a, str_repeat('A', 1001))->assertUnprocessable();
+        $this->createTask($a, str_repeat('A', 16001))->assertUnprocessable();
         $id = DB::table('appointment_admission_tasks')->value('id');
         $this->toggle($a, $id, false, true)->assertOk();
         $this->toggle($a, $id, false, true)->assertConflict();

@@ -9,7 +9,7 @@ use App\Support\Scheduling\SchedulingCapability as C;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/** Temporary operational flag. Never an order, procedure or pricing entitlement. */
+/** Direct-return event ledger, including production hotfix history. Never a clinical indication. */
 final class ManualReevaluationService
 {
     public const MARKED = 'REEVALUACION_MANUAL_MARCADA';
@@ -36,14 +36,16 @@ final class ManualReevaluationService
             $q->from('appointment_events')->selectRaw('MAX(id)')
                 ->whereIn('appointment_id', $appointments->pluck('id'))
                 ->whereIn('event_type', [self::MARKED, self::CLEARED])->groupBy('appointment_id');
-        })->get()->keyBy('appointment_id');
+        })->with('actor:id,name')->get()->keyBy('appointment_id');
         foreach ($appointments as $a) $a->setRelation('manualReevaluationEvent', $latest->get($a->id));
     }
 
     public function state(Appointment $a): array
     {
         $event = $a->relationLoaded('manualReevaluationEvent') ? $a->getRelation('manualReevaluationEvent') : null;
-        return ['marked' => $event?->event_type === self::MARKED, 'version' => (int) ($event?->id ?? 0)];
+        return ['marked' => $event?->event_type === self::MARKED, 'version' => (int) ($event?->id ?? 0),
+            'at' => $event?->occurred_at?->toISOString(),
+            'actor' => $event ? ['id'=>(int)$event->actor_user_id,'name'=>$event->actor?->name ?? 'Usuario no disponible'] : null];
     }
 
     public function set(int $id, User $actor, array $data): Appointment

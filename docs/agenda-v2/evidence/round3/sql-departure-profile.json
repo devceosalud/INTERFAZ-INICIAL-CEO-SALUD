@@ -1,0 +1,65 @@
+{
+    "fictitious_only": true,
+    "service_ms": 30.44,
+    "query_count": 14,
+    "sql_ms": 15.26,
+    "remaining_transaction_level": 0,
+    "queries": [
+        {
+            "sql_template": "select * from `permissions`",
+            "milliseconds": 0.3
+        },
+        {
+            "sql_template": "select `roles`.*, `role_has_permissions`.`permission_id` as `pivot_permission_id`, `role_has_permissions`.`role_id` as `pivot_role_id` from `roles` inner join `role_has_permissions` on `roles`.`id` = `role_has_permissions`.`role_id` where `role_has_permissions`.`permission_id` in (1, 2, 3, 4, 5, 6, 7, 8, 9)",
+            "milliseconds": 0.55
+        },
+        {
+            "sql_template": "select `permissions`.*, `model_has_permissions`.`model_id` as `pivot_model_id`, `model_has_permissions`.`permission_id` as `pivot_permission_id`, `model_has_permissions`.`model_type` as `pivot_model_type` from `permissions` inner join `model_has_permissions` on `permissions`.`id` = `model_has_permissions`.`permission_id` where `model_has_permissions`.`model_id` in (7) and `model_has_permissions`.`model_type` = ?",
+            "milliseconds": 0.32
+        },
+        {
+            "sql_template": "select * from `appointments` where (`appointments`.`estado_agenda` in (?, ?) or (`appointments`.`estado_agenda` = ? and ((`appointments`.`responsible_user_id` is not null and `appointments`.`responsible_user_id` = ?) or (`appointments`.`responsible_user_id` is null and `appointments`.`user_id` = ?)))) and `appointments`.`id` = ? limit 1",
+            "milliseconds": 0.35
+        },
+        {
+            "sql_template": "insert into `appointment_operations` (`actor_user_id`, `created_at`, `payload_hash`, `request_key`, `updated_at`) values (?, ?, ?, ?, ?) on duplicate key update `request_key` = values(`request_key`)",
+            "milliseconds": 0.2
+        },
+        {
+            "sql_template": "select * from `appointment_operations` where `actor_user_id` = ? and `request_key` = ? limit 1 for update",
+            "milliseconds": 0.15
+        },
+        {
+            "sql_template": "select * from `doctors` where `doctors`.`id` = ? limit 1 for update",
+            "milliseconds": 0.11
+        },
+        {
+            "sql_template": "select * from `appointments` where (`appointments`.`estado_agenda` in (?, ?) or (`appointments`.`estado_agenda` = ? and ((`appointments`.`responsible_user_id` is not null and `appointments`.`responsible_user_id` = ?) or (`appointments`.`responsible_user_id` is null and `appointments`.`user_id` = ?)))) and `appointments`.`id` = ? limit 1 for update",
+            "milliseconds": 0.63
+        },
+        {
+            "sql_template": "select * from `doctors` where `id` in (?, ?) order by `id` asc for update",
+            "milliseconds": 0.24
+        },
+        {
+            "sql_template": "select * from `appointments` where `appointments`.`id` = ? limit 1 for update",
+            "milliseconds": 0.24
+        },
+        {
+            "sql_template": "update `appointments` set `updated_by_user_id` = ?, `hora_salida` = ?, `appointments`.`updated_at` = ? where `id` = ?",
+            "milliseconds": 1.32
+        },
+        {
+            "sql_template": "select column_name as `column_name` from information_schema.columns where table_schema = ? and table_name = ?",
+            "milliseconds": 9.86
+        },
+        {
+            "sql_template": "insert into `appointment_events` (`motivo`, `metadata`, `appointment_id`, `event_type`, `actor_user_id`, `occurred_at`, `updated_at`, `created_at`) values (?, ?, ?, ?, ?, ?, ?, ?)",
+            "milliseconds": 0.74
+        },
+        {
+            "sql_template": "update `appointment_operations` set `appointment_id` = ?, `updated_at` = ? where `id` = ?",
+            "milliseconds": 0.25
+        }
+    ]
+}

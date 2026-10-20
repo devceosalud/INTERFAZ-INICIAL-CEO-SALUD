@@ -1,0 +1,512 @@
+{
+  "stage": "before",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "geometry": {
+        "scrollWidth": 1366,
+        "width": 1366,
+        "headerTop": 52,
+        "navBottom": null,
+        "workspaceTop": 306.875
+      }
+    },
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "geometry": {
+        "scrollWidth": 1440,
+        "width": 1440,
+        "headerTop": 52,
+        "navBottom": null,
+        "workspaceTop": 306.875
+      }
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "geometry": {
+        "scrollWidth": 1920,
+        "width": 1920,
+        "headerTop": 52,
+        "navBottom": null,
+        "workspaceTop": 306.875
+      }
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "geometry": {
+        "scrollWidth": 390,
+        "width": 390,
+        "headerTop": 48,
+        "navBottom": null,
+        "workspaceTop": 123
+      }
+    }
+  ],
+  "exit": [
+    {
+      "id": 42,
+      "click_to_request_ms": 423,
+      "click_to_feedback_ms": 1291,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/42/care",
+          "method": "POST",
+          "at": 423
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 659
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/42",
+          "method": "GET",
+          "at": 965
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/42/care",
+          "status": 200,
+          "at": 655,
+          "serverTiming": "app;dur=72.46, sql;dur=15.1;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419788246.0308,
+            "domainLookupStart": 0.367,
+            "domainLookupEnd": 0.381,
+            "connectStart": 0.381,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.913,
+            "requestStart": 0.994,
+            "responseStart": 227.354,
+            "responseEnd": 236.401
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 961,
+          "serverTiming": "app;dur=147.2, sql;dur=15.76;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419788481.8618,
+            "domainLookupStart": 0.575,
+            "domainLookupEnd": 0.587,
+            "connectStart": 0.587,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.318,
+            "requestStart": 1.399,
+            "responseStart": 298.326,
+            "responseEnd": 305.961
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/42",
+          "status": 200,
+          "at": 1284,
+          "serverTiming": "app;dur=125.98, sql;dur=27.54;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419788787.61,
+            "domainLookupStart": 0.399,
+            "domainLookupEnd": 0.672,
+            "connectStart": 0.672,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.975,
+            "requestStart": 1.049,
+            "responseStart": 315.973,
+            "responseEnd": 320.467
+          }
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "click_to_request_ms": 845,
+      "click_to_feedback_ms": 1752,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/43/care",
+          "method": "POST",
+          "at": 845
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 1178
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/43",
+          "method": "GET",
+          "at": 1500
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/43/care",
+          "status": 200,
+          "at": 1172,
+          "serverTiming": "app;dur=99.37, sql;dur=33.75;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419791464.196,
+            "domainLookupStart": 0.695,
+            "domainLookupEnd": 1.15,
+            "connectStart": 1.15,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.889,
+            "requestStart": 1.967,
+            "responseStart": 321.314,
+            "responseEnd": 335.068
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 1494,
+          "serverTiming": "app;dur=130.53, sql;dur=16.5;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419791797.687,
+            "domainLookupStart": 0.637,
+            "domainLookupEnd": 0.647,
+            "connectStart": 0.647,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.069,
+            "requestStart": 1.126,
+            "responseStart": 312.709,
+            "responseEnd": 321.491
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/43",
+          "status": 200,
+          "at": 1744,
+          "serverTiming": "app;dur=101.61, sql;dur=27.36;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419792118.18,
+            "domainLookupStart": 0.24,
+            "domainLookupEnd": 0.252,
+            "connectStart": 0.252,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.722,
+            "requestStart": 0.786,
+            "responseStart": 241.285,
+            "responseEnd": 245.936
+          }
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "click_to_request_ms": 324,
+      "click_to_feedback_ms": 1067,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/44/care",
+          "method": "POST",
+          "at": 324
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 596
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/44",
+          "method": "GET",
+          "at": 827
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/44/care",
+          "status": 200,
+          "at": 593,
+          "serverTiming": "app;dur=72.49, sql;dur=13.86;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419794165.631,
+            "domainLookupStart": 0.824,
+            "domainLookupEnd": 0.854,
+            "connectStart": 0.854,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.868,
+            "requestStart": 1.949,
+            "responseStart": 264.473,
+            "responseEnd": 275.727
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 821,
+          "serverTiming": "app;dur=86.61, sql;dur=9.92;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419794438.986,
+            "domainLookupStart": 0.538,
+            "domainLookupEnd": 0.552,
+            "connectStart": 0.552,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.276,
+            "requestStart": 1.437,
+            "responseStart": 219.951,
+            "responseEnd": 230.095
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/44",
+          "status": 200,
+          "at": 1058,
+          "serverTiming": "app;dur=89.62, sql;dur=23.04;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419794668.0222,
+            "domainLookupStart": 0.165,
+            "domainLookupEnd": 0.339,
+            "connectStart": 0.339,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.638,
+            "requestStart": 0.725,
+            "responseStart": 227.253,
+            "responseEnd": 232.507
+          }
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "click_to_request_ms": 829,
+      "click_to_feedback_ms": 1692,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/45/care",
+          "method": "POST",
+          "at": 829
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 1089
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/45",
+          "method": "GET",
+          "at": 1347
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/45/care",
+          "status": 200,
+          "at": 1085,
+          "serverTiming": "app;dur=100.95, sql;dur=31.59;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419797220.729,
+            "domainLookupStart": 0.456,
+            "domainLookupEnd": 0.479,
+            "connectStart": 0.479,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.463,
+            "requestStart": 1.537,
+            "responseStart": 250.985,
+            "responseEnd": 260.692
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 1343,
+          "serverTiming": "app;dur=123.76, sql;dur=17.12;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419797481.642,
+            "domainLookupStart": 0.573,
+            "domainLookupEnd": 0.591,
+            "connectStart": 0.591,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.274,
+            "requestStart": 1.388,
+            "responseStart": 248.104,
+            "responseEnd": 256.278
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/45",
+          "status": 200,
+          "at": 1683,
+          "serverTiming": "app;dur=181.96, sql;dur=58.96;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419797737.992,
+            "domainLookupStart": 0.342,
+            "domainLookupEnd": 0.358,
+            "connectStart": 0.358,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.068,
+            "requestStart": 1.274,
+            "responseStart": 330.94,
+            "responseEnd": 337.109
+          }
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "click_to_request_ms": 826,
+      "click_to_feedback_ms": 1690,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/46/care",
+          "method": "POST",
+          "at": 826
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 1190
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/46",
+          "method": "GET",
+          "at": 1450
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/46/care",
+          "status": 200,
+          "at": 1177,
+          "serverTiming": "app;dur=106.13, sql;dur=20.11;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419801001.862,
+            "domainLookupStart": 0.417,
+            "domainLookupEnd": 0.72,
+            "connectStart": 0.72,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.484,
+            "requestStart": 1.631,
+            "responseStart": 345.09,
+            "responseEnd": 358.999
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 1445,
+          "serverTiming": "app;dur=111.76, sql;dur=12.69;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419801367.794,
+            "domainLookupStart": 0.537,
+            "domainLookupEnd": 0.565,
+            "connectStart": 0.565,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.782,
+            "requestStart": 1.94,
+            "responseStart": 249.732,
+            "responseEnd": 262.968
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/46",
+          "status": 200,
+          "at": 1680,
+          "serverTiming": "app;dur=92.22, sql;dur=22.09;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419801625.699,
+            "domainLookupStart": 0.207,
+            "domainLookupEnd": 0.217,
+            "connectStart": 0.217,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.669,
+            "requestStart": 0.725,
+            "responseStart": 226.335,
+            "responseEnd": 231.532
+          }
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "click_to_request_ms": 830,
+      "click_to_feedback_ms": 2134,
+      "requests": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/47/care",
+          "method": "POST",
+          "at": 830
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "method": "POST",
+          "at": 1151
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/47",
+          "method": "GET",
+          "at": 1535
+        }
+      ],
+      "responses": [
+        {
+          "url": "/scheduling-mvp/admission/appointments/47/care",
+          "status": 200,
+          "at": 1146,
+          "serverTiming": "app;dur=87.02, sql;dur=20.27;desc=\"16 queries\"",
+          "timing": {
+            "startTime": 1792419804140.249,
+            "domainLookupStart": 0.337,
+            "domainLookupEnd": 0.354,
+            "connectStart": 0.354,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.893,
+            "requestStart": 0.981,
+            "responseStart": 310.52,
+            "responseEnd": 318.681
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/feed",
+          "status": 200,
+          "at": 1528,
+          "serverTiming": "app;dur=202.22, sql;dur=62.94;desc=\"30 queries\"",
+          "timing": {
+            "startTime": 1792419804461.2551,
+            "domainLookupStart": 0.726,
+            "domainLookupEnd": 0.989,
+            "connectStart": 0.989,
+            "secureConnectionStart": -1,
+            "connectEnd": 1.389,
+            "requestStart": 1.596,
+            "responseStart": 372.895,
+            "responseEnd": 383.16
+          }
+        },
+        {
+          "url": "/scheduling-mvp/admission/appointments/47",
+          "status": 200,
+          "at": 2126,
+          "serverTiming": "app;dur=197.76, sql;dur=82.44;desc=\"39 queries\"",
+          "timing": {
+            "startTime": 1792419804844.33,
+            "domainLookupStart": 0.315,
+            "domainLookupEnd": 0.331,
+            "connectStart": 0.331,
+            "secureConnectionStart": -1,
+            "connectEnd": 0.938,
+            "requestStart": 1.01,
+            "responseStart": 586.467,
+            "responseEnd": 594.448
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-19T14:23:25.484Z"
+}

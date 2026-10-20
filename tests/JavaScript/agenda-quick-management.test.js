@@ -1,0 +1,8 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {reschedule}=require('../../public/js/scheduling/agenda-appointment-actions.js');
+const {ACTIONS}=require('../../public/js/scheduling/agenda-manage-appointment.js');
+const {label}=require('../../public/js/scheduling/agenda-reschedule-history.js');
+test('five quick actions prioritize reprogramming and service without adding clinical workflows',()=>{assert.deepEqual(ACTIONS.map(a=>a[0]),['reschedule','service','patient','profile','payment']);assert.equal(new Set(ACTIONS.map(a=>a[0])).size,5);});
+test('rescheduling transmits the reason in the same operation and never a surcharge or payment',async()=>{let body;await reschedule({appointment_id:4,fecha:'2026-10-20',hora_inicio:'15:30',reschedule_reason:'Solicitud ficticia'},'2026-10-23','11:00',{confirm:async()=>true,revert:()=>assert.fail(),send:async(id,p)=>body=p,refresh:async()=>{}});assert.equal(body.motivo,'Solicitud ficticia');assert.equal(body.expected_hora_cita,'15:30');assert.equal(body.additional_rate_id,undefined);assert.equal(body.payment,undefined);});
+test('cancelling the reason prompt does not send a reprogramming operation',async()=>{let reverted=false;const r=await reschedule({appointment_id:4,fecha:'2026-10-20',hora_inicio:'15:30'},'2026-10-23','11:00',{reason:async()=>null,confirm:async()=>assert.fail(),revert:()=>reverted=true,send:async()=>assert.fail()});assert.equal(r.cancelled,true);assert.equal(reverted,true);});
+test('historical annotation labels origin and destination but never create appointment context',()=>{const item={from_time:'15:30',to_date:'2026-10-23',to_time:'11:00'};assert.equal(label(item),'15:30 · CITA REPROGRAMADA → 23/10/2026 · 11:00');assert.equal(item.tipo_contexto,undefined);});

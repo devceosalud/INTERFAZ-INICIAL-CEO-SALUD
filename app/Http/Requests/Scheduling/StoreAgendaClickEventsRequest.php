@@ -43,8 +43,11 @@ class StoreAgendaClickEventsRequest extends FormRequest
             'events.*.geometry.doctors_scroll' => 'required_with:events.*.geometry|numeric|between:0,100000',
             'events.*.geometry.grid_scroll' => 'required_with:events.*.geometry|numeric|between:0,100000',
             'events.*.geometry.page_scroll' => 'required_with:events.*.geometry|numeric|between:0,100000',
-            'events.*.geometry.expanded' => 'sometimes|array|max:5',
-            'events.*.geometry.expanded.*' => 'required|string|distinct|in:capture,notes,payment,documents,workflow',
+            'events.*.geometry.expanded' => ['sometimes','array','max:5', function($attribute,$value,$fail){
+                if(is_array($value)){ $names=array_filter($value,'is_string');
+                    if(count($names)!==count(array_unique($names)))$fail('No repitas paneles dentro del mismo evento.'); }
+            }],
+            'events.*.geometry.expanded.*' => 'required|string|in:capture,notes,payment,documents,workflow',
             'events.*.geometry.selected' => 'required_with:events.*.geometry|boolean',
             'events.*.geometry.audit_link' => 'sometimes|boolean',
             'events.*.geometry.revision' => 'required_with:events.*.geometry|integer|in:1',

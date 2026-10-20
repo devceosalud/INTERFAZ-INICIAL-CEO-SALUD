@@ -95,13 +95,15 @@ class OperationalRegistrationTest extends TestCase
         $otherPatient = $this->createPatient($other, ['numero_identidad' => '70000902', 'historia_clinica' => 'QA-2']);
         $this->create($this->payload(['patient_id' => $otherPatient->id]))->assertCreated(); $this->assertDatabaseCount('appointments', 2);
     }
-    public function test_delegated_private_owner_is_responsible_with_no_administrator_visibility_bypass(): void
+    public function test_delegated_private_owner_retains_voucher_privacy_while_admin_can_read_operational_booking(): void
     {
         $commercial = $this->actor('COMERCIAL'); $admin = $this->actor('ADMINISTRADOR');
         $admin->givePermissionTo(Permission::findOrCreate(C::ASSIGN_RESPONSIBLE, 'web'));
         $this->shift($admin);
         $id = $this->actingAs($admin)->create($this->payload(['responsible_user_id' => $commercial->id, 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']]))->assertCreated()->json('appointment.appointment_id');
-        $this->getJson(route('scheduling.mvp.agenda.economy', $id))->assertNotFound();
+        // Historical paid pending fixture; new paid registrations are confirmed and shared.
+        \Illuminate\Support\Facades\DB::table('appointments')->where('id',$id)->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION']);
+        $this->getJson(route('scheduling.mvp.agenda.economy', $id))->assertOk();
         $this->assertSame(0, Voucher::visibleToAgendaUser($admin->id)->count());
         $this->actingAs($commercial)->getJson(route('scheduling.mvp.agenda.economy', $id))->assertOk();
         $this->assertSame(1, Voucher::visibleToAgendaUser($commercial->id)->count());
@@ -119,7 +121,7 @@ class OperationalRegistrationTest extends TestCase
         $this->assertSame('CONFIRMADA', Appointment::find($id)->estado_agenda);
         $this->assertSame('PAYMENTS', app(AppointmentEconomicPosition::class)->forAppointment(Appointment::find($id))['authority']);
     }
-    public function test_partial_payment_requires_explicit_confirmation_and_later_payments_are_separate(): void
+    public function test_partial_payment_confirms_automatically_and_later_payments_are_separate(): void
     {
         $this->shift($this->actor);
         $id = $this->create($this->payload(['payment' => ['amount' => '40.00', 'method' => 'YAPE', 'operation' => 'FICTICIA-40']]))

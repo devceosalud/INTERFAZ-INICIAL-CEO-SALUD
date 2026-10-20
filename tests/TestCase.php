@@ -16,7 +16,8 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if(($_ENV['CATALOG_QA_RUNTIME']??getenv('CATALOG_QA_RUNTIME'))==='catalog-11.8.9') {
+        if(($_ENV['CATALOG_QA_RUNTIME']??getenv('CATALOG_QA_RUNTIME'))==='catalog-11.8.9'
+            || ($_ENV['AGENDA_V2_QA_RUNTIME']??getenv('AGENDA_V2_QA_RUNTIME'))==='agenda-v2-11.8.9') {
             $this->catalogMariaDdlSeen=\Illuminate\Support\Facades\DB::transactionLevel()===0;
             \Illuminate\Support\Facades\DB::listen(function($query){
                 if(preg_match('/^\s*(?:create|alter|drop|truncate|rename)\b/i',$query->sql))$this->catalogMariaDdlSeen=true;

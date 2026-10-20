@@ -9,6 +9,7 @@ class AppointmentDocument extends Model
     protected $guarded = ['id'];
     protected $casts = ['receipt_review'=>'array','reviewed_at'=>'datetime'];
     protected $hidden = ['private_path','payment_proof_hash'];
+    public function actor() { return $this->belongsTo(User::class, 'actor_user_id'); }
     public function payment() { return $this->belongsTo(Payment::class); }
     public function appointment() { return $this->belongsTo(Appointment::class); }
 }

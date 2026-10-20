@@ -1,0 +1,19 @@
+PASS Matriz y corrección se sincronizan en ambas agendas y cola de Nicol sin recarga
+PASS Filtros de búsqueda, médico, especialidad, sede, estado, color y reevaluación conservan totales
+PASS Borradores sobreviven a filtros, pestañas, actualización remota y conflicto 409
+PASS Motivo histórico No registrado; observación de un carácter aceptada y espacios rechazados
+PASS Motivo obligatorio visible, foco y conservación ante 422; reserva y pago confirman una sola cita
+PASS Roles, supervisión y registro heredado se validan en servidor; CSRF permanece real
+PASS Retroceder atención funciona desde las acciones superiores
+PASS MFR se habilita visualmente sin DevTools y Traumatología permanece bloqueada
+PASS Paciente nuevo reutiliza un único motivo visible dentro y fuera del modal
+PASS Eventos históricos del hotfix se reconocen sin procedimientos inventados ni pagos
+PASS COMERCIAL sin edición general marca y desmarca ATENDIDO; colores aprobados y misma cita
+PASS Permiso directo no habilita estados, pagos, solicitudes, realizados ni supervisión
+PASS Desmarcar origen directo mantiene el automático y corregir progreso mantiene la marca directa
+PASS Retirar autorización parcial conserva marca directa y la auditoría de ambos orígenes
+PASS Cambio directo desde segunda sesión conserva borrador y actualiza el detalle después de guardar
+PASS Historial completo paginado conserva snapshot, fechas y posición mientras llegan acciones nuevas
+PASS Capturas de retorno unificado y permisos en escritorio y móvil
+PASS Capturas revisables y geometría en 1366, 1440, 1920 y móvil
+PASS after · matriz de reevaluación y capturas locales

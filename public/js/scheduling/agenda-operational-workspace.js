@@ -16,10 +16,10 @@
             'proofs':ui.proof,'proof_review.reviewed':()=>byId('proof-reviewed'),
             'discount.value':()=>byId('discount-value'),'discount.type':()=>byId('discount-type'),
             'referral.origin':()=>byId('referral-origin'),'motivo_exoneracion':()=>byId('exemption-reason'),
-            'autorizado_por':ui.authorized,'service_id':()=>document.getElementById('agenda-service-select')
+            'autorizado_por':ui.authorized,'motivo_consulta':ui.reason,'service_id':()=>document.getElementById('agenda-service-select')
         }});
         const documentFile=byId('document-file');
-        let replacementDocument=null,replacementKey=null;
+        let replacementDocument=null,replacementKey=null,patientDocuments=null,patientDocumentId=null,patientDocumentDirty=false;
         function clearReplacement(){replacementDocument=null;replacementKey=null;byId('replacement-panel').hidden=true;byId('replacement-file').value='';byId('replacement-reason').value='';captureClean(['replacement-file','replacement-reason']);}
         const discountType = byId('discount-type'), discountValue = byId('discount-value'), discountReason = byId('discount-reason');
         const catalogPrice = byId('catalog-price'), hasWound = byId('has-wound'), postoperative = byId('postoperative'), exemptionReason = byId('exemption-reason');
@@ -37,20 +37,21 @@
         }
         let automaticFree=false, indicationRecordKey=null;
         let quoteReady = true, quoteVersion = 0, activeQuoteRequest = null;
+        byId('proof')?.addEventListener('change',()=>{const panel=byId('proof-panel');if(panel)panel.open=true;});
         const rateSelect = byId('rate'), quoteStatus = byId('quote-status'), quoteRetry = byId('quote-retry');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;
         let capturePatient = null;
         const pendingDocumentEdits=new Map();
         const tracked=['phone','phone-secondary','channel','medium','reason','note','amount','method','operation','origin','authorized','waived','proof','links',
-            'rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','price-modality','commercial-service','referred','referral-origin',
+            'attendance-mode','rate','discount-type','discount-value','discount-reason','has-wound','postoperative','exemption-reason','double','indication','price-modality','commercial-service','referred','referral-origin',
             'indication-file','indication-document','indication-date','indication-evidence','indication-reference','indication-attested',
             'document-file','document-kind','document-label','replacement-file','replacement-reason','proof-reviewed','receipt-date','receipt-time'];
         const cleanValues=new Map();
         let cleanExtra='',detailsVersion=0,documentsVersion=0;
         function fieldValue(name) {const f=byId(name);return f?JSON.stringify([f.value||'',Boolean(f.checked),Array.from(f.files||[]).map(v=>[v.name||'',v.size||0])]):'';}
         function captureClean(names=tracked) {names.forEach(name=>cleanValues.set(name,fieldValue(name)));if(names===tracked)cleanExtra=config.extraState?.()||'';}
-        function hasUnsavedChanges() {return receipt.hasChanges() || pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
+        function hasUnsavedChanges() {return patientDocumentDirty || receipt.hasChanges() || pendingDocumentEdits.size>0 || tracked.some(name=>{const f=byId(name);return f && !f.disabled && cleanValues.get(name)!==fieldValue(name);}) || cleanExtra!==(config.extraState?.()||'');}
         function contextKey(c) {return [c?.appointment_id||'',c?.doctor_id||'',c?.fecha||'',c?.hora_inicio||'',c?.site_id||'',c?.tipo_contexto||''].join('|');}
         function pendingRevision() {return JSON.stringify([tracked.map(fieldValue),Array.from(pendingDocumentEdits),config.extraState?.()||'']);}
         async function confirmDiscard(message) {
@@ -70,7 +71,7 @@
         const base = config.base;
         let buttonsBeforeWork = [], lastPosition = null;
         function setWorking(value) {
-            working = value;
+            working = value;ui.reason.readOnly=value;
             const fieldsHost=document.getElementById('agenda-operational-fields');
             if(fieldsHost)fieldsHost.inert=value;
             if (value) {
@@ -124,7 +125,7 @@
                 reason.textContent = !config.canCreate ? 'Confirmar requiere appointment.create.' :
                     position.can_confirm_additional===false ? 'Confirmar una cita ADICIONAL requiere appointment.additional.create.' :
                     position.reservation_slot_available===false ? position.reservation_block_reason :
-                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Registrar un adelanto no confirma automáticamente.' :
+                    !allowed ? 'Para confirmar se requiere un pago real positivo o exoneración autorizada. Un nuevo pago real positivo confirma automáticamente.' :
                     'El requisito financiero está cubierto. Confirmar volverá a validar el horario y el profesional.';
             }
         }
@@ -173,12 +174,14 @@
             const fields=[ui.reason,ui.note,postoperative,hasWound].filter(Boolean);
             const locks=fields.map(field=>field.disabled);
             const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,has_diabetic_wound:Boolean(hasWound?.checked),is_postoperative:Boolean(postoperative?.checked)});
+            if(lastPosition?.management?.revision){notes.request_key=root.crypto.randomUUID();notes.expected_revision=lastPosition.management.revision;}
             fields.forEach(field=>field.disabled=true);
             setWorking(true); inlineStatus('notes', '');
             try {
                 const result = await request(base + '/' + id + '/notes', json('PATCH', notes));
                 if (String(config.context()?.appointment_id) !== String(id)) { return; }
                 ui.reason.value = result.motivo_consulta || ''; ui.note.value = result.observaciones || ''; if(hasWound)hasWound.checked=Boolean(result.has_diabetic_wound); if (postoperative) postoperative.checked = Boolean(result.is_postoperative);
+                if(result.management)lastPosition.management=result.management;
                 captureClean(['reason','note','has-wound','postoperative']);inlineStatus('notes', result.message);
             } catch (e) { if (String(config.context()?.appointment_id) === String(id)) { inlineStatus('notes', e.message, true); } }
             finally { fields.forEach((field,i)=>field.disabled=locks[i]);setWorking(false); ui['save-notes'].disabled = ui.reason.disabled; }
@@ -338,6 +341,14 @@
         }
         async function register(options) {
             if (working) { return; }
+            const reasonText=ui.reason.value.replace(/^[\s\u200B\uFEFF]+|[\s\u200B\uFEFF]+$/g,'');
+            const reasonError=byId('reason-error');
+            if(!reasonText||reasonText.length>2000){
+                const message=!reasonText?'Escribe el motivo de consulta para registrar la cita o reserva.':'El motivo de consulta admite hasta 2000 caracteres.';
+                if(reasonError){reasonError.hidden=false;reasonError.textContent=message;}
+                ui.reason.setAttribute('aria-invalid','true');ui.reason.scrollIntoView?.({block:'nearest'});ui.reason.focus();config.notice(message,true);return;
+            }
+            if(reasonError){reasonError.hidden=true;reasonError.textContent='';}ui.reason.setAttribute('aria-invalid','false');
             // "Guardar reserva" never creates a payment/operation from a draft OCR suggestion.
             // Actual advances remain available through the explicit "Registrar adelanto" flow
             // on an existing reservation; that flow preserves all bank duplicate protections.
@@ -364,7 +375,7 @@
                 const payload = config.payload(context, options.patientId || 1, options.serviceId, options.ownerId);
                 registrationKey = registrationKey || root.crypto.randomUUID();
                 Object.assign(payload, { request_key: registrationKey, mode: options.pending ? 'RESERVE' : 'CONFIRM',
-                    booking_type: options.bookingType, motivo_consulta: ui.reason.value || null, observaciones: ui.note.value || null,
+                    attendance_mode: byId('attendance-mode')?.value || 'PRESENCIAL', booking_type: options.bookingType, motivo_consulta: reasonText, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null,
                     payment: options.pending ? model.payment('0','EFECTIVO','','') : payment(), links: model.links(ui.links.value) });
                 payload.patient_id = options.patientId || null;
@@ -402,8 +413,11 @@
             if (version!==documentsVersion || String(config.context()?.appointment_id) !== String(id)) { return; }
             ['document-file','document-kind','document-label','links','add-documents'].forEach(name=>byId(name).disabled=!result.can_upload_private);
             ui.documents.replaceChildren();
+            const legacyDocumentUpload=byId('legacy-document-upload');if(legacyDocumentUpload)legacyDocumentUpload.hidden=!result.can_upload_private;
+            if(root.AppointmentPatientDocuments){if(patientDocumentId!==id){patientDocumentId=id;patientDocumentDirty=false;patientDocuments=root.AppointmentPatientDocuments.create({doc:document,url:base+'/'+id+'/documents',appointmentId:id,initialData:result,readResponse:async response=>{const data=await response.json();if(!response.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||'No se pudo guardar el documento.');return data;},onDirty:value=>{patientDocumentDirty=value;},onBusy:value=>setWorking(value)});}byId('patient-documents').replaceChildren(patientDocuments.element);await patientDocuments.load();}
+
             const orderDocument=byId('indication-document'); if(orderDocument) orderDocument.replaceChildren();
-            (result.documents || []).forEach(d => {
+            (result.documents || []).filter(d=>!['PATIENT_PROVIDED','REEVALUATION_ORDER'].includes(d.purpose)).forEach(d => {
                 if(orderDocument && d.download_url) {const option=document.createElement('option');option.value=String(d.id);option.textContent=d.label;orderDocument.appendChild(option);}
                 const row = document.createElement('div'); row.className = 'agenda-document-row'; row.dataset.documentId=String(d.id);
                 const link = document.createElement('a'); link.textContent = d.label; link.href = d.url || d.download_url;
@@ -435,7 +449,7 @@
             validation?.clear();
             const key=contextKey(context);const version=++detailsVersion;
             if(key===selectedKey && hasUnsavedChanges())return;
-            if(key!==selectedKey){clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
+            if(key!==selectedKey){byId('patient-documents')?.replaceChildren();patientDocuments=null;patientDocumentId=null;patientDocumentDirty=false;clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
             if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if(hasWound)hasWound.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
@@ -462,8 +476,10 @@
             const confirmationReason = byId('confirmation-reason');
             if (confirmationReason) { confirmationReason.hidden = !id || context.estado_agenda !== 'PENDIENTE_CONFIRMACION'; confirmationReason.textContent = 'Consultando el requisito financiero de la reserva…'; }
             ui.documents.replaceChildren();
+
             inlineStatus('notes', ''); ui['save-notes'].hidden = true;
             ui.reason.disabled = Boolean(id); ui.note.disabled = Boolean(id);
+            byId('attendance-mode').value=context?.attendance_mode||'PRESENCIAL';byId('attendance-mode').disabled=Boolean(id)||!config.canCreate;
             if (!id) { ui.reason.value = ''; ui.note.value = '';captureClean(); byId('notes-tip').textContent = 'Al crear la cita se guardarán estos datos. Los campos vacíos conservan el dato actual.'; return; }
             patientChanged(context.patient_id, true);
             try {
@@ -497,15 +513,24 @@
             try {
                 paymentKey = paymentKey || root.crypto.randomUUID();
                 const payload = { request_key: paymentKey, confirm, payment: confirm ? model.payment('0', ui.method.value, '', '') : payment() };
+                if(lastPosition?.management?.revision)payload.expected_revision=lastPosition.management.revision;
                 if(!confirm && payload.payment.method==='EFECTIVO' && ui.proof.files?.length)await receipt.reset(true);
                 const body=new FormData(); if(!confirm)receipt.append(body,payload); body.append('payload',JSON.stringify(payload));
                 const response = await request(base + '/' + id + '/payments', { method: 'POST', body });
+                const currentContext=config.context();
+                if(currentContext && String(currentContext.appointment_id)===String(id))currentContext.estado_agenda=response.appointment.estado_agenda;
+                ui['confirm-reservation'].hidden=response.appointment.estado_agenda!=='PENDIENTE_CONFIRMACION';
+                if(byId('confirmation-reason'))byId('confirmation-reason').hidden=ui['confirm-reservation'].hidden;
                 paymentKey = null; ui.amount.value = '0'; if(!confirm)await receipt.reset(); ++detailsVersion;economy(response.economy);captureClean(['amount','method','operation','origin','proof']);
-                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Adelanto registrado. Saldo: S/ ' + response.economy.saldo);
+                await config.paymentUpdated(response); config.notice(confirm ? 'Reserva confirmada: ' + response.appointment.tipo_agendamiento : 'Pago registrado y horario confirmado. Saldo: S/ ' + response.economy.saldo);
             } catch (e) { rejected(e, 'payment'); showPlaced(e, 'payment'); }
             finally { setWorking(false); }
         }
         function showPlaced(error, context) {
+            if(error.errors?.motivo_consulta){
+                const message=error.errors.motivo_consulta[0],fieldError=byId('reason-error');
+                if(fieldError){fieldError.hidden=false;fieldError.textContent=message;}ui.reason.setAttribute('aria-invalid','true');ui.reason.scrollIntoView?.({block:'nearest'});ui.reason.focus();config.notice(message,true);return;
+            }
             const placed = root.AgendaGuidance.place(error.message, error.status, context);
             const errors = error.errors || {};
             const paymentError = document.getElementById('agenda-op-payment-error');

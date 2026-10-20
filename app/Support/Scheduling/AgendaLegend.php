@@ -41,9 +41,12 @@ final class AgendaLegend
     public static function entries(): array
     {
         return [
+            'TELECONSULTA'=>['clave'=>'TELECONSULTA','etiqueta'=>'TELECONSULTA','glifo'=>'T','color'=>'#5b21b6','fondo'=>'#ede9fe','descripcion'=>'Atención remota; no registra presencia o salida física.'],
+            'ATENDIDO'=>['clave'=>'ATENDIDO','etiqueta'=>'Atendido','glifo'=>'A','color'=>'#174d4a','fondo'=>'#74dccb','descripcion'=>'Atención registrada; la salida física y el retorno al médico se indican por separado.'],
+            'LISTO_REEVALUACION' => ['clave'=>'LISTO_REEVALUACION','etiqueta'=>'Listo para reevaluación','glifo'=>'R','color'=>'#7c2d12','fondo'=>'#ffc28a','descripcion'=>'Regresa al médico dentro de la misma cita; sin nuevo horario ni cobro.'],
             'CONCILIAR_PAGO' => ['clave'=>'CONCILIAR_PAGO','etiqueta'=>'Atribución de pago pendiente','glifo'=>'?','color'=>'#374151','fondo'=>'#e8eaed','descripcion'=>'Existe información económica sin atribución suficiente; no se presenta como pago real ni ausencia cierta de pago.'],
             'SIN_PAGO_REAL' => ['clave'=>'SIN_PAGO_REAL','etiqueta'=>'Sin pago real acreditado','glifo'=>'—','color'=>'#374151','fondo'=>'#ffffff','descripcion'=>'No hay dinero real atribuido; revisar la etiqueta de conciliación si existe información histórica.'],
-            'PAGO_REAL' => ['clave'=>'PAGO_REAL','etiqueta'=>'Pago real registrado','glifo'=>'S/','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Existe dinero registrado y atribuido. No implica confirmación ni adelanto suficiente.'],
+            'PAGO_REAL' => ['clave'=>'PAGO_REAL','etiqueta'=>'Con pago atribuido','glifo'=>'S/','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Existe dinero registrado y atribuido. No implica confirmación ni adelanto suficiente.'],
             'RESERVA_SIN_PAGO' => ['clave'=>'RESERVA_SIN_PAGO','etiqueta'=>'Reserva sin pago real','glifo'=>'R','color'=>'#374151','fondo'=>'#ffffff','descripcion'=>'Reserva privada sin pago real atribuido; conserva su privacidad.'],
             'POSTOPERATORIO' => ['clave'=>'POSTOPERATORIO','etiqueta'=>'POSTOPERATORIO','glifo'=>'P','color'=>'#374151','fondo'=>'#e5e7eb','descripcion'=>'Control postoperatorio señalado expresamente; no implica gratuidad.'],
             'HERIDA' => ['clave'=>'HERIDA','etiqueta'=>'PIE DIABÉTICO CON HERIDA','glifo'=>'H','color'=>'#701347','fondo'=>'#f9a8d4','descripcion'=>'Indicador explícito de la cita, nunca inferido del servicio.'],
@@ -97,7 +100,7 @@ final class AgendaLegend
             ],
             self::ADDITIONAL => [
                 'clave' => self::ADDITIONAL, 'etiqueta' => 'ADICIONAL', 'glifo' => '+',
-                'color' => '#6b21a8', 'fondo' => '#f3e8ff',
+                'color' => '#1e40af', 'fondo' => '#dbeafe',
                 'descripcion' => 'Paciente extra en una hora que ya tiene una cita regular.',
             ],
             self::OFF_HOURS_APPOINTMENT => [

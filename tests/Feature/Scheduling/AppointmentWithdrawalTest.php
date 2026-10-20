@@ -40,7 +40,7 @@ class AppointmentWithdrawalTest extends TestCase
     private function paid(): Appointment
     {
         $id = $this->postJson(route('scheduling.mvp.agenda.registrations'), ['request_key' => (string) Str::uuid(), 'mode' => 'CONFIRM',
-            'booking_type' => 'REGULAR', 'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id,
+            'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro', 'patient_id' => $this->patient->id, 'doctor_id' => $this->catalog['doctor']->id,
             'service_id' => $this->catalog['service']->id, 'fecha_cita' => $this->catalog['schedule']->fecha_cita, 'hora_cita' => '08:00',
             'duracion_cita' => 30, 'payment' => ['amount' => '50.00', 'method' => 'EFECTIVO']])->assertCreated()->json('appointment.appointment_id');
         return Appointment::findOrFail($id);
@@ -173,7 +173,7 @@ class AppointmentWithdrawalTest extends TestCase
         catch (\Illuminate\Validation\ValidationException $e) { $this->assertStringContainsString('RETIRO', $e->getMessage()); }
         $this->assertSame('RETIRO', $a->fresh()->estado_cita);
     }
-    public function test_capacity_uses_real_payment_and_credit_and_excludes_withdrawal(): void
+    public function test_capacity_requires_real_payment_excludes_withdrawal_and_does_not_mislabel_credit_as_new_cash(): void
     {
         $a = $this->paid(); $a->update(['total_pagado' => 0]); $v = Voucher::first();
         $query = new \App\Support\Scheduling\AgendaQuery([$a->doctor_id], \Carbon\Carbon::parse($a->fecha_cita), \Carbon\Carbon::parse($a->fecha_cita));
@@ -181,7 +181,8 @@ class AppointmentWithdrawalTest extends TestCase
         $this->assertSame(1, $service->forRange($query)[0]['ocupacion_segura']);
         $this->withdraw($a)->assertOk(); $this->assertSame(0, $service->forRange($query)[0]['ocupacion_segura']);
         $b = $this->postJson(route('scheduling.mvp.agenda.rebook-withdrawal', $a->id), $this->destination(['credits' => [['voucher_id' => $v->id, 'amount' => '50.00']]]))->assertCreated()->json('appointment_id');
-        $this->assertEquals(0, Appointment::find($b)->total_pagado); $this->assertSame(1, $service->forRange($query)[0]['ocupacion_segura']);
+        $this->assertEquals(0, Appointment::find($b)->total_pagado); $this->assertSame(0, $service->forRange($query)[0]['ocupacion_segura']);
+        $this->assertTrue(app(AppointmentEconomicPosition::class)->forAppointment(Appointment::findOrFail($b))['secured']); // Credit policy is unchanged.
         // A snapshot without supporting money is not authority for a new operational appointment.
         $untouched = $this->lifecycleAppointment($this->actor, $this->catalog, ['economic_source' => 'VOUCHER', 'total_pagado' => 100,
             'fecha_cita' => $a->fecha_cita, 'hora_cita' => '09:00']);

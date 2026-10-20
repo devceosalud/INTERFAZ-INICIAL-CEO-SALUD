@@ -1,0 +1,16 @@
+PASS Cinco acciones y Más opciones accesible, sin accesos secundarios amontonados
+PASS Edición inline reutiliza ficha, valida y conserva borrador sin abandonar Agenda
+PASS Guardado único bloquea controles y refleja identidad en modal, Agenda y ficha
+PASS Contacto, datos personales y responsable de menor reutilizan validación y persistencia del mantenimiento
+PASS Cancelación descarta edición y no modifica la ficha
+PASS Segunda sesión: conflicto409 conserva el borrador inline
+PASS Cita con adelanto: bloqueo específico sin perder consulta de servicios
+PASS Modal/ficha nativos y Más opciones sin desbordamiento 1366
+PASS Modal/ficha nativos y Más opciones sin desbordamiento 1440
+PASS Modal/ficha nativos y Más opciones sin desbordamiento 1920
+PASS Modal/ficha nativos y Más opciones sin desbordamiento 390
+PASS Servicio: muestra precio diferente y bloquea recotización no autorizada
+PASS Servicio seguro: confirma mismo precio, horario y duración y deja auditoría
+PASS Paciente seguro: búsqueda, comparación y nuevo motivo sin heredar condiciones
+PASS Permisos admission: ficha inline disponible, pagos bloquean reasignación, no privilegios nuevos
+PASS Permisos commercial: ficha inline disponible, pagos bloquean reasignación, no privilegios nuevos

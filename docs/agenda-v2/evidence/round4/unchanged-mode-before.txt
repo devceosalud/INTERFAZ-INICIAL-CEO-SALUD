@@ -1,0 +1,18 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:00.765, Memory: 52.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\Scheduling\AgendaV2Round4Test::test_commercial_cannot_submit_even_an_unchanged_attendance_mode
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaV2Round4Test.php:127
+
+FAILURES!
+Tests: 1, Assertions: 1, Failures: 1.

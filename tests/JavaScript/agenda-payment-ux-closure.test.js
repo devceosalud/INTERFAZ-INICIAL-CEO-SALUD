@@ -36,7 +36,8 @@ test('El pago presenta primero importe y método, y conserva TODOS los controles
     assert.ok(idx('price')>=0 && idx('paid')>=0 && idx('balance')>=0);
     assert.ok(idx('amount')<idx('method') && idx('method')<idx('operation'));
     assert.ok(idx('operation')<idx('proof') && idx('proof')<idx('receipt-review'));
-    assert.ok(idx('advanced')>idx('receipt-review'));
+    assert.ok(idx('advanced')<idx('amount') && idx('discount-type')<idx('proof'));
+    assert.ok(idx('proof-panel')>idx('operation') && idx('receipt-review')>idx('proof-panel'));
     assert.equal((quick.match(/id="agenda-op-indication"/g)||[]).length,1);
     assert.equal((view.match(/id="agenda-op-indication"/g)||[]).length,0);
     assert.match(quick,/id="agenda-reevaluation-fields"/);

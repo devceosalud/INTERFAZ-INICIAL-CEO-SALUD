@@ -70,6 +70,7 @@
     </style>
     <!--ESTILOS LIVEWIRE"-->
     @livewireStyles
+@unless(request()->routeIs('scheduling.*','patients.operational.*','admissionit.appointment.*','admin.appointment.*','receptionist.appointment.*'))
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -77,6 +78,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ywr4tcbik1");
 </script>
+@endunless
 </head>
 
 <body @hasSection('body_class') class="@yield('body_class')" @endif>

@@ -53,22 +53,51 @@ class OperationalPatientMutationController extends Controller
 
     public function update(Request $request, int $patientId): JsonResponse
     {
-        $patient = Patient::query()->findOrFail($patientId);
-        $data = $this->validated($request, $patient);
-
+        abort_unless($request->user()->is_active, 403);
+        $request->validate(['expected_revision' => 'sometimes|required|string|size:64|regex:/^[a-f0-9]+$/',
+            'appointment_id' => 'sometimes|required|integer|min:1']);
+        // Popup writes always require a version. Legacy API clients remain compatible.
+        if ($request->has('appointment_id')) $request->validate(['expected_revision' => 'required|string|size:64']);
         try {
-            DB::transaction(function () use ($patient, $request, $data): void {
-                $patient->update($data);
+            $patient = DB::transaction(function () use ($request, $patientId): Patient {
+                $appointment = null;
+                if ($request->has('appointment_id')) {
+                    abort_unless(config('scheduling.enabled') && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+                        && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW), 403);
+                    $original = \App\Models\Appointment::visibleToOperationalUser($request->user())->whereKey($request->integer('appointment_id'))
+                        ->where('patient_id',$patientId)->firstOr(fn()=>abort(404));
+                    \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
+                    $appointment = \App\Models\Appointment::visibleToOperationalUser($request->user())->whereKey($original->id)
+                        ->where('patient_id',$patientId)->lockForUpdate()->firstOr(fn()=>abort(409,'La cita cambió de paciente. Actualiza antes de guardar.'));
+                }
+                $patient = Patient::whereKey($patientId)->lockForUpdate()->firstOrFail();
+                $before = \App\Services\Patients\PatientRecordRevision::for($patient);
+                if ($request->has('expected_revision')) abort_unless(hash_equals($before,$request->input('expected_revision')),409,
+                    'La ficha cambió en otra sesión. Se conservan tus cambios; vuelve a consultar antes de guardar.');
+                $data = $this->validated($request, $patient);
+                $patient->fill($data);
+                $fields = array_keys($patient->getDirty());
+                $patient->save();
                 $this->syncResponsible($patient, $request);
-            });
+                $after = \App\Services\Patients\PatientRecordRevision::for($patient->fresh());
+                if ($before !== $after) {
+                    $audit = ['patient_id'=>$patientId,'fields'=>$fields,'responsible_reviewed'=>$request->boolean('registrar_responsable'),
+                        'before_revision'=>$before,'after_revision'=>$after];
+                    if ($appointment) app(\App\Services\Scheduling\AppointmentHistory::class)->record($appointment,'FICHA_PACIENTE_CORREGIDA',
+                        $request->user()->id,['metadata'=>$audit]);
+                    // No patient values, clinical text or documents in application logs.
+                    Log::info('patients.updated', $audit + ['actor_user_id'=>$request->user()->id]);
+                }
+                return $patient->fresh();
+            }, 3);
         } catch (QueryException $exception) {
             $this->convertDuplicateDocument($exception);
             throw $exception;
         }
-
         return response()->json([
             'message' => 'Paciente actualizado correctamente.',
-            'patient' => OperationalPatientController::patientPayload($patient->fresh()),
+            'patient' => OperationalPatientController::patientPayload($patient)
+                + ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient)],
         ]);
     }
 

@@ -24,7 +24,7 @@ test('confirmación SweetAlert2 se muestra encima del modal de paciente', () => 
 test('ocultar modal mueve el foco antes de marcar el formulario aria-hidden', () => {
     const actions = [];
     const closeButton = { id: 'agenda-draft-close' };
-    const element = () => ({ hidden:false, open:false, prepend() {} });
+    const element = () => ({ hidden:false, open:false, prepend() {}, appendChild() {} });
     const elements = new Map();
     const patientModal = { hidden:false, contains: node => node === closeButton,
         setAttribute(name,value) { actions.push(['attribute',name,value]); } };

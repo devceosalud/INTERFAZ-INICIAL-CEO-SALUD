@@ -14,7 +14,8 @@ const workspace = fs.readFileSync(
 
 test('OCR del adelanto reside dentro de Registrar adelanto, no entre documentos clínicos', () => {
     const paymentStart = source.indexOf('<details id="agenda-op-payment-panel">');
-    const paymentEnd = source.indexOf('</details>', paymentStart);
+    // Match the outer payment section: it now contains nested pricing and OCR panels.
+    let depth=0,paymentEnd=-1;for(const tag of source.slice(paymentStart).matchAll(/<details\b[^>]*>|<\/details>/g)){depth+=tag[0].startsWith('</')?-1:1;if(depth===0){paymentEnd=paymentStart+tag.index+tag[0].length;break;}}
     const documentsStart = source.indexOf('<details id="agenda-op-documents-panel">');
     const fileInput = source.indexOf('id="agenda-op-proof"');
     const receiptHost = source.indexOf('id="agenda-op-receipt-review"');
@@ -23,7 +24,7 @@ test('OCR del adelanto reside dentro de Registrar adelanto, no entre documentos 
     assert.ok(receiptHost > paymentStart && receiptHost < paymentEnd);
     assert.equal((source.match(/id="agenda-op-proof"/g) || []).length, 1);
     assert.equal((source.match(/id="agenda-op-receipt-review"/g) || []).length, 1);
-    assert.match(source.slice(documentsStart), /Documentos complementarios/);
+    assert.match(source.slice(documentsStart), /Documentos de la cita/);
 });
 
 test('OCR existente sigue entregando sugerencias a los campos de pago sin registrar automáticamente', () => {

@@ -5,7 +5,7 @@ use App\Models\Appointment;
 use App\Models\AppointmentEvent;
 use App\Services\Scheduling\AppointmentHistory;
 use App\Services\Scheduling\ManualReevaluationService as Manual;
-use App\Support\Scheduling\AdmissionAppointmentPresentation as Presentation;
+use App\Support\Scheduling\AgendaAppointmentPresentation as Presentation;
 use App\Support\Scheduling\SchedulingCapability as C;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +40,11 @@ class ManualReevaluationTest extends TestCase
     private function feed(array $extra=[])
     {
         return $this->postJson(route('scheduling.mvp.admission.feed'),array_replace(['fecha'=>now()->toDateString(),'site_id'=>null],$extra));
+    }
+    private function presentation(Appointment $a,array $position,bool $marked): array
+    {
+        $copy=clone $a;$copy->setRelation('manualReevaluationEvent',new AppointmentEvent(['event_type'=>$marked?Manual::MARKED:Manual::CLEARED]));
+        return Presentation::of($copy,$position);
     }
     private function snapshot(): array
     {
@@ -192,14 +197,14 @@ class ManualReevaluationTest extends TestCase
         $a=$this->appointment(['is_postoperative'=>true,'has_diabetic_wound'=>true]);
         $base=['authority'=>'PAYMENTS','paid_cents'=>3000];
         foreach([false,true] as $marked){
-            $p=Presentation::of($a,$base+['refund_reserved_cents'=>1000],$marked);$this->assertSame('REEMBOLSO_SOLICITADO',$p['clave']);
-            $a->forceFill(['hora_salida'=>now()]);$p=Presentation::of($a,$base,$marked);$this->assertSame('SALIDA_REGISTRADA',$p['clave']);$this->assertTrue($p['strikethrough']);
+            $p=$this->presentation($a,$base+['refund_reserved_cents'=>1000],$marked);$this->assertSame('REEMBOLSO_SOLICITADO',$p['clave']);
+            $a->forceFill(['hora_salida'=>now()]);$p=$this->presentation($a,$base,$marked);$this->assertSame('SALIDA_REGISTRADA',$p['clave']);$this->assertTrue($p['strikethrough']);
             $a->forceFill(['hora_salida'=>null]);
         }
-        foreach(['CANCELADO','RETIRO','NO_ASISTIO'] as $state){$a->forceFill(['estado_cita'=>$state]);$this->assertNotContains(Presentation::of($a,$base,true)['clave'],['REEVALUACION_MANUAL','ATENDIDO_ADMISION']);}
-        $a->forceFill(['estado_cita'=>'ATENDIDO']);$p=Presentation::of($a,$base,true);
-        $this->assertSame(['PAGO_REAL','POSTOPERATORIO','HERIDA'],array_column($p['badges'],'clave'));
-        $this->assertSame('REEVALUACION_MANUAL',$p['clave']);
+        foreach(['CANCELADO','RETIRO','NO_ASISTIO'] as $state){$a->forceFill(['estado_cita'=>$state]);$this->assertNotContains($this->presentation($a,$base,true)['clave'],['LISTO_REEVALUACION','ATENDIDO']);}
+        $a->forceFill(['estado_cita'=>'ATENDIDO']);$p=$this->presentation($a,$base,true);
+        $this->assertSame(['LISTO_REEVALUACION','PAGO_REAL','POSTOPERATORIO','HERIDA'],array_column($p['badges'],'clave'));
+        $this->assertSame('LISTO_REEVALUACION',$p['clave']);
     }
     public function test_latest_manual_event_is_stable_with_equal_times_and_unrelated_newer_events(): void
     {

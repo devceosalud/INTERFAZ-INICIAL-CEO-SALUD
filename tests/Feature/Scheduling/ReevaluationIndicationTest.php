@@ -44,7 +44,8 @@ class ReevaluationIndicationTest extends TestCase {
         return $this->postJson('/scheduling-mvp/agenda/appointments/'.$source->id.'/reevaluation-indications',$data)->assertCreated()->json('indication_id');
     }
     protected function payload(string $entry,int $service,int $assignment,array $extra=[]):array {
-        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$this->patient->id,
+        if($entry==='legacy')$this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
+        return array_replace(['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro','patient_id'=>$this->patient->id,
             'doctor_id'=>$this->catalog['doctor']->id,'service_id'=>$entry==='legacy'?$assignment:$service,
             'additional_rate_id'=>$this->catalog['rate']->id,'fecha_cita'=>now('America/Lima')->toDateString(),'hora_cita'=>'09:00','duracion_cita'=>30],$extra);
     }
@@ -63,8 +64,8 @@ class ReevaluationIndicationTest extends TestCase {
         $this->assertEquals($expected,$quote->json('precio_programado'));
         if($days===0)$data['mode']='CONFIRM';
         $url=$entry==='legacy'?'/admissionist/appointment/store':'/scheduling-mvp/agenda/registrations';
-        $r=$this->postJson($url,$data)->assertSuccessful();$aId=$entry==='legacy'?$r->json('appointment_id'):$r->json('appointment.appointment_id');
-        $this->postJson($url,$data)->assertSuccessful();
+        $r=$this->agendaCreationResponse($entry,$data)->assertSuccessful();$aId=$r->json('appointment.appointment_id');
+        $this->agendaCreationResponse($entry,$data)->assertSuccessful();
         $a=Appointment::findOrFail($aId);$this->assertEquals($expected,$a->precio_programado);
         $this->assertSame($aId,(int)Indication::find($id)->bound_appointment_id);$this->assertFalse((bool)$a->es_exonerado);
         $this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointments',2);$this->assertSame($before,$source->fresh()->getAttributes());

@@ -160,7 +160,7 @@ class WorkerAccessTest extends TestCase
         $box=\App\Models\Cashier::create(['nombre'=>'CAJA QA WORKERS','estado'=>'ACTIVO']);
         \App\Models\CashierShift::create(['cashier_id'=>$box->id,'user_id'=>$this->worker->id,'monto_apertura'=>0,'abierto_en'=>now(),'estado'=>'ABIERTO']);
         \App\Models\VoucherSerie::create(['cashier_id'=>$box->id,'tipo_comprobante'=>'TICKET','serie'=>'TWQA','correlativo_actual'=>0,'estado'=>'ACTIVO']);
-        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'CONFIRM','booking_type'=>'REGULAR','patient_id'=>$this->createPatient($this->worker)->id,
+        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'CONFIRM','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro','patient_id'=>$this->createPatient($this->worker)->id,
             'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'fecha_cita'=>$catalog['schedule']->fecha_cita,'hora_cita'=>'08:00',
             'duracion_cita'=>30,'payment'=>['amount'=>'50.00','method'=>'EFECTIVO']];
         $id=$this->actingAs($this->worker)->postJson(route('scheduling.mvp.agenda.registrations'),$payload)->assertCreated()->json('appointment.appointment_id');
@@ -207,7 +207,7 @@ class WorkerAccessTest extends TestCase
         // ADMIN follow-up includes arrived history, even if the former responsible is inactive.
         $old->forceFill(['hora_llegada'=>now()])->save();
         $this->state($owner,false)->assertOk();
-        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','patient_id'=>$patient->id,
+        $payload=['request_key'=>(string)Str::uuid(),'mode'=>'RESERVE','booking_type'=>'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro','patient_id'=>$patient->id,
             'doctor_id'=>$catalog['doctor']->id,'service_id'=>$catalog['service']->id,'fecha_cita'=>$catalog['schedule']->fecha_cita,
             'hora_cita'=>'08:00','duracion_cita'=>30,'responsible_user_id'=>$owner->id];
         $this->postJson(route('scheduling.mvp.agenda.registrations'),$payload)->assertUnprocessable();

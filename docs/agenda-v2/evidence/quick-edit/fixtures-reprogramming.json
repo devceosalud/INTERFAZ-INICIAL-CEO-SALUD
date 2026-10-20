@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-10",
+  "next_date": "2026-11-11",
+  "appointment_id": 166,
+  "patient_id": 126,
+  "doctor_id": 8,
+  "service_id": 7,
+  "site_id": 5,
+  "replacement_id": 167,
+  "current_date": "2026-11-11"
+}

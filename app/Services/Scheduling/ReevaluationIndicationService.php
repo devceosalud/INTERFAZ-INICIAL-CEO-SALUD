@@ -37,6 +37,7 @@ final class ReevaluationIndicationService {
             if($date<substr($source->fecha_cita,0,10) || $date>now(config('scheduling.clinic_timezone'))->toDateString()) {
                 throw ValidationException::withMessages(['indicated_on'=>'La fecha de indicación debe estar entre la atención origen y hoy.']);
             }
+            abort_if($document->purpose===\App\Support\Scheduling\AppointmentDocumentAccess::PATIENT_PURPOSE,422,'El documento aportado por el paciente se conserva separado de las órdenes médicas acreditadas. Adjunta la evidencia correspondiente.');
             $evidenceHash=hash_file('sha256',Storage::disk('local')->path($document->private_path));
             $reference=trim($data['instruction_reference']);
             $instructionKey=hash('sha256',$sourceId.'|'.$evidenceHash.'|'.mb_strtoupper(preg_replace('/\s+/u',' ',$reference)));

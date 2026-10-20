@@ -19,7 +19,7 @@ class CommercialReevaluationTest extends TestCase
     {
         Storage::fake('local');
         config(['scheduling.enabled' => true]);
-        $actor = $this->agendaReader('ADMISION');
+        $actor = $this->agendaReader($entry === 'legacy' ? 'ADMINISTRADOR' : 'ADMISION');
         foreach ([C::CREATE, ReevaluationIndicationService::CAPABILITY] as $p) {
             $actor->givePermissionTo(Permission::findOrCreate($p, 'web'));
         }
@@ -48,8 +48,8 @@ class CommercialReevaluationTest extends TestCase
         }
         $price = $days === 0 ? 0 : ($referred ? $days <= 15 ? 220 : 250 : ($days <= 15 ? 120 : 150));
         $this->actingAs($actor)->postJson($entry === 'legacy' ? '/api/appointment/calculated' : '/scheduling-mvp/agenda/quote', $data)->assertOk()->assertJsonPath('tipo', $days <= 15 ? 'RECONSULTA' : 'PRIMERA_CONSULTA');
-        $data += ['request_key' => (string) Str::uuid(), 'mode' => 'RESERVE', 'booking_type' => 'REGULAR', 'hora_cita' => '08:00', 'duracion_cita' => 30];
-        $this->postJson($entry === 'legacy' ? '/admissionist/appointment/store' : '/scheduling-mvp/agenda/registrations', $data)->assertSuccessful();
+        $data += ['request_key' => (string) Str::uuid(), 'mode' => 'RESERVE', 'booking_type' => 'REGULAR','motivo_consulta'=>'Motivo ficticio para prueba de registro', 'hora_cita' => '08:00', 'duracion_cita' => 30];
+        $this->agendaCreationResponse($entry, $data)->assertSuccessful();
         $a = Appointment::where('id', '<>', $source->id)->firstOrFail();
         $this->assertEquals($price, $a->precio_programado);
         $this->assertEquals($catalog['service']->id, $a->service_id);

@@ -15,6 +15,25 @@ use Spatie\Permission\Models\Role;
 
 trait BuildsBaselineData
 {
+    /** Test-only transition: assert the retired endpoint is forbidden, then keep its economic coverage through Agenda. */
+    protected function agendaCreationResponse(string $entry, array $payload, bool $json = true, ?string $operationalUrl = null)
+    {
+        $method=$json?'postJson':'post';
+        if($entry==='legacy'){
+            $this->{$method}('/admissionist/appointment/store',$payload)->assertForbidden();
+            $assignment=isset($payload['service_id'])?DoctorService::find($payload['service_id']):null;
+            if($assignment)$payload['service_id']=$assignment->service_id;
+            if(!isset($payload['payment']))$payload['payment']=['amount'=>(string)($payload['total_pagado']??0),
+                'method'=>$payload['metodo_pago']??'EFECTIVO','operation'=>$payload['numero_operacion']??null,'origin'=>$payload['entidad_origen']??null];
+        }
+        if(!isset($payload['duracion_cita']))$payload['duracion_cita']=!empty($payload['cita_doble'])?60:30;
+        $payload+=['mode'=>'RESERVE','booking_type'=>'REGULAR',
+            'duracion_cita'=>30,'motivo_consulta'=>'Motivo ficticio para prueba de registro'];
+        $url=$entry!=='legacy' && $operationalUrl ? $operationalUrl : '/scheduling-mvp/agenda/registrations';
+        if($entry==='legacy'&&!isset($payload['request_key'])&&$payload['mode']==='RESERVE'&&(float)($payload['payment']['amount']??0)===0.0)$url='/scheduling-mvp/agenda/appointments';
+        return $json?$this->postJson($url,$payload):$this->post($url,$payload,['Accept'=>'application/json']);
+    }
+
     protected function createUser(array $attributes = []): User
     {
         return User::factory()->create($attributes);

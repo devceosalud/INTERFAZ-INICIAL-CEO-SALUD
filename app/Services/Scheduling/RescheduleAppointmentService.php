@@ -16,18 +16,19 @@ class RescheduleAppointmentService
     {
     }
 
-    public function reschedule(int $id, int $actorId, string $date, string $time, string $expectedDate, string $expectedTime, ?string $confirmedType = null): Appointment
+    public function reschedule(int $id, int $actorId, string $date, string $time, string $expectedDate, string $expectedTime, ?string $confirmedType = null, ?string $expectedRevision = null, ?string $reason = null): Appointment
     {
         // Hidden and absent IDs take the same path, before inspecting target fields.
         $original = Appointment::query()->visibleToAgendaUser($actorId)->find($id);
         abort_if($original === null, 404);
 
         $sourceIndication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
-        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication) {
+        return DB::transaction(function () use ($original, $id, $actorId, $date, $time, $expectedDate, $expectedTime, $confirmedType,$sourceIndication,$expectedRevision,$reason) {
             Doctor::whereIn('id',array_unique(array_filter([$original->doctor_id,$sourceIndication?->doctor_id])))->orderBy('id')->lockForUpdate()->get();
             $doctor = Doctor::query()->lockForUpdate()->find($original->doctor_id);
             $appointment = Appointment::query()->visibleToAgendaUser($actorId)->lockForUpdate()->find($id);
             abort_if($appointment === null, 404);
+            if($expectedRevision!==null) abort_unless(hash_equals(AppointmentManagement::revision($appointment),$expectedRevision),409,'La cita cambió en otra sesión. Actualiza antes de reprogramar.');
             if (substr((string) $appointment->fecha_cita, 0, 10) !== $expectedDate
                 || substr((string) $appointment->hora_cita, 0, 5) !== $expectedTime) {
                 throw new AppointmentSlotUnavailableException('La cita cambió de fecha u hora. Actualiza la Agenda antes de reprogramar.');
@@ -38,6 +39,8 @@ class RescheduleAppointmentService
             if (!in_array($appointment->estado_cita, ['PROGRAMADO', 'CONFIRMADO'], true) || (int) $appointment->duracion_cita < 1) {
                 throw new AppointmentConfigurationException('Solo se reprograman citas programadas o confirmadas con duración definida.');
             }
+            // A retry to the current destination is not another historical move.
+            if (substr($appointment->fecha_cita,0,10)===$date && substr($appointment->hora_cita,0,5)===$time) return $appointment;
             $siteId = $appointment->site_id ? (int) $appointment->site_id : null;
             $duration=(int)$appointment->duracion_cita;
             if((int)$appointment->duration_slots===2) $duration=app(DoubleAppointmentDuration::class)->resolve((int)$doctor->id,$date,$time,$siteId)['minutes'];
@@ -94,7 +97,7 @@ class RescheduleAppointmentService
             $former = $appointment->only(['fecha_cita', 'hora_cita', 'tipo_agendamiento','duracion_cita','duration_slots']);
             $appointment->update($changes);
             app(AppointmentHistory::class)->record($appointment, 'REPROGRAMADA', $actorId,
-                ['metadata' => ['from' => $former, 'to' => $changes]]);
+                ['motivo' => $reason, 'metadata' => ['from' => $former + ['doctor_id'=>$appointment->doctor_id,'site_id'=>$appointment->site_id], 'to' => $changes]]);
 
             return $appointment;
         }, 3);

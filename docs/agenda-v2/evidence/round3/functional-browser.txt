@@ -1,0 +1,10 @@
+PASS ADMIN identifica reservas ajenas sin pago; ADMISION conserva privacidad
+PASS Valores persistidos muestran POSTOPERATORIO y PIE DIABÉTICO sin duplicación
+PASS Fila completa seleccionable, teclado, foco y repetición sin otra consulta
+PASS COMERCIAL sube PDF desde Admisión; borrador conserva archivo con polling y filtros
+PASS ADMIN descarga mismos bytes, previsualiza PDF, adjunta y ve auditoría; ADMISION sin permiso recibe 404
+PASS Archivo inválido conserva selección y texto; COMERCIAL no obtiene edición o pagos
+PASS Documentos también disponibles en Agenda operativa sin subir permisos financieros
+PASS PDF real mayor de 2 MB se conserva privado; más de 8 MB se rechaza
+PASS Ficha de paciente reutiliza historial de documentos con acceso autorizado y sin Clarity
+PASS ADMIN reemplaza con motivo, conserva historial y bytes; COMERCIAL no ve esa acción

@@ -1,0 +1,87 @@
+{
+  "code_commit": "4d436207a31d47eff001cb860c4b55ff57b52714",
+  "description": "SHA256 de los bytes del worktree local verificado; los cambios de fin de linea de otro checkout pueden alterar el hash.",
+  "files": {
+    "app/Http/Controllers/Scheduling/AgendaAppointmentController.php": {
+      "sha256": "3d907bcd65918b239a5285fa8848e8561d9b722f9500177473ead0bae5153642"
+    },
+    "app/Http/Controllers/Scheduling/OperationalRegistrationController.php": {
+      "sha256": "bcbdd0160d3a93b5b0d01c987e78761e2a5067462311d6aad20580fafdbcbc43"
+    },
+    "app/Http/Requests/Scheduling/RescheduleAgendaAppointmentRequest.php": {
+      "sha256": "7b7bdf5460bc16a9e1bc6a9c5ba0b46ea1a3b4509f2bfd411b201dc884b4d8dd"
+    },
+    "app/Services/Scheduling/AgendaBoardPresenter.php": {
+      "sha256": "6fee93be33a93d12ae232393285e8dba1bf7727217395fdc54f2674dec8276c2"
+    },
+    "app/Services/Scheduling/AppointmentPaymentReview.php": {
+      "sha256": "e3bb4cfae231179d97c4db284a5ad1000dc6ba4b58939b3f281a73e7c18f0716"
+    },
+    "app/Services/Scheduling/RescheduleAppointmentService.php": {
+      "sha256": "b960a1eaf51f5bb14a6c98eb10bd116958e3c7f5f5fd2af9ce032aa987b0757f"
+    },
+    "app/Services/Scheduling/RescheduleHistory.php": {
+      "sha256": "62c43d8b69c24847edb64be184ce9b71cfcba6ba13566d39de9abf94908bdfc7"
+    },
+    "public/css/scheduling/agenda-layout.css": {
+      "sha256": "582b9de338b1e56294345527a3a4f97d3e1c9dcdb95280af4bb70b380c88fe2d"
+    },
+    "public/js/scheduling/admission-board.js": {
+      "sha256": "44bb99d93335e96c1a630122003a7a7f66c2e683dc412908105c95bbc1b3dc5e"
+    },
+    "public/js/scheduling/agenda-appointment-actions.js": {
+      "sha256": "1bde78d3aa8042310940b5c6064be80708eb793e5dd9a4a6e2443e528653aa1a"
+    },
+    "public/js/scheduling/agenda-manage-appointment.js": {
+      "sha256": "6e8c69f26d5994c4ea65e003247ec149b372e3c940307ca1b2d3b4c8ac1ac96d"
+    },
+    "public/js/scheduling/agenda-operational-workspace.js": {
+      "sha256": "d78db29715b295ce518a4338557f5e3e757455429cf4f7f25ba3bd3c1b270182"
+    },
+    "public/js/scheduling/agenda-reschedule-history.js": {
+      "sha256": "b29cd7f52b7fdf7fdb98cf36aacb679e909b7cff2de2e574f8ef91afc681e84d"
+    },
+    "public/js/scheduling/agenda.js": {
+      "sha256": "9fb8c85e0f8b818e087b0dec997071388856dbade4605f4c2178eb1fe7925611"
+    },
+    "resources/views/scheduling/agenda/index.blade.php": {
+      "sha256": "097544d663b45c6c194318b9911f18547aa86c47ca72e3187248c1f36a819d89"
+    },
+    "resources/views/scheduling/agenda/partials/operational-registration.blade.php": {
+      "sha256": "99d91214d604e417881a7214b983a5beca062a5a238efc9b4f6e08039041d079"
+    },
+    "tests/Feature/Scheduling/AgendaQuickManagementTest.php": {
+      "sha256": "20ee3a62be7132b19d53623197e25521336df3ca3b1baf4c1735919e6433ea3e"
+    },
+    "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php": {
+      "sha256": "3a760fc31ed827ef21c6ddfab955026488f0fd6b5155a55521dd12e42f10dc76"
+    },
+    "tests/JavaScript/agenda-payment-ocr-placement.test.js": {
+      "sha256": "33bd2d18b33e63192c42211ab783001e1468e4cb3e1b86c6cbb9d674fbd4c580"
+    },
+    "tests/JavaScript/agenda-payment-ux-closure.test.js": {
+      "sha256": "e529ee86bdbbf1e10bdd57c6cfe8421ab9126157d2a98b630a8ed81c7bf5bda4"
+    },
+    "tests/JavaScript/agenda-quick-management.test.js": {
+      "sha256": "8423b24a57d3afc70014b681f906f57e74ad3e26afbd66a40e7e1bb1d503dff8"
+    },
+    "tests/Support/agenda-management-regression-slot.php": {
+      "sha256": "8c9459542a11cac9e824d284db5b3bec2c7d2e4d160cadafcb2430b063e79745"
+    },
+    "tests/Support/agenda-management-seed.php": {
+      "sha256": "cc6cfafaafb0be887ea62ee2383e14b93b4e7912ebb93691a94db3f65f939c98"
+    },
+    "tools/qa/browser-agenda-management-focused.cjs": {
+      "sha256": "bc688a585db37c10ef616cfd02665da186e87e358f50d957ccc45f8830d06683"
+    },
+    "tools/qa/browser-agenda-quick-management.cjs": {
+      "sha256": "7132702694049459a4915bbd564bc11ee7f8241b3cf954dcae898de0304fe56a"
+    },
+    "tools/qa/browser-agenda-v2-round2.cjs": {
+      "sha256": "d58755bf3a002f1a4b8e6fc2ca177b6d1ab4033b5b8297ed21e519b3dc05ffa2"
+    },
+    "tools/qa/browser-agenda-v2-round3-functional.cjs": {
+      "sha256": "33db339c1bb6d878c8ba2c0b63a89bf48423e60cfe7b979faa00499c356d5a9b"
+    }
+  }
+}

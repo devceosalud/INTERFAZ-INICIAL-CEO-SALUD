@@ -1,0 +1,1 @@
+PASS Teclado, móvil, día/semana/mes y cuatro resoluciones sin desbordamientos

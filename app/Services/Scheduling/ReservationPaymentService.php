@@ -21,7 +21,8 @@ class ReservationPaymentService
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403);
         if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
-        if(($data['confirm']??false)===true&&$original->tipo_agendamiento==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
+        if((($data['confirm']??false)===true || Money::cents($data['payment']['amount']??0)>0)
+            && $original->estado_agenda==='PENDIENTE_CONFIRMACION' && $original->tipo_agendamiento==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
         $indication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
         $files=AppointmentPaymentProofs::files($proof,$data);
         unset($data['proof'],$data['proofs']); $storedPaths = [];
@@ -38,12 +39,17 @@ class ReservationPaymentService
             $doctor = Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->lockForUpdate()->whereKey($id)->firstOr(fn () => abort(404));
             abort_if((int)$a->doctor_id!==(int)$original->doctor_id,409,'La cita cambió; actualiza antes de operar.');
+            abort_if((int)$a->patient_id!==(int)$original->patient_id || (int)$a->service_id!==(int)$original->service_id,409,'La cita cambió de paciente o servicio. Actualiza antes de registrar el pago.');
+            if(isset($data['expected_revision'])) abort_unless(hash_equals(AppointmentManagement::revision($a),$data['expected_revision']),409,'La cita cambió. Revisa sus datos antes de registrar el pago.');
             if($indication) app(ReevaluationIndicationService::class)->eligible((int)$indication->id,(int)$a->patient_id,(int)$a->service_id,
                 substr($a->fecha_cita,0,10),$actor->id,$a->id,true,(int)$a->doctor_id);
             abort_if(in_array($a->estado_cita, ['CANCELADO', 'NO_ASISTIO', 'RETIRO', 'ATENDIDO'], true), 409, 'La cita no admite otro cobro.');
             $positions = app(AppointmentEconomicPosition::class); $p = $positions->forAppointment($a);
             if ($p['allocation_required']) { throw ValidationException::withMessages(['payment' => 'Este documento necesita atribución financiera por cita antes de otro pago.']); }
             $amount = Money::cents($data['payment']['amount'] ?? 0); $payment=null;
+            if (($amount > 0 || ($data['confirm'] ?? false) === true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION' && $a->tipo_agendamiento === 'ADICIONAL') {
+                abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
+            }
             if($files && $amount<1) throw ValidationException::withMessages(['proofs'=>'Adjunta comprobantes al registrar un pago positivo revisado. La imagen no registra dinero.']);
             if ($amount > $p['balance_cents']) { throw ValidationException::withMessages(['payment.amount' => 'El pago supera el saldo efectivo.']); }
             if ($amount > 0) {
@@ -71,12 +77,13 @@ class ReservationPaymentService
             $a->update(['total_pagado' => Money::decimal($p['paid_cents']), 'saldo_pendiente' => Money::decimal($p['balance_cents']),
                 'estado_pagado' => $p['paid_cents'] === 0 ? 'PENDIENTE' : ($p['paid_cents'] >= $p['price_cents'] ? 'PAGADO' : 'PARCIAL'),
                 'updated_by_user_id' => $actor->id]);
-            if (($data['confirm'] ?? false) === true && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
+            if (($amount > 0 || ($data['confirm'] ?? false) === true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
                 if (!AppointmentEconomicPosition::allowsConfirmation($p) && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo o exoneración autorizada.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
-                $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
-                // A conflict rolls back this operation, including any new payment. Never convert a reservation implicitly.
+                if ($a->tipo_agendamiento === 'FUERA_HORARIO') $slots->assertOutsideHours($a->doctor_id, $date, $time, $a->duracion_cita);
+                else $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
+                // A conflict rolls back confirmation and this new payment together.
                 if($a->tipo_agendamiento!=='ADICIONAL')$slots->assertUnoccupied($a->doctor_id, $date, $time, $a->duracion_cita, $a->id);
                 $a->update(['estado_agenda' => 'CONFIRMADA']);
             }

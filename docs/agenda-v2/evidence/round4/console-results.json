@@ -1,0 +1,305 @@
+{
+  "started": "2026-10-20T14:26:33.790Z",
+  "browser": "155.0.8059.79",
+  "checks": [
+    {
+      "role": "admin",
+      "surface": "agenda",
+      "result": "PASS"
+    },
+    {
+      "role": "admin",
+      "surface": "manage",
+      "result": "PASS"
+    },
+    {
+      "role": "admin",
+      "surface": "admission",
+      "result": "PASS"
+    },
+    {
+      "role": "admin",
+      "surface": "reports",
+      "result": "PASS"
+    },
+    {
+      "role": "admission",
+      "surface": "agenda",
+      "result": "PASS"
+    },
+    {
+      "role": "admission",
+      "surface": "manage",
+      "result": "PASS"
+    },
+    {
+      "role": "admission",
+      "surface": "admission",
+      "result": "PASS"
+    },
+    {
+      "role": "commercial",
+      "surface": "agenda",
+      "result": "PASS"
+    },
+    {
+      "role": "commercial",
+      "surface": "manage",
+      "result": "PASS"
+    },
+    {
+      "role": "commercial",
+      "surface": "admission",
+      "result": "PASS"
+    }
+  ],
+  "blocked_external_resources": [
+    {
+      "role": "admin",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admin",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "admission",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://cdn.lineicons.com/2.0/LineIcons.css",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://code.jquery.com/jquery-2.2.4.min.js",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Open+Sans:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Roboto:400,500,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    },
+    {
+      "role": "commercial",
+      "url": "https://fonts.googleapis.com/css?family=Nunito:400,600,700",
+      "reason": "Expected QA self-only CSP; no external request permitted"
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-20T14:26:56.921Z"
+}

@@ -499,7 +499,7 @@ var eres = function(){
 		$('#preloader').fadeOut(500);
 		$('#main-wrapper').addClass('show');
 	
-		$('select').selectpicker();
+		$('select:not([data-native-select])').selectpicker();
 		
 		eres.load();
 	});

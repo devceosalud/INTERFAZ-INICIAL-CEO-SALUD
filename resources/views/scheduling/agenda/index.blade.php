@@ -3,6 +3,8 @@
 @section('body_class', 'agenda-viewport')
 
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-layout.css') }}" rel="stylesheet">
@@ -21,6 +23,7 @@
         <div class="content-body agenda-page">
             <div class="container-fluid agenda-page__container">
                 <main class="agenda-board agenda-board--day" id="agenda-board" data-ui-screen="agenda"
+                    data-professional-preferences="{{ route('scheduling.mvp.agenda.professional-preferences') }}"
                     data-capacity-url="{{ route('scheduling.mvp.agenda.regular-capacity') }}"
                     data-registration-store="{{ route('scheduling.mvp.agenda.registrations') }}"
                     data-auto-owner="{{ $autoOwner ? auth()->id() : '' }}"
@@ -39,6 +42,7 @@
                     data-today="{{ $today }}"
                     data-grid-minutes="20">
 
+                    <script type="application/json" id="agenda-professional-preferences">@json($professionalPreferences)</script>
                     <script type="application/json" id="agenda-doctor-services">@json($doctorServices)</script>
 
                     @include('scheduling.agenda.partials.toolbar')
@@ -57,7 +61,7 @@
                                     <h2 class="agenda-section-title" id="agenda-title">Agenda horaria</h2>
                                     @if(auth()->user()->hasRole('ADMINISTRADOR'))
                                         @if(auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW_AUDIT))
-                                            <a class="ml-2" href="{{ route('scheduling.mvp.agenda.reports.index') }}">Exportar para gerencia (CSV)</a>
+                                            <a class="ml-2" href="{{ route('scheduling.mvp.agenda.reports.index') }}">Reportes de gerencia (CSV / Excel)</a>
                                         @endif
                                         <a href="{{ route('scheduling.mvp.agenda.heatmap') }}">Mapa de clics</a>
                                     @endif
@@ -110,6 +114,10 @@
                                 </div>
                             </section>
 
+                            <details id="agenda-reschedule-history" class="agenda-reschedule-history" hidden>
+                                <summary>Citas reprogramadas · referencias sin ocupación <span id="agenda-reschedule-count"></span></summary>
+                                <div id="agenda-reschedule-history-list"></div>
+                            </details>
                             <div class="agenda-calendar-surface">
                                 <section class="agenda-day-grid" id="agenda-day-grid"
                                     aria-label="Agenda operativa diaria">
@@ -162,6 +170,7 @@
 @endsection
 
 @section('script_data')
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-indicators.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/js/custom.min.js') }}"></script>
@@ -186,8 +195,14 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('vendor/appointment-ocr/tesseract.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-ocr.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-receipt-review.js') }}"></script>
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-operational-workspace.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-refresh.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-reschedule-history.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/patients/patient-record-form.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-manage-appointment.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-professional-preferences.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>
 @endsection

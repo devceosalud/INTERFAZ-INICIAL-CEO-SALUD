@@ -119,4 +119,14 @@ class AgendaHeatmapGeometryTest extends TestCase
         $this->postJson('/ui-telemetry/click-events',['events'=>[$this->event()]])->assertStatus(503);
         $this->get(route('scheduling.mvp.agenda'))->assertOk();
     }
+    public function test_panel_names_may_repeat_across_events_but_not_inside_one_event():void
+    {
+        $a=$this->event();$b=$this->event();$a['geometry']['expanded']=$b['geometry']['expanded']=['documents','payment'];
+        $this->postJson('/ui-telemetry/click-events',['events'=>[$a,$b]])->assertNoContent();
+        $this->assertDatabaseCount('agenda_click_events',2);
+        $invalid=$this->event();$invalid['geometry']['expanded']=['documents','documents'];
+        $this->postJson('/ui-telemetry/click-events',['events'=>[$invalid]])->assertUnprocessable();
+        $this->assertDatabaseCount('agenda_click_events',2);
+    }
+
 }

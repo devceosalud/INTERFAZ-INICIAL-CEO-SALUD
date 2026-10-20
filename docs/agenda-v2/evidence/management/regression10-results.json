@@ -1,0 +1,71 @@
+{
+  "stage": "functional",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "ADMIN identifica reservas ajenas sin pago; ADMISION conserva privacidad",
+      "result": "PASS"
+    },
+    {
+      "name": "Valores persistidos muestran POSTOPERATORIO y PIE DIABÉTICO sin duplicación",
+      "result": "PASS"
+    },
+    {
+      "name": "Fila completa seleccionable, teclado, foco y repetición sin otra consulta",
+      "result": "PASS"
+    },
+    {
+      "name": "COMERCIAL sube PDF desde Admisión; borrador conserva archivo con polling y filtros",
+      "result": "PASS"
+    },
+    {
+      "name": "ADMIN descarga mismos bytes, previsualiza PDF, adjunta y ve auditoría; ADMISION sin permiso recibe 404",
+      "result": "PASS"
+    },
+    {
+      "name": "Archivo inválido conserva selección y texto; COMERCIAL no obtiene edición o pagos",
+      "result": "PASS"
+    },
+    {
+      "name": "Documentos también disponibles en Agenda operativa sin subir permisos financieros",
+      "result": "PASS"
+    },
+    {
+      "name": "PDF real mayor de 2 MB se conserva privado; más de 8 MB se rechaza",
+      "result": "PASS"
+    },
+    {
+      "name": "Ficha de paciente reutiliza historial de documentos con acceso autorizado y sin Clarity",
+      "result": "PASS"
+    },
+    {
+      "name": "ADMIN reemplaza con motivo, conserva historial y bytes; COMERCIAL no ve esa acción",
+      "result": "PASS"
+    }
+  ],
+  "exit": [],
+  "errors": [],
+  "oversize_rejection": {
+    "http_status": 422,
+    "elapsed_ms": 783,
+    "server_timing": "app;dur=45.29, sql;dur=2.12;desc=\"7 queries\""
+  },
+  "expected_http_errors": [
+    {
+      "url": "/scheduling-mvp/admission/appointments/36",
+      "status": 404,
+      "body": "{\n    \"message\": \"\"\n}"
+    },
+    {
+      "url": "/scheduling-mvp/agenda/appointments/36/documents",
+      "status": 422,
+      "body": "{\"message\":\"Adjunta una imagen JPG\\/PNG real o PDF v\\u00e1lido, hasta 8 MB.\",\"errors\":{\"file\":[\"Adjunta una imagen JPG\\/PNG real o PDF v\\u00e1lido, hasta 8 MB.\"]}}"
+    },
+    {
+      "url": "/scheduling-mvp/admission/appointments/37/care",
+      "status": 403,
+      "body": "{\n    \"message\": \"User does not have the right permissions.\"\n}"
+    }
+  ],
+  "finished": "2026-10-20T18:58:56.209Z"
+}

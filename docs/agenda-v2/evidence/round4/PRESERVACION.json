@@ -1,0 +1,14 @@
+{
+  "primary_five_unchanged": true,
+  "sha256": {
+    "app/Http/Controllers/admin/master/doctor/DoctorController.php": "56dcaa641555f2b59acef72f96e2ba050e60be3ba3214cec89f95648a901028d",
+    "app/Http/Controllers/admin/master/doctorService/DoctorServiceController.php": "fee38c7eb0d9e7767149a4ae6c785c76ea2712e516c6f75cbb7cab530a54bfb5",
+    "app/Http/Controllers/admin/master/user/UserController.php": "6c297117ecc1eaa18bc804ba4b03d2e2bae4247cf240b363f2f8580cf50f4554",
+    "app/Services/Scheduling/AgendaBoardPresenter.php": "728a86af515a3df2a47e9c1771031d59cc8c62527b7be18297a38b75ebd5676b",
+    "app/Services/Scheduling/OperationalAgendaAppointmentService.php": "7a7e2ac170de21907dd029d0cf508104ac13eace75cb0f96403b40fe7f53ddd8"
+  },
+  "main_integrated": "76e6ad21d69372d429698de35142689dfd6bd873",
+  "source_commit": "d93f4841d68bb864c2aa2545284f27d81df88d1c",
+  "no_env_in_qa": true,
+  "no_push_or_pr_mutation": true
+}

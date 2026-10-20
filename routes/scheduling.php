@@ -21,13 +21,25 @@ Route::middleware([
         ->name('scheduling.mvp.access');
 
     Route::middleware('permission:'.SchedulingCapability::VIEW)->group(function () {
+        Route::post('/scheduling-mvp/agenda/professional-preferences', [\App\Http\Controllers\Scheduling\AgendaProfessionalPreferenceController::class, 'update'])
+            ->middleware('throttle:120,1')->name('scheduling.mvp.agenda.professional-preferences');
         $admission = \App\Http\Controllers\Scheduling\AdmissionBoardController::class;
+        $procedures = \App\Http\Controllers\Scheduling\OperationalProcedureController::class;
+        Route::get('/scheduling-mvp/admission/reevaluations', [$procedures, 'queue'])->name('scheduling.mvp.admission.reevaluations');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/procedures/{action}', [$procedures, 'update'])
+            ->whereNumber('appointmentId')->whereIn('action', ['selection','completion','send','withdraw'])
+            ->middleware('throttle:60,1')->name('scheduling.mvp.admission.procedures');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care-reversal', [$admission, 'reverseCare'])
+            ->whereNumber('appointmentId')->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care-reversal');
         Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
         Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
             ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
+        Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/reevaluation-history',
+            \App\Http\Controllers\Scheduling\AppointmentReevaluationHistoryController::class)
+            ->whereNumber('appointmentId')->middleware('throttle:60,1')->name('scheduling.mvp.admission.reevaluation-history');
         Route::patch('/scheduling-mvp/admission/appointments/{appointmentId}/manual-reevaluation',
             [\App\Http\Controllers\Scheduling\ManualReevaluationController::class, 'update'])
             // Access is restricted by ManualReevaluationService::canUpdate:
@@ -64,6 +76,10 @@ Route::middleware([
             ->name('scheduling.mvp.agenda.contingencies');
         Route::patch('/scheduling-mvp/agenda/contingencies/{id}', [\App\Http\Controllers\Scheduling\AppointmentContingencyController::class, 'update'])
             ->whereNumber('id')->name('scheduling.mvp.agenda.contingencies.update');
+        Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/quick-edit', [\App\Http\Controllers\Scheduling\AppointmentQuickEditController::class,'show'])
+            ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.quick-edit.show');
+        Route::patch('/scheduling-mvp/agenda/appointments/{appointmentId}/quick-edit', [\App\Http\Controllers\Scheduling\AppointmentQuickEditController::class,'update'])
+            ->whereNumber('appointmentId')->middleware(['permission:'.SchedulingCapability::UPDATE,'throttle:30,1'])->name('scheduling.mvp.agenda.quick-edit.update');
         Route::get('/scheduling-mvp/agenda/appointments/{appointmentId}/economy', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'economy'])
             ->whereNumber('appointmentId')->name('scheduling.mvp.agenda.economy');
         Route::post('/scheduling-mvp/agenda/quote', [\App\Http\Controllers\Scheduling\OperationalRegistrationController::class, 'quote'])

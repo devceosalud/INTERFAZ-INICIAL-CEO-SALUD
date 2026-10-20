@@ -52,7 +52,7 @@ class AgendaAppointmentController extends Controller
         try {
             $data = $request->validated();
             $appointment = $appointments->reschedule($appointmentId, (int) $request->user()->id,
-                $data['fecha_cita'], $data['hora_cita'], $data['expected_fecha_cita'], $data['expected_hora_cita'], $data['confirmed_booking_type'] ?? null);
+                $data['fecha_cita'], $data['hora_cita'], $data['expected_fecha_cita'], $data['expected_hora_cita'], $data['confirmed_booking_type'] ?? null, $data['expected_revision'] ?? null, isset($data['motivo']) ? trim($data['motivo']) : null);
         } catch (AppointmentClassificationConfirmationRequired $exception) {
             return response()->json(['message' => $exception->getMessage(), 'confirmation_required' => true,
                 'target_booking_type' => $exception->targetType], 409);

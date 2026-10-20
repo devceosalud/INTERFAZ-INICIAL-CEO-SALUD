@@ -1,5 +1,7 @@
 # Verificación del hotfix
 
+> Registro histórico de los hotfixes #47–#49. La implementación vigente y QA consolidado se documentan en [Agenda v2 integrada](../agenda-v2/INTEGRACION_MAIN_Y_HOTFIXES.md). El runtime SQLite independiente y su workflow duplicado se retiraron; se reutilizan el router seguro y MariaDB QA de Agenda v2. Las evidencias históricas siguientes se conservan.
+
 ## Resultados finales
 
 | Comprobación | Resultado |
@@ -38,6 +40,4 @@ Capturas: [verde](evidence/admision-verde.jpg), [naranja y salida](evidence/reev
 
 Usar un checkout sin .env y crear los directorios bootstrap/cache, storage/framework/{cache/data,sessions,views}, storage/logs y storage/app/hotfix-qa. Instalar dependencias bloqueadas. Crear un archivo vacío storage/app/hotfix-qa/browser.sqlite.
 
-Ejecutar php tests/Support/manual-reevaluation-qa-seed.php y luego php -S 127.0.0.1:8097 -t public tests/Support/manual-reevaluation-qa-router.php. El seed destruye exclusivamente esa SQLite ficticia después de comprobar su ruta y entorno. No ejecutarlo en un checkout con .env. Cuentas ficticias: admision@example.invalid, administrador@example.invalid y comercial@example.invalid; contraseña local fija only-local-manual-qa-2026, sin acceso fuera de este fixture. Abrir / y luego /scheduling-mvp/admission.
-
-Al terminar, ejecutar php tests/Support/manual-reevaluation-qa-verify.php con el mismo runtime usado para el seed (para comparar también los tipos PDO estrictamente) y detener el servidor. La SQLite, logs y runtime portátil se quedan en storage y no forman parte del PR. No usar estos helpers para producción.
+El procedimiento independiente del hotfix se conserva en el historial Git de main `dcb9b2b`. Para la versión integrada usar el runtime QA y el seed append-only documentados en `docs/agenda-v2/`; no ejecutar el antiguo seed con migrate:fresh sobre la BD manual. Los archivos SQLite/artefactos locales anteriores no se borraron.

@@ -31,10 +31,18 @@ class OperationalRegistrationService
         if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         if(($data['booking_type']??null)==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
         if(!empty($data['es_exonerado']))abort_unless($actor->can(Capability::APPROVE_ZERO_COST),403);
+        if (is_string($data['motivo_consulta'] ?? null)) {
+            $data['motivo_consulta'] = \App\Support\Scheduling\OperationalText::trim($data['motivo_consulta']);
+        }
+        \Illuminate\Support\Facades\Validator::make($data, ['motivo_consulta' => 'required|string|max:2000'], [
+            'motivo_consulta.required' => 'Escribe el motivo de consulta para registrar la cita o reserva.',
+            'motivo_consulta.max' => 'El motivo de consulta admite hasta 2000 caracteres.',
+        ])->validate();
         if(!empty($data['reevaluation_indication_id']) && !DB::table('appointment_operations')->where('actor_user_id',$actor->id)
             ->where('request_key',$data['request_key'])->whereNotNull('appointment_id')->exists()) {
             app(ReevaluationIndicationService::class)->assertVisibleOrigin((int)$data['reevaluation_indication_id'],(int)($data['patient_id']??0),(int)$data['service_id'],$actor->id);
         }
+        abort_unless(in_array($data['attendance_mode']??'PRESENCIAL',['PRESENCIAL','TELECONSULTA'],true),422);
         $files=AppointmentPaymentProofs::files($proof,$data);
         unset($data['proof'],$data['proofs']);
         $hash = hash('sha256', json_encode($data).AppointmentPaymentProofs::fingerprint($files));
@@ -90,7 +98,7 @@ class OperationalRegistrationService
                 }
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,
-                    ['motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
+                    ['attendance_mode' => $data['attendance_mode'] ?? 'PRESENCIAL', 'motivo_consulta' => $data['motivo_consulta'] ?? null, 'observaciones' => $data['observaciones'] ?? null,
                         'es_exonerado' => $waived, 'autorizado_por' => $data['autorizado_por'] ?? null, 'economic_source' => 'VOUCHER',
                         'additional_rate_id' => $data['additional_rate_id'] ?? null, 'legacy_double' => $data['_legacy_double'] ?? false,
                         'commercial_service_id'=>$data['commercial_service_id']??null,'price_modality'=>$data['price_modality']??null,
@@ -122,7 +130,7 @@ class OperationalRegistrationService
                 }
                 $a->update(['total_pagado' => Money::decimal($amount), 'saldo_pendiente' => $waived ? 0 : Money::decimal(Money::cents($a->precio_programado) - $amount),
                     'estado_pagado' => !$amount ? 'PENDIENTE' : ($amount === Money::cents($a->precio_programado) ? 'PAGADO' : 'PARCIAL')]);
-                if ($data['mode'] === 'CONFIRM') {
+                if ($amount > 0 || $data['mode'] === 'CONFIRM') {
                     if (!$waived && !AppointmentEconomicPosition::allowsConfirmation(app(AppointmentEconomicPosition::class)->forAppointment($a))) {
                         throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo. Puedes guardar una reserva privada.']);
                     }

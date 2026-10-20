@@ -11,7 +11,7 @@ function fixture(fetcher, canCreate=true) {
     const elements = new Map(), calls = [], busy = [], notices = [];
     const element = () => {
         const e = {value:'',disabled:false,hidden:false,files:[],checked:false,open:false,textContent:'',listeners:{},
-            dataset:{},classList:{add(){},remove(){}},focus(){},scrollIntoView(){},replaceChildren(){},appendChild(){},append(){},setAttribute(){},
+            dataset:{},classList:{add(){},remove(){}},focus(){this.focused=true;},scrollIntoView(){},replaceChildren(){},appendChild(){},append(){},setAttribute(){},
             addEventListener(name,fn){e.listeners[name]=fn;}};
         return e;
     };
@@ -25,7 +25,7 @@ function fixture(fetcher, canCreate=true) {
         fetch:async(url,options)=>{calls.push({url,options});return fetcher(url,options,calls.length);}};
     vm.runInNewContext(source,context);
     const get = id => document.getElementById('agenda-op-'+id);
-    get('price').value='100.00';get('amount').value='0';get('method').value='EFECTIVO';
+    get('reason').value='Motivo ficticio válido';get('price').value='100.00';get('amount').value='0';get('method').value='EFECTIVO';
     const workspace=context.window.AgendaOperationalWorkspace({endpoint:'/registrations',base:'/appointments',patientTemplate:'/patients/__PATIENT__',
         canCreate,context:()=>selected,payload:()=>({patient_id:1,doctor_id:1,service_id:1}),error:b=>b.message||'error',
         busy:value=>busy.push(value),notice:message=>notices.push(message),registered(){},paymentUpdated(){}});
@@ -137,4 +137,8 @@ test('confirmation from the main action serializes double clicks and never adds 
     f.select({...selected,estado_agenda:'CONFIRMADA'});
     await f.workspace.confirmReservation();
     assert.equal(f.calls.filter(c=>c.options.method==='POST').length,1);
+});
+
+test('motivo vacío o invisible impide cualquier registro y enfoca sin borrar el texto',async()=>{
+ for(const text of ['', '   ', '\u00a0\u200b']){const f=fixture(()=>response(201,{}));f.get('reason').value=text;await f.workspace.register(registration);assert.equal(f.calls.length,0);assert.equal(f.get('reason').focused,true);assert.equal(f.get('reason').value,text);assert.match(f.notices.at(-1),/motivo de consulta/);}
 });

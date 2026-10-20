@@ -1,0 +1,32 @@
+[
+  {
+    "report": "citas",
+    "zip_crc_valid": true,
+    "columns": 55,
+    "rows_including_header": 37,
+    "autofilter": "A1:BC37",
+    "freeze_first_row": true,
+    "formulas": 0,
+    "leading_bank_zeroes_preserved": true
+  },
+  {
+    "report": "pagos",
+    "zip_crc_valid": true,
+    "columns": 20,
+    "rows_including_header": 38,
+    "autofilter": "A1:T38",
+    "freeze_first_row": true,
+    "formulas": 0,
+    "leading_bank_zeroes_preserved": true
+  },
+  {
+    "report": "slots",
+    "zip_crc_valid": true,
+    "columns": 16,
+    "rows_including_header": 21,
+    "autofilter": "A1:P21",
+    "freeze_first_row": true,
+    "formulas": 0,
+    "leading_bank_zeroes_preserved": null
+  }
+]

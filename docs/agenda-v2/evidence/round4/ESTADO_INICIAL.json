@@ -1,0 +1,7 @@
+{
+  "head": "0ba1c23bcf8e52da0e641bda155f39c860a1c843",
+  "origin_main": "76e6ad21d69372d429698de35142689dfd6bd873",
+  "status": " M docs/agenda-v2/RONDA_4_DIAGNOSTICO_Y_GUIA.md\n M public/js/scheduling/admission-board.js\n M public/js/scheduling/agenda-manage-appointment.js\n M tools/qa/browser-agenda-v2-round4.cjs\n?? dad}sad}sa\n",
+  "primary_five_hashes_intact": true,
+  "unrelated_untracked_file": "dad}sad}sa; pager help, preserved, excluded from commits"
+}

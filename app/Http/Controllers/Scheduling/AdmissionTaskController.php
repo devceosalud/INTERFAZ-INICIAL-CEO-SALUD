@@ -14,9 +14,10 @@ final class AdmissionTaskController extends Controller
         abort_if(array_diff(array_keys($request->all()), ['text', 'request_key', '_token']),
             422, 'Esta acción solo crea una tarea de seguimiento.');
         $data = $request->validate([
-            'text' => 'required|string|min:3|max:1000',
+            'text' => 'required|string|max:16000',
             'request_key' => 'required|uuid',
-        ]);
+        ], ['text.required' => 'Escribe una observación antes de guardar.',
+            'text.max' => 'La observación supera el máximo técnico de 16000 caracteres.']);
         $tasks->create($appointmentId, $request->user(), $data['text'], $data['request_key']);
         return response()->json(['message' => 'Observación registrada para esta cita.'], 201)
             ->header('Cache-Control', 'private, no-store');

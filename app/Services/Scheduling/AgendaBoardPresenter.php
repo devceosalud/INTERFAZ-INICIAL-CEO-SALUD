@@ -56,11 +56,11 @@ class AgendaBoardPresenter
 
         $availability = $this->availability->forRange($agenda);
         $appointments = $this->appointments->forPresentationRange($agenda, $actorId);
+        app(ManualReevaluationService::class)->load($appointments);
         $positions = app(AppointmentEconomicPosition::class)->forAppointments($appointments, []);
         $presentations = $appointments->mapWithKeys(fn($a)=>[$a->id=>AgendaAppointmentPresentation::of($a,$positions[$a->id])]);
         $compareProfessionals = $doctors->count() > 1;
         $canSeeCreator = \App\Support\Scheduling\AgendaCreatorVisibility::allows(User::findOrFail($actorId));
-        if ($canSeeCreator) $appointments = $appointments->filter(fn($a)=>$presentations[$a->id]['paid_real'] || $presentations[$a->id]['present'] || $presentations[$a->id]['departed'] || $presentations[$a->id]['refund_requested'] || $presentations[$a->id]['informational']);
 
         $professionals = $doctors->map(function (Doctor $doctor) use ($agenda, $availability, $range, $appointments, $presentations) {
             $professional = $this->professional($doctor, $agenda, $availability, $range);
@@ -91,6 +91,7 @@ class AgendaBoardPresenter
                 ->with('patient:id,nombre,apellido_paterno,apellido_materno')->orderByDesc('fecha_cita')->orderBy('hora_cita')->limit(100)->get()
                 ->map(fn ($a) => ['appointment_id' => $a->id, 'fecha' => substr($a->fecha_cita, 0, 10), 'hora' => substr($a->hora_cita, 0, 5),
                     'patient' => trim($a->patient->apellido_paterno.' '.$a->patient->apellido_materno.' '.$a->patient->nombre), 'duracion' => $a->duracion_cita])->all() : [],
+            'reprogramaciones' => app(RescheduleHistory::class)->forRange($agenda, User::findOrFail($actorId)),
             'profesionales' => $professionals->all(),
             'eventos' => $this->events(
                 $professionals,
@@ -346,6 +347,8 @@ class AgendaBoardPresenter
                 'estado_agenda' => $appointment->estado_agenda,
                 'tipo_agendamiento' => $appointment->tipo_agendamiento,
                 'estado_pagado' => $paymentState !== '' ? $paymentState : null,
+                'financial_status' => $presentation['financial_status'] ?? null,
+                'attendance_mode' => $appointment->attendance_mode ?? 'PRESENCIAL',
                 'historia_clinica' => $clinicalRecord !== '' ? $clinicalRecord : null,
                 'site_id' => $appointment->site_id ? (int) $appointment->site_id : null,
                 'seleccionable' => false,

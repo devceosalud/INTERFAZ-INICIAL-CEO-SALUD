@@ -29,8 +29,8 @@ class AppointmentWorkflowController extends Controller
                 'refund_request_status' => $e->refund_request_status]),
             'available_credit' => collect($p['available_by_voucher'])->map(fn ($amount, $id) => ['voucher_id' => (int) $id, 'amount' => Money::decimal($amount)])->values(),
             'refund_requests' => DB::table('appointment_refund_requests')->where('appointment_id', $a->id)->get(['id', 'voucher_id', 'amount', 'status', 'requested_at']),
-            'can_withdraw' => $r->user()->can(C::WITHDRAW), 'can_cancel' => $r->user()->can(C::CANCEL),
-            'can_no_show' => $r->user()->can(C::MARK_NO_SHOW),
+            'can_withdraw' => ($a->attendance_mode??'PRESENCIAL')!=='TELECONSULTA' && $r->user()->can(C::WITHDRAW), 'can_cancel' => $r->user()->can(C::CANCEL),
+            'can_no_show' => ($a->attendance_mode??'PRESENCIAL')!=='TELECONSULTA' && $r->user()->can(C::MARK_NO_SHOW),
             'can_rebook' => $r->user()->can(C::CREATE) && $r->user()->can(C::RESCHEDULE)]);
     }
     public function withdraw(Request $r, int $appointmentId, AppointmentWithdrawalService $service)

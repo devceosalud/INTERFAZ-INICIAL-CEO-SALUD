@@ -67,7 +67,7 @@ class AppointmentController extends Controller
         try {
             $a = $registrations->register($request);
             return response()->json(['code' => 1, 'msg' => $a->estado_agenda === 'PENDIENTE_CONFIRMACION'
-                ? 'Reserva guardada. Pendiente de confirmación; registrar adelanto no confirma la cita.' : 'Cita confirmada.',
+                ? 'Reserva sin pago guardada. Pendiente de confirmación.' : 'Cita confirmada.',
                 'appointment_id' => $a->id, 'estado_agenda' => $a->estado_agenda,
                 'economy' => app(\App\Services\Billing\AppointmentEconomicPosition::class)->publicPosition($a)]);
         } catch (\Illuminate\Validation\ValidationException $e) {

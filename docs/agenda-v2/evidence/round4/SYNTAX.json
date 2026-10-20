@@ -1,0 +1,857 @@
+[
+  {
+    "file": "app/Http/Controllers/Patients/OperationalPatientController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AdmissionBoardController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AdmissionTaskController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AgendaAppointmentController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AgendaBoardController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AgendaDetailsController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AgendaFeedController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AgendaProfessionalPreferenceController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AppointmentDocumentController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AppointmentReevaluationHistoryController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/AppointmentWorkflowController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/ManagementExportController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/OperationalProcedureController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Controllers/admissionist/appointment/AppointmentController.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Requests/Scheduling/OperationalRegistrationRequest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Requests/Scheduling/RescheduleAgendaAppointmentRequest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Http/Requests/Scheduling/StoreAgendaClickEventsRequest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Models/Appointment.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Models/AppointmentDocument.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Models/AppointmentOperationalReview.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Billing/AppointmentEconomicPosition.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AdmissionBoardService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AdmissionCareService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AdmissionTaskService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AgendaBoardPresenter.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AgendaProfessionalPreferences.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AppointmentManagement.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AppointmentReevaluationService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/AppointmentWithdrawalService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/CreateAppointmentService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/LegacyAppointmentMutation.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/LegacyAppointmentRegistration.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/ManualReevaluationService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/OperationalAgendaAppointmentService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/OperationalProcedureService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/OperationalRegistrationService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/PatientAppointmentDocumentUpload.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/ReevaluationIndicationService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/RegularCapacityService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/ReplaceAppointmentDocument.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/RescheduleAppointmentService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/ReservationPaymentService.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/AgendaAppointmentPresentation.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/AgendaLegend.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/AppointmentDocumentAccess.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/AppointmentVisibility.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/ManagementPaymentOperationNumbers.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/ManagementXlsx.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/OperationalText.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "database/migrations/2026_10_16_020000_create_appointment_operational_procedures.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "database/migrations/2026_10_19_040000_add_agenda_v2_attendance_and_preferences.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "public/assets/vendor/pdfjs/pdf.min.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/assets/vendor/pdfjs/pdf.worker.min.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/admin/master/doctor-service/doctor-service.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/admissionist/appointment/appointment.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/admission-board.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-appointment-indicators.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-guidance.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-manage-appointment.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-operational-form.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-operational-workspace.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-professional-preferences.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-refresh.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-selection.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda-withdrawal.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/agenda.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/appointment-patient-documents.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/operational-reevaluations.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/admin/appointment/index.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/admissionist/appointment/crud/create.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/admissionist/appointment/index.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/components/utils/operational-reevaluations.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/components/utils/reevaluations.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/layouts/app.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/patients/operational.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/receptionist/appointment/index.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/admission/index.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/index.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/management-report.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/partials/operational-registration.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/partials/patient-modal.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/partials/professionals.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/scheduling/agenda/partials/quick-registration.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/templates/nav/administrador.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/templates/nav/admision.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/templates/nav/comercial.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/templates/nav/mvp.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "resources/views/templates/nav/recepcion.blade.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "routes/scheduling.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Concerns/BuildsBaselineData.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/CreatesApplication.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Auth/WorkerAccessTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Baseline/ApplicationAndAuthenticationSmokeTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Baseline/PatientAndAppointmentSmokeTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Catalog/ActiveDoctorServiceCatalogTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Catalog/CommercialReevaluationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Catalog/ServicePriceCatalogTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Sales/BankPaymentIntegrityTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AdmissionBoardTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AdmissionDepartureTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AdmissionTaskTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaAppointmentWriteTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaBoardTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaCreatorPrivacyTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaDoubleDurationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaHeatmapGeometryTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaRefinementTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaSemaphorizationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaStabilizationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2CompatibilityTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2PaymentsTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2ProceduresTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2ReversalTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2Round2Test.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2Round3Test.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AgendaV2Round4Test.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AppointmentDiscountRegistrationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AppointmentPaymentProofsTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AppointmentReaderPrivacyTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/AppointmentWithdrawalTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/LegacyRegistrationParityTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/ManagementExportsIntegrationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/ManualReevaluationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/MvpAllRolesFlowTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/OperationalRegistrationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/PilotAppointmentOperationsTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/PilotAppointmentPaymentTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/ReevaluationIndicationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/RegularReservationExclusivityTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/UnifiedReevaluationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/admission-booking-indicator.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/admission-row-selection.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/admission-tasks-ui.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-guidance.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-modal-close.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-payment-ocr-placement.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-permission-flow.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-quote.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-round4.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/agenda-v2-refresh.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/doctor-service-compatibility.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/operational-reevaluations.test.js",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/AgendaV2TestCase.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/IsolatedAgendaV2Qa.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-browser-clock.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-browser-router.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-browser-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-health.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-init.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-integration-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-request.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-round2-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-round3-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-round4-migrate.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-round4-resume-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Support/agenda-v2-round4-seed.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/TestCase.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Unit/Scheduling/ManagementPaymentOperationNumbersTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Unit/Scheduling/ManagementReportFiltersTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Unit/Scheduling/ManagementReportTemplateTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Unit/Scheduling/ManagementXlsxTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Unit/Services/Billing/AppointmentFinancialPresentationTest.php",
+    "kind": "php",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2-final-console.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2-round2.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2-round3-functional.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2-round3.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2-round4.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-agenda-v2.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-catalog.cjs",
+    "kind": "javascript",
+    "exit_code": 0
+  }
+]

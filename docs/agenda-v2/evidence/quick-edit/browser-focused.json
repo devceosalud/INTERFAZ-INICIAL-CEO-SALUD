@@ -1,0 +1,21 @@
+{
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Gestor abre Documentos e historial de la misma cita con autorización existente",
+      "result": "PASS"
+    },
+    {
+      "name": "Archivo inválido rechazado y retirado; OCR deshabilitado; cero solicitudes de cobro medidas",
+      "result": "PASS"
+    },
+    {
+      "name": "Horario sin cambio: aviso veraz, borrador conservado y cero solicitudes de reprogramación",
+      "result": "PASS"
+    }
+  ],
+  "pageErrors": [],
+  "moneyRequests": 0,
+  "rescheduleRequests": 0,
+  "finished": "2026-10-20T19:51:43.132Z"
+}

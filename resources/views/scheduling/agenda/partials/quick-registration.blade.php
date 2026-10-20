@@ -8,6 +8,7 @@
         <span class="agenda-quick__mode" id="agenda-quick-mode">Sin selección</span>
     </div>
 
+    <button type="button" id="agenda-manage-selected" class="agenda-btn" hidden>Gestionar cita</button>
     <div class="agenda-quick__body">
         <form class="agenda-lookup" id="agenda-patient-lookup" autocomplete="off"
             data-endpoint="{{ route('scheduling.mvp.agenda.patient-lookup') }}">
@@ -76,6 +77,12 @@
                 </select>
             </label>
             <label class="agenda-field"><span class="agenda-field__label">Modalidad</span><select id="agenda-op-price-modality" class="agenda-field__input"><option value="CONSULTATION">Primera consulta / atención normal</option><option value="REEVALUATION" disabled>Reevaluación indicada</option></select></label>
+            <div id="agenda-reason-workspace-host" class="agenda-consultation-reason"><label id="agenda-consultation-reason-field" class="agenda-field agenda-consultation-reason" for="agenda-op-reason">
+                <span class="agenda-field__label"><span>Motivo de consulta <b class="agenda-required-mark" aria-hidden="true">*</b></span><small class="agenda-required-badge">Obligatorio</small></span>
+                <textarea id="agenda-op-reason" class="agenda-field__input" rows="2" maxlength="2000" aria-required="true" aria-describedby="agenda-op-reason-error" placeholder="Describe brevemente por qué viene el paciente"></textarea>
+                <span id="agenda-op-reason-error" class="agenda-field-error" role="alert" hidden></span>
+            </label>
+            </div>
             <div id="agenda-reevaluation-fields" hidden>
                 <label class="agenda-field"><span class="agenda-field__label">Reevaluación comercial vinculada</span><select id="agenda-op-commercial-service" class="agenda-field__input" disabled></select></label>
                 <label class="agenda-field"><span class="agenda-field__label">N.º de indicación médica acreditada</span><input id="agenda-op-indication" type="number" min="1" class="agenda-field__input" disabled></label>
@@ -108,7 +115,7 @@
             Seleccione profesional, fecha, intervalo disponible, paciente y servicio.
         </p>
 
-        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Confirmar cita: confirma el horario con cualquier pago real positivo o exoneración autorizada. Con adelanto o crédito, la reserva protege el horario sin confirmarlo.</p>
+        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. La exoneración requiere autorización expresa.</p>
         <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <button type="button" class="agenda-btn" id="agenda-see-destination" hidden>Ver nueva fecha</button>
         <p id="agenda-disabled-reason" class="agenda-guidance" hidden></p>
@@ -116,7 +123,7 @@
         <div class="agenda-fast-actions">
         <span class="agenda-tip" id="agenda-pending-tip"><button id="agenda-pending-start" class="agenda-btn agenda-btn--primary" type="button" disabled aria-describedby="agenda-reservation-reason">Guardar reserva</button></span>
         <span class="agenda-tip" id="agenda-submit-tip"><button type="button" class="agenda-btn" id="agenda-appointment-submit" disabled aria-describedby="agenda-disabled-reason">
-            Confirmar cita
+            Registrar pago y cita
         </button></span>
 
         </div>

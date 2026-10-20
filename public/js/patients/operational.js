@@ -397,31 +397,9 @@
     }
 
     function patientPayload() {
-        var payload = {
-            tipo_identificacion: documentType.value,
-            numero_identidad: documentNumber.value.trim(),
-        };
-
-        Object.keys(fields).forEach(function (field) {
-            payload[field] = fields[field].value.trim();
-            if (payload[field] === '') {
-                payload[field] = null;
-            }
-        });
-        payload.telefono_prefijo = phonePrefix.value || '+51';
-        payload.telefono_numero = phoneNumber.value.trim();
-        payload.telefono_sin_separar = phoneUnparsed;
-        payload.registrar_responsable = registerResponsible.checked;
-
-        if (registerResponsible.checked) {
-            payload.responsable_parentesco = responsibleRelationship.value;
-            payload.responsable_nombres = responsibleName.value.trim();
-            payload.responsable_telefono = responsiblePhone.value.trim();
-            payload.responsable_tipo_identificacion = responsibleDocumentType.value;
-            payload.responsable_numero_identidad = responsibleDocumentNumber.value.trim();
-        }
-
-        return payload;
+        return window.PatientRecordForm.payload(recordForm, {phoneUnparsed: phoneUnparsed,
+            expectedRevision: state.mode === 'existing' ? state.patient.revision : null,
+            appointmentId: state.mode === 'existing' && String(state.patient.id) === root.dataset.initialPatientId ? root.dataset.initialAppointmentId : null});
     }
 
     function firstValidationMessage(payload) {
@@ -429,7 +407,7 @@
         var key = Object.keys(errors)[0];
         return key && errors[key] && errors[key][0]
             ? errors[key][0]
-            : 'Revise los datos obligatorios e intente nuevamente.';
+            : (payload.message || 'Revise los datos obligatorios e intente nuevamente.');
     }
 
     async function savePatient(event) {

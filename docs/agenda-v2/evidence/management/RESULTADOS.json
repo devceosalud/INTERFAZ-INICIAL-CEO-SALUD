@@ -1,0 +1,52 @@
+{
+  "base": "13efa1489dfdb98e7f309a716225a539fd15e3cd",
+  "sqlite": {
+    "tests": 1136,
+    "assertions": 10079,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "mariadb": {
+    "tests": 1149,
+    "assertions": 10201,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "javascript": {
+    "tests": 328,
+    "pass": 328,
+    "failures": 0,
+    "skipped": 0
+  },
+  "chrome": {
+    "version": "155.0.8059.79",
+    "main": 13,
+    "focused": 3,
+    "regression19": 19,
+    "regression10": 10,
+    "pageErrors": [],
+    "unexpectedConsoleErrors": [],
+    "expectedCspBlocks": 159,
+    "total": 45,
+    "focusedPageErrors": [],
+    "focusedMoneyRequests": 0,
+    "focusedRescheduleRequests": 0
+  },
+  "mariadbConcurrencyScenarios": 13,
+  "noNewMigrations": true,
+  "clockDisabled": true,
+  "pending": [
+    "Tarifa existente: nombre/configuración de cada entorno y base comercial",
+    "Aplicación económica de penalidad a citas existentes",
+    "Corrección de montos/referencias, autorización y conciliación",
+    "Cambios de servicio y reasignación con vínculos sensibles",
+    "CI y publicación: no autorizadas"
+  ],
+  "code_commit": "4d436207a31d47eff001cb860c4b55ff57b52714",
+  "syntax": {
+    "php": 13,
+    "javascript": 13
+  }
+}

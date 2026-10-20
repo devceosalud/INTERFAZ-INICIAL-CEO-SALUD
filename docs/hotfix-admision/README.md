@@ -1,5 +1,7 @@
 # Hotfix de Agenda de admisión
 
+> Registro histórico de los hotfixes #47–#49. La implementación vigente y QA consolidado se documentan en [Agenda v2 integrada](../agenda-v2/INTEGRACION_MAIN_Y_HOTFIXES.md). El runtime SQLite independiente y su workflow duplicado se retiraron; se reutilizan el router seguro y MariaDB QA de Agenda v2. Las evidencias históricas siguientes se conservan.
+
 Base: main 9c3b93a5086172d30fbf59fc9c4c2c40df84a645. Rama: hotfix/admision-reevaluacion-manual.
 
 ## Comportamiento

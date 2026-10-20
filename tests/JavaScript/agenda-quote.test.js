@@ -9,7 +9,7 @@ function workspace() {
     const elements = new Map(), pending = [], calls = [],asks=[];let decision=true;
     const element = () => ({ value: '', hidden: true, disabled: false, checked: false, files: [], dataset: {}, handlers: {},
         addEventListener(name, handler) { this.handlers[name] = handler; }, replaceChildren() {},
-        classList: { add() {}, remove() {} }, focus() {}, scrollIntoView() {} });
+        classList: { add() {}, remove() {} }, focus() {}, setAttribute() {}, scrollIntoView() {} });
     const document = { getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); },
         querySelector() { return { content: 'test-csrf' }; }, createElement: element };
     let patientId = 2, serviceId = 3;
@@ -198,13 +198,13 @@ test('selección del calendario consulta el aviso antes de modificar la cita ele
     const source=fs.readFileSync(path.join(__dirname,'../../public/js/scheduling/agenda.js'),'utf8');
     const fn=source.slice(source.indexOf('    async function selectInterval('),source.indexOf('    function applyQuickState('));
     const original={appointment_id:5},next={appointment_id:6};let asks=0;
-    const sandbox={state:{selection:original},operationalWorkspace:{prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
+    const sandbox={state:{selection:original},selectionInFlight:null,manageSelected:{disabled:false},operationalWorkspace:{contextKey:c=>c?.appointment_id,prepareSelection(c){assert.equal(c,next);asks++;return false;}}};
     vm.runInNewContext(fn+'\nglobalThis.choose=selectInterval;',sandbox);
     assert.equal(await sandbox.choose(next,null),false);assert.equal(sandbox.state.selection,original);assert.equal(asks,1);
 });
 test('doble duración se envía explícita, ocupa dos intervalos y se desactiva al cambiar de horario',async()=>{
     const qa=workspace();qa.widget.quoteChanged(100);qa.answer(0,'100.00');await settle();
-    qa.field('double').checked=true;
+    qa.field('double').checked=true;qa.field('reason').value='Motivo ficticio válido';
     await qa.widget.register({patientId:2,serviceId:3,bookingType:'REGULAR',pending:true});
     const call=qa.calls.find(c=>c.url==='/register');const payload=JSON.parse(call.options.body.values.get('payload'));
     assert.equal(payload.cita_doble,true);assert.equal(payload.duracion_cita,60);

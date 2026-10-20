@@ -1,0 +1,53 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+FFFF.                                                               5 / 5 (100%)
+
+Time: 01:01.776, Memory: 48.00 MB
+
+There were 4 failures:
+
+1) Tests\Feature\Scheduling\AgendaV2Round3Test::test_admin_reads_foreign_unpaid_reservations_but_other_roles_keep_privacy
+Expected response status code [200] but received 404.
+Failed asserting that 200 is identical to 404.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaV2Round3Test.php:23
+
+2) Tests\Feature\Scheduling\AgendaV2Round3Test::test_exit_without_reason_remains_audited_and_idempotent_without_financial_changes
+Expected response status code [200] but received 422.
+Failed asserting that 200 is identical to 422.
+
+The following errors occurred during the last request:
+
+{
+    "message": "The motivo field is required when state is SALIDA_REGISTRADA.",
+    "errors": {
+        "motivo": [
+            "The motivo field is required when state is SALIDA_REGISTRADA."
+        ]
+    }
+}
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaV2Round3Test.php:31
+
+3) Tests\Feature\Scheduling\AgendaV2Round3Test::test_commercial_upload_admin_download_and_private_history_without_general_edit
+Expected response status code [201] but received 403.
+Failed asserting that 201 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:26
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaV2Round3Test.php:37
+
+4) Tests\Feature\Scheduling\AgendaV2Round3Test::test_patient_documents_deny_ungranted_admission_cross_appointment_and_invalid_file
+Expected response status code [201] but received 403.
+Failed asserting that 201 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:26
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaV2Round3Test.php:47
+
+FAILURES!
+Tests: 5, Assertions: 9, Failures: 4.

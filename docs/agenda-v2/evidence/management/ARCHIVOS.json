@@ -1,0 +1,553 @@
+{
+  "base": "13efa1489dfdb98e7f309a716225a539fd15e3cd",
+  "code_commit": "4d436207a31d47eff001cb860c4b55ff57b52714",
+  "description": "Inventario completo desde la base; este archivo no se incluye en su propio hash. Solo artefactos ficticios revisados se agregan expresamente bajo evidence.",
+  "files": [
+    {
+      "file": "app/Http/Controllers/Scheduling/AgendaAppointmentController.php",
+      "bytes": 6533,
+      "sha256": "3d907bcd65918b239a5285fa8848e8561d9b722f9500177473ead0bae5153642",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+      "bytes": 6406,
+      "sha256": "bcbdd0160d3a93b5b0d01c987e78761e2a5067462311d6aad20580fafdbcbc43",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Http/Requests/Scheduling/RescheduleAgendaAppointmentRequest.php",
+      "bytes": 951,
+      "sha256": "7b7bdf5460bc16a9e1bc6a9c5ba0b46ea1a3b4509f2bfd411b201dc884b4d8dd",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Services/Scheduling/AgendaBoardPresenter.php",
+      "bytes": 21764,
+      "sha256": "6fee93be33a93d12ae232393285e8dba1bf7727217395fdc54f2674dec8276c2",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Services/Scheduling/AppointmentPaymentReview.php",
+      "bytes": 1819,
+      "sha256": "e3bb4cfae231179d97c4db284a5ad1000dc6ba4b58939b3f281a73e7c18f0716",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Services/Scheduling/RescheduleAppointmentService.php",
+      "bytes": 8808,
+      "sha256": "b960a1eaf51f5bb14a6c98eb10bd116958e3c7f5f5fd2af9ce032aa987b0757f",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "app/Services/Scheduling/RescheduleHistory.php",
+      "bytes": 2096,
+      "sha256": "62c43d8b69c24847edb64be184ce9b71cfcba6ba13566d39de9abf94908bdfc7",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "docs/agenda-v2/ARCHIVOS_MODIFICADOS.md",
+      "bytes": 17062,
+      "sha256": "cbbf5a68ff01feb3451cbc45b3160df8f59a931d45327b0c268dac7fb11d28bd",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/ARQUITECTURA_Y_FLUJOS.md",
+      "bytes": 14424,
+      "sha256": "c6e3a73cb6c439c3e01c30c9b157b135fea720cac8241e1dd5778cc5a6811bff",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/GESTION_RAPIDA_Y_REPROGRAMACION.md",
+      "bytes": 17625,
+      "sha256": "632eb15cb37ed06f8c64179c1154955ac12f4e0e857ebd77cb4c7c0cf4e18d28",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/MATRIZ_CUMPLIMIENTO_RONDAS.md",
+      "bytes": 9931,
+      "sha256": "b069214e2672d3cf506e4fc2c7413dda316e6f91d974fb2bcf88ce808558898c",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/MATRIZ_PERMISOS.md",
+      "bytes": 7335,
+      "sha256": "47eda9a4b7513ffab8c74d392876ac3445f64418ac261a03bff475f22db050a4",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/MIGRACIONES_Y_COMPATIBILIDAD.md",
+      "bytes": 7410,
+      "sha256": "1fadde56ecab9c392fc1c992daab0d17b27599129c9ecf9e99d1fd390347451f",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/PLAN_DESPLIEGUE_Y_ROLLBACK.md",
+      "bytes": 10400,
+      "sha256": "7e4824309c6520abcdb78d05cab24814a6a163a21c06b7937c8b940b72151ed6",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/QA_Y_EVIDENCIAS.md",
+      "bytes": 20621,
+      "sha256": "98a125c93da3dbec21fd03ee01b2e773dcd8168a2c08dc8aa2e4e29302d2da8e",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/RONDA_4_DIAGNOSTICO_Y_GUIA.md",
+      "bytes": 23336,
+      "sha256": "5e8af4b1b5489d6ec4d9c1eafd94bad266245661ee51367e24ef2bc9e911457e",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/CAPTURAS.md",
+      "bytes": 1816,
+      "sha256": "3e0768f50b51bba5479cec4fe6c641535a8986b68169c9ca297ec013afa3faf5",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/FUENTES_SHA256.json",
+      "bytes": 4279,
+      "sha256": "0ac97587b247b48119c6da2e84f9b6cd027bd42a2139c89fbcb74f3cec92216b",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/PRESERVACION.json",
+      "bytes": 1483,
+      "sha256": "91ea081240f896494387421eb31810ab773ec36ab85a9f8c079c682f35329441",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/RESULTADOS.json",
+      "bytes": 1261,
+      "sha256": "3048c1c6aed63ae618014828db121ed6958322a108bb87ffc3b6ea75605b414c",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/SYNTAX.json",
+      "bytes": 2581,
+      "sha256": "1c116a0319aad1e6a24f135bf10dcc15088bae8e7a73715cb48b8091e538f492",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-modal-1366.png",
+      "bytes": 120394,
+      "sha256": "6129f071e68c508e88c07fdba90cffebae6d176bd5fefb36ba18459b228b233f",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-modal-1440.png",
+      "bytes": 138322,
+      "sha256": "35198cfcc6e5778c5a4ac82d3fdd79b1109c836c28ef378720f7f57f8caf9c41",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-modal-1920.png",
+      "bytes": 192140,
+      "sha256": "e0c92ad05fb8bb67fc289795964719686ebf842b91abd29bb5284cd476725865",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-modal-390.png",
+      "bytes": 57172,
+      "sha256": "9c3cf17ad78e97320d08247ae2a3f7d81225d1cd02234c5459fcf32f262fb1b6",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-payments-1366.png",
+      "bytes": 122361,
+      "sha256": "257d14a29dc7060ba5723fe1efb07825ce45a0824e3770b3f9490c9cd807a45b",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-payments-1440.png",
+      "bytes": 151798,
+      "sha256": "dc16ea1959266adfbc2c05cae233020b06fe97c8b8a68ed6524d41820e2c7583",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-payments-1920.png",
+      "bytes": 210077,
+      "sha256": "ccad06766b0a635ecd2331ea797314370369267d72069ac156918057b6fa6dbe",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-payments-390.png",
+      "bytes": 48386,
+      "sha256": "9535336565328b03cc206e923054b7b0b9251b3dad2c9f94ff7c41b5d6828aed",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-quick-1366.png",
+      "bytes": 114488,
+      "sha256": "0e30a31db8368ee3e9b3dad5ea5f6615ed0ae1c1877efa019f27028c1e0261f0",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-quick-1440.png",
+      "bytes": 125831,
+      "sha256": "022bed54837ca2c7147a6c1b5f32662a6ebda3a7bbd064f26b1daa1a9f3b32b8",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-quick-1920.png",
+      "bytes": 162968,
+      "sha256": "0f65506f4fc049d120470f03ba4076530754c244a3c866db4893164db2aa5a1c",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/after-quick-390.png",
+      "bytes": 34230,
+      "sha256": "6a5354a3a6ab3af0edbfb4038fce8e6118151e0b4fa8083f0b3b44cd744ca3df",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/before-modal-1366.png",
+      "bytes": 100481,
+      "sha256": "43873cedf89306847170d868a5a20bcef7578e78beffe284333f5d10a68081c8",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/before-modal-1440.png",
+      "bytes": 123216,
+      "sha256": "20266105ca9b0db0d177a210b5be516c65735881e3b0cea9d988c2352365e383",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/before-modal-1920.png",
+      "bytes": 205508,
+      "sha256": "2ab7892ee2ec732c5b74bb0df78a87978d547667ea67f3f931a9f147742eeda8",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/before-modal-390.png",
+      "bytes": 35836,
+      "sha256": "4ad81bdcdfcaeb04deb463506fdaba937d420ab09e07c98d50ebdbcac4267a11",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/browser-results.json",
+      "bytes": 2031,
+      "sha256": "ba1df53ee18a864519dee13e661ef9a19115659343dc6b50b2384e20d5cd12ce",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/browser.txt",
+      "bytes": 1254,
+      "sha256": "790f27f144e7ea366cac7d9538bed0623cd06f65e4e4cfb0d6b0250b19b0db5f",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/documents-navigation.png",
+      "bytes": 76308,
+      "sha256": "744e13f2a5eb5ae4d2dd6b23ae6183f34c4769612487408c07ce79898c44cb16",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/fixtures-final.json",
+      "bytes": 211,
+      "sha256": "801a60cfb4a6fb634a7e7e5903a2294627ededf41516ae53a537143857bd40c3",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/focused-browser-results.json",
+      "bytes": 583,
+      "sha256": "ff1fef3f750b9434647ea24531d198c4a5c228c45bd58e365d63d7b256055820",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/focused-browser.txt",
+      "bytes": 479,
+      "sha256": "6ef9e0d170e4a05df712e4f151d802839da236c1fc65917dea8b8cc90e8fc525",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/history-dia.png",
+      "bytes": 123849,
+      "sha256": "71dcf15c5e0b0486d8e6e9203c1d7402e7a6253d43bfabb2379328426aaca955",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/history-mes.png",
+      "bytes": 121634,
+      "sha256": "4950f2983f24b26cce033ce1b6261c5c3979502f30994ec1d9478f76ebfcad92",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/history-semana.png",
+      "bytes": 123729,
+      "sha256": "4caf4a16acf8ef0a2de75bbad60fc383a1a26889dbac15df3b137eede1e99bfe",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/javascript.txt",
+      "bytes": 28728,
+      "sha256": "93fe56019823426cf3c7930f029d78e1917355be0d3ca451afd9057be90e718a",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/mariadb-final.txt",
+      "bytes": 1691,
+      "sha256": "c773f2aa9d811c8d81512266049f98d737992cdab6fc14f2854865fae4edf243",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/mariadb-final.xml",
+      "bytes": 542355,
+      "sha256": "5bc32faa0d8c88191b135cf3a82614e3a70a46311f56c0aca4f8abe36b1bfc4e",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/quick-payments-1366.png",
+      "bytes": 116951,
+      "sha256": "54aad85d790d1d84b76f4a2a504078c147d48d6668e71a5ef04db7c0333534ba",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/quick-payments-1440.png",
+      "bytes": 125335,
+      "sha256": "ebe9245d0b7a592a6ca2f2f631165445ea0c217b63449d7742247757d7df75b2",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/quick-payments-1920.png",
+      "bytes": 158756,
+      "sha256": "b92ac18d62158573ddddf962288930555b2ac69c1a8cb6ceee419b7f7c4629de",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/quick-payments-390.png",
+      "bytes": 36089,
+      "sha256": "1c3169fee8a0718214c01e13c5d38db1e58e5ada356ea6e9e839e78bde4e98b3",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/regression-extra-slot.json",
+      "bytes": 203,
+      "sha256": "a39b21a4b759db14745e1bd48b4c4389cd6ba92ed721f4b9d33fabbfb49c490d",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/regression10-results.json",
+      "bytes": 2288,
+      "sha256": "abad785228977211b0803bfef75717360347cb47fdd60747e8fd16d2bdf4920c",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/regression10.txt",
+      "bytes": 881,
+      "sha256": "7621506b1ac79d912a93310cf1daf2dca4e1f4fd68a945f32481b652b2f2b871",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/regression19-results.json",
+      "bytes": 7149,
+      "sha256": "bcfa24ec71275d36543b8ea6915d4518b5f7ab47db92156d265f3a33dfd5c4d5",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/regression19.txt",
+      "bytes": 1677,
+      "sha256": "9dbeaa8e2dcd16e040da7d72a4c6bb843e0beb0fd57607f61b459cde1f85f25b",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/sqlite-final.txt",
+      "bytes": 1691,
+      "sha256": "571359ebea2b740b71b398b5be01816cbb674b5f57ac34d84b7452c2e860da78",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/evidence/management/sqlite-final.xml",
+      "bytes": 536373,
+      "sha256": "8c48e14ec26201ad15e8113310becb14cb923f9f8a3584ddb4b0f25ae9e1d219",
+      "group": "documentation_and_evidence"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/GESTIONAR_CITA_REVISION_Y_PROPUESTA.md",
+      "bytes": 17389,
+      "sha256": "c0e6287ed3abc8052d67fe319fe46fc50d97b3c2063aae4a58ddbf9ec4e3e644",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/VERIFICACION_MAQUETA.json",
+      "bytes": 1036,
+      "sha256": "a54d1fc65acf5c1dbd00a1c44e25de23a0c212464b6290604ebd5a1b221bba5c",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/gestionar-cita-propuesta.html",
+      "bytes": 12650,
+      "sha256": "341ebeb2221c477f49c3f64d408915ab0212ebd56b8404b4044bf531dc3a33fa",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-home-1366.png",
+      "bytes": 66313,
+      "sha256": "110a3d9bcbc47b45bf0ee3745d0ecf3fdb3f29d9175cffaa54ebda2c2f13f943",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-home-1440.png",
+      "bytes": 67908,
+      "sha256": "9bb8835ca6b4b9b9e504e2942d1f33cdc471bae43a8c969df4007a5d5c716748",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-home-1920.png",
+      "bytes": 71182,
+      "sha256": "b118621473f5c3e9107487b695b70a7d17b32826605a51baaef34ffcab3c5adc",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-home-390.png",
+      "bytes": 42128,
+      "sha256": "098b057d592134d3977c39cddd64c8acd7759a35a0dd0f2389edb237edaa0798",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-payment-1366.png",
+      "bytes": 68569,
+      "sha256": "db58e507d4b0ba1e7e3ce1b86f516e81b481d1e86ec02a0d3f71a0efc7249443",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-payment-1440.png",
+      "bytes": 76342,
+      "sha256": "c84a3301592dbb66ef17b1b1757253b6e01b6439504f9c26dccfae257ffa040e",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-payment-1920.png",
+      "bytes": 88447,
+      "sha256": "4584ebbf40375f9d992f5fa70587c8e6d46cf4b7868403a9240e3f567510efb4",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "docs/agenda-v2/propuestas/propuesta-payment-390.png",
+      "bytes": 43814,
+      "sha256": "91933b7b7ce13ecbc7338f76cef4965b132445e6db0b07e42722eac4f8583689",
+      "group": "proposal_checkpoint"
+    },
+    {
+      "file": "public/css/scheduling/agenda-layout.css",
+      "bytes": 31869,
+      "sha256": "582b9de338b1e56294345527a3a4f97d3e1c9dcdb95280af4bb70b380c88fe2d",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/admission-board.js",
+      "bytes": 58167,
+      "sha256": "44bb99d93335e96c1a630122003a7a7f66c2e683dc412908105c95bbc1b3dc5e",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/agenda-appointment-actions.js",
+      "bytes": 5251,
+      "sha256": "1bde78d3aa8042310940b5c6064be80708eb793e5dd9a4a6e2443e528653aa1a",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/agenda-manage-appointment.js",
+      "bytes": 16343,
+      "sha256": "6e8c69f26d5994c4ea65e003247ec149b372e3c940307ca1b2d3b4c8ac1ac96d",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/agenda-operational-workspace.js",
+      "bytes": 56025,
+      "sha256": "d78db29715b295ce518a4338557f5e3e757455429cf4f7f25ba3bd3c1b270182",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/agenda-reschedule-history.js",
+      "bytes": 1995,
+      "sha256": "b29cd7f52b7fdf7fdb98cf36aacb679e909b7cff2de2e574f8ef91afc681e84d",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "public/js/scheduling/agenda.js",
+      "bytes": 135846,
+      "sha256": "9fb8c85e0f8b818e087b0dec997071388856dbade4605f4c2178eb1fe7925611",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "resources/views/scheduling/agenda/index.blade.php",
+      "bytes": 16274,
+      "sha256": "097544d663b45c6c194318b9911f18547aa86c47ca72e3187248c1f36a819d89",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "resources/views/scheduling/agenda/partials/operational-registration.blade.php",
+      "bytes": 14408,
+      "sha256": "99d91214d604e417881a7214b983a5beca062a5a238efc9b4f6e08039041d079",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/Feature/Scheduling/AgendaQuickManagementTest.php",
+      "bytes": 7722,
+      "sha256": "20ee3a62be7132b19d53623197e25521336df3ca3b1baf4c1735919e6433ea3e",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+      "bytes": 16204,
+      "sha256": "3a760fc31ed827ef21c6ddfab955026488f0fd6b5155a55521dd12e42f10dc76",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/JavaScript/agenda-payment-ocr-placement.test.js",
+      "bytes": 2033,
+      "sha256": "33bd2d18b33e63192c42211ab783001e1468e4cb3e1b86c6cbb9d674fbd4c580",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/JavaScript/agenda-payment-ux-closure.test.js",
+      "bytes": 3367,
+      "sha256": "e529ee86bdbbf1e10bdd57c6cfe8421ab9126157d2a98b630a8ed81c7bf5bda4",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/JavaScript/agenda-quick-management.test.js",
+      "bytes": 1778,
+      "sha256": "8423b24a57d3afc70014b681f906f57e74ad3e26afbd66a40e7e1bb1d503dff8",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/Support/agenda-management-regression-slot.php",
+      "bytes": 1436,
+      "sha256": "8c9459542a11cac9e824d284db5b3bec2c7d2e4d160cadafcb2430b063e79745",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tests/Support/agenda-management-seed.php",
+      "bytes": 2537,
+      "sha256": "cc6cfafaafb0be887ea62ee2383e14b93b4e7912ebb93691a94db3f65f939c98",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tools/qa/browser-agenda-management-focused.cjs",
+      "bytes": 5433,
+      "sha256": "bc688a585db37c10ef616cfd02665da186e87e358f50d957ccc45f8830d06683",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tools/qa/browser-agenda-quick-management.cjs",
+      "bytes": 17920,
+      "sha256": "7132702694049459a4915bbd564bc11ee7f8241b3cf954dcae898de0304fe56a",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tools/qa/browser-agenda-v2-round2.cjs",
+      "bytes": 34201,
+      "sha256": "d58755bf3a002f1a4b8e6fc2ca177b6d1ab4033b5b8297ed21e519b3dc05ffa2",
+      "group": "application_and_qa"
+    },
+    {
+      "file": "tools/qa/browser-agenda-v2-round3-functional.cjs",
+      "bytes": 18700,
+      "sha256": "33db339c1bb6d878c8ba2c0b63a89bf48423e60cfe7b979faa00499c356d5a9b",
+      "group": "application_and_qa"
+    }
+  ]
+}

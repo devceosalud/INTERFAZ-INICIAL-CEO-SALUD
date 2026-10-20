@@ -4,14 +4,9 @@ const {bookingIndicator,bookingLabel}=require('../../public/js/scheduling/admiss
 
 const doc={createElement(tag){return {tagName:tag,style:{},attributes:{},setAttribute(name,value){this.attributes[name]=value;}};}};
 
-test('main table hides the legacy booking chip visually and accessibly while preserving its footprint',()=>{
-    const row={estado_agenda:'LEGADO',estado_cita:'ATENDIDO'};
-    const before=JSON.stringify(row),chip=bookingIndicator(doc,row.estado_agenda);
-    assert.equal(chip.style.visibility,'hidden');
-    assert.equal(chip.attributes['aria-hidden'],'true');
-    assert.equal(chip.className,'admission-tag admission-tag--booking');
-    assert.equal(chip.style.display,undefined); // No removal from layout: current row dimensions stay intact.
-    assert.equal(JSON.stringify(row),before);
+test('main table removes the legacy booking chip without mutating its stored state',()=>{
+    const row={estado_agenda:'LEGADO',estado_cita:'ATENDIDO'},before=JSON.stringify(row);
+    assert.equal(bookingIndicator(doc,row.estado_agenda),null);assert.equal(JSON.stringify(row),before);
 });
 
 test('pending reservations, confirmations and unknown actionable booking states remain visible',()=>{
@@ -26,5 +21,5 @@ test('pending reservations, confirmations and unknown actionable booking states 
 
 test('legacy state and the full label used in appointment details keep their original meaning',()=>{
     assert.equal(bookingLabel('LEGADO'),'Agenda heredada');
-    assert.equal(bookingIndicator(doc,'LEGADO').textContent,'Agenda heredada');
+    assert.equal(bookingIndicator(doc,'LEGADO'),null);
 });

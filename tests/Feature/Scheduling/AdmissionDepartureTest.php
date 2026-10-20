@@ -53,14 +53,13 @@ class AdmissionDepartureTest extends TestCase
         $this->assertDatabaseCount('appointment_operations',1);$this->assertDatabaseCount('payments',0);
         $this->assertDatabaseCount('appointment_reevaluation_indications',0);
     }
-    public function test_invalid_state_reserve_missing_reason_and_manipulated_fields_leave_no_writes(): void
+    public function test_invalid_state_reserve_and_manipulated_fields_leave_no_writes(): void
     {
         foreach (['PROGRAMADO','EN_ESPERA','EN_ATENCION','CANCELADO','RETIRO'] as $state) {
             $this->depart($this->appointment(['estado_cita'=>$state]),['expected_state'=>$state])->assertUnprocessable();
         }
         $this->depart($this->appointment(['estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$this->actor->id]))->assertUnprocessable();
         $a=$this->appointment();$this->depart($a,['expected_state'=>'EN_ATENCION'])->assertConflict();
-        foreach (['',null,'   '] as $reason) $this->depart($a,['motivo'=>$reason])->assertUnprocessable();
         foreach (['total_pagado'=>999,'hora_salida'=>'2000-01-01','es_exonerado'=>true] as $field=>$value) $this->depart($a,[$field=>$value])->assertUnprocessable();
         $this->assertSame(0,Appointment::whereNotNull('hora_salida')->count());$this->assertDatabaseCount('appointment_operations',0);$this->assertDatabaseCount('appointment_events',0);
     }

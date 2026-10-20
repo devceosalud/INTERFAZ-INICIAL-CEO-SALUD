@@ -96,6 +96,7 @@ class AgendaBoardController extends Controller
                 || auth()->user()->can(SchedulingCapability::CANCEL) || auth()->user()->can(SchedulingCapability::MARK_NO_SHOW)
                 || (auth()->user()->can(SchedulingCapability::CREATE) && auth()->user()->can(SchedulingCapability::RESCHEDULE)),
             'canAudit' => auth()->user()->can(SchedulingCapability::VIEW_AUDIT),
+            'professionalPreferences' => app(\App\Services\Scheduling\AgendaProfessionalPreferences::class)->read(auth()->user()),
             'doctorServices' => $doctorServices,
             'legend' => AgendaLegend::compactForAgenda(),
             'views' => AgendaRange::views(),

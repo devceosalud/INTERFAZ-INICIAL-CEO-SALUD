@@ -13,3 +13,8 @@ public/vendor/appointment-ocr/** -text linguist-vendored
 public/vendor/appointment-ocr/core/*.wasm.js -diff
 public/vendor/appointment-ocr/lang/*.gz -text
 public/vendor/appointment-ocr/LICENSE* whitespace=-blank-at-eof
+
+# Preserve upstream PDF.js integrity across Windows/Linux checkouts.
+public/assets/vendor/pdfjs/** linguist-vendored
+public/assets/vendor/pdfjs/*.js -text
+public/assets/vendor/pdfjs/LICENSE -text whitespace=-blank-at-eof

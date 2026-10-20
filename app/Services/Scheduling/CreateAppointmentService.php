@@ -140,6 +140,7 @@ class CreateAppointmentService
                         'total_pagado' => 0,
                         'saldo_pendiente' => $price,
                         'metodo_pago' => null,
+                        'attendance_mode' => $data->operational['attendance_mode'] ?? 'PRESENCIAL',
                         'es_exonerado' => $data->operational['es_exonerado'] ?? false,
                         'autorizado_por' => $data->operational['autorizado_por'] ?? null,
                         'estado_pagado' => 'PENDIENTE',
