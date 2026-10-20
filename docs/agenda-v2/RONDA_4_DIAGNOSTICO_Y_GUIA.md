@@ -91,7 +91,7 @@ Se agrupan bajo Favoritos y frecuentes para mantener utilizable la búsqueda man
 
 ## QA y revisión visual
 
-SQLite:1115 pruebas /9640 aserciones. MariaDB:1127 /9753, incluidas12 carreras. JavaScript:323. Todas estas ejecuciones finalizaron con exit0 y sin fallos, errores u omisiones. Los recorridos completos Chrome y sus capturas se registran en [QA y evidencias](QA_Y_EVIDENCIAS.md); no se consideran aprobados por el solo hecho de iniciarse.
+SQLite:1118 pruebas /9660 aserciones. MariaDB:1130 /9773, incluidas12 carreras. JavaScript:323. Todas estas ejecuciones finalizaron con exit0 y sin fallos, errores u omisiones. Los recorridos completos Chrome y sus capturas se registran en [QA y evidencias](QA_Y_EVIDENCIAS.md); no se consideran aprobados por el solo hecho de iniciarse.
 
 CI anterior c8b91fa: siete workflows completados success, incluidos SQLite1083/9468, MariaDB1092/9556 y JS318 verificados en sus logs. Estos resultados anteriores no sustituyen los checks del nuevo commit. Los IDs y resultados del SHA publicado se documentan en el [PR46](https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/46/checks), después de finalizar. No hay workflows de despliegue añadidos.
 
@@ -126,3 +126,13 @@ Chrome reprodujo que Actualizar detalle perdía la cita seleccionada si no perte
 ### Telemetría técnica por evento
 
 El recorrido documental detectó422 en lotes de geometría de interfaz: Laravel aplicaba distinct a expanded.* entre todos los eventos del lote, aunque repetir el mismo panel en dos clics distintos es válido. La regresión falló antes y pasó después. La unicidad se valida ahora dentro de cada evento; permanecen el allowlist de cinco nombres técnicos, máximos, UUID y rechazo de texto/IDs/HTML/valores/datos de pacientes. No se captura contenido documental ni se añade un sistema analítico. Las evidencias anterior/posterior se conservan junto al QA de cuarta ronda.
+
+## Integración del main que avanzó durante esta ronda
+
+Al inicio, el PR usaba dcb9b2b como base. La actualización posterior de referencias confirmó origin/main en0f21c62aa09cc66abb787b67c5954d3a01b9459f, merge dePR51. Su diff neto respecto de dcb son siete archivos de reportes CSV; los cambios de catálogo dePR50 aparecen expresamente revertidos en su historia. No se reintroducen esos cambios por resolver la integración.
+
+Se protegió el trabajo en5299381 y se ensayó merge-tree antes de modificar archivos. El merge real se detuvo sin commit para revisar dos coincidencias: agenda/index conserva todos los assets/preferencias/modal y añade el enlace gerencial condicionado por ADMIN+VIEW_AUDIT; routes/scheduling conserva las rutas operativas y añade el grupo CSV con rol, permiso y throttle propios. No hubo marcadores de conflicto textual ni se eligió indiscriminadamente una versión. Se verificó el diff neto de siete archivos y se creó el merge local0ba1c23bcf8e52da0e641bda155f39c860a1c843. Main, su checkout original y los otros worktrees permanecieron sin modificación.
+
+La QA previa al merge quedó guardada separadamente: SQLite1116/9645; MariaDB1128/9758; JS323 y Chrome40. No acredita la integración posterior. Se repiten las suites completas y se añade una lectura real del CSV ficticio con ADMIN y rechazos para ADMISION/COMERCIAL. La exportación mantiene su contrato y columnas históricas; la clasificación financial_status de Agenda no reescribe el enum exportado ni los importes.
+
+Durante una reversión sin paquete compatible, bloquear toda la superficie de procedimientos/atención de Agenda MVP, incluidas lecturas de claves personalizadas, no solo escrituras. Mantener consultas históricas autorizadas que no dependan de esos lectores. Esta contención es temporal: una reversión funcional completa requiere el paquete compatible probado, sin borrar tablas o archivos.
