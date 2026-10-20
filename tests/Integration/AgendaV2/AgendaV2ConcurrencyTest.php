@@ -178,4 +178,15 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertSame([200,422],$this->race($requests));$this->assertDatabaseCount('agenda_professional_preferences',5);$this->assertDatabaseCount('payments',0);
     }
 
+    public function test_simultaneous_reprogramming_moves_one_appointment_and_writes_one_origin_reference():void
+    {
+        $this->actor->givePermissionTo(Permission::findOrCreate(C::RESCHEDULE,'web'));
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'08:00','estado_agenda'=>'CONFIRMADA','tipo_agendamiento'=>'REGULAR']);
+        $r=['method'=>'PATCH','path'=>'/scheduling-mvp/agenda/appointments/'.$a->id.'/reschedule','payload'=>['fecha_cita'=>$this->catalog['schedule']->fecha_cita,'hora_cita'=>'09:00','expected_fecha_cita'=>$this->catalog['schedule']->fecha_cita,'expected_hora_cita'=>'08:00','expected_revision'=>\App\Services\Scheduling\AppointmentManagement::revision($a->fresh()),'motivo'=>'Reprogramación concurrente ficticia A']];
+        $b=array_replace($r,['payload'=>array_replace($r['payload'],['hora_cita'=>'10:00','motivo'=>'Reprogramación concurrente ficticia B'])]);
+        $this->assertSame([200,409],$this->race([$r,$b]));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertSame(1,$a->events()->where('event_type','REPROGRAMADA')->count());
+        $this->assertContains(substr($a->fresh()->hora_cita,0,5),['09:00','10:00']);
+    }
+
 }

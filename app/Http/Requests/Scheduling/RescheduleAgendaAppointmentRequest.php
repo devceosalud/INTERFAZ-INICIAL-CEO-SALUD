@@ -20,6 +20,7 @@ class RescheduleAgendaAppointmentRequest extends FormRequest
             'expected_hora_cita' => ['required', 'date_format:H:i'],
             'expected_revision'=>['sometimes','string','size:64','regex:/^[a-f0-9]+$/'],
             'confirmed_booking_type' => ['nullable', 'in:REGULAR,FUERA_HORARIO'],
+            'motivo' => ['sometimes','required','string','max:2000','regex:/\S/u'],
         ];
     }
 }

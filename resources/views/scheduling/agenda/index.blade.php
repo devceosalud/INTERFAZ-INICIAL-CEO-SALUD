@@ -114,6 +114,10 @@
                                 </div>
                             </section>
 
+                            <details id="agenda-reschedule-history" class="agenda-reschedule-history" hidden>
+                                <summary>Citas reprogramadas · referencias sin ocupación <span id="agenda-reschedule-count"></span></summary>
+                                <div id="agenda-reschedule-history-list"></div>
+                            </details>
                             <div class="agenda-calendar-surface">
                                 <section class="agenda-day-grid" id="agenda-day-grid"
                                     aria-label="Agenda operativa diaria">
@@ -196,6 +200,7 @@
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-patient-navigation.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-withdrawal.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-refresh.js') }}"></script>
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-reschedule-history.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-manage-appointment.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-professional-preferences.js') }}"></script>
     <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda.js') }}"></script>

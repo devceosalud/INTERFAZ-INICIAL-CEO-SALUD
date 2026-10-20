@@ -15,6 +15,8 @@
             io.revert();
             throw new Error('Seleccione una cita, fecha y hora válidas.');
         }
+        const reason = context.reschedule_reason || (io.reason ? await io.reason() : null);
+        if (io.reason && !reason) { io.revert(); return {cancelled:true}; }
         if (!await io.confirm('¿Deseas reprogramar esta cita de ' + context.fecha + ' ' + context.hora_inicio + ' a ' + date + ' ' + time + '?', confirmationText(context, date, time))) {
             io.revert();
             return { cancelled: true };
@@ -22,6 +24,7 @@
         const payload = {
             fecha_cita: date, hora_cita: time, expected_fecha_cita: context.fecha, expected_hora_cita: context.hora_inicio,
         };
+        if (reason) payload.motivo=reason;
         try {
             let result = await io.send(context.appointment_id, payload);
             if (result && result.confirmation_required) {

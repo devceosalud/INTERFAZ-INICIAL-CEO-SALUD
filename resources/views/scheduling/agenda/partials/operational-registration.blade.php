@@ -30,11 +30,23 @@
         <summary>Registrar adelanto</summary>
         <div id="agenda-op-payment-summary" class="agenda-error-summary" role="alert" tabindex="-1" hidden></div>
         <p class="agenda-payment-intro">Registra un pago real. Primero verifica el importe y la operación.</p>
+
         <div class="agenda-payment-totals">
             <label class="agenda-field"><span>Precio de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Ya abonado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
             <label class="agenda-field"><span>Saldo pendiente</span><input id="agenda-op-balance" class="agenda-field__input" value="0.00" readonly></label>
         </div>
+        <section id="agenda-op-advanced" class="agenda-payment-advanced">
+            <h3 class="agenda-section-title">Tarifas y descuentos</h3>
+            <div class="agenda-economic-basic">
+                <label class="agenda-field"><span>Recargo opcional · se suma al precio</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Sin recargo</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
+                <label class="agenda-field"><span>Descuento</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
+                <label class="agenda-field"><span>Valor de descuento</span><input id="agenda-op-discount-value" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canCreateAppointments)></label>
+                <label class="agenda-field"><span>Referencia de descuento · opcional</span><input id="agenda-op-discount-reason" class="agenda-field__input" maxlength="500" @disabled(!$canCreateAppointments)></label>
+                <label class="agenda-field"><span>Precio antes de descuento</span><input id="agenda-op-catalog-price" class="agenda-field__input" readonly value="0.00"></label>
+            </div>
+            <p class="agenda-guidance">Las tarifas y descuentos se cotizan al crear la cita. Su modificación posterior requiere autorización económica, independientemente del color.</p>
+        </section>
         <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
         <button type="button" id="agenda-op-quote-retry" class="agenda-btn" hidden>Reintentar cotización</button>
         <div class="agenda-payment-entry">
@@ -43,27 +55,22 @@
             <label class="agenda-field agenda-tip" id="agenda-op-operation-tip"><span>N.º de operación</span><input id="agenda-op-operation" class="agenda-field__input" maxlength="120" disabled></label>
             <label class="agenda-field"><span>Banco / billetera</span><input id="agenda-op-origin" class="agenda-field__input" maxlength="120" placeholder="Yape, Plin, BCP…" @disabled(!$canSubmitPayment)></label>
         </div>
+
+
+        <details id="agenda-op-authorizations" class="agenda-payment-complements">
+            <summary>Referidos y exoneración autorizada</summary>
+            <label class="agenda-field"><span><input id="agenda-op-referred" type="checkbox"> Referido acreditado del Dr. Julio Quiroz</span><input id="agenda-op-referral-origin" class="agenda-field__input" maxlength="255" placeholder="Origen verificable del referido"><small>Solo Traumatología y Pie Diabético; origen obligatorio.</small></label>
+            <label class="agenda-field"><span>Autorizado por</span><input id="agenda-op-authorized" class="agenda-field__input" maxlength="255" @disabled(!$canAuthorize)></label>
+            <label class="agenda-field"><span>Motivo de exoneración</span><textarea id="agenda-op-exemption-reason" class="agenda-field__input" rows="2" maxlength="2000" @disabled(!$canWaive)></textarea></label>
+            <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
+            <p class="agenda-payment-help">Se conservan los permisos y la autorización expresa; el OCR no acredita dinero.</p>
+        </details>
+        <details id="agenda-op-proof-panel" class="agenda-payment-complements"><summary>Comprobantes y OCR · complementario</summary>
         <section class="agenda-payment-proof" aria-label="Comprobante y lectura OCR">
             <h3 class="agenda-section-title">Comprobante de pago</h3>
             <label class="agenda-field agenda-upload"><span>Adjuntar imagen o comprobante (opcional)</span><input id="agenda-op-proof" type="file" multiple accept="image/jpeg,image/png,application/pdf"><small>Hasta 5 archivos de 8 MB; los PDF se revisan manualmente.</small></label>
             <div id="agenda-op-receipt-review"></div>
         </section>
-        <details id="agenda-op-advanced" class="agenda-payment-advanced">
-            <summary>Tarifas, descuentos y autorizaciones · opciones avanzadas</summary>
-            <div class="agenda-patient-form-grid">
-                <label class="agenda-field"><span><input id="agenda-op-referred" type="checkbox"> Referido acreditado del Dr. Julio Quiroz</span><input id="agenda-op-referral-origin" class="agenda-field__input" maxlength="255" placeholder="Origen verificable del referido"><small>Solo Traumatología y Pie Diabético; origen obligatorio.</small></label>
-            </div>
-            <label class="agenda-field"><span>Recargo opcional (se suma al precio)</span><select id="agenda-op-rate" class="agenda-field__input"><option value="">Sin recargo</option>@foreach(($additionalRates ?? []) as $rate)<option value="{{ $rate->id }}">{{ $rate->nombre }}</option>@endforeach</select></label>
-            <div class="agenda-patient-form-grid">
-                <label class="agenda-field"><span>Descuento</span><select id="agenda-op-discount-type" class="agenda-field__input" @disabled(!$canCreateAppointments)><option value="">Sin descuento</option><option value="FIXED">Importe S/</option><option value="PERCENT">Porcentaje %</option></select></label>
-                <label class="agenda-field"><span>Valor de descuento</span><input id="agenda-op-discount-value" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canCreateAppointments)></label>
-                <label class="agenda-field"><span>Referencia de descuento · opcional</span><input id="agenda-op-discount-reason" class="agenda-field__input" maxlength="500" @disabled(!$canCreateAppointments)></label>
-                <label class="agenda-field"><span>Precio antes de descuento</span><input id="agenda-op-catalog-price" class="agenda-field__input" readonly value="0.00"></label>
-                <label class="agenda-field"><span>Autorizado por</span><input id="agenda-op-authorized" class="agenda-field__input" maxlength="255" @disabled(!$canAuthorize)></label>
-                <label class="agenda-field"><span>Motivo de exoneración</span><textarea id="agenda-op-exemption-reason" class="agenda-field__input" rows="2" maxlength="2000" @disabled(!$canWaive)></textarea></label>
-            </div>
-            <label><input id="agenda-op-waived" type="checkbox" @disabled(!$canWaive)> Autorización / exoneración</label>
-            <p class="agenda-payment-help">La exoneración requiere permisos y autorización expresa; el OCR no acredita dinero.</p>
         </details>
         <p class="agenda-payment-help">Guardar reserva no confirma el horario. Para confirmar se requiere un pago real positivo o exoneración autorizada.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>

@@ -330,7 +330,7 @@
                 confirming=true;let answer;try{answer=await window.Swal.fire({title:'Cambiar de paciente',text:'Hay cambios sin guardar en la cita abierta.',showCancelButton:true,confirmButtonText:'Descartar y abrir',cancelButtonText:'Conservar cambios',focusCancel:true});}finally{confirming=false;}
                 if(!answer?.isConfirmed)return;clearDraft();
             }
-            if(id!==selected){clearDraft();activeDetailTab='care';}
+            if(id!==selected){clearDraft();activeDetailTab=selected===null&&doc.defaultView?.location.hash==='#history'&&String(id)===new URLSearchParams(doc.defaultView.location.search).get('appointment_id')?'history':'care';}
             selected=id;board.dataset.mobileDetail='true';
             if(!background){detail=null;$('detail').replaceChildren(node('p','Consultando cita…','admission-empty'));}
             board.querySelectorAll('tr[data-appointment-id]').forEach(tr=>{const active=Number(tr.dataset.appointmentId)===id;tr.classList.toggle('is-selected',active);tr.setAttribute('aria-selected',String(active));});
@@ -453,7 +453,12 @@
         window.addEventListener('pagehide',()=>{poll.stop();listRequest.cancel();detailRequest.cancel();availabilityRequest.cancel();});
         window.addEventListener('focus',()=>{if(!doc.hidden)poll.start(true);});
         window.addEventListener('pageshow',event=>{if(event.persisted)poll.start(true);});
-        const initialId=Number(new URL(location.href).searchParams.get('appointment_id'));
+        const initialParams=new URL(location.href).searchParams;
+        const initialId=Number(initialParams.get('appointment_id'));
+        if(Number.isSafeInteger(initialId)&&initialId>0){
+            const initialDate=initialParams.get('fecha');if(/^\d{4}-\d{2}-\d{2}$/.test(initialDate||''))$('date').value=initialDate;
+            for(const[field,param]of [['doctor','doctor_id'],['site','site_id']]){const value=initialParams.get(param),select=$(field);if(value!==null&&Array.from(select.options).some(option=>option.value===value))select.value=value;}
+        }
         load(Number.isSafeInteger(initialId)&&initialId>0?initialId:null).then(()=>{if(initialId>0&&!selected)select(initialId);});
         poll.start();
     }

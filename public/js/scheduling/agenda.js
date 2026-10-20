@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const manageAppointment=window.AgendaManageAppointment.create({doc:document,base:board.dataset.rescheduleUrl,
         detailBase:'/scheduling-mvp/admission/appointments',onError:message=>showNotice(message),
         onSelect:async context=>{if(state.draft||document.querySelector('.modal.show,.swal2-container'))return false;if(selectionInFlight)await selectionInFlight;if(operationalWorkspace.hasUnsavedChanges()){showActionNotice('Guarda o descarta primero los cambios de Registro rápido.',true);return false;}return await selectInterval(context,null);},
-        onRefresh:async context=>{state.revealAppointmentId=String(context.appointment_id);state.selection=context;await load({committed:true,preserveContext:true});const fresh=(state.payload?.eventos||[]).find(e=>String(e.extendedProps?.appointment_id)===String(context.appointment_id));if(fresh)state.selection=fresh.extendedProps;},
+        onRefresh:async context=>{state.revealAppointmentId=String(context.appointment_id);state.selection=context;state.date=context.fecha;state.miniAnchor=firstOfMonth(context.fecha);el.date.value=context.fecha;await load({committed:true,preserveContext:true});const fresh=(state.payload?.eventos||[]).find(e=>String(e.extendedProps?.appointment_id)===String(context.appointment_id));if(fresh)state.selection=fresh.extendedProps;},
         onClose:async()=>{if(state.selection?.appointment_id)await selectInterval(state.selection,null,true);}
     });
     const manageSelected=document.getElementById('agenda-manage-selected');
@@ -756,6 +756,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderMainSurface() {
         board.dataset.telemetryView = state.view;
+        window.AgendaRescheduleHistory.render(document,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),async item=>{
+            if(state.appointmentBusy||!await operationalWorkspace.prepareSelection(null))return;
+            state.revealAppointmentId=String(item.appointment_id);setDate(item.current_date);
+        });
         const comparing = isComparing();
         el.comparison.hidden = !comparing;
         el.dayGrid.hidden = comparing || state.view !== 'dia';
@@ -2259,6 +2263,11 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAppointmentAction();
         try {
             const outcome = await window.AgendaAppointmentActions.reschedule(context, date, time, {
+                reason: async () => {
+                    if(!window.Swal)throw new Error('No se cargó la confirmación.');
+                    const decision=await window.Swal.fire({title:'Motivo de reprogramación',input:'textarea',inputAttributes:{maxlength:2000},inputValidator:value=>!value.trim()?'Indica el motivo de la reprogramación.':undefined,showCancelButton:true,confirmButtonText:'Continuar',cancelButtonText:'Cancelar'});
+                    return decision.isConfirmed?decision.value.trim():null;
+                },
                 confirm: async (message, detail) => {
                     if (!window.Swal) { throw new Error('No se pudo abrir la confirmación. Actualiza la Agenda e inténtalo nuevamente.'); }
                     const decision = await window.Swal.fire({ title: 'Reprogramar cita', text: detail || message,

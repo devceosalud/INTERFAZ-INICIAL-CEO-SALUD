@@ -37,6 +37,7 @@
         }
         let automaticFree=false, indicationRecordKey=null;
         let quoteReady = true, quoteVersion = 0, activeQuoteRequest = null;
+        byId('proof')?.addEventListener('change',()=>{const panel=byId('proof-panel');if(panel)panel.open=true;});
         const rateSelect = byId('rate'), quoteStatus = byId('quote-status'), quoteRetry = byId('quote-retry');
         let quote = 0, balance = 0, registrationKey = null, paymentKey = null, captureId = null, captureDirty = false;
         let captureVersion = 0, selectedKey = '', working = false;

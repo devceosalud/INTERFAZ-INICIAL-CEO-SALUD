@@ -91,6 +91,7 @@ class AgendaBoardPresenter
                 ->with('patient:id,nombre,apellido_paterno,apellido_materno')->orderByDesc('fecha_cita')->orderBy('hora_cita')->limit(100)->get()
                 ->map(fn ($a) => ['appointment_id' => $a->id, 'fecha' => substr($a->fecha_cita, 0, 10), 'hora' => substr($a->hora_cita, 0, 5),
                     'patient' => trim($a->patient->apellido_paterno.' '.$a->patient->apellido_materno.' '.$a->patient->nombre), 'duracion' => $a->duracion_cita])->all() : [],
+            'reprogramaciones' => app(RescheduleHistory::class)->forRange($agenda, User::findOrFail($actorId)),
             'profesionales' => $professionals->all(),
             'eventos' => $this->events(
                 $professionals,
