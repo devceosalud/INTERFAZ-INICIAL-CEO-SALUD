@@ -53,3 +53,8 @@ La aceptación visual y funcional final corresponde al usuario. Ningún estado d
 | GitHub Actions del SHA local | Pendiente de autorización de publicación | No hay push ni reapertura del PR; las suites locales no se denominan CI remoto. |
 
 [Diagnóstico, límites y guía vigentes](CONTINUACION_20261020.md).
+
+
+## Revisión local de gestión rápida
+
+Implementado: cinco acciones visuales con prioridad Reprogramar/Servicio, un panel, ficha reutilizada, reprogramación y motivo UI, referencias históricas separadas de ocupación y prioridad económica sobre OCR. No habilitado: cambio de servicio/paciente sensible, corrección bancaria o de monto y penalidad sobre citas existentes. La tarifa productiva no se copia ni se inventa en QA. [Resultados y pendientes](GESTION_RAPIDA_Y_REPROGRAMACION.md).

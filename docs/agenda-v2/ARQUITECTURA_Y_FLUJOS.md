@@ -93,7 +93,7 @@ La lectura operativa tiene un scope específico para ADMIN activo con MVP_ACCESS
 
 ## Extensión de cuarta ronda
 
-AppointmentManagement adapta permisos/revisión a economy y notes existentes; reschedule admite revisión opcional sin duplicar reservas. attendance_mode se mantiene separado del contrato económico y tipo_agendamiento. OperationalProcedureService admite custom_label con clave c:UUID. AgendaProfessionalPreferences guarda solo navegación individual en BD. financial_status es una lectura común y no autoriza dinero o confirmación. El dialog reutiliza el panel de cierre y el componente privado documental. [Detalle y secuencia](RONDA_4_DIAGNOSTICO_Y_GUIA.md).
+AppointmentManagement adapta permisos/revisión a economy y notes existentes; reschedule admite revisión opcional sin duplicar reservas. attendance_mode se mantiene separado del contrato económico y tipo_agendamiento. OperationalProcedureService admite custom_label con clave c:UUID. AgendaProfessionalPreferences guarda solo navegación individual en BD. financial_status es una lectura común y no autoriza dinero o confirmación. La primera versión del dialog reutilizaba el panel de cierre y el componente privado documental; la revisión posterior los devuelve a sus módulos y conserva accesos contextuales. [Detalle y secuencia](RONDA_4_DIAGNOSTICO_Y_GUIA.md).
 
 ## Continuación local: capacidad e indicadores
 
@@ -102,3 +102,8 @@ RegularCapacityService cambia solo la proyección anónima mensual: pagos reales
 El renderizador diario crea agenda-day-indicators separado de la identidad en la quinta celda. agenda-layout.css organiza las dos zonas con Grid y reordena las celdas en móvil. El componente compartido filtra únicamente el chip redundante PAGO_REAL, conserva claves/finanzas y prioridades; títulos/nombres accesibles describen indicadores en columnas estrechas. El detalle +N no propaga clic/doble clic a selección/gestor. Consultar [entrega20/10](CONTINUACION_20261020.md).
 
 Los reportes integrados desde main76e6ad2 conservan su controlador/formatos de lectura y autorización independiente. No reutilizan disponibilidad pública para revelar pacientes. El reloj determinista pertenece exclusivamente a Tests/Support/IsolatedAgendaV2Qa, verifica primero la identidad ficticia y no participa en código de negocio ni suites PHP. Al finalizar QA se desactiva.
+
+
+## Gestión rápida y referencias de reprogramación (revisión posterior)
+
+El gestor tiene cinco acciones y un panel activo; reprograma mediante el motor existente y abre la ficha por patient_url autorizado. Documentos, seguimiento y procedimientos conservan sus componentes en sus módulos. AppointmentPaymentReview solo proyecta pagos inequívocos a usuarios con canEdit; ninguna corrección está habilitada. RescheduleHistory lee REPROGRAMADA por período y visibilidad, separado de eventos/ocupación; las anotaciones no crean reservas. Se conserva la fecha actual en la misma Appointment y se agrega motivo desde los flujos UI. [Alcance, límites y decisiones pendientes](GESTION_RAPIDA_Y_REPROGRAMACION.md).

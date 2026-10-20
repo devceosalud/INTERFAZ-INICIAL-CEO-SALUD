@@ -1,0 +1,110 @@
+{
+  "php": [
+    {
+      "file": "app/Http/Controllers/Scheduling/AgendaAppointmentController.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Http/Controllers/Scheduling/OperationalRegistrationController.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Http/Requests/Scheduling/RescheduleAgendaAppointmentRequest.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Services/Scheduling/AgendaBoardPresenter.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Services/Scheduling/AppointmentPaymentReview.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Services/Scheduling/RescheduleAppointmentService.php",
+      "exit": 0
+    },
+    {
+      "file": "app/Services/Scheduling/RescheduleHistory.php",
+      "exit": 0
+    },
+    {
+      "file": "resources/views/scheduling/agenda/index.blade.php",
+      "exit": 0
+    },
+    {
+      "file": "resources/views/scheduling/agenda/partials/operational-registration.blade.php",
+      "exit": 0
+    },
+    {
+      "file": "tests/Feature/Scheduling/AgendaQuickManagementTest.php",
+      "exit": 0
+    },
+    {
+      "file": "tests/Integration/AgendaV2/AgendaV2ConcurrencyTest.php",
+      "exit": 0
+    },
+    {
+      "file": "tests/Support/agenda-management-regression-slot.php",
+      "exit": 0
+    },
+    {
+      "file": "tests/Support/agenda-management-seed.php",
+      "exit": 0
+    }
+  ],
+  "javascript": [
+    {
+      "file": "public/js/scheduling/admission-board.js",
+      "exit": 0
+    },
+    {
+      "file": "public/js/scheduling/agenda-appointment-actions.js",
+      "exit": 0
+    },
+    {
+      "file": "public/js/scheduling/agenda-manage-appointment.js",
+      "exit": 0
+    },
+    {
+      "file": "public/js/scheduling/agenda-operational-workspace.js",
+      "exit": 0
+    },
+    {
+      "file": "public/js/scheduling/agenda-reschedule-history.js",
+      "exit": 0
+    },
+    {
+      "file": "public/js/scheduling/agenda.js",
+      "exit": 0
+    },
+    {
+      "file": "tests/JavaScript/agenda-payment-ocr-placement.test.js",
+      "exit": 0
+    },
+    {
+      "file": "tests/JavaScript/agenda-payment-ux-closure.test.js",
+      "exit": 0
+    },
+    {
+      "file": "tests/JavaScript/agenda-quick-management.test.js",
+      "exit": 0
+    },
+    {
+      "file": "tools/qa/browser-agenda-management-focused.cjs",
+      "exit": 0
+    },
+    {
+      "file": "tools/qa/browser-agenda-quick-management.cjs",
+      "exit": 0
+    },
+    {
+      "file": "tools/qa/browser-agenda-v2-round2.cjs",
+      "exit": 0
+    },
+    {
+      "file": "tools/qa/browser-agenda-v2-round3-functional.cjs",
+      "exit": 0
+    }
+  ]
+}

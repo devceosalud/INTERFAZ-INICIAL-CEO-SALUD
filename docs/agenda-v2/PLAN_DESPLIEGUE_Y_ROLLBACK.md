@@ -65,3 +65,10 @@ Rollback no borra columnas, tabla de preferencias, solicitudes, ledgers o archiv
 Main integrado localmente:76e6ad2 (PR51/53/54/55); checkpoint9c78b3b y merge c598129. No hacer push ni reabrir PR46 sin autorización. La QA local final y su manifiesto de fuentes acreditan el código revisado; GitHub Actions de ese SHA requiere publicación posterior autorizada y permanece pendiente. Antes de una liberación, revalidar que main y entorno destino sigan en los SHAs/esquemas esperados; no se conoce su estado productivo real.
 
 Desactivar el reloj de replay ficticio al terminar pruebas manuales: php tests/Support/agenda-v2-browser-clock.php --real-time, siempre en el worktree QA verificado. Ese reloj y sus credenciales no forman parte de una configuración productiva; no copiar storage/app/qa-v2 al hosting. Esta instrucción no autoriza despliegue.
+
+
+## Revisión de gestión rápida, todavía local
+
+No hay autorización de push, PR o despliegue. Esta revisión no añade migraciones. Para una liberación futura autorizada, revisar y publicar del mismo SHA el backend, Blade, gestor, estilos y nuevo agenda-reschedule-history.js; conservar versionado de AgendaAssets. Verificar reprogramación con otro paciente ocupando el origen, historial no bloqueante y pagos intactos.
+
+Revertir solo código conserva eventos REPROGRAMADA y sus motivos; ocupación sigue basada en fecha actual. No borrar eventos ni reconstruir reservas a partir de anotaciones. Esta compatibilidad no autoriza un futuro rollback que ignore ajustes financieros, aún no implementados. Conservar también requisitos de lectura de cuarta ronda, teleconsultas y documentos privados. [Informe actual](GESTION_RAPIDA_Y_REPROGRAMACION.md).

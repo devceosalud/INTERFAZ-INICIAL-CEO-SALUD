@@ -156,3 +156,12 @@ El runner ronda2 requiere los archivos locales ignorados de fixtures. Para una i
 Main `9c3b93a`: PHP1013/8230, JS302. Primera ronda58c5f92: SQLite1039/8513, MariaDB1044/8561, JS309, Chrome10. Esos resultados se conservan como baseline y no sustituyen la nueva ejecución.
 
 Pendientes de liberación: revisión humana de estas capturas/fixtures, backup productivo comprobado, autorización independiente de despliegue y eventual asignación individual de supervisión. Esta entrega mantiene Draft y no ejecuta esos pasos.
+
+
+## Revisión posterior del gestor y slots
+
+La evidencia histórica anterior corresponde a sus SHAs. Resultados nuevos y capturas en evidence/management; logs completos en storage/app/qa-v2/management. SQLite1136/10079 y MariaDB1149/10201 verificadas sin fallos; MariaDB incluye13 carreras. JavaScript328 pruebas. Chrome contrasta gestor, reprogramación, pagos atribuidos, permisos y cuatro resoluciones; resultados finales desglosados en RESULTADOS.json. [Informe y guía](GESTION_RAPIDA_Y_REPROGRAMACION.md).
+
+Los fixtures de navegador se conservan; cuando agotaron slots se añadió un horario ficticio, sin borrar citas. Las fuentes/CDN/Clarity heredadas bloqueadas por CSP se separan de errores de aplicación mediante URLs exactas. No hay conexiones externas habilitadas para hacer pasar QA.
+
+Cierre:45 casos Chrome aprobados (13+3+19+10), sintaxis13 PHP/13 JS y328 pruebas JavaScript. Suites PHP finalizadas con salida0. [Galería](evidence/management/CAPTURAS.md). Las operaciones financieras no aprobadas permanecen bloqueadas; CI/publicación pendientes de autorización.

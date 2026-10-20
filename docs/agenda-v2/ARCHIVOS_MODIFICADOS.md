@@ -266,3 +266,14 @@ Baseline remoto `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace`; inicio de esta ronda
 La tercera ronda no elimina pruebas, tablas ni eventos. Los seis archivos retirados pertenecen a los mecanismos temporales ya sustituidos en840522e. Se conservan los eventos v1 y el diagnóstico del parcial con autorización manual anterior.
 
 El visor PDF incorpora únicamente módulo/worker/licencia oficiales fijados en6.4.299, con integridad de paquete y archivos verificable. No se añade otro almacén, sistema de documentos, autenticación ni framework visual. El historial documental reutiliza los modelos y endpoints existentes; no requiere migración adicional. No se versionan credenciales, BD ficticias ni archivos médicos de prueba: únicamente capturas y reportes de QA seleccionados.
+
+
+## Revisión de gestión rápida y reprogramaciones
+
+- Gestor y presentación: public/js/scheduling/agenda-manage-appointment.js, agenda.js, admission-board.js, agenda-appointment-actions.js, agenda-reschedule-history.js y public/css/scheduling/agenda-layout.css.
+- Registro rápido: resources/views/scheduling/agenda/partials/operational-registration.blade.php, agenda/index.blade.php y agenda-operational-workspace.js. IDs y validaciones preservados; orden DOM actualizado.
+- Backend: AgendaAppointmentController, RescheduleAgendaAppointmentRequest, RescheduleAppointmentService, AgendaBoardPresenter; nuevas lecturas RescheduleHistory y AppointmentPaymentReview, adaptadas en OperationalRegistrationController.
+- QA: AgendaQuickManagementTest, carrera adicional en AgendaV2ConcurrencyTest, agenda-quick-management.test.js y actualización de dos pruebas de orden/anidación OCR; navegador browser-agenda-quick-management.cjs y helpers append-only ficticios. Los runners de regresión aceptan salida management para no sobrescribir evidencias antiguas y usan disponibilidad real para escoger un slot ficticio libre.
+- Documentación y capturas: GESTION_RAPIDA_Y_REPROGRAMACION.md y evidence/management. El inventario exacto con SHA256 es evidence/management/ARCHIVOS.json.
+
+No se modifica la plantilla de correo ni se crea una tarifa de penalidad.

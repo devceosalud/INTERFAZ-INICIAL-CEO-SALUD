@@ -138,3 +138,8 @@ Se protegió el trabajo en5299381 y se ensayó merge-tree antes de modificar arc
 La QA previa al merge quedó guardada separadamente: SQLite1116/9645; MariaDB1128/9758; JS323 y Chrome40. No acredita la integración posterior. Se repiten las suites completas y se añade una lectura real del CSV ficticio con ADMIN y rechazos para ADMISION/COMERCIAL. La exportación mantiene su contrato y columnas históricas; la clasificación financial_status de Agenda no reescribe el enum exportado ni los importes.
 
 Durante una reversión sin paquete compatible, bloquear toda la superficie de procedimientos/atención de Agenda MVP, incluidas lecturas de claves personalizadas, no solo escrituras. Mantener consultas históricas autorizadas que no dependan de esos lectores. Esta contención es temporal: una reversión funcional completa requiere el paquete compatible probado, sin borrar tablas o archivos.
+
+
+## Continuación aprobada de gestión rápida
+
+La cuarta ronda se conserva. El rediseño posterior compacta el gestor, reorganiza economía antes de OCR y añade referencias de REPROGRAMADA sin ocupación. Penalidad20%, correcciones y reasignaciones sensibles no se activan. El usuario elige sobrecargo conservando adelantos, pero quedan por confirmar base y tarifa; el correo de retención20%/crédito80% permanece como contradicción documentada. [Informe vigente](GESTION_RAPIDA_Y_REPROGRAMACION.md).

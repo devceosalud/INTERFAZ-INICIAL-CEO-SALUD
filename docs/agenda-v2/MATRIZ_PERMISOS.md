@@ -49,3 +49,18 @@ ADMIN transcribe procedimientos personalizados por decisión expresa del usuario
 ### Reportes y continuación20/10
 
 CSV/XLSX exigen usuario activo ADMINISTRADOR y VIEW_AUDIT, además del acceso a Agenda y sus rutas autenticadas. Tener UPDATE, COMERCIAL, ADMISION o permiso de documentos no concede exportación gerencial. site_id enviado se rechaza; todas las sedes es fijo. El semáforo solo entrega agregados anónimos autorizados. El gestor respeta controles originalmente deshabilitados al bloquear/restaurar operaciones; no habilita por accidente campos de otra capacidad. No hay cambios automáticos de asignación de roles o permisos productivos.
+
+
+## Gestor compacto: permisos conservados
+
+| Operación | Autorización efectiva |
+|---|---|
+| Reprogramar | RESCHEDULE, visibilidad de escritura existente y estado PROGRAMADO/CONFIRMADO; comprobaciones del servidor |
+| Abrir/corregir ficha | Mantenimiento de pacientes y PatientWriteAccess existentes, sin elevar capacidades |
+| Cambiar modalidad | ADMINISTRADOR/ADMISION, canChangeMode, confirmación, revisión y auditoría previas |
+| Revisar pagos individuales en gestor | canEdit de AppointmentManagement; lectura administrativa ampliada no basta |
+| Modificar servicio/paciente | Nueva operación bloqueada, pendiente de aprobación funcional sensible |
+| Corregir referencia o monto / aplicar penalidad a cita existente | Bloqueado para todos; no hay endpoint nuevo ni privilegios asignados |
+| Referencias históricas | Visibilidad operativa autorizada; sin paciente/motivo en el feed; responsables según AgendaCreatorVisibility |
+
+No hay migración de permisos en esta revisión. Poder registrar dinero no concede corregirlo. [Diagnóstico](GESTION_RAPIDA_Y_REPROGRAMACION.md).

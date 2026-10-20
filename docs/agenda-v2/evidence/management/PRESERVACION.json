@@ -1,0 +1,33 @@
+{
+  "files": {
+    "app/Http/Controllers/admin/master/doctor/DoctorController.php": {
+      "expected": "56dcaa641555f2b59acef72f96e2ba050e60be3ba3214cec89f95648a901028d",
+      "actual": "56dcaa641555f2b59acef72f96e2ba050e60be3ba3214cec89f95648a901028d",
+      "unchanged": true
+    },
+    "app/Http/Controllers/admin/master/doctorService/DoctorServiceController.php": {
+      "expected": "fee38c7eb0d9e7767149a4ae6c785c76ea2712e516c6f75cbb7cab530a54bfb5",
+      "actual": "fee38c7eb0d9e7767149a4ae6c785c76ea2712e516c6f75cbb7cab530a54bfb5",
+      "unchanged": true
+    },
+    "app/Http/Controllers/admin/master/user/UserController.php": {
+      "expected": "6c297117ecc1eaa18bc804ba4b03d2e2bae4247cf240b363f2f8580cf50f4554",
+      "actual": "6c297117ecc1eaa18bc804ba4b03d2e2bae4247cf240b363f2f8580cf50f4554",
+      "unchanged": true
+    },
+    "app/Services/Scheduling/AgendaBoardPresenter.php": {
+      "expected": "728a86af515a3df2a47e9c1771031d59cc8c62527b7be18297a38b75ebd5676b",
+      "actual": "728a86af515a3df2a47e9c1771031d59cc8c62527b7be18297a38b75ebd5676b",
+      "unchanged": true
+    },
+    "app/Services/Scheduling/OperationalAgendaAppointmentService.php": {
+      "expected": "7a7e2ac170de21907dd029d0cf508104ac13eace75cb0f96403b40fe7f53ddd8",
+      "actual": "7a7e2ac170de21907dd029d0cf508104ac13eace75cb0f96403b40fe7f53ddd8",
+      "unchanged": true
+    }
+  },
+  "allUnchanged": true,
+  "noEnv": true,
+  "clockDisabled": true,
+  "unrelatedUntrackedPreserved": true
+}

@@ -1,0 +1,8 @@
+{
+    "schedule_id": 16,
+    "doctor_id": 5,
+    "date": "2026-10-19",
+    "start": "20:00",
+    "end": "21:00",
+    "reason": "Append-only fictional QA: old cohort exhausted; no appointments removed."
+}

@@ -41,3 +41,8 @@ No se requiere migración: PATIENT_PROVIDED cabe en purpose varchar(32); se reut
 2026_10_19_040000_add_agenda_v2_attendance_and_preferences: attendance_mode varchar16 defaultPRESENCIAL en appointments; custom_label varchar500 nullable en solicitudes; agenda_professional_preferences con FK usuario/profesional restrictivas, unicidad, favorito, contador y last_selected_at timestamp(6). Clave personalizada c:UUID de38 caracteres cabe en procedure_key40; el texto no se almacena en la clave. No se transforman pagos, indicaciones, eventos o procedimientos anteriores. QA comprobada sobre la BD ficticia existente y migraciones de ambas suites. El ajuste de precisión de un borrador local se limita al helper QA guardado y no es un comando productivo.
 
 No ejecutar down ni revertir a código que desconozca modalidades/claves nuevas con datos de cuarta ronda. Conservar esquema/historia y usar lector/política compatible o bloquear escrituras durante reversión. No hay migración de pagos ni permisos de producción. [Impacto y rollback](RONDA_4_DIAGNOSTICO_Y_GUIA.md).
+
+
+## Revisión del gestor y reprogramaciones
+
+Sin migraciones nuevas ni backfill. Se reutilizan appointment_events.metadata/motivo; se conservan pagos, comprobantes, tarifas, documentos e indicaciones. El motivo se solicita en el modal/arrastre actuales y se admite en el endpoint sin inventar razones históricas. La anotación es una proyección, no una fila adicional de cita. Ajustes financieros o archivo de contexto al reasignar pacientes siguen pendientes y no crean tablas en esta entrega. [Detalle](GESTION_RAPIDA_Y_REPROGRAMACION.md).
