@@ -1,0 +1,38 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:00.696, Memory: 52.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\Scheduling\AgendaHeatmapGeometryTest::test_panel_names_may_repeat_across_events_but_not_inside_one_event
+Expected response status code [204] but received 422.
+Failed asserting that 204 is identical to 422.
+
+The following errors occurred during the last request:
+
+{
+    "message": "The events.0.geometry.expanded.0 field has a duplicate value. (and 3 more errors)",
+    "errors": {
+        "events.0.geometry.expanded.0": [
+            "The events.0.geometry.expanded.0 field has a duplicate value."
+        ],
+        "events.0.geometry.expanded.1": [
+            "The events.0.geometry.expanded.1 field has a duplicate value."
+        ],
+        "events.1.geometry.expanded.0": [
+            "The events.1.geometry.expanded.0 field has a duplicate value."
+        ],
+        "events.1.geometry.expanded.1": [
+            "The events.1.geometry.expanded.1 field has a duplicate value."
+        ]
+    }
+}
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:47
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\agenda-v2\tests\Feature\Scheduling\AgendaHeatmapGeometryTest.php:125
+
+FAILURES!
+Tests: 1, Assertions: 1, Failures: 1.

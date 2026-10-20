@@ -86,3 +86,9 @@ Para detener el entorno usar el script local guardado `storage/app/qa-v2/stop-ma
 Sin migración adicional por integrar los hotfixes. La liberación de v2 desde main aún necesita la migración aditiva de las tres tablas de procedimientos antes del código; no altera los ledgers v1. No se ejecutó ninguna adaptación en producción.
 
 Rollback preferido de código a dcb9b2b, conservando tablas y eventos. Main puede leer marcas directas nuevas porque mantienen el contrato v1; ignorará temporalmente procedimientos/cola v2, cuyos datos y auditoría se conservan. No convertir decisiones al revertir, no eliminar tablas pobladas, no desconfirmar citas ni revertir pagos. La compatibilidad de datos se prueba en fixtures equivalentes; el commit instalado y el backup real de Hostinger siguen sin verificarse y requieren una operación autorizada antes de liberar.
+
+## Continuación20/10: reportes recientes, solo integración local
+
+Origin/main verificado en76e6ad21d69372d429698de35142689dfd6bd873. PR51 ya estaba en0ba1c23; PR53–55 se incorporaron mediante merge c598129 tras checkpoint9c78b3b y ensayo merge-tree, sin conflictos textuales. Su diff neto de nueve archivos se conserva íntegro: preloader/shell, CSV, XLSX con autofiltro, operaciones bancarias, pruebas y workflow. No se reintroducen los cambios revertidos delPR50. No cambian interpretación histórica ni independencia de los tres orígenes de reevaluación.
+
+PR46 cerrado, Draft, sin fusionar; no se publica ni reabre. [Acta vigente y riesgos](CONTINUACION_20261020.md), [inventario](ARCHIVOS_MODIFICADOS.md).

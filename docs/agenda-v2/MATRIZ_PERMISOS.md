@@ -1,5 +1,7 @@
 # Matriz de permisos
 
+Estado vigente de la continuación: [entrega exclusivamente local del20/10/2026](CONTINUACION_20261020.md). PR46 cerrado y sin fusionar; no publicar ni reabrir sin autorización. Los resultados anteriores son antecedentes.
+
 Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Operaciones integradas de retorno al médico
@@ -43,3 +45,7 @@ La nueva cola no incluye documentos de identidad, contactos, diagnósticos, obse
 ## Cuarta ronda
 
 ADMIN transcribe procedimientos personalizados por decisión expresa del usuario. Solo ADMIN/ADMISION con UPDATE y visibilidad de escritura cambian modalidad antes de iniciar atención y con confirmación, incluso con pagos; COMERCIAL no puede enviar el campo, aunque coincida con el valor actual. notes del gestor exige UUID/revisión y rechaza inyección financiera. Reprogramación conserva RESCHEDULE; favoritos solo requieren acceso activo de lectura y solo afectan al usuario autenticado. No se añaden privilegios generales ni un nuevo descuento100%. [Matriz detallada](RONDA_4_DIAGNOSTICO_Y_GUIA.md#permisos-de-cuarta-ronda).
+
+### Reportes y continuación20/10
+
+CSV/XLSX exigen usuario activo ADMINISTRADOR y VIEW_AUDIT, además del acceso a Agenda y sus rutas autenticadas. Tener UPDATE, COMERCIAL, ADMISION o permiso de documentos no concede exportación gerencial. site_id enviado se rechaza; todas las sedes es fijo. El semáforo solo entrega agregados anónimos autorizados. El gestor respeta controles originalmente deshabilitados al bloquear/restaurar operaciones; no habilita por accidente campos de otra capacidad. No hay cambios automáticos de asignación de roles o permisos productivos.

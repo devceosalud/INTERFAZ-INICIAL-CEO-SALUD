@@ -1,0 +1,67 @@
+{
+  "commit": "c8b91fa8c4096345c9d5a7e59a523e0ab81a1236",
+  "verified": "2026-10-19",
+  "workflows": [
+    {
+      "id": 39277445987,
+      "name": "Agenda Yape OCR manual-flow regressions",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277445987"
+    },
+    {
+      "id": 39277446031,
+      "name": "Agenda OCR and payment UX checks",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277446031"
+    },
+    {
+      "id": 39277445869,
+      "name": "Nicol appointment tasks checks",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277445869"
+    },
+    {
+      "id": 39277446033,
+      "name": "Agenda compact legend regression",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277446033"
+    },
+    {
+      "id": 39277445913,
+      "name": "Patient deactivation regressions",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277445913"
+    },
+    {
+      "id": 39277445877,
+      "name": "Agenda RC checks",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277445877"
+    },
+    {
+      "id": 39277445884,
+      "name": "Agenda v2 isolated verification",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/actions/runs/39277445884"
+    }
+  ],
+  "verified_log_results": {
+    "sqlite": {
+      "tests": 1083,
+      "assertions": 9468
+    },
+    "mariadb": {
+      "tests": 1092,
+      "assertions": 9556
+    },
+    "javascript": 318
+  },
+  "note": "Historical baseline only. Does not certify fourth-round changes."
+}

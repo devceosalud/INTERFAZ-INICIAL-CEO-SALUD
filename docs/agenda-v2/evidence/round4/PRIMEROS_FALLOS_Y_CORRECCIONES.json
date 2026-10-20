@@ -1,0 +1,101 @@
+{
+  "mariadb_fixture_errors": [
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-0.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-0.00\" ('scheduling.mvp.agenda.appoint....store', '0.00', false)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (267, TICKET, Q2670, 0, ACTIVO, 2026-10-20 13:53:58, 2026-10-20 13:53:58))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-0.01\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-0.01\" ('scheduling.mvp.agenda.appoint....store', '0.01', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (268, TICKET, Q2680, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-30.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-30.00\" ('scheduling.mvp.agenda.appoint....store', '30.00', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (269, TICKET, Q2690, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-49.99\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-49.99\" ('scheduling.mvp.agenda.appoint....store', '49.99', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (270, TICKET, Q2700, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-50.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"compatibility-50.00\" ('scheduling.mvp.agenda.appoint....store', '50.00', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (271, TICKET, Q2710, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-0.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-0.00\" ('scheduling.mvp.agenda.registrations', '0.00', false)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (272, TICKET, Q2720, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-0.01\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-0.01\" ('scheduling.mvp.agenda.registrations', '0.01', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (273, TICKET, Q2730, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-30.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-30.00\" ('scheduling.mvp.agenda.registrations', '30.00', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (274, TICKET, Q2740, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-49.99\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-49.99\" ('scheduling.mvp.agenda.registrations', '49.99', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (275, TICKET, Q2750, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-50.00\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_any_positive_real_payment_confirms_on_direct_requests with data set \"operational-50.00\" ('scheduling.mvp.agenda.registrations', '50.00', true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (276, TICKET, Q2760, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_foreign_closed_or_multiple_shifts_are_rejected_without_creating_a_pilot_context",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_foreign_closed_or_multiple_shifts_are_rejected_without_creating_a_pilot_context\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (277, TICKET, Q2770, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_paid_retry_on_legacy_endpoint_is_idempotent_and_a_changed_payload_cannot_charge_again",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_paid_retry_on_legacy_endpoint_is_idempotent_and_a_changed_payload_cannot_charge_again\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (279, TICKET, Q2790, 0, ACTIVO, 2026-10-20 13:53:59, 2026-10-20 13:53:59))"
+    },
+    {
+      "test": "test_money_or_explicit_confirmation_requires_a_client_idempotency_key_on_compatibility_endpoint",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_money_or_explicit_confirmation_requires_a_client_idempotency_key_on_compatibility_endpoint\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (280, TICKET, Q2800, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_register_advance_confirms_automatically_and_compatibility_confirmation_does_not_charge",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_register_advance_confirms_automatically_and_compatibility_confirmation_does_not_charge\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (281, TICKET, Q2810, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"omitted\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"omitted\" (array())\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (282, TICKET, Q2820, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"false\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"false\" (array(false))\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (283, TICKET, Q2830, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"zero\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"zero\" (array(0))\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (284, TICKET, Q2840, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"form-zero\"",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_advance_at_fifty_percent_confirms_with_omitted_or_false_intent with data set \"form-zero\" (array('0'))\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (285, TICKET, Q2850, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_validated_explicit_boolean_confirmation_remains_supported with data set #0",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_validated_explicit_boolean_confirmation_remains_supported with data set #0 (true)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (286, TICKET, Q2860, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_validated_explicit_boolean_confirmation_remains_supported with data set #1",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_validated_explicit_boolean_confirmation_remains_supported with data set #1 (1)\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (287, TICKET, Q2870, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_validated_explicit_boolean_confirmation_remains_supported with data set #2",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_validated_explicit_boolean_confirmation_remains_supported with data set #2 ('1')\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (288, TICKET, Q2880, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts with data set #0",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts with data set #0 (false, '0.00')\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (289, TICKET, Q2890, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    },
+    {
+      "test": "test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts with data set #1",
+      "diagnosis": "Tests\\Feature\\Scheduling\\AgendaStabilizationTest::test_occupied_regular_confirmation_rolls_back_all_new_money_and_never_converts with data set #1 (true, '0.00')\nIlluminate\\Database\\QueryException: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'serie' at row 1 (SQL: insert into `voucher_series` (`cashier_id`, `tipo_comprobante`, `serie`, `correlativo_actual`, `estado`, `updated_at`, `created_at`) values (290, TICKET, Q2900, 0, ACTIVO, 2026-10-20 13:54:00, 2026-10-20 13:54:00))"
+    }
+  ],
+  "cause": "Test helper generated voucher series Q2670 longer than the actual four-character schema; base36 fixture IDs preserve validation and assertions.",
+  "browser_initial_timeout": "First navigation timed out during concurrent local suite load; rerun sequentially without raising timeout.",
+  "stale_cohort": "Fixtures19/10 correctly excluded from the active queue on20/10. Explicit isolated replay clock; same-day rule unchanged.",
+  "console": "49 expected self-only CSP blocks of seven known legacy external URLs; logged separately, all unexpected console/HTTP/page errors still fail.",
+  "visual_test": "Double-click on native details does not guarantee a closed state. Final test asserts keyboard toggle in both directions from observed state and no accidental management dialog."
+}

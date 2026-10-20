@@ -41,3 +41,15 @@ Estado contrastado con código, interfaz y pruebas de la cuarta ronda. Los cambi
 | Auditoría, privacidad y documentos privados |Todas | Implementado y conservado | Lecturas/escrituras diferenciadas, CSRF, idempotencia, versiones, negativos por cita/documento, Clarity excluido. No se borran eventos o archivos históricos. |
 
 La aceptación visual y funcional final corresponde al usuario. Ningún estado de esta matriz autoriza merge, despliegue, migración productiva o uso de datos reales.
+
+## Continuación local20/10
+
+| Requerimiento | Estado | Evidencia |
+|---|---|---|
+| Integrar PR53–55 sin publicar | Integrado localmente | Main76e6ad2, merge c598129; CSV/XLSX, autofiltros, operaciones bancarias y preloader. |
+| Capacidad mensual con abono real inferior50% | Implementado | RegularCapacityService exige pago positivo atribuible; prueba0,01, umbrales y negativos de snapshots/crédito. No cambia secured. |
+| Etiquetas a la derecha y responsive | Implementado, aceptación humana pendiente | Grid con identidad separada, chips11–12px, móvil reordenado, semana sin letras verticales, capturas reales. |
+| Bloqueo y recuperación del gestor | Implementado | Operaciones/confirmaciones serializadas, controles restaurados tras cancelación/error; Chrome y regresión concurrente. |
+| GitHub Actions del SHA local | Pendiente de autorización de publicación | No hay push ni reapertura del PR; las suites locales no se denominan CI remoto. |
+
+[Diagnóstico, límites y guía vigentes](CONTINUACION_20261020.md).

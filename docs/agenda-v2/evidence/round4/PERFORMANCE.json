@@ -1,0 +1,43 @@
+{
+  "samples": 6,
+  "finished": "2026-10-20T14:27:15.715Z",
+  "http_requests_each": 1,
+  "measurement": "Actual DOM click, real monotonic/network/server timing; excludes Playwright actionability waits. Local QA only.",
+  "actual_click_to_request_ms": {
+    "median": 2.5,
+    "range": [
+      2,
+      4
+    ]
+  },
+  "actual_click_to_feedback_ms": {
+    "median": 277.0,
+    "range": [
+      265,
+      308
+    ]
+  },
+  "app_ms": {
+    "median": 105.03,
+    "range": [
+      100.02,
+      116.79
+    ]
+  },
+  "sql_ms": {
+    "median": 33.55,
+    "range": [
+      30.0,
+      44.39
+    ]
+  },
+  "sql_queries_each": [
+    51,
+    51,
+    51,
+    51,
+    51,
+    51
+  ],
+  "first_request_to_feedback_median_ms": 274.5
+}

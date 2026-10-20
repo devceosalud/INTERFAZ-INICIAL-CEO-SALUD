@@ -1,4 +1,14 @@
-# Inventario de modificaciones — PR Draft #46, tercera ronda
+# Inventario vigente — cuarta ronda local
+
+Base integrada: `76e6ad21d69372d429698de35142689dfd6bd873`. Inicio de cuarta ronda: `c8b91fa8c4096345c9d5a7e59a523e0ab81a1236`. Recuperación: `0ba1c23bcf8e52da0e641bda155f39c860a1c843`; checkpoint `9c78b3b`; merge reciente `c598129`; fuente funcional final `d93f4841d68bb864c2aa2545284f27d81df88d1c`. Rama feat/agenda-operativa-flujo-reevaluaciones-v2, worktree agenda-v2. PR46 cerrado, Draft y sin fusionar. Sin push ni despliegue.
+
+[Inventario completo de cuarta ronda y continuación](evidence/round4/ARCHIVOS_RONDA4.json), [fuentes exactas SHA256](evidence/FUENTES_SHA256.json), [acta local y guía](CONTINUACION_20261020.md), [matriz de rondas](MATRIZ_CUMPLIMIENTO_RONDAS.md), [QA/capturas](QA_Y_EVIDENCIAS.md).
+
+La continuación modifica RegularCapacityService, AgendaLegend, el renderizador/estilos/indicadores de Agenda, el gestor, el enlace de gerencia, fixtures y pruebas de capacidad/reportes, y el soporte de replay/consola QA. Los nueve archivos importados de main corresponden a PR53–55 y se distinguen en el JSON; PR51 ya estaba integrado. No hay una nueva migración en esta continuación; la cuarta ronda conserva la extensión aditiva del19/10.
+
+El JSON detalla el diff desde c8 y el acumulado respecto de main76e6ad2, incluidos documentos, pruebas, evidencias y eliminaciones previas del PR. Las fuentes se calculan desde blobs del índice de Git, respetando los bytes de PDF.js. El archivo ajeno dad}sad}sa y storage/app/qa-v2 (datos/contraseñas/procesos privados de QA) permanecen fuera de los commits.
+
+# Inventario histórico de tercera ronda
 
 Baseline remoto `dcb9b2b7c9dafe75d79be95992fdbf0b955a9ace`; inicio de esta ronda `840522eca91638d16a58ed1b40907c8ce6f749ea`. Rama `feat/agenda-operativa-flujo-reevaluaciones-v2`, worktree agenda-v2. Sin cambios en otros worktrees.
 

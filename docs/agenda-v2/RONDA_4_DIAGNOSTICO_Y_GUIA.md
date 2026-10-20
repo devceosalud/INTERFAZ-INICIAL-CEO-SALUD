@@ -1,5 +1,7 @@
 # Cuarta ronda — procedimientos, gestión de citas y teleconsulta
 
+Estado vigente de la continuación: [entrega exclusivamente local del20/10/2026](CONTINUACION_20261020.md). PR46 cerrado y sin fusionar; no publicar ni reabrir sin autorización. Los resultados anteriores son antecedentes.
+
 Inicio verificado: c8b91fa8c4096345c9d5a7e59a523e0ab81a1236, worktree agenda-v2 limpio, PR46 abierto Draft. Checkpoint codex/agenda-v2-pre-round4-20261019. Los siete workflows del baseline finalizaron success; las suites anteriores no acreditan los cambios de esta ronda.
 
 ## Decisiones confirmadas por el usuario
@@ -13,9 +15,9 @@ Inicio verificado: c8b91fa8c4096345c9d5a7e59a523e0ab81a1236, worktree agenda-v2 
 
 2026_10_19_040000_add_agenda_v2_attendance_and_preferences añade attendance_mode varchar16 default PRESENCIAL (compatibilidad histórica), custom_label varchar500 nullable (sin tocar procedure_key varchar40) y agenda_professional_preferences (usuario/profesional únicos, favorito, contador y última selección). El procedimiento personalizado usa c:UUID, independiente del nombre. No hay backfill de procedimientos, pagos, clínicas o auditorías. Preferencias en BD permiten persistencia entre dispositivos; no guardan pacientes ni contenido clínico.
 
-Se probará exclusivamente bajo IsolatedAgendaV2Qa, que comprueba host127.0.0.1, puerto33324, esquema y datadir ficticios exactos, versiónMariaDB11.8.9, APP_ENVtesting y ausencia de .env. Ninguna migración productiva autorizada ni ejecutada.
+Se probó exclusivamente bajo IsolatedAgendaV2Qa, que comprueba host127.0.0.1, puerto33324, esquema y datadir ficticios exactos, versiónMariaDB11.8.9, APP_ENVtesting y ausencia de .env. Ninguna migración productiva autorizada ni ejecutada.
 
-Rollback: conservar columnas/tablas y archivos; no ejecutar down cuando contienen datos nuevos. Código anterior no interpreta teleconsultas ni procedimientos personalizados: bloquear escrituras de atención/solicitudes durante reversión y mantener lector/política compatible. No restaurar una BD antigua perdiendo eventos posteriores. Se completarán matriz, QA y capturas antes de cierre.
+Rollback: conservar columnas/tablas y archivos; no ejecutar down cuando contienen datos nuevos. Código anterior no interpreta teleconsultas ni procedimientos personalizados: bloquear escrituras de atención/solicitudes durante reversión y mantener lector/política compatible. No restaurar una BD antigua perdiendo eventos posteriores. Matriz, QA y capturas finales se incluyen en el acta de continuación local.
 
 ## Diagnósticos y solución integrada
 
@@ -91,9 +93,9 @@ Se agrupan bajo Favoritos y frecuentes para mantener utilizable la búsqueda man
 
 ## QA y revisión visual
 
-SQLite:1118 pruebas /9660 aserciones. MariaDB:1130 /9773, incluidas12 carreras. JavaScript:323. Todas estas ejecuciones finalizaron con exit0 y sin fallos, errores u omisiones. Los recorridos completos Chrome y sus capturas se registran en [QA y evidencias](QA_Y_EVIDENCIAS.md); no se consideran aprobados por el solo hecho de iniciarse.
+SQLite:1130 pruebas /10028 aserciones. MariaDB:1142 /10141, incluidas12 carreras. JavaScript:324. Chrome:43 recorridos funcionales y10 superficies de consola revisadas. Todas estas ejecuciones finalizaron con exit0 y sin fallos, errores u omisiones. Los recorridos completos Chrome y sus capturas se registran en [QA y evidencias](QA_Y_EVIDENCIAS.md); no se consideran aprobados por el solo hecho de iniciarse.
 
-CI anterior c8b91fa: siete workflows completados success, incluidos SQLite1083/9468, MariaDB1092/9556 y JS318 verificados en sus logs. Estos resultados anteriores no sustituyen los checks del nuevo commit. Los IDs y resultados del SHA publicado se documentan en el [PR46](https://github.com/devceosalud/INTERFAZ-INICIAL-CEO-SALUD/pull/46/checks), después de finalizar. No hay workflows de despliegue añadidos.
+CI anterior c8b91fa: siete workflows completados success, incluidos SQLite1083/9468, MariaDB1092/9556 y JS318 verificados en sus logs. Estos resultados anteriores no sustituyen los checks del nuevo commit. PR46 está cerrado, Draft y sin fusionar. La CI del SHA local queda pendiente de autorización para publicar; esta continuación no hace push ni modifica el PR. No hay workflows de despliegue añadidos.
 
 Las primeras suites de esta ronda detectaron dos incompatibilidades de contrato y una prueba que reconstruía la tabla antigua sin la extensión nueva. Se conserva el contrato sin revisión y se actualiza el montaje del esquema de esa prueba sin retirar ninguna aserción de integridad. Chrome detectó una carrera de selección/doble clic y una sincronización innecesaria al refrescar el gestor; se corrigieron y se volvieron a recorrer. No se retiraron pruebas ni se flexibilizaron permisos para obtener verde.
 

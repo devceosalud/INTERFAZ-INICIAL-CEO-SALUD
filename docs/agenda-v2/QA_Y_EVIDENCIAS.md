@@ -1,5 +1,51 @@
 # QA y evidencias
 
+## Resultado final local del20/10/2026
+
+Código funcional: d93f4841d68bb864c2aa2545284f27d81df88d1c, integrado con main76e6ad21d69372d429698de35142689dfd6bd873. La confirmación de documentación/evidencias conserva estos mismos blobs de fuente; [manifiesto](evidence/FUENTES_SHA256.json). PR46 está cerrado, Draft y sin fusionar. No se hizo push ni se modificó GitHub.
+
+| Verificación terminada | Resultado | Fallos / errores / omisiones |
+|---|---|---|
+| Sintaxis PHP |135 archivos |0 |
+| Sintaxis JavaScript |36 archivos |0 |
+| PHPUnit SQLite aislada |1130 pruebas /10028 aserciones |0 /0 /0 |
+| PHPUnit MariaDB11.8.9 QA |1142 pruebas /10141 aserciones |0 /0 /0 |
+| Concurrencia real MariaDB |12 carreras, incluidas en la suite |0 |
+| JavaScript completa |324 pruebas |0 /0 /0 |
+| Chrome real /Playwright |43 recorridos funcionales,14 nuevos/actualizados +29 conservados |0 errores inesperados |
+| Consola y recursos con tres roles |10 superficies revisadas |0 errores inesperados;49 bloqueos CSP esperados |
+| Salida física |6 citas ficticias distintas; un POST por salida |0 duplicaciones |
+| GitHub Actions del SHA local |Pendiente de autorización de publicación |No se ejecutó; no se sustituye por CI histórica |
+
+Los procesos finalizaron realmente con exit0; JUnit y JSON completos se verificaron antes de registrar estos resultados. [Acta de resultados](evidence/round4/RESULTADOS.json), [SQLite XML](evidence/round4/sqlite.xml), [MariaDB XML](evidence/round4/mariadb.xml), [JavaScript](evidence/round4/javascript.txt), [sintaxis](evidence/round4/SYNTAX.json), [Chrome14](evidence/round4/browser-results.json), [Chrome19](evidence/round4/regression-results.json), [documentos10](evidence/round4/documents-regression-results.json), [consola](evidence/round4/console-results.json), [CRC/estructura de XLSX descargados](evidence/round4/XLSX_ESTRUCTURA.json).
+
+Chrome155 utiliza exclusivamente127.0.0.1, ADMINISTRADOR/ADMISION/COMERCIAL y datos ficticios. Comprueba gestor/doble clic/Alt+Enter/móvil; bloqueo y restauración tras cancelación/error; revisión409; reprogramación; modalidad con pago intacto; procedimientos personalizados y retirada/recuento; registro de teleconsulta y confirmación única con adelanto; documentos privados y versiones; favoritos por usuario; reportes CSV/XLSX, autofiltros, ceros iniciales, varios abonos, permisos y preloader; etiquetas y capacidad inferior50%. Las29 regresiones conservan MFR/Traumatología, saldos, OCR, precios, creación heredada bloqueada, pago, retroceso, orígenes independientes de reevaluación y auditoría histórica de hotfixes.
+
+La repetición visual verifica también +N mediante teclado en ambos sentidos y que su doble clic no abra el gestor, nombres largos, postoperatorio/herida persistidos, grupos a la derecha, cuatro resoluciones y semana con citas simultáneas. No basta la comprobación geométrica: se inspeccionaron las capturas. La aceptación humana final sigue pendiente.
+
+Los49 avisos de consola son la CSP local bloqueando siete URLs conocidas de recursos externos del tema heredado. Se registran separadamente; no se permiten conexiones externas ni se ocultan errores de aplicación/HTTP o URLs desconocidas. [Hallazgos y ejecuciones previas fallidas](evidence/round4/PRIMEROS_FALLOS_Y_CORRECCIONES.json). La fixture de series se corrigió manteniendo columna/validación, y los datos del19/10 se repitieron con reloj QA explícito, sin cambiar la regla de mismo día ni fechas de citas. El replay se desactivó después; las suites PHP no utilizan ese reloj.
+
+Rendimiento nuevo: clic DOM→request, mediana2,5ms; clic DOM→resultado,277ms (265–308); aplicación105,03ms; SQL33,55ms;51 consultas y un POST en cada salida. [Muestras completas](evidence/round4/departure-results.json), [resumen/metodología](evidence/round4/PERFORMANCE.json). La referencia de tercera ronda era866ms desde el primer request antes de optimizar,3HTTP/85SQL; la serie actual desde el primer request es274,5ms,1HTTP/51SQL. No es una prueba de carga ni una afirmación sobre producción; no se atribuyen diferencias entre sesiones al código sin perfil adicional.
+
+### Capturas comparativas
+
+Antes de etiquetas: capturas conservadas del19/10 en la misma cohorte ficticia; después: replay final del20/10. No se reconstruyó artificialmente un antes con CSS nuevo. Hay más citas ficticias acumuladas; el caso TELE_ADDITIONAL conserva identidad y atributos.
+
+| Vista |1366×768 |1440×900 |1920×1080 |390×844 |
+|---|---|---|---|---|
+| Antes Agenda operativa |[ver](evidence/round4/before-operative-1366.png) |[ver](evidence/round4/before-operative-1440.png) |[ver](evidence/round4/before-operative-1920.png) |[ver](evidence/round4/before-operative-390.png) |
+| Después Agenda operativa |[ver](evidence/round4/operative-1366.png) |[ver](evidence/round4/operative-1440.png) |[ver](evidence/round4/operative-1920.png) |[cabecera](evidence/round4/operative-390.png), [fila](evidence/round4/labels-mobile-context.png) |
+| Gestionar cita |[ver](evidence/round4/manage-1366.png) |[ver](evidence/round4/manage-1440.png) |[ver](evidence/round4/manage-1920.png) |[ver](evidence/round4/manage-390.png) |
+| Admisión |[ver](evidence/round4/admission-1366.png) |[ver](evidence/round4/admission-1440.png) |[ver](evidence/round4/admission-1920.png) |[detalle](evidence/round4/admission-390.png), [listado](evidence/round4/admission-mobile-list.png) |
+
+[Semana antes](evidence/round4/before-operative-semana.png) → [semana después](evidence/round4/operative-semana.png); [mes](evidence/round4/operative-mes.png); [nombre largo/postoperatorio](evidence/round4/labels-postop.png); [herida](evidence/round4/labels-wound.png); [documentos del modal](evidence/round4/documents-modal.png); [favoritos](evidence/round4/favorites-1366.png); [reportes](evidence/round4/reports.png). En semana, la concentración de varias citas se abrevia por el ancho disponible; nombre accesible/título y gestor conservan el detalle.
+
+[Informe técnico y reproducción local](CONTINUACION_20261020.md). Ningún resultado autoriza publicación, merge o despliegue.
+
+---
+
+Estado vigente de la continuación: [entrega exclusivamente local del20/10/2026](CONTINUACION_20261020.md). PR46 cerrado y sin fusionar; no publicar ni reabrir sin autorización. Los resultados anteriores son antecedentes.
+
 Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Resultados finales de tercera ronda

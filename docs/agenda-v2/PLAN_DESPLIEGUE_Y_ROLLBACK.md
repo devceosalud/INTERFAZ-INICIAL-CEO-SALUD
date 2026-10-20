@@ -1,5 +1,7 @@
 # Plan de despliegue y rollback — NO ejecutado
 
+Estado vigente de la continuación: [entrega exclusivamente local del20/10/2026](CONTINUACION_20261020.md). PR46 cerrado y sin fusionar; no publicar ni reabrir sin autorización. Los resultados anteriores son antecedentes.
+
 Estado vigente: [cuarta ronda, gestión de citas, procedimientos personalizados y teleconsulta](RONDA_4_DIAGNOSTICO_Y_GUIA.md). Los resultados y decisiones anteriores se conservan como antecedentes.
 
 ## Candidato integrado con dcb9b2b
@@ -54,6 +56,12 @@ No ejecutar despliegue sin aprobación. Entregar los dos módulos PDF.js de la m
 
 ## Cuarta ronda: controles para una futura liberación autorizada
 
-PR46 continúa Draft. No hay publicación autorizada. Añadir al ensayo la migración de modalidad, etiqueta personalizada y preferencias; verificar defaults y FK, y publicar backend/Blade/JS/CSS del mismo SHA. Revalidar con datos ficticios teleconsulta, exoneración, otros procedimientos, documentos y roles antes de admitir tráfico. No se conoce ni se afirma el SHA o estado de Hostinger.
+PR46 está cerrado, Draft y sin fusionar. Esta entrega es exclusivamente local; no hay publicación autorizada. Añadir al ensayo la migración de modalidad, etiqueta personalizada y preferencias; verificar defaults y FK, y publicar backend/Blade/JS/CSS del mismo SHA. Revalidar con datos ficticios teleconsulta, exoneración, otros procedimientos, documentos y roles antes de admitir tráfico. No se conoce ni se afirma el SHA o estado de Hostinger.
 
 Rollback no borra columnas, tabla de preferencias, solicitudes, ledgers o archivos posteriores. Antes de volver a un código anterior, conservar lectura de c:UUID y política que impide presencia física en teleconsulta; congelar escrituras si no existe paquete compatible probado. Conservar también PATIENT_PROVIDED y su versionado. No restaurar pagos ni BD a una copia anterior para perder operaciones posteriores. El flujo remoto de atención sigue pendiente por decisión del usuario.
+
+### Estado de preparación de esta continuación
+
+Main integrado localmente:76e6ad2 (PR51/53/54/55); checkpoint9c78b3b y merge c598129. No hacer push ni reabrir PR46 sin autorización. La QA local final y su manifiesto de fuentes acreditan el código revisado; GitHub Actions de ese SHA requiere publicación posterior autorizada y permanece pendiente. Antes de una liberación, revalidar que main y entorno destino sigan en los SHAs/esquemas esperados; no se conoce su estado productivo real.
+
+Desactivar el reloj de replay ficticio al terminar pruebas manuales: php tests/Support/agenda-v2-browser-clock.php --real-time, siempre en el worktree QA verificado. Ese reloj y sus credenciales no forman parte de una configuración productiva; no copiar storage/app/qa-v2 al hosting. Esta instrucción no autoriza despliegue.

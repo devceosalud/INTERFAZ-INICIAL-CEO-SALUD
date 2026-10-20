@@ -1,0 +1,114 @@
+{
+  "source_commit": "d93f4841d68bb864c2aa2545284f27d81df88d1c",
+  "integrated_main": "76e6ad21d69372d429698de35142689dfd6bd873",
+  "actual_execution_date": "2026-10-20",
+  "browser_replay_day": "2026-10-19 23:59 America/Lima",
+  "replay_disabled_after_tests": true,
+  "production_accessed": false,
+  "push_performed": false,
+  "pr46": "Closed, draft, unmerged; no remote mutation",
+  "ci": {
+    "status": "PENDING_AUTHORIZATION",
+    "reason": "Final SHA is local only; publishing and PR reopening expressly prohibited."
+  },
+  "sqlite": {
+    "tests": 1130,
+    "assertions": 10028,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "exit_code": 0
+  },
+  "mariadb": {
+    "tests": 1142,
+    "assertions": 10141,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "exit_code": 0
+  },
+  "chrome": {
+    "functional_cases": 43,
+    "new_or_updated": 14,
+    "retained": 29,
+    "unexpected_errors": 0,
+    "resolutions": [
+      "1366x768",
+      "1440x900",
+      "1920x1080",
+      "390x844"
+    ],
+    "roles": [
+      "ADMINISTRADOR",
+      "ADMISION",
+      "COMERCIAL"
+    ],
+    "exit_codes": [
+      0,
+      0,
+      0
+    ]
+  },
+  "console": {
+    "checks": 10,
+    "unexpected_errors": 0,
+    "expected_legacy_external_csp_blocks": 49
+  },
+  "javascript": {
+    "tests": 324,
+    "failures": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "exit_code": 0
+  },
+  "syntax": {
+    "files": 171,
+    "php": 135,
+    "javascript": 36,
+    "failures": 0
+  },
+  "mariadb_concurrency_cases": 12,
+  "departure": {
+    "samples": 6,
+    "finished": "2026-10-20T14:27:15.715Z",
+    "http_requests_each": 1,
+    "measurement": "Actual DOM click, real monotonic/network/server timing; excludes Playwright actionability waits. Local QA only.",
+    "actual_click_to_request_ms": {
+      "median": 2.5,
+      "range": [
+        2,
+        4
+      ]
+    },
+    "actual_click_to_feedback_ms": {
+      "median": 277.0,
+      "range": [
+        265,
+        308
+      ]
+    },
+    "app_ms": {
+      "median": 105.03,
+      "range": [
+        100.02,
+        116.79
+      ]
+    },
+    "sql_ms": {
+      "median": 33.55,
+      "range": [
+        30.0,
+        44.39
+      ]
+    },
+    "sql_queries_each": [
+      51,
+      51,
+      51,
+      51,
+      51,
+      51
+    ],
+    "first_request_to_feedback_median_ms": 274.5
+  }
+}

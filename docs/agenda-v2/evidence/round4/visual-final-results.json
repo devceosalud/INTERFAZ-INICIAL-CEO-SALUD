@@ -1,0 +1,13 @@
+{
+  "started": "2026-10-20T14:15:12.245Z",
+  "browser": "155.0.8059.79",
+  "filter": "Teclado",
+  "cases": [
+    {
+      "name": "Teclado, móvil, día/semana/mes y cuatro resoluciones sin desbordamientos",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-20T14:15:52.308Z"
+}

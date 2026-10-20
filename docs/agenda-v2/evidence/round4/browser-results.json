@@ -1,0 +1,66 @@
+{
+  "started": "2026-10-20T14:21:25.001Z",
+  "browser": "155.0.8059.79",
+  "filter": null,
+  "cases": [
+    {
+      "name": "Doble clic abre Gestionar cita con paciente, modalidad y economía",
+      "result": "PASS"
+    },
+    {
+      "name": "Admisión muestra teleconsulta, exoneración y validación cero sin acciones físicas",
+      "result": "PASS"
+    },
+    {
+      "name": "Cambio de modalidad con pago requiere confirmación, conserva dinero y se audita",
+      "result": "PASS"
+    },
+    {
+      "name": "Dos sesiones: guardar detecta conflicto y conserva el texto del modal",
+      "result": "PASS"
+    },
+    {
+      "name": "Reprogramación consulta disponibilidad y conserva modalidad y economía",
+      "result": "PASS"
+    },
+    {
+      "name": "Procedimiento personalizado significativo se realiza con Admisión y recalcula reevaluación",
+      "result": "PASS"
+    },
+    {
+      "name": "Documentos: lista inicial, apertura progresiva, subida y PDF privado desde modal",
+      "result": "PASS"
+    },
+    {
+      "name": "Favoritos y último profesional persisten al recargar sin afectar otra cuenta",
+      "result": "PASS"
+    },
+    {
+      "name": "Registro rápido crea teleconsulta y un adelanto real confirma una sola vez sin cambiar modalidad",
+      "result": "PASS"
+    },
+    {
+      "name": "Cancelar y retirar desde el modal reutiliza operaciones auditadas sin borrar citas",
+      "result": "PASS"
+    },
+    {
+      "name": "Reportes integrados: CSV y XLSX, filtros, operaciones bancarias, privacidad y preloader",
+      "result": "PASS"
+    },
+    {
+      "name": "Gestor restaura controles al cancelar y ante errores sin duplicar operaciones",
+      "result": "PASS"
+    },
+    {
+      "name": "Capacidad mensual usa abono real menor al 50 por ciento sin alterar economía",
+      "result": "PASS"
+    },
+    {
+      "name": "Teclado, móvil, día/semana/mes y cuatro resoluciones sin desbordamientos",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "created_teleconsultation": 139,
+  "finished": "2026-10-20T14:23:30.417Z"
+}
