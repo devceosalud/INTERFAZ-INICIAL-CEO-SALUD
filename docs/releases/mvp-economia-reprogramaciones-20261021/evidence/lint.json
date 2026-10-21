@@ -1,0 +1,117 @@
+[
+  {
+    "path": "app/Http/Controllers/Scheduling/AppointmentEconomicEditController.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Http/Livewire/CashierShifts.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Http/Livewire/Sales.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Billing/AppointmentEconomicPosition.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Scheduling/AdditionalRateCharge.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Scheduling/AppointmentEconomicEdit.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Scheduling/AppointmentManagement.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Scheduling/EconomicCorrectionSnapshot.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Services/Scheduling/ExistingAppointmentPricing.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Support/Authorization/PermissionDisplay.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "app/Support/Scheduling/SchedulingCapability.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "database/migrations/2026_10_21_200000_define_direct_appointment_economic_permissions.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "public/js/scheduling/agenda-manage-appointment.js",
+    "type": "JS",
+    "result": "PASS"
+  },
+  {
+    "path": "routes/scheduling.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Feature/Scheduling/AppointmentEconomicEditTest.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Feature/Scheduling/MvpGuardNormalizationTest.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Feature/Scheduling/SchedulingMvpFoundationTest.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Integration/MvpEconomyDirect/EconomicEditConcurrencyTest.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/JavaScript/agenda-quick-management.test.js",
+    "type": "JS",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/JavaScript/appointment-economic-edit.test.js",
+    "type": "JS",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Support/direct-economic-worker.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tests/Support/mvp-economic-browser-seed.php",
+    "type": "PHP",
+    "result": "PASS"
+  },
+  {
+    "path": "tools/qa/browser-mvp-economic.cjs",
+    "type": "JS",
+    "result": "PASS"
+  }
+]

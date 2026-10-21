@@ -22,6 +22,8 @@ final class PermissionDisplay
         'appointment.hold.extend' => ['Ampliar retención temporal de horario', 'Extiende una retención temporal; no significa cita extendida de dos intervalos.'],
         'appointment.payment.submit' => ['Registrar adelantos y pagos', 'Permite ingresar cobros cuando se cumplan los requisitos de Caja.'],
         'appointment.payment.verify' => ['Verificar pagos', 'Permite revisar y verificar pagos según las reglas financieras.'],
+        'appointment.payment.correction.edit' => ['Corregir adelantos registrados', 'Edita el importe o referencia de un pago existente tras revisar y confirmar, con motivo y auditoría. No autoriza modificar turnos cerrados ni documentos fiscales.'],
+        'appointment.pricing.adjust.edit' => ['Modificar economía de citas existentes', 'Corrige la tarifa, descuentos y recargos válidos de una cita, incluso con adelanto. Exige revisión, confirmación y auditoría; no modifica el catálogo global.'],
         'appointment.down_payment.override' => ['Autorizar excepción al adelanto mínimo', 'Permite autorizar una excepción al adelanto requerido para una cita.'],
         'appointment.zero_cost.request' => ['Solicitar cita sin costo', 'Solicita una gratuidad; no permite aprobarla por sí solo.'],
         'appointment.zero_cost.approve' => ['Aprobar cita sin costo', 'Autoriza una gratuidad conforme a las reglas del sistema.'],

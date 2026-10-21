@@ -226,6 +226,8 @@ class SchedulingMvpFoundationTest extends TestCase
             'appointment.hold.extend',
             'appointment.payment.submit',
             'appointment.payment.verify',
+            'appointment.payment.correction.edit',
+            'appointment.pricing.adjust.edit',
             'appointment.down_payment.override',
             'appointment.zero_cost.request',
             'appointment.zero_cost.approve',
@@ -236,7 +238,7 @@ class SchedulingMvpFoundationTest extends TestCase
 
         $this->assertSame($capabilities, array_values(array_unique($capabilities)));
         $this->assertFalse(Role::query()->where('name', 'COMERCIAL')->exists());
-        $this->assertSame(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage'],Permission::query()->orderBy('id')->pluck('name')->all());
+        $this->assertSame(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage','appointment.payment.correction.edit','appointment.pricing.adjust.edit'],Permission::query()->orderBy('id')->pluck('name')->all());
         $this->assertDatabaseCount('role_has_permissions',0);
         $this->assertDatabaseCount('model_has_permissions',0);
     }

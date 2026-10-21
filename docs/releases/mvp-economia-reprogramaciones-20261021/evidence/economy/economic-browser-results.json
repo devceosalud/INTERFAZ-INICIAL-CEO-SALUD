@@ -1,0 +1,34 @@
+{
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Sin permiso directo: Comercial no corrige aunque puede registrar adelantos",
+      "result": "PASS"
+    },
+    {
+      "name": "Roles → Actualizar Permiso habilita edición directa para Comercial sin aprobación separada",
+      "result": "PASS"
+    },
+    {
+      "name": "Caso A y cancelación: 50→60 en el mismo pago; cancelar no persiste",
+      "result": "PASS"
+    },
+    {
+      "name": "Caso B: descuento posterior20 conserva pago60 y saldo40; escritorio y móvil",
+      "result": "PASS"
+    },
+    {
+      "name": "Retirar descuento y Caso C: recargo válido20 produce140, pago60 y saldo80",
+      "result": "PASS"
+    },
+    {
+      "name": "Referencia bancaria y tarifa se corrigen con auditoría y sin nuevos pagos",
+      "result": "PASS"
+    },
+    {
+      "name": "Integración: reprogramación conserva el historial visual y la economía corregida",
+      "result": "PASS"
+    }
+  ],
+  "errors": []
+}

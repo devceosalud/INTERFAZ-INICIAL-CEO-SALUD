@@ -1,0 +1,194 @@
+{
+  "visual_commit": "6719af57d5fb01af10ed4ae78f02c61ef2565de3",
+  "files": [
+    {
+      "path": "app/Http/Controllers/Scheduling/AdmissionBoardController.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "app/Http/Controllers/Scheduling/AgendaFeedController.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "app/Services/Scheduling/AdmissionBoardService.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "app/Services/Scheduling/RescheduleHistory.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/ARCHIVOS.md",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/DEPENDENCIAS_BASE.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/DEPENDENCIAS_CANDIDATO.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/DESPLIEGUE_Y_ROLLBACK.md",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/ENTREGA.md",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/RESULTADOS.md",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/01-antes-agenda-desktop.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/02-despues-agenda-desktop.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/03-despues-agenda-mobile.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/04-admision-historial-desktop.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/05-admision-historial-mobile.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/06-admision-cita-vigente.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/07-semana.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/08-mes.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/09-intervalo-reutilizado.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/10-destino-vigente.png",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/browser-results.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/javascript.txt",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/lint.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/php-mariadb.txt",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/php-mariadb.xml",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/php-sqlite.txt",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/php-sqlite.xml",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/preflight-base.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/preflight-candidato.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/preflight-drift-detectado.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "docs/releases/reprogramaciones-20261021/evidence/preflight-maria-integrity.json",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "public/css/scheduling/agenda-reschedule-history.css",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "public/js/scheduling/admission-board.js",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "public/js/scheduling/agenda-day-grid.js",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "public/js/scheduling/agenda-reschedule-history.js",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "public/js/scheduling/agenda.js",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "resources/views/scheduling/admission/index.blade.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "resources/views/scheduling/agenda/index.blade.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "routes/scheduling.php",
+      "result": "ONLY_THREE_ECONOMIC_ROUTES_ADDED"
+    },
+    {
+      "path": "tests/Concerns/BuildsRescheduleVisualData.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tests/Feature/Scheduling/RescheduleVisualHistoryTest.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tests/JavaScript/reschedule-visual-history.test.js",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tests/Support/RescheduleVisualQa.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tests/Support/reschedule-visual-browser-router.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tests/Support/reschedule-visual-browser-seed.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tools/qa/browser-reschedule-visual.cjs",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    },
+    {
+      "path": "tools/release/reschedule-preflight.php",
+      "result": "IDENTICAL_TO_VISUAL_RELEASE"
+    }
+  ],
+  "changed_visual_code": false
+}

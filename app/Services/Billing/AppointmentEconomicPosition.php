@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Schema;
 /** Money projection only. Never copies money or creates payment/refund records. */
 class AppointmentEconomicPosition
 {
-    public function forAppointment(Appointment $a): array { return $this->forAppointments(collect([$a]))[$a->id]; }
+    public function forAppointment(Appointment $a, bool $lock=false): array { return $this->forAppointments(collect([$a]),null,$lock)[$a->id]; }
 
     /** Fixed query count across a day/month; each Payment is counted once in its ticket family. */
-    public function forAppointments(Collection $appointments,?array $detailAppointmentIds=null): array
+    public function forAppointments(Collection $appointments,?array $detailAppointmentIds=null,bool $lock=false): array
     {
         if ($appointments->isEmpty()) { return []; }
         $ids = $appointments->pluck('id');
@@ -27,15 +27,15 @@ class AppointmentEconomicPosition
                 ->whereColumn('source.patient_id','i.patient_id')->whereColumn('source.service_id','i.service_id')->whereColumn('source.doctor_id','i.doctor_id')
                 ->whereRaw('DATE(source.fecha_cita) = i.attended_on')->whereDate('source.fecha_cita','<=',now(config('scheduling.clinic_timezone'))->toDateString())->get(['i.*'])->keyBy('bound_appointment_id') : collect();
 
-        $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->toBase()->get(['item_id','voucher_id']);
+        $links = VoucherItem::whereIn('item_type', ['cita', Appointment::class])->whereIn('item_id', $ids)->when($lock,fn($q)=>$q->lockForUpdate())->toBase()->get(['item_id','voucher_id']);
         $directIds = $links->pluck('voucher_id')->unique();
-        $vouchers = Voucher::whereIn('id', $directIds)->orWhereIn('parent_voucher_id', $directIds)->toBase()->get(['id','parent_voucher_id','tipo_comprobante','estado'])->keyBy('id');
-        $items = VoucherItem::whereIn('voucher_id', $vouchers->keys())->toBase()->get(['voucher_id','item_type','item_id'])->groupBy('voucher_id');
-        $payments = Payment::whereIn('voucher_id', $vouchers->keys())->toBase()->get(['id','voucher_id','monto','metodo_pago','created_at'])->groupBy('voucher_id');
+        $vouchers = Voucher::whereIn('id', $directIds)->orWhereIn('parent_voucher_id', $directIds)->when($lock,fn($q)=>$q->lockForUpdate())->toBase()->get(['id','parent_voucher_id','tipo_comprobante','estado'])->keyBy('id');
+        $items = VoucherItem::whereIn('voucher_id', $vouchers->keys())->when($lock,fn($q)=>$q->lockForUpdate())->toBase()->get(['voucher_id','item_type','item_id'])->groupBy('voucher_id');
+        $payments = Payment::whereIn('voucher_id', $vouchers->keys())->when($lock,fn($q)=>$q->lockForUpdate())->toBase()->get(['id','voucher_id','monto','metodo_pago','created_at'])->groupBy('voucher_id');
         $credits = Schema::hasTable('appointment_credit_applications')
-            ? DB::table('appointment_credit_applications')->whereIn('source_appointment_id', $ids)->orWhereIn('destination_appointment_id', $ids)->get() : collect();
+            ? DB::table('appointment_credit_applications')->whereIn('source_appointment_id', $ids)->orWhereIn('destination_appointment_id', $ids)->when($lock,fn($q)=>$q->lockForUpdate())->get() : collect();
         $refunds = Schema::hasTable('appointment_refund_requests')
-            ? DB::table('appointment_refund_requests')->whereIn('appointment_id', $ids)->where('status', 'SOLICITADA')->get() : collect();
+            ? DB::table('appointment_refund_requests')->whereIn('appointment_id', $ids)->where('status', 'SOLICITADA')->when($lock,fn($q)=>$q->lockForUpdate())->get() : collect();
         // Index fetched rows once. Scanning all vouchers/credits for each appointment was quadratic.
         $linksByAppointment=$links->groupBy('item_id');
         $families=[];$voucherOrder=[];$order=0;
