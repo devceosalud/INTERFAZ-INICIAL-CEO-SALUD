@@ -117,6 +117,8 @@ Route::middleware([
 
         Route::get('/scheduling-mvp/agenda/feed', AgendaFeedController::class)
             ->name('scheduling.mvp.agenda.feed');
+        Route::get('/scheduling-mvp/agenda/reschedule-history',[AgendaFeedController::class,'history'])
+            ->middleware('throttle:60,1')->name('scheduling.mvp.agenda.reschedule-history');
 
         Route::post('/scheduling-mvp/agenda/patient-lookup', AgendaPatientLookupController::class)
             ->name('scheduling.mvp.agenda.patient-lookup');

@@ -1,0 +1,28 @@
+{
+  "php_files": 13,
+  "javascript_files": 6,
+  "result": "PASS",
+  "php_paths": [
+    "app/Http/Controllers/Scheduling/AdmissionBoardController.php",
+    "app/Http/Controllers/Scheduling/AgendaFeedController.php",
+    "app/Services/Scheduling/AdmissionBoardService.php",
+    "app/Services/Scheduling/RescheduleHistory.php",
+    "routes/scheduling.php",
+    "resources/views/scheduling/agenda/index.blade.php",
+    "resources/views/scheduling/admission/index.blade.php",
+    "tests/Concerns/BuildsRescheduleVisualData.php",
+    "tests/Feature/Scheduling/RescheduleVisualHistoryTest.php",
+    "tests/Support/RescheduleVisualQa.php",
+    "tests/Support/reschedule-visual-browser-router.php",
+    "tests/Support/reschedule-visual-browser-seed.php",
+    "tools/release/reschedule-preflight.php"
+  ],
+  "javascript_paths": [
+    "public/js/scheduling/agenda.js",
+    "public/js/scheduling/agenda-day-grid.js",
+    "public/js/scheduling/agenda-reschedule-history.js",
+    "public/js/scheduling/admission-board.js",
+    "tests/JavaScript/reschedule-visual-history.test.js",
+    "tools/qa/browser-reschedule-visual.cjs"
+  ]
+}

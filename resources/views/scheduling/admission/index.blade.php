@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('body_class', 'admission-viewport')
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-reschedule-history.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
@@ -49,6 +50,13 @@
         </div>
         <div class="admission-workspace">
             <section class="admission-main" aria-label="Pacientes y reevaluaciones">
+                <details id="admission-reschedule-panel" class="admission-reschedule-panel" hidden>
+                    <summary>Reprogramaciones del día <span id="admission-reschedule-count"></span></summary>
+                    <p>Referencias históricas según los filtros. No forman parte de la cola de atención, los indicadores ni los importes. Las acciones corresponden a la cita vigente.</p>
+                    <div id="admission-reschedule-list"></div>
+                    <button id="admission-reschedule-previous" type="button" class="admission-btn" hidden>Referencias anteriores</button>
+                    <button id="admission-reschedule-latest" type="button" class="admission-btn" hidden>Referencias recientes</button>
+                </details>
                 <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
                     <div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div>

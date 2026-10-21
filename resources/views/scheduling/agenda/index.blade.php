@@ -3,6 +3,7 @@
 @section('body_class', 'agenda-viewport')
 
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-reschedule-history.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredAssets = ['FullCalendar', 'AgendaSelection', 'AgendaPatientLookup', 'AgendaPatientDraft',
         'AgendaAppointmentCreate', 'AgendaAppointmentActions', 'AgendaDayGrid', 'AgendaWeekEvent',
         'AgendaWeekBackground', 'AgendaWeekSlots', 'AgendaGuidance', 'AgendaOperationalForm',
-        'AgendaAppointmentIndicators', 'AgendaProfessionalPreferences', 'AgendaManageAppointment', 'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
+        'AgendaAppointmentIndicators', 'AgendaProfessionalPreferences', 'AgendaManageAppointment', 'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'AgendaRescheduleHistory', 'PatientPhone'];
     if (requiredAssets.some(name => !window[name])) {
         board.querySelectorAll('button').forEach(button => { button.disabled = true; });
         const notice = document.getElementById('agenda-load-state');
@@ -756,10 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderMainSurface() {
         board.dataset.telemetryView = state.view;
-        window.AgendaRescheduleHistory.render(document,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),async item=>{
-            if(state.appointmentBusy||!await operationalWorkspace.prepareSelection(null))return;
-            state.revealAppointmentId=String(item.appointment_id);setDate(item.current_date);
-        });
+        window.AgendaRescheduleHistory.render(document,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),openRescheduled,loadOlderReschedules);
         const comparing = isComparing();
         el.comparison.hidden = !comparing;
         el.dayGrid.hidden = comparing || state.view !== 'dia';
@@ -776,6 +773,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         renderCalendar();
+    }
+
+    async function openRescheduled(item){
+        if(state.appointmentBusy||!await operationalWorkspace.prepareSelection(null))return;
+        // Navigate to the current authorized context, never synthesize a selectable historical appointment.
+        if(item.agenda_url){window.location.assign(item.agenda_url);return;}
+        state.revealAppointmentId=String(item.appointment_id);setView('dia');setDate(item.current_date);
+    }
+    async function loadOlderReschedules(cursor){
+        const snapshot=feedUrl();const url=new URL(snapshot);url.pathname=url.pathname.replace(/\/feed$/,'/reschedule-history');url.searchParams.set('history_before',cursor);
+        try{const response=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)throw new Error('No se pudo consultar el historial.');const older=await response.json();
+            if(snapshot!==feedUrl())return;const previous=state.payload.reprogramaciones;const seen=new Set(previous.items.map(i=>i.event_id));state.payload.reprogramaciones={...older,items:[...previous.items,...older.items.filter(i=>!seen.has(i.event_id))]};renderMainSurface();
+        }catch(e){showActionNotice(e.message,true);}
     }
 
     function filteredEvents() {
@@ -835,6 +845,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resizeCalendar();
         window.requestAnimationFrame(() => calendar.updateSize());
+        window.requestAnimationFrame(()=>window.AgendaRescheduleHistory.calendarIndicators(document,el.calendar,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),()=>{
+            const panel=document.getElementById('agenda-reschedule-history');panel.open=true;panel.scrollIntoView({block:'nearest'});panel.querySelector('summary')?.focus({preventScroll:true});
+        }));
     }
 
     function renderDayGrid() {
@@ -845,6 +858,7 @@ document.addEventListener('DOMContentLoaded', function () {
             gridMinutes: Number(board.dataset.gridMinutes || 20),
             professional: professional,
             events: events,
+            history: state.payload?.reprogramaciones?.items || [],
         });
 
         state.visibleEvents = events;
@@ -897,6 +911,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 node.appendChild(dayEntry(Object.assign({}, row, { context: row.availableContext }), null));
             }
         }
+
+        const history=window.AgendaRescheduleHistory.forRow(state.payload?.reprogramaciones?.items,effectiveProfessionals()[0]?.id,state.date,row.start,row.end);
+        for(const item of history)node.appendChild(window.AgendaRescheduleHistory.marker(document,item,row.availableContext?'available':row.kind,openRescheduled));
 
         const activate = function () {
             const target = node.querySelector('.agenda-day-entry') || node;

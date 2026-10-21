@@ -73,6 +73,10 @@
             starts.push(event.start);
             ends.push(event.end);
         });
+        // Historical bounds affect only visible rows, never availability/appointment events.
+        (options.history || []).filter(i=>i.from_date===options.date&&String(i.doctor_id)===String(options.professional?.id)).forEach(i=>{
+            starts.push(minutes(i.from_time));ends.push(Math.max(minutes(i.from_time)+1,minutes(i.from_end||i.from_time)));
+        });
 
         return {
             start: Math.max(0, floor(Math.min.apply(null, starts), step)),

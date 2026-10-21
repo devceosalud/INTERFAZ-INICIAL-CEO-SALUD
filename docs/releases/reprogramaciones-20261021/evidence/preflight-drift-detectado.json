@@ -1,0 +1,58 @@
+{
+    "phase": "BASE",
+    "reference": "1f840e90912d2ce8c55ce7502a22a1d582492bc3",
+    "checked": 535,
+    "mismatches": [
+        {
+            "path": "app/Http/Controllers/Scheduling/AdmissionBoardController.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "app/Http/Controllers/Scheduling/AgendaFeedController.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "app/Services/Scheduling/AdmissionBoardService.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "app/Services/Scheduling/RescheduleHistory.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "public/css/scheduling/agenda-reschedule-history.css",
+            "result": "UNEXPECTED_FILE"
+        },
+        {
+            "path": "public/js/scheduling/admission-board.js",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "public/js/scheduling/agenda-day-grid.js",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "public/js/scheduling/agenda-reschedule-history.js",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "public/js/scheduling/agenda.js",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "resources/views/scheduling/admission/index.blade.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "resources/views/scheduling/agenda/index.blade.php",
+            "result": "CONTENT_DRIFT"
+        },
+        {
+            "path": "routes/scheduling.php",
+            "result": "CONTENT_DRIFT"
+        }
+    ],
+    "result": "BLOCKED",
+    "writes": 0,
+    "database_access": false
+}
