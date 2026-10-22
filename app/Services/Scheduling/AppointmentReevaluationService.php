@@ -91,6 +91,8 @@ final class AppointmentReevaluationService
                 ->orderByDesc('id')->lockForUpdate()->first();
             $active=$latest?->event_type===self::MEDICAL_INDICATED;
             $a->setRelation('medicalReevaluationEvent',$latest);
+            $a->loadMissing('operationalReview');
+            app(ManualReevaluationService::class)->load(collect([$a]));
             abort_if($decision==='indicate' && $active,422,'La reevaluación ya está indicada.');
             abort_if($decision==='withdraw' && !$active,422,'No hay indicación activa.');
             if($decision==='withdraw'){
