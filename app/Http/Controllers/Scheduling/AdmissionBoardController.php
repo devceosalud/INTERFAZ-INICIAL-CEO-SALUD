@@ -35,6 +35,7 @@ class AdmissionBoardController extends Controller
             'grupo'=>['nullable',Rule::in(array_merge(array_diff(array_keys(AdmissionStatus::LABELS),['total']),['reservas','otros']))],
             'visual'=>['nullable',Rule::in(array_keys(AdmissionBoardService::VISUAL_FILTERS))],
             'only_reevaluations'=>'nullable|boolean',
+            'only_pending_reevaluations'=>'nullable|boolean',
             'page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.
@@ -66,6 +67,57 @@ class AdmissionBoardController extends Controller
             'expected_state'=>'required|string|max:40','motivo'=>'required|string|min:3|max:500']);
         $a = $service->reverse($appointmentId,$r->user(),$data);
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
+    }
+
+    public function physicianReevaluation(Request $r,int $appointmentId,string $action,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_unless(in_array($action,['indicate','withdraw','resume'],true),404);
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','reason','_token']),422);
+        $data=$r->validate([
+            'expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid',
+            'confirmed'=>'required|accepted',
+            'reason'=>$action==='withdraw'?'required|string|min:3|max:500':'nullable|string|max:500',
+        ]);
+        $data['action']=$action;
+        $a=$service->physicianDecision($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
+    public function confirmOperationalReevaluation(Request $r,int $appointmentId,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','_token']),422);
+        $data=$r->validate(['expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted']);
+        $a=$service->confirmOperational($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
+    public function registerArrival(Request $r,int $appointmentId,AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','_token']),422);
+        $data=$r->validate([
+            'expected_state'=>'required|in:PROGRAMADO,CONFIRMADO,PACIENTE_LLEGO',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted']);
+        $a=$service->registerArrival($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
+    public function closeDeclinedReevaluation(Request $r,int $appointmentId,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','reason','_token']),422);
+        $data=$r->validate(['expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted',
+            'reason'=>'required|string|min:3|max:500']);
+        $a=$service->closeDeclined($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,
+            'reevaluation_declined'=>true])->header('Cache-Control','private, no-store');
     }
 
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)

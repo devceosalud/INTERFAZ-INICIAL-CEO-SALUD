@@ -70,7 +70,8 @@ final class OperationalProcedureService
             'pending_count' => $items->count()-$done,
             'catalog' => $this->canSelect($u) ? self::CATALOG : [],
             'can_select' => $this->canSelect($u), 'can_complete' => $this->canComplete($u),
-            'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty(),
+            'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty()
+                && (!AppointmentReevaluationService::indicated($a) || AppointmentReevaluationService::confirmed($a)),
             'can_withdraw' => $this->canSend($u) && $status === 'READY',
             'items' => $items->map(fn ($p) => ['key' => $p->procedure_key,
                 'label' => $p->custom_label ?? self::CATALOG[$p->procedure_key] ?? 'Procedimiento histórico', 'custom' => $p->custom_label !== null,
@@ -147,6 +148,9 @@ final class OperationalProcedureService
             $all = $items->isNotEmpty() && $done === $items->count();
             $changes = ['version' => $data['expected_version'] + 1, 'requested_count' => $items->count(), 'completed_count' => $done, 'updated_at' => now()];
             if ($action === 'send') {
+                abort_if(AppointmentReevaluationService::indicated($a)
+                    && !AppointmentReevaluationService::confirmed($a),422,
+                    'Admisión o Comercial debe confirmar primero la pre-reevaluación.');
                 abort_unless($data['confirmed'] && self::active($a) && $done > 0, 422, 'La reevaluación requiere una cita activa de hoy y al menos un procedimiento realizado.');
                 abort_if(!$all && trim($data['reason'] ?? '') === '', 422, 'Indica por qué se envía con procedimientos pendientes.');
                 if ($review?->status !== 'READY') $changes += ['status' => 'READY', 'origin' => 'MANUAL',

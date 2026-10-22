@@ -1,0 +1,396 @@
+<?php
+
+namespace Tests\Feature\Scheduling;
+
+use App\Models\Appointment;
+use App\Models\User;
+use App\Services\Scheduling\AppointmentReevaluationService;
+use App\Support\Scheduling\SchedulingCapability as C;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Tests\Concerns\BuildsAgendaLifecycleData;
+use Tests\TestCase;
+
+class JulioAdmissionReevaluationTest extends TestCase
+{
+    use RefreshDatabase, BuildsAgendaLifecycleData;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['scheduling.enabled'=>true,'app.debug'=>false]);
+    }
+
+    private function doctorLinkColumn(): void
+    {
+        // The existing production DB has users.doctor_id. The old main branch
+        // lacks that historical migration, so reproduce the real schema only
+        // in this disposable test database (no production migrations).
+        if (!Schema::hasColumn('users','doctor_id')) {
+            // SQLite can roll back test-only DDL inside RefreshDatabase.
+            // MariaDB DDL implicitly commits and destroys PHPUnit savepoints:
+            // do not alter its schema mid-test. The production link was
+            // verified separately; the MariaDB authorization-negative and
+            // redirect coverage still run without schema alterations.
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+                $this->markTestSkipped('La migración heredada users.doctor_id no figura en main; no alterar MariaDB de pruebas dentro de una transacción.');
+            }
+            Schema::table('users',static function(Blueprint $table){
+                $table->unsignedBigInteger('doctor_id')->nullable();
+            });
+        }
+    }
+
+    private function physician(): array
+    {
+        $this->doctorLinkColumn();
+        $u=$this->agendaReader('ADMINISTRADOR');
+        Role::firstOrCreate(['name'=>'MEDICO','guard_name'=>'web']);
+        $u->assignRole('MEDICO');
+        $u->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $catalog=$this->createAppointmentCatalog();
+        $u->forceFill(['doctor_id'=>$catalog['doctor']->id])->save();
+        $this->actingAs($u);
+        $a=$this->lifecycleAppointment($u,$catalog,[
+            'fecha_cita'=>now('America/Lima')->toDateString(),
+            'estado_cita'=>'EN_ATENCION','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $a->forceFill(['hora_llegada'=>now(),'hora_atencion'=>now()])->save();
+        return [$u,$a];
+    }
+
+    private function indicate(Appointment $a,string $action='indicate',array $extra=[])
+    {
+        return $this->postJson(route('scheduling.mvp.admission.physician-reevaluation',
+            ['appointmentId'=>$a->id,'action'=>$action]),array_merge([
+                'expected_state'=>'EN_ATENCION','confirmed'=>true,'request_key'=>(string)Str::uuid()
+            ],$extra));
+    }
+
+    private function confirm(Appointment $a)
+    {
+        return $this->postJson(route('scheduling.mvp.admission.confirm-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,'request_key'=>(string)Str::uuid()
+        ]);
+    }
+
+    private function finish(Appointment $a)
+    {
+        return $this->postJson(route('scheduling.mvp.admission.care',$a->id),[
+            'state'=>'ATENDIDO','expected_state'=>'EN_ATENCION','request_key'=>(string)Str::uuid()
+        ]);
+    }
+
+    public function test_physician_indicates_operator_confirms_and_physician_returns_before_finishing():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertOk()->assertJsonPath('care_actions.0','INDICAR_REEVALUACION')
+            ->assertJsonPath('care_actions.1','ATENDIDO');
+        $before=$a->fresh()->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado']);
+        $key=(string)Str::uuid();
+        $this->indicate($a,'indicate',['request_key'=>$key])->assertOk();
+        $this->indicate($a,'indicate',['request_key'=>$key])->assertOk();
+        $this->assertSame(1,$a->events()->where('event_type',AppointmentReevaluationService::MEDICAL_INDICATED)->count());
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.pre_pending',true)
+            ->assertJsonPath('medical_reevaluation.pending',false)
+            ->assertJsonPath('care_actions.0','RETIRAR_REEVALUACION');
+        $this->postJson(route('scheduling.mvp.admission.feed'),[
+            'fecha'=>now('America/Lima')->toDateString()
+        ])->assertOk()->assertJsonPath('kpis.reevaluaciones_prependientes',1)
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
+        $this->finish($a)->assertUnprocessable();
+        $this->indicate($a,'resume')->assertUnprocessable();
+
+        $operator=$this->agendaReader('ADMISION');
+        $operator->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($operator);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertOk()->assertJsonPath('can_confirm_operational_reevaluation',true);
+        $this->confirm($a)->assertOk();
+        $this->confirm($a)->assertUnprocessable(); // A different operation key cannot reconfirm.
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.pre_pending',false)
+            ->assertJsonPath('medical_reevaluation.pending',true)
+            ->assertJsonPath('medical_reevaluation.ready',false);
+        $this->postJson(route('scheduling.mvp.admission.feed'),[
+            'fecha'=>now('America/Lima')->toDateString(),'only_pending_reevaluations'=>true
+        ])->assertOk()->assertJsonPath('kpis.reevaluaciones_pendientes',1);
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('care_actions.0','INICIAR_REEVALUACION');
+        $this->finish($a)->assertUnprocessable();
+        $this->indicate($a,'resume')->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.resumed',true)
+            ->assertJsonPath('care_actions.0','ATENDIDO');
+        $other=$this->agendaReader('ADMINISTRADOR');
+        $other->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($other);
+        $this->finish($a)->assertForbidden();
+        $this->actingAs($physician);
+        $this->finish($a)->assertOk()->assertJsonPath('estado_cita','ATENDIDO');
+        $fresh=$a->fresh();
+        $this->assertNull($fresh->hora_salida); // Admisión will record the physical exit later.
+        $this->assertNotNull($fresh->hora_atendido);
+        $this->assertSame($before,$fresh->only(array_keys($before)));
+        $this->postJson(route('scheduling.mvp.admission.feed'),[
+            'fecha'=>now('America/Lima')->toDateString()
+        ])->assertOk()->assertJsonPath('kpis.reevaluaciones',0)
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
+        $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_operator_confirmation_requires_qualified_role_and_active_medical_indication():void
+    {
+        [$physician,$a]=$this->physician();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->confirm($a)->assertForbidden();
+
+        $operator=$this->agendaReader('COMERCIAL');
+        $this->actingAs($operator);
+        $this->confirm($a)->assertUnprocessable();
+        $this->actingAs($physician);
+        $this->indicate($a)->assertOk();
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $this->assertDatabaseHas('appointment_events',[
+            'appointment_id'=>$a->id,'event_type'=>AppointmentReevaluationService::OPERATIONAL_CONFIRMED
+        ]);
+    }
+
+    public function test_manual_return_with_pending_exam_requires_reason_without_falsifying_results():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $operator=$this->agendaReader('ADMISION');
+        $operator->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'selection']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>0,
+            'procedures'=>['radiography']
+        ])->assertOk();
+        $this->actingAs($operator);
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertUnprocessable();
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid(),'reason'=>'Retorno autorizado con resultado pendiente.'
+        ])->assertOk();
+        $this->assertDatabaseHas('appointment_operational_reviews',[
+            'appointment_id'=>$a->id,'requested_count'=>1,'completed_count'=>0
+        ]);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+    }
+
+    public function test_all_exams_done_cannot_bypass_reception_confirmation():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'selection']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>0,
+            'procedures'=>['laboratory']
+        ])->assertOk();
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'completion']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>1,
+            'procedure'=>'laboratory','completed'=>true
+        ])->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',false)
+            ->assertJsonPath('medical_reevaluation.pre_pending',true);
+        $operator=$this->agendaReader('ADMISION');
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+    }
+
+    public function test_other_administrator_or_different_linked_physician_cannot_sign_julios_indication():void
+    {
+        [$u,$a]=$this->physician();
+        $other=$this->agendaReader('ADMINISTRADOR');
+        $other->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($other);
+        $this->indicate($a)->assertForbidden();
+        $this->actingAs($u);
+        $u->forceFill(['doctor_id'=>999])->save();
+        $this->indicate($a)->assertForbidden();
+        $this->assertDatabaseMissing('appointment_events',[
+            'appointment_id'=>$a->id,'event_type'=>AppointmentReevaluationService::MEDICAL_INDICATED
+        ]);
+    }
+
+    public function test_clinical_indication_fails_closed_without_a_verified_existing_link():void
+    {
+        $u=$this->agendaReader('ADMINISTRADOR');
+        Role::firstOrCreate(['name'=>'MEDICO','guard_name'=>'web']);
+        $u->assignRole('MEDICO');
+        $catalog=$this->createAppointmentCatalog();
+        $a=$this->lifecycleAppointment($u,$catalog,[
+            'estado_cita'=>'EN_ATENCION','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $a->forceFill(['hora_llegada'=>now(),'hora_atencion'=>now()])->save();
+        $this->actingAs($u);
+        $this->indicate($a)->assertForbidden();
+        $this->assertDatabaseMissing('appointment_events',[
+            'appointment_id'=>$a->id,
+            'event_type'=>AppointmentReevaluationService::MEDICAL_INDICATED,
+        ]);
+    }
+
+    public function test_commercial_registers_presential_arrival_without_general_update_permission():void
+    {
+        $creator=$this->agendaReader('ADMINISTRADOR');
+        $catalog=$this->createAppointmentCatalog();
+        $a=$this->lifecycleAppointment($creator,$catalog,[
+            'fecha_cita'=>now('America/Lima')->toDateString(),
+            'estado_cita'=>'CONFIRMADO','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $commercial=$this->agendaReader('COMERCIAL');
+        $this->actingAs($commercial);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertOk()->assertJsonPath('can_register_arrival',true)
+            ->assertJsonPath('care_actions.0','EN_ESPERA');
+        $key=(string)Str::uuid();
+        $arrival=['expected_state'=>'CONFIRMADO','confirmed'=>true,'request_key'=>$key];
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),$arrival)
+            ->assertOk()->assertJsonPath('estado_cita','EN_ESPERA');
+        // Same request can safely be retried without a second mark.
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),$arrival)->assertOk();
+        $this->assertNotNull($a->fresh()->hora_llegada);
+        $this->assertSame('EN_ESPERA',$a->fresh()->estado_cita);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('appointment.presentation.present',true);
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),[
+            'expected_state'=>'EN_ESPERA','confirmed'=>true,'request_key'=>(string)Str::uuid(),
+        ])->assertUnprocessable();
+        $this->assertSame(1,$a->events()->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());
+        $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_commercial_closes_only_unresumed_reevaluation_declined_by_patient_with_reason():void
+    {
+        [$physician,$a]=$this->physician();
+        $before=$a->fresh()->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado']);
+        $this->indicate($a)->assertOk();
+        $operator=$this->agendaReader('COMERCIAL');
+        $this->actingAs($operator);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('can_decline_operational_reevaluation',true);
+        $url=route('scheduling.mvp.admission.decline-reevaluation',$a->id);
+        $this->postJson($url,[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid()
+        ])->assertUnprocessable();
+        $key=(string)Str::uuid();
+        $data=['expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>$key,'reason'=>'Paciente decide no regresar al consultorio.'];
+        $this->postJson($url,$data)->assertOk()->assertJsonPath('estado_cita','ATENDIDO');
+        $this->postJson($url,$data)->assertOk();
+        $a=$a->fresh();
+        $this->assertNotNull($a->hora_atendido);
+        $this->assertNull($a->hora_salida);
+        $this->assertSame($before,$a->only(array_keys($before)));
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.declined',true)
+            ->assertJsonPath('medical_reevaluation.ready',false);
+        $this->assertSame(1,$a->events()->where('event_type',AppointmentReevaluationService::PATIENT_DECLINED)->count());
+        $this->assertSame(0,$a->events()->where('event_type',AppointmentReevaluationService::MEDICAL_RESUMED)->count());
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertConflict();
+        // Existing physical exit is still recorded by Admisión.
+        $reception=$this->agendaReader('ADMISION');
+        $reception->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($reception);
+        $this->postJson(route('scheduling.mvp.admission.care',$a->id),[
+            'state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO',
+            'request_key'=>(string)Str::uuid()
+        ])->assertOk();
+        $this->assertNotNull($a->fresh()->hora_salida);
+        $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_patient_refusal_must_not_override_physician_return_or_other_roles():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.decline-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid(),'reason'=>'El paciente rechaza el regreso.'
+        ])->assertForbidden();
+        $admission=$this->agendaReader('ADMISION');
+        $this->actingAs($admission);
+        $this->confirm($a)->assertOk();
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertForbidden(); // No generic UPDATE permission granted.
+        $admission->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertOk();
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+        $this->actingAs($admission);
+        $this->postJson(route('scheduling.mvp.admission.decline-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid(),'reason'=>'Intento de cierre fuera de momento.'
+        ])->assertUnprocessable();
+        $this->assertSame('EN_ATENCION',$a->fresh()->estado_cita);
+    }
+
+    public function test_only_account_two_redirects_to_admission_at_login():void
+    {
+        // MariaDB can retain an auto-increment counter across rolled-back
+        // test transactions. Persist the explicit fictitious #2 identity
+        // instead of relying on the next sequence value.
+        $julio=User::factory()->make();
+        $julio->forceFill(['id'=>2,'name'=>'GERENTE JULIO QUIROZ',
+            'password'=>Hash::make('Test-Only-Complex-Password')])->save();
+        foreach(['ADMINISTRADOR','MEDICO'] as $role){
+            $julio->assignRole(Role::firstOrCreate(['name'=>$role,'guard_name'=>'web']));
+        }
+        foreach([C::MVP_ACCESS,C::VIEW] as $permission){
+            $julio->givePermissionTo(Permission::findOrCreate($permission,'web'));
+        }
+        $this->assertSame(2,(int)$julio->id);
+        $this->post('/admin/SingIn',['email'=>$julio->email,'password'=>'Test-Only-Complex-Password'])
+            ->assertRedirect(route('scheduling.mvp.admission'));
+        auth()->logout();
+        $other=$this->agendaReader('ADMINISTRADOR');
+        $other->forceFill(['password'=>Hash::make('Another-Test-Only-Password')])->save();
+        $this->post('/admin/SingIn',['email'=>$other->email,'password'=>'Another-Test-Only-Password'])
+            ->assertRedirect(route('admin.dashboard.index'));
+    }
+}

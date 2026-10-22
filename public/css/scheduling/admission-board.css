@@ -6,7 +6,7 @@
 .admission-heading{margin-bottom:12px}.admission-heading h1{font-size:24px;letter-spacing:-.5px;margin:1px 0 3px;color:var(--ad-ink)}.admission-heading p{margin:0;color:var(--ad-muted);font-size:12px}.admission-heading .admission-eyebrow{font-size:9px;letter-spacing:1.3px;font-weight:700;color:var(--ad-brand)}
 .admission-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid var(--ad-line);background:white;color:var(--ad-ink);padding:7px 11px;min-height:34px;border-radius:6px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;line-height:1.3}
 .admission-btn:hover{background:var(--ad-soft);color:var(--ad-ink)}.admission-btn--primary{background:var(--ad-brand);border-color:var(--ad-brand);color:white}.admission-btn--primary:hover{background:#1b696c;color:white}.admission-btn:disabled{opacity:.5;cursor:default}.admission-btn--quiet{border-color:transparent;background:transparent;color:var(--ad-brand)}
-.admission-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:#fff;border:1px solid var(--ad-line);border-radius:9px;margin-bottom:12px;padding:4px}
+.admission-kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#fff;border:1px solid var(--ad-line);border-radius:9px;margin-bottom:12px;padding:4px}
 .admission-kpi{display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;border-right:1px solid var(--ad-line);background:transparent;text-align:left;padding:8px 12px;color:var(--ad-muted);cursor:pointer;border-radius:4px;font:inherit;font-size:11px;min-height:46px}.admission-kpi:last-child{border-right:0}.admission-kpi strong{font-size:24px;line-height:1;color:var(--ad-ink);font-variant-numeric:tabular-nums}.admission-kpi:hover,.admission-kpi.is-active{background:var(--ad-soft)}.admission-kpi[data-review-only] strong{color:#a24612}
 .admission-filters{position:relative;border:1px solid var(--ad-line);border-radius:9px;background:#fff;padding:12px 14px}.admission-filter-primary{display:grid;grid-template-columns:minmax(180px,1.4fr) 150px minmax(180px,1fr) auto;gap:10px;align-items:end}
 .admission-filters label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--ad-muted);font-weight:600;margin:0;min-width:0}.admission-filters input:not([type=checkbox]),.admission-filters select{width:100%;min-width:0;border:1px solid #cbdcde;border-radius:5px;min-height:35px;background:white;color:var(--ad-ink);padding:6px 8px;font:inherit;font-size:12px}
@@ -77,3 +77,10 @@
     outline: 1px solid var(--ad-status-color, var(--ad-brand));
     outline-offset: -1px;
 }
+
+/* Un paciente LISTO para reevaluación se reconoce por naranja, incluso sin abrir detalle. */
+.admission-table tr.is-ready-for-reevaluation{background:#fff0d8}
+.admission-table tr.is-ready-for-reevaluation:hover{background:#ffe6c0}
+.admission-table tr.is-ready-for-reevaluation.is-selected{background:#ffdfad}
+.admission-table tr.is-ready-for-reevaluation td:first-child{border-left-color:#df8020}
+.admission-kpi[data-pending-review-only] strong{color:#9c5814}
