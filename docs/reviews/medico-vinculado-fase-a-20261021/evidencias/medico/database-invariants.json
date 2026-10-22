@@ -1,0 +1,150 @@
+{
+  "users": 5,
+  "initial_users": 5,
+  "medical_user_id": 3,
+  "doctor_id": null,
+  "role_names": [
+    "MEDICO"
+  ],
+  "epoch": 3,
+  "appointments": 1,
+  "payments": 1,
+  "paid": "60.00",
+  "price": "120.00",
+  "balance": "60.00",
+  "state": "ATENDIDO",
+  "arrival": "2026-10-21 14:00:00",
+  "started": "2026-10-21 14:00:00",
+  "finished": "2026-10-21 14:00:00",
+  "departure": null,
+  "medical_events": [
+    {
+      "event_type": "ATENCION_MEDICA_INICIADA",
+      "actor_user_id": 3,
+      "metadata": {
+        "version": 1,
+        "doctor_id": 1,
+        "operation_id": 3,
+        "before": {
+          "estado_cita": "EN_ESPERA",
+          "hora_atencion": null,
+          "hora_atendido": null,
+          "hora_salida": null
+        },
+        "after": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21T14:00:00.000000Z",
+          "hora_atendido": null,
+          "hora_salida": null
+        }
+      }
+    },
+    {
+      "event_type": "REEVALUACION_MEDICA_INDICADA",
+      "actor_user_id": 3,
+      "metadata": {
+        "version": 1,
+        "doctor_id": 1,
+        "operation_id": 4,
+        "source": "MEDICAL_RETURN_SAME_APPOINTMENT_V1",
+        "previous_event_id": null,
+        "before": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        },
+        "after": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        }
+      }
+    },
+    {
+      "event_type": "REEVALUACION_MEDICA_RETIRADA",
+      "actor_user_id": 3,
+      "metadata": {
+        "version": 1,
+        "doctor_id": 1,
+        "operation_id": 7,
+        "source": "MEDICAL_RETURN_SAME_APPOINTMENT_V1",
+        "previous_event_id": 5,
+        "before": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        },
+        "after": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        }
+      }
+    },
+    {
+      "event_type": "REEVALUACION_MEDICA_INDICADA",
+      "actor_user_id": 3,
+      "metadata": {
+        "version": 1,
+        "doctor_id": 1,
+        "operation_id": 9,
+        "source": "MEDICAL_RETURN_SAME_APPOINTMENT_V1",
+        "previous_event_id": 8,
+        "before": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        },
+        "after": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        }
+      }
+    },
+    {
+      "event_type": "ATENCION_MEDICA_FINALIZADA",
+      "actor_user_id": 3,
+      "metadata": {
+        "version": 1,
+        "doctor_id": 1,
+        "operation_id": 12,
+        "before": {
+          "estado_cita": "EN_ATENCION",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": null,
+          "hora_salida": null
+        },
+        "after": {
+          "estado_cita": "ATENDIDO",
+          "hora_atencion": "2026-10-21 14:00:00",
+          "hora_atendido": "2026-10-21T14:00:00.000000Z",
+          "hora_salida": null
+        }
+      }
+    }
+  ],
+  "link_events": 2,
+  "procedures": [
+    {
+      "procedure_key": "laboratory",
+      "selected": 1,
+      "requested_by_user_id": 3,
+      "verified_by_user_id": 1,
+      "completed_at": "2026-10-21 14:00:00"
+    },
+    {
+      "procedure_key": "radiography",
+      "selected": 1,
+      "requested_by_user_id": 3,
+      "verified_by_user_id": 1,
+      "completed_at": "2026-10-21 14:00:00"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "base_commit": "a8bd76d8e10090decfde56c7402be585da723fcf",
+  "before_tests": 1200,
+  "after_tests": 1236,
+  "preserved_baseline_cases": 1200,
+  "missing_baseline_cases": [],
+  "matrix": [
+    {
+      "function": "1. Crear y guardar citas",
+      "before_tests": 105,
+      "after_tests": 116,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Authorization.MedicalAccessCompatibilityTest",
+        "Tests.Feature.Scheduling.LegacyRegistrationParityTest",
+        "Tests.Feature.Scheduling.MvpAllRolesFlowTest",
+        "Tests.Feature.Scheduling.OperationalRegistrationTest",
+        "Tests.Feature.Scheduling.RegularReservationExclusivityTest"
+      ]
+    },
+    {
+      "function": "2. Editar, confirmar, cancelar y reprogramar",
+      "before_tests": 61,
+      "after_tests": 61,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Scheduling.AgendaSafeQuickEditTest",
+        "Tests.Feature.Scheduling.AgendaV2ReversalTest",
+        "Tests.Feature.Scheduling.LegacyGuardsMvpFlowTest",
+        "Tests.Feature.Scheduling.RegularReservationExclusivityTest",
+        "Tests.Feature.Scheduling.RescheduleVisualHistoryTest"
+      ]
+    },
+    {
+      "function": "3. Disponibilidad, ocupación y horarios",
+      "before_tests": 148,
+      "after_tests": 148,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Scheduling.DoctorAvailabilityEndpointTest",
+        "Tests.Feature.Scheduling.DoctorAvailabilityEngineTest",
+        "Tests.Feature.Scheduling.DoctorScheduleOverlapAuditTest",
+        "Tests.Feature.Scheduling.DoctorScheduleSafetyTest",
+        "Tests.Feature.Scheduling.DoctorScheduleWorkspaceTest",
+        "Tests.Feature.Scheduling.LegacyScheduleContractTest",
+        "Tests.Feature.Scheduling.RegularReservationExclusivityTest",
+        "Tests.Feature.Scheduling.ScheduleCalendarRangeAndDurationTest",
+        "Tests.Feature.Scheduling.ScheduleConfigurationTest",
+        "Tests.Feature.Scheduling.ScheduleOverlapIntegrityTest",
+        "Tests.Feature.Security.ScheduleAuthorizationTest"
+      ]
+    },
+    {
+      "function": "4. Crear, editar y desactivar médicos",
+      "before_tests": 17,
+      "after_tests": 19,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Admin.DoctorCatalogIdentityCompatibilityTest",
+        "Tests.Feature.Admin.DoctorDeactivationTest",
+        "Tests.Feature.Catalog.ActiveDoctorServiceCatalogTest",
+        "Tests.Feature.Sales.DoctorServicePricingTest"
+      ]
+    },
+    {
+      "function": "5. Crear, editar, activar y desactivar usuarios",
+      "before_tests": 21,
+      "after_tests": 40,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Auth.WorkerAccessTest",
+        "Tests.Feature.Authorization.MedicalAccessCompatibilityTest",
+        "Tests.Feature.Authorization.UserDoctorLinkTest",
+        "Tests.Feature.Security.UserEditorSessionTest"
+      ]
+    },
+    {
+      "function": "6. Roles y permisos existentes",
+      "before_tests": 56,
+      "after_tests": 56,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Scheduling.MvpGuardNormalizationTest",
+        "Tests.Feature.Scheduling.MvpPermissionBootstrapTest",
+        "Tests.Feature.Scheduling.SchedulingMvpFoundationTest",
+        "Tests.Feature.Security.MvpRoleEditorTest",
+        "Tests.Feature.Security.ProvisionalRoleMatrixTest"
+      ]
+    },
+    {
+      "function": "7. Perfiles actuales y visibilidad",
+      "before_tests": 38,
+      "after_tests": 64,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Authorization.MedicalAccessCompatibilityTest",
+        "Tests.Feature.Scheduling.AppointmentVisibilityTest",
+        "Tests.Feature.Scheduling.MvpAllRolesFlowTest",
+        "Tests.Feature.Scheduling.VerifiedMedicalCareTest",
+        "Tests.Feature.Security.ProvisionalRoleMatrixTest"
+      ]
+    },
+    {
+      "function": "8. Adelantos, descuentos, pagos y Caja",
+      "before_tests": 100,
+      "after_tests": 100,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Baseline.CashierSalesAndPaymentsSmokeTest",
+        "Tests.Feature.Sales.AppointmentSalesPrivacyTest",
+        "Tests.Feature.Sales.BankPaymentIntegrityTest",
+        "Tests.Feature.Sales.BankPaymentSchemaTest",
+        "Tests.Feature.Sales.DoctorServicePricingTest",
+        "Tests.Feature.Scheduling.AgendaV2PaymentsTest",
+        "Tests.Feature.Scheduling.AppointmentDiscountRegistrationTest",
+        "Tests.Feature.Scheduling.AppointmentEconomicEditTest",
+        "Tests.Feature.Scheduling.AppointmentPaymentProofsTest",
+        "Tests.Feature.Scheduling.PilotAppointmentPaymentTest",
+        "Tests.Unit.Scheduling.ManagementPaymentOperationNumbersTest"
+      ]
+    },
+    {
+      "function": "9. Llegada, procedimientos y reevaluación",
+      "before_tests": 41,
+      "after_tests": 56,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Scheduling.AdmissionBoardTest",
+        "Tests.Feature.Scheduling.ManualReevaluationTest",
+        "Tests.Feature.Scheduling.MedicalIdentityAndReevaluationProjectionTest",
+        "Tests.Feature.Scheduling.VerifiedMedicalCareTest"
+      ]
+    },
+    {
+      "function": "10. Históricos y usuarios sin vínculo",
+      "before_tests": 106,
+      "after_tests": 127,
+      "result": "SIN REGRESIÓN DETECTADA",
+      "classes": [
+        "Tests.Feature.Admin.DoctorCatalogIdentityCompatibilityTest",
+        "Tests.Feature.Auth.WorkerAccessTest",
+        "Tests.Feature.Authorization.MedicalAccessCompatibilityTest",
+        "Tests.Feature.Authorization.UserDoctorLinkTest",
+        "Tests.Feature.Legacy.ParentDeletionCharacterizationTest",
+        "Tests.Feature.Scheduling.LegacyGuardsMvpFlowTest",
+        "Tests.Feature.Scheduling.LegacyRegistrationParityTest",
+        "Tests.Feature.Scheduling.LegacyScheduleContractTest"
+      ]
+    }
+  ]
+}

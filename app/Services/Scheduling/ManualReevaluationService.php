@@ -24,9 +24,17 @@ final class ManualReevaluationService
                 || ($actor->can(C::UPDATE) && $actor->hasAnyRole(['ADMINISTRADOR', 'ADMISION'])));
     }
 
-    public function eligible(Appointment $a): bool
+    public function eligible(Appointment $a, ?User $actor=null): bool
     {
-        return $a->estado_cita === 'ATENDIDO' && in_array($a->estado_agenda, ['LEGADO', 'CONFIRMADA'], true);
+        if(!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true))return false;
+        // Preserve the historical direct-return contract, including its existing actors.
+        if($a->estado_cita==='ATENDIDO')return true;
+        // Same-episode medical return: only Admisión/admin, with a real medical indication.
+        // Pending procedures must use the established partial-send rules, never this shortcut.
+        return $actor && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) && $actor->can(C::UPDATE)
+            && $a->estado_cita==='EN_ATENCION' && !$a->hora_atendido && OperationalProcedureService::active($a)
+            && AppointmentReevaluationService::indication($a)['indicated']
+            && !DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->exists();
     }
 
     /** One query for the full filtered set; order by event ID, even within one second. */
@@ -71,7 +79,8 @@ final class ManualReevaluationService
             Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             abort_if((int) $a->doctor_id !== (int) $original->doctor_id, 409, 'La cita cambió. Actualiza antes de continuar.');
-            abort_unless($this->eligible($a), 422, 'Solo se permite reevaluación manual en una cita ATENDIDO con agenda confirmada o heredada.');
+            AppointmentReevaluationService::loadIndications(collect([$a]));
+            abort_unless($this->eligible($a,$actor), 422, 'La reevaluación manual requiere una atención finalizada o una indicación médica activa sin procedimientos pendientes.');
             // Current read after the appointment lock also works at MySQL REPEATABLE READ.
             $event = $a->events()->whereIn('event_type', [self::MARKED, self::CLEARED])->orderByDesc('id')->lockForUpdate()->first();
             $a->setRelation('manualReevaluationEvent', $event);

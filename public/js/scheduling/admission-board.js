@@ -183,8 +183,8 @@
             if(busy||confirming||!detail?.reevaluation?.direct?.can_update||!window.Swal)return;
             const id=detail.appointment.id,current=detail.reevaluation.direct;
             confirming=true;let answer;
-            try{answer=await window.Swal.fire({title:current.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa',
-                text:current.marked?'Solo se desactiva esta marca. Otros orígenes válidos seguirán activos.':'Retorno al médico dentro de la misma cita ATENDIDO. Se registrará quién lo autoriza, sin crear cita ni cobro.',
+            try{answer=await window.Swal.fire({title:current.marked?'Retirar marca manual directa':detail.appointment.estado_cita==='EN_ATENCION'?'Marcar listo para reevaluación':'Marcar reevaluación manual directa',
+                text:current.marked?'Solo se desactiva esta marca. Otros orígenes válidos seguirán activos.':detail.appointment.estado_cita==='EN_ATENCION'?'Marcar listo para el retorno indicado por el médico, dentro de la misma atención. Se registrará tu autorización sin finalizar la atención ni crear cita o cobro.':'Retorno al médico dentro de la misma cita ATENDIDO. Se registrará quién lo autoriza, sin crear cita ni cobro.',
                 showCancelButton:true,confirmButtonText:'Confirmar marca',cancelButtonText:'Volver',focusCancel:true});}finally{confirming=false;}
             if(!answer?.isConfirmed||selected!==id)return;
             const body={marked:!current.marked,expected_marked:current.marked,expected_version:current.version};
@@ -205,7 +205,7 @@
                 const box=node('div',null,'admission-direct-return');
                 box.appendChild(node('strong',direct.active?'Origen: marca manual directa de cita ATENDIDO':direct.marked?'Marca directa conservada · inactiva':'Retorno manual directo de cita ATENDIDO'));
                 if(direct.actor)box.appendChild(node('small',(direct.marked?'Autorizó: ':'Último cambio: ')+direct.actor.name+' · '+new Date(direct.at).toLocaleString('es-PE',{timeZone:'America/Lima'})));
-                if(direct.can_update){const button=node('button',direct.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa','admission-btn');button.type='button';button.dataset.directReevaluation='true';button.addEventListener('click',toggleDirect);box.appendChild(button);}area.appendChild(box);
+                if(direct.can_update){const button=node('button',direct.marked?'Retirar marca manual directa':payload.appointment.estado_cita==='EN_ATENCION'?'Marcar listo para reevaluación':'Marcar reevaluación manual directa','admission-btn');button.type='button';button.dataset.directReevaluation='true';button.addEventListener('click',toggleDirect);box.appendChild(button);}area.appendChild(box);
             }
             if(requested){const meter=node('progress',null,'admission-procedure-progress');meter.max=requested;meter.value=completed;meter.setAttribute('aria-label','Progreso de procedimientos');area.appendChild(meter);}
             let explanation=!requested?'El administrador todavía no ha confirmado procedimientos para esta cita.':completed+' de '+requested+' procedimientos realizados.';

@@ -29,7 +29,8 @@ class MvpPermissionBootstrapTest extends TestCase
         Role::findOrCreate('INTEGRACION','api'); $before=$this->snapshot();
         $this->assertSame(0,Artisan::call('agenda:mvp-permissions'));
         $plan=json_decode(Artisan::output(),true); $this->assertTrue($plan['read_only']);
-        $this->assertCount(7,$plan['roles']); $this->assertEquals($before,$this->snapshot());
+        $this->assertCount(8,$plan['roles']);
+        $medical=collect($plan['roles'])->firstWhere('name','MEDICO');$this->assertSame([],$medical['additions']); $this->assertEquals($before,$this->snapshot());
         $this->assertSame([],Storage::disk('local')->allFiles());
     }
     public function test_apply_is_additive_idempotent_preserves_users_money_and_existing_extraordinary_grants(): void

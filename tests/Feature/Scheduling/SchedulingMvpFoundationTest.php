@@ -238,8 +238,10 @@ class SchedulingMvpFoundationTest extends TestCase
 
         $this->assertSame($capabilities, array_values(array_unique($capabilities)));
         $this->assertFalse(Role::query()->where('name', 'COMERCIAL')->exists());
-        $this->assertSame(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage','appointment.payment.correction.edit','appointment.pricing.adjust.edit'],Permission::query()->orderBy('id')->pluck('name')->all());
-        $this->assertDatabaseCount('role_has_permissions',0);
+        $this->assertSame(array_merge(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage','appointment.payment.correction.edit','appointment.pricing.adjust.edit'],
+            \App\Support\Scheduling\ClinicalCapability::all()),Permission::query()->orderBy('id')->pluck('name')->all());
+        $this->assertSame(['MEDICO'],Role::pluck('name')->all());
+        $this->assertDatabaseCount('role_has_permissions',count(\App\Support\Scheduling\ClinicalCapability::all()));
         $this->assertDatabaseCount('model_has_permissions',0);
     }
 

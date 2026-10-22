@@ -1,0 +1,34 @@
+[
+  {
+    "file": "app/Services/Scheduling/MedicalBoardService.php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Services/Scheduling/MedicalCareService.php",
+    "exit_code": 0
+  },
+  {
+    "file": "app/Support/Scheduling/ClinicalAccess.php",
+    "exit_code": 0
+  },
+  {
+    "file": "public/js/scheduling/medical-board.js",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Authorization/MedicalAccessCompatibilityTest.php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/Feature/Scheduling/VerifiedMedicalCareTest.php",
+    "exit_code": 0
+  },
+  {
+    "file": "tests/JavaScript/medical-actions.test.js",
+    "exit_code": 0
+  },
+  {
+    "file": "tools/qa/browser-verified-medical-care.cjs",
+    "exit_code": 0
+  }
+]

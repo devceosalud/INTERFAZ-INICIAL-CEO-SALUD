@@ -1,0 +1,81 @@
+{
+  "verified_source_files": 821,
+  "changed_after_tests": [],
+  "protected_files": [
+    {
+      "path": "app/Services/Scheduling/RescheduleAppointmentService.php",
+      "sha256": "5918e3aad7532d696289079e43e8bb0853951c34e949003a08e1e546d02063a7",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Services/Scheduling/RescheduleHistory.php",
+      "sha256": "53ed4f99a982efc9d82fc2d6392b71314419954769551f0bab74afbfc1899dcd",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "public/js/scheduling/agenda.js",
+      "sha256": "d877047d2a6c2a8004d40881cc722e7de61eea184b93e4fd0a432d6cdc2e5111",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "public/js/scheduling/agenda-day-grid.js",
+      "sha256": "040199d44122fc7ac584bab1aab12d202597abe95b64aba7cc6255aabcaef485",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "public/js/scheduling/agenda-reschedule-history.js",
+      "sha256": "901dfa0e2b7821268abec88ab57d13f90cb916457b4d29011f19ce5496bd3fa4",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "resources/views/scheduling/admission/index.blade.php",
+      "sha256": "9c445fae896fbff8379d0225bcaaa38efbf0f2174aeec0ced1749c1c85b5c279",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Models/Appointment.php",
+      "sha256": "dfb4fc3937763cc352f6c7432185844ea726238a10079061639c66886a09e715",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Services/Scheduling/ReservationPaymentService.php",
+      "sha256": "b2928c797b87499846cb3d2ac4fa71bc9fac8f7426dbe2b94f93fb83a6e61b39",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Services/Scheduling/AppointmentDiscount.php",
+      "sha256": "8b7001a1cd8ba9b7668b6df3d7f67f36ec4ab8b879370c8c36f802d6f4252cb6",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Http/Livewire/Sales.php",
+      "sha256": "1ff54cc2ff381b6a7692ab651c24bb39b62541dafdaaa7536e3626503186b1df",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "app/Http/Controllers/admin/master/doctor/DoctorController.php",
+      "sha256": "5dd9eb74b5bb88f64442e23230a6e1800b43fd1c3799e16fb1b7b67d57b5b416",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "composer.json",
+      "sha256": "46a3f42299bd2f147269fe26935194343fa6b08b1194ca5b8ec0695f29859caa",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "composer.lock",
+      "sha256": "85435eb1bd0f0f28f4c6df4e2ae0cd661485516d7968d326aa098ac0feb747f0",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "d2b91e8f36c97c12fd57299cb572da4ee56ca57382abcc3b1c7409de45711587",
+      "unchanged_from_base": true
+    },
+    {
+      "path": "phpunit.xml",
+      "sha256": "5bd418d725e531ee8a09fa5245c57137c24fb533a9b6a2511555c1234aa77067",
+      "unchanged_from_base": true
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+F.F..                                                               5 / 5 (100%)
+
+Time: 00:15.750, Memory: 60.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\Scheduling\VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set "administrator_role_only" ('ADMINISTRADOR', false)
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\tests\Feature\Scheduling\VerifiedMedicalCareTest.php:265
+
+2) Tests\Feature\Scheduling\VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set "admission_role_only" ('ADMISION', false)
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\tests\Feature\Scheduling\VerifiedMedicalCareTest.php:265
+
+FAILURES!
+Tests: 5, Assertions: 54, Failures: 2.
