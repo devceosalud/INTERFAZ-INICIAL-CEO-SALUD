@@ -71,6 +71,12 @@ class AdmissionCareService
             $a = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             abort_if((int)$a->doctor_id !== (int)$original->doctor_id || $a->estado_cita !== $data['expected_state'],409,'La cita cambió. Actualiza antes de continuar.');
             abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
+            if($data['state']==='ATENDIDO'){
+                $a->loadMissing('operationalReview');
+                app(ManualReevaluationService::class)->load(collect([$a]));
+                abort_if(AppointmentReevaluationService::pending($a),422,
+                    'No puedes finalizar: la reevaluación médica continúa pendiente.');
+            }
             abort_unless(in_array($data['state'],app(AdmissionBoardService::class)->careActions($a,$actor),true),422,'La transición no está disponible. Confirma la reserva en Agenda antes de registrar atención.');
             if ($data['state'] === 'SALIDA_REGISTRADA') {
                 $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
