@@ -20,7 +20,7 @@ class AppointmentEconomicEditTest extends TestCase
     {
         parent::setUp();foreach($this->rescheduleVisualFixture() as $key=>$value)$this->{$key}=$value;
         $this->catalog['rate']->update(['tipo_tarifa'=>'MONTO_FIJO']);
-        $this->actor->syncRoles([Role::findOrCreate('COMERCIAL','web')]);
+        $this->actor->syncRoles([Role::findOrCreate('ADMINISTRADOR','web')]);
         $this->actor->givePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);$this->actingAs($this->actor);
     }
     protected function tearDown():void {Carbon::setTestNow();parent::tearDown();}
@@ -98,12 +98,31 @@ class AppointmentEconomicEditTest extends TestCase
         foreach(['appointment.payment.correction.request','appointment.payment.correction.approve'] as $name)$this->actor->givePermissionTo(Permission::findOrCreate($name,'web'));
         $this->postJson($this->url('/review'),$this->draft())->assertForbidden();$this->assertSame(0,$this->events()->count());
     }
-    public function test_commercial_direct_editor_needs_no_second_approver_or_create_payment_permission():void
+    public function test_administrator_direct_editor_needs_no_second_approver_or_create_payment_permission():void
     {
         $this->actor->revokePermissionTo([C::CREATE,C::SUBMIT_PAYMENT,C::RESCHEDULE]);
         $this->submit($this->draft())->assertOk();$this->assertSame($this->actor->id,$this->events()->firstOrFail()->actor_user_id);
         $this->assertDatabaseCount('payments',1);$this->assertEquals(70,Payment::sum('monto'));
     }
+
+    public static function unauthorizedEconomicRoles():array
+    {
+        return ['COMERCIAL'=>['COMERCIAL'],'ADMISION'=>['ADMISION'],'RECEPCION'=>['RECEPCION']];
+    }
+
+    /** @dataProvider unauthorizedEconomicRoles */
+    public function test_non_administrator_cannot_edit_even_with_both_direct_permissions(string $role):void
+    {
+        $this->actor->syncRoles([Role::findOrCreate($role,'web')]);
+        $this->assertTrue($this->actor->fresh()->can(C::EDIT_PAYMENT));
+        $this->assertTrue($this->actor->fresh()->can(C::EDIT_PRICING));
+        $this->postJson($this->url('/review'),$this->draft())->assertForbidden();
+        $this->postJson($this->url('/review'),$this->pricing())->assertForbidden();
+        $this->putJson($this->url(),$this->draft())->assertForbidden();
+        $this->assertDatabaseCount('payments',1);
+        $this->assertSame(0,$this->events()->count());
+    }
+
     public function test_idempotent_double_send_payload_collision_and_concurrent_review():void
     {
         $d=$this->reviewed($this->draft());$other=$this->reviewed($this->pricing());
@@ -157,17 +176,22 @@ class AppointmentEconomicEditTest extends TestCase
         app(\App\Services\Scheduling\ReservationPaymentService::class)->submit($this->a->id,$this->actor,['request_key'=>(string)Str::uuid(),'payment'=>['amount'=>'40','method'=>'EFECTIVO']]);
         $this->assertEquals(100,Payment::sum('monto'));$this->assertEquals(0,$this->a->fresh()->saldo_pendiente);$this->assertEquals('PAGADO',$this->a->fresh()->estado_pagado);
     }
-    public function test_permissions_migration_is_idempotent_and_role_editor_can_assign_to_commercial():void
+    public function test_permissions_migration_is_idempotent_but_commercial_grants_do_not_bypass_admin_only_editor():void
     {
         $migration=require base_path('database/migrations/2026_10_21_200000_define_direct_appointment_economic_permissions.php');
         $roles=DB::table('role_has_permissions')->get()->toJson();$migration->up();$migration->up();$migration->down();
         $this->assertSame($roles,DB::table('role_has_permissions')->get()->toJson());
         $this->assertSame(2,Permission::whereIn('name',[C::EDIT_PAYMENT,C::EDIT_PRICING])->count());
-        $this->actor->revokePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);$role=Role::findByName('COMERCIAL','web');$admin=$this->agendaReader('ADMINISTRADOR');$this->actingAs($admin);
+        $this->actor->revokePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);$role=Role::findOrCreate('COMERCIAL','web');$admin=$this->agendaReader('ADMINISTRADOR');$this->actingAs($admin);
         $this->get(route('admin.roles.edit',$role))->assertOk()->assertSee('Corregir adelantos registrados')->assertSee('Modificar economía de citas existentes');
         $this->put(route('admin.permissions.update',$role),['name'=>'COMERCIAL','permission_revision'=>\App\Http\Controllers\admin\master\role\RoleController::revision($role),
             'permissions_present'=>'1','permissions'=>Permission::whereIn('name',[C::EDIT_PAYMENT,C::EDIT_PRICING])->pluck('id')->all()])->assertRedirect();
+        // Assign the configured COMERCIAL role before testing its effective grants.
+        $this->actor->syncRoles([Role::findByName('COMERCIAL','web')]);
         $this->assertTrue($this->actor->fresh()->can(C::EDIT_PAYMENT));$this->assertTrue($this->actor->fresh()->can(C::EDIT_PRICING));
+        // Even with inherited permission grants, this role must never edit the economics.
+        $this->actingAs($this->actor);
+        $this->postJson($this->url('/review'),$this->draft())->assertForbidden();
         $this->assertFalse(Schema::hasTable('appointment_economic_corrections'));
     }
     public function test_rate_is_catalog_based_and_changed_or_expired_rule_invalidates_review():void
@@ -200,7 +224,7 @@ class AppointmentEconomicEditTest extends TestCase
     }
     public function test_hidden_appointment_is_not_discoverable_and_review_signature_is_actor_bound():void
     {
-        $payload=$this->reviewed($this->draft());$other=$this->agendaReader('COMERCIAL');$other->givePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);
+        $payload=$this->reviewed($this->draft());$other=$this->agendaReader('ADMINISTRADOR');$other->givePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);
         $this->actingAs($other);$this->putJson($this->url(),$payload)->assertConflict();
         $this->a->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$this->actor->id]);
         $this->getJson($this->url())->assertNotFound();$this->postJson($this->url('/review'),$this->draft())->assertNotFound();$this->assertSame(0,$this->events()->count());

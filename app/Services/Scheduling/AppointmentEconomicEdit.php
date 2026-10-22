@@ -16,7 +16,9 @@ final class AppointmentEconomicEdit
     public static function allowed(User $actor,string $kind):bool
     {
         $actor=$actor->fresh();
-        return $actor && $actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW)
+        // The permission alone is not sufficient: economic corrections belong only to ADMINISTRADOR.
+        return $actor && $actor->is_active && $actor->hasRole('ADMINISTRADOR')
+            && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW)
             && $actor->can($kind==='PAYMENT'?C::EDIT_PAYMENT:C::EDIT_PRICING);
     }
 
