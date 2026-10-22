@@ -398,7 +398,11 @@
                 inputValidator:fallback?(value=>String(value||'').trim().length<3?'Indica el motivo de la contingencia.':undefined):undefined,
                 confirmButtonText:fallback?'Confirmar contingencia':state==='SALIDA_REGISTRADA'?'Confirmar salida':'Confirmar',cancelButtonText:'Cancelar'});}finally{confirming=false;}if(!result.isConfirmed||busy||selected!==id||detail?.appointment.estado_cita!==expected)return;
             busy=true;const buttons=Array.from($('detail').querySelectorAll('.admission-care-actions button'));buttons.forEach(b=>b.disabled=true);$('detail').setAttribute('aria-busy','true');notice('Registrando '+(state==='SALIDA_REGISTRADA'?'salida física':'atención')+'…');
-            try{const result=await request(board.dataset.base+'/'+id+'/care',{method:'POST',body:JSON.stringify({state,expected_state:expected,request_key:crypto.randomUUID(),...(fallback?{motivo:String(result.value).trim(),confirmed:true}:{})})});
+            const commercialArrival=state==='EN_ESPERA'&&Boolean(detail.commercial_arrival_url);
+            const careUrl=commercialArrival?detail.commercial_arrival_url:board.dataset.base+'/'+id+'/care';
+            const data=commercialArrival?{expected_state:expected,request_key:crypto.randomUUID()}
+                :{state,expected_state:expected,request_key:crypto.randomUUID(),...(fallback?{motivo:String(result.value).trim(),confirmed:true}:{})};
+            try{const result=await request(careUrl,{method:'POST',body:JSON.stringify(data)});
                 if(result.detail){const wasReady=detail.appointment.reevaluation?.ready;detail=result.detail;renderDetail(detail);
                     if(currentFeed){const row=currentFeed.rows.find(r=>r.id===id);if(row)Object.assign(row,detail.appointment);if(wasReady&&!detail.appointment.reevaluation?.ready)currentFeed.kpis.reevaluaciones=Math.max(0,currentFeed.kpis.reevaluaciones-1);renderRows(currentFeed);revision='';}
                     notice('Salida registrada. Se conserva el estado ATENDIDO y sus pagos.');
