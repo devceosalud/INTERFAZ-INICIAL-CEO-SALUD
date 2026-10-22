@@ -18,7 +18,7 @@
                 <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
-                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
+                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
                     <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
                 @endforeach
             </section>
