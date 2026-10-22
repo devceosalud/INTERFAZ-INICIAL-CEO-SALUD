@@ -97,12 +97,17 @@
                                                 {!! Form::radio('role', $role->id, $user->hasRole($role->id), ['class' => 'mr-1']) !!}
                                                 {{ $role->name }}
                                             </label>
-                                            @if ($role->name === 'MEDICO' && $user->roles->contains(fn($current) => $current->name !== 'MEDICO'))
-                                                <p id="medical-role-replacement-warning" class="alert alert-warning text-dark mt-2" role="note">
-                                                    Asignar MEDICO reemplazará los roles actuales:
+                                            @if ($role->name === 'MEDICO' && $user->hasRole('ADMINISTRADOR'))
+                                                <p id="medical-role-additive-note" class="alert alert-info text-dark mt-2" role="note">
+                                                    Agregar MEDICO conserva ADMINISTRADOR y sus permisos existentes.
+                                                    El acceso médico solo funcionará tras vincular y verificar su identidad en Vinculación médica.
+                                                    Otro administrador debe aprobar el cambio; se invalidarán las sesiones de esta cuenta.
+                                                </p>
+                                            @elseif ($role->name === 'MEDICO' && $user->roles->contains(fn($current) => $current->name !== 'MEDICO'))
+                                                <p id="medical-role-incompatible-warning" class="alert alert-warning text-dark mt-2" role="note">
+                                                    Esta cuenta tiene roles distintos de ADMINISTRADOR o MEDICO:
                                                     <strong>{{ $user->roles->pluck('name')->implode(', ') }}</strong>.
-                                                    Revisa si corresponde utilizar una cuenta clínica personal separada para conservar los accesos administrativos de esta cuenta.
-                                                    No se cambia ningún rol hasta que confirmes la asignación con el botón del formulario.
+                                                    No se quitarán esos roles automáticamente para agregar MEDICO. Verifica los accesos antes de continuar.
                                                 </p>
                                             @endif
                                         </div>
