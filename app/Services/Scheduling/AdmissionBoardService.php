@@ -171,9 +171,21 @@ class AdmissionBoardService
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         if (!$actor->can(C::UPDATE) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if($a->estado_cita==='EN_ATENCION'){
+            // The two decisions are on the existing Admission panel, never a
+            // second medical module. Non-physicians cannot indicate or withdraw.
+            if(AppointmentReevaluationService::pending($a))
+                return AppointmentReevaluationService::physicianCanAct($actor,$a)
+                    ? ['RETIRAR_REEVALUACION'] : [];
+            if(!AppointmentReevaluationService::indicated($a)
+                && AppointmentReevaluationService::physicianCanAct($actor,$a))
+                return ['INDICAR_REEVALUACION','ATENDIDO'];
+            return ['ATENDIDO'];
+        }
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],
-            'EN_ESPERA'=>['LLAMANDO','EN_ATENCION'], 'LLAMANDO'=>['EN_ATENCION'], 'EN_ATENCION'=>['ATENDIDO'], 'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
+            'EN_ESPERA'=>['LLAMANDO','EN_ATENCION'], 'LLAMANDO'=>['EN_ATENCION'],
+            'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
         };
     }
 }
