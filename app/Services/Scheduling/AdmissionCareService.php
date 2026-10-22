@@ -76,6 +76,11 @@ class AdmissionCareService
                 app(ManualReevaluationService::class)->load(collect([$a]));
                 abort_if(AppointmentReevaluationService::pending($a),422,
                     'No puedes finalizar: la reevaluación médica continúa pendiente.');
+                // Once a physician has signed an indication, closing that
+                // clinical episode requires the same linked physician.
+                abort_if(AppointmentReevaluationService::indicated($a)
+                    && !AppointmentReevaluationService::physicianCanAct($actor,$a),403,
+                    'La atención con reevaluación debe finalizarla el médico responsable.');
             }
             abort_unless(in_array($data['state'],app(AdmissionBoardService::class)->careActions($a,$actor),true),422,'La transición no está disponible. Confirma la reserva en Agenda antes de registrar atención.');
             if ($data['state'] === 'SALIDA_REGISTRADA') {
