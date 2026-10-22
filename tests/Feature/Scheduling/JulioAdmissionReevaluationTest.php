@@ -109,6 +109,7 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->indicate($a,'resume')->assertUnprocessable();
 
         $operator=$this->agendaReader('ADMISION');
+        $operator->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
         $this->actingAs($operator);
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
             ->assertOk()->assertJsonPath('can_confirm_operational_reevaluation',true);
