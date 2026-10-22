@@ -30,6 +30,7 @@
                     <button type="submit" class="admission-btn admission-btn--primary">Aplicar filtros</button>
                 </div>
                 <div class="admission-filter-secondary">
+                    <label class="admission-review-filter"><input type="checkbox" name="only_pending_reevaluations" value="1" id="admission-only-pending-reviews"> Pendientes de reevaluación</label>
                     <label class="admission-review-filter"><input type="checkbox" name="only_reevaluations" value="1" id="admission-only-reviews"> Solo listos para reevaluación</label>
                     <div class="admission-filter-actions"><button type="button" id="admission-today" class="admission-btn admission-btn--quiet" data-today="{{ $today }}">Hoy</button><button type="button" id="admission-reset" class="admission-btn admission-btn--quiet">Restablecer</button></div>
                 </div>
