@@ -126,10 +126,10 @@ class AdmissionBoardTest extends TestCase
             $reader=$this->agendaReader($role);$this->actingAs($reader);
             $this->get(route('scheduling.mvp.admission'))->assertOk();$this->feed()->assertOk();
             $a=$this->lifecycleAppointment($reader,$this->catalog);
-            $this->care($a,'EN_ESPERA')->assertStatus($role==='COMERCIAL'?200:403);
+            $this->care($a,'EN_ESPERA')->assertForbidden();
             $reader->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
             $another=$this->lifecycleAppointment($reader,$this->catalog);
-            $this->care($another,'EN_ESPERA')->assertStatus(in_array($role,['ADMINISTRADOR','ADMISION','COMERCIAL'],true)?200:403);
+            $this->care($another,'EN_ESPERA')->assertStatus(in_array($role,['ADMINISTRADOR','ADMISION'],true)?200:403);
         }
     }
     public function test_missing_capabilities_block_page_feed_detail_and_care_without_writes():void
