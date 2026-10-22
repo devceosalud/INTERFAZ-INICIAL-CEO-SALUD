@@ -172,6 +172,67 @@ class JulioAdmissionReevaluationTest extends TestCase
         ]);
     }
 
+    public function test_manual_return_with_pending_exam_requires_reason_without_falsifying_results():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $operator=$this->agendaReader('ADMISION');
+        $operator->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'selection']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>0,
+            'procedures'=>['radiography']
+        ])->assertOk();
+        $this->actingAs($operator);
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertUnprocessable();
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid(),'reason'=>'Retorno autorizado con resultado pendiente.'
+        ])->assertOk();
+        $this->assertDatabaseHas('appointment_operational_reviews',[
+            'appointment_id'=>$a->id,'requested_count'=>1,'completed_count'=>0
+        ]);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+    }
+
+    public function test_all_exams_done_cannot_bypass_reception_confirmation():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'selection']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>0,
+            'procedures'=>['laboratory']
+        ])->assertOk();
+        $this->postJson(route('scheduling.mvp.admission.procedures',[
+            'appointmentId'=>$a->id,'action'=>'completion']),[
+            'request_key'=>(string)Str::uuid(),'expected_version'=>1,
+            'procedure'=>'laboratory','completed'=>true
+        ])->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',false)
+            ->assertJsonPath('medical_reevaluation.pre_pending',true);
+        $operator=$this->agendaReader('ADMISION');
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+    }
+
     public function test_other_administrator_or_different_linked_physician_cannot_sign_julios_indication():void
     {
         [$u,$a]=$this->physician();
