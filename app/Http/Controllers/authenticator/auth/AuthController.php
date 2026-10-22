@@ -32,6 +32,11 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('ceosalud_auth_version',(int)Auth::user()->auth_version);
 
+        // Navigation preference for a verified existing account; never grants access.
+        if (\App\Support\Authorization\AdmissionHomeRedirect::applies(Auth::user())) {
+            return redirect()->route('scheduling.mvp.admission');
+        }
+
         if(Auth::user()->hasRole('MEDICO') && !Auth::user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)){
             return redirect()->route('scheduling.medical.index');
         }
