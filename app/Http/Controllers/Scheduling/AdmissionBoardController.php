@@ -71,10 +71,10 @@ class AdmissionBoardController extends Controller
 
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
-        abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
+        abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','confirmed','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
         $data = $r->validate(['request_key'=>'required|uuid','expected_state'=>['required',Rule::in(AdmissionStatus::STATES)],
             'state'=>'required|in:EN_ESPERA,LLAMANDO,EN_ATENCION,ATENDIDO,SALIDA_REGISTRADA',
-            'motivo'=>'nullable|string|max:2000']);
+            'motivo'=>'nullable|string|max:2000','confirmed'=>'sometimes|accepted']);
         $a = $service->transition($appointmentId,$r->user(),$data);
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda]+($data['state']==='SALIDA_REGISTRADA' ? ['detail'=>app(AdmissionBoardService::class)->detail($a->id,$r->user())] : []))
             ->header('Cache-Control','private, no-store');
