@@ -82,6 +82,14 @@ class AdmissionCareService
                     && !AppointmentReevaluationService::physicianCanAct($actor,$a),403,
                     'La atención con reevaluación debe finalizarla el médico responsable.');
             }
+            // A linked MEDICO must use their own account for clinical start/end.
+            // Doctors without an account retain the pre-existing operational
+            // contingency; no new role or permission is granted.
+            if(in_array($data['state'],['EN_ATENCION','ATENDIDO'],true)
+                && AppointmentReevaluationService::linkedPhysicianExists($a)){
+                abort_unless(AppointmentReevaluationService::physicianCanAct($actor,$a),403,
+                    'La atención corresponde a la cuenta vinculada del médico responsable.');
+            }
             abort_unless(in_array($data['state'],app(AdmissionBoardService::class)->careActions($a,$actor),true),422,'La transición no está disponible. Confirma la reserva en Agenda antes de registrar atención.');
             if ($data['state'] === 'SALIDA_REGISTRADA') {
                 $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
