@@ -44,7 +44,9 @@ class CommercialArrivalTest extends TestCase
             'estado_agenda'=>'CONFIRMADA','estado_cita'=>'PROGRAMADO',
             'total_pagado'=>0,'saldo_pendiente'=>100,'estado_pagado'=>'PENDIENTE',
         ]);
-        $financial=$a->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado','estado_agenda']);
+        // Reload the persisted DECIMAL values before comparing: MySQL returns
+        // monetary columns as strings, while a just-created model may hold integers.
+        $financial=$a->fresh()->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado','estado_agenda']);
         $this->assertFalse($this->commercial->can(C::UPDATE));
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
             ->assertOk()->assertJsonPath('care_actions.0','EN_ESPERA')
