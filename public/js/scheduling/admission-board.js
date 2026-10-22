@@ -5,7 +5,7 @@
 }(typeof window!=='undefined'?window:globalThis,function(){
     'use strict';
     const careLabels={PROGRAMADO:'Programado',CONFIRMADO:'Confirmado (atención)',PACIENTE_LLEGO:'Paciente llegó',EN_ESPERA:'En espera',LLAMANDO:'Llamando',EN_ATENCION:'En consultorio',ATENDIDO:'Atendido',CANCELADO:'Cancelado',NO_ASISTIO:'No asistió',RETIRO:'Retiro',REEVALUACION:'Reevaluación (estado heredado)'};
-    const actionLabels={EN_ESPERA:'Registrar llegada',LLAMANDO:'Registrar llamado',EN_ATENCION:'Iniciar atención',ATENDIDO:'Finalizar atención',SALIDA_REGISTRADA:'Registrar salida'};
+    const actionLabels={EN_ESPERA:'Registrar llegada',LLAMANDO:'Registrar llamado',EN_ATENCION:'Iniciar atención',ATENDIDO:'Finalizar atención',SALIDA_REGISTRADA:'Registrar salida',INDICAR_REEVALUACION:'Reevaluación',RETIRAR_REEVALUACION:'Retirar reevaluación'};
     function latest(){let revision=0,controller=null;return {cancel(){revision++;controller?.abort();},async run(work,commit){controller?.abort();controller=new AbortController();const current=++revision;try{const value=await work(controller.signal);if(current!==revision)return false;await commit(value);return true;}catch(error){if(current!==revision||error.name==='AbortError')return false;throw error;}}};}
     function polling({run,enabled=()=>true,alive=()=>true,onError=()=>{},schedule=setTimeout,clear=clearTimeout,interval=5000}){
         let stopped=true,timer=null,running=false;
@@ -288,6 +288,30 @@
                 busy=false;await select(id);notice('Estado corregido; historial conservado.');
             }catch(error){busy=false;notice(error.message);}
         }
+        async function physicianReevaluation(action) {
+            if(busy||confirming||!detail||!window.Swal)return;
+            const id=detail.appointment.id, withdrawing=action==='withdraw';
+            confirming=true;let answer;
+            try {
+                answer=await window.Swal.fire({
+                    title:withdrawing?'Retirar indicación de reevaluación':'Indicar reevaluación',
+                    text:withdrawing?'La retirada de la indicación médica quedará auditada.':'La cita seguirá EN ATENCIÓN y pasará al filtro Pendientes de reevaluación hasta que esté lista.',
+                    ...(withdrawing?{input:'textarea',inputLabel:'Motivo obligatorio',inputAttributes:{maxlength:'500'},
+                        inputValidator:value=>String(value||'').trim().length<3?'Indica el motivo.':undefined}:{}),
+                    showCancelButton:true,confirmButtonText:'Confirmar',cancelButtonText:'Volver',focusCancel:true
+                });
+            } finally {confirming=false;}
+            if(!answer?.isConfirmed||selected!==id)return;
+            busy=true;
+            try {
+                await request(board.dataset.base+'/'+id+'/physician-reevaluation/'+action,{
+                    method:'POST',body:JSON.stringify({expected_state:'EN_ATENCION',confirmed:true,
+                        request_key:crypto.randomUUID(),...(withdrawing?{reason:String(answer.value).trim()}:{})})
+                });
+                busy=false;await select(id);await load(id);
+                notice(withdrawing?'Indicación retirada con auditoría.':'Reevaluación indicada: pendiente de retorno.');
+            } catch(error) {busy=false;notice(error.message);}
+        }
         function presentationName(parent, name, presentation) {
             const label=node('span',name,'admission-patient-name');
             if(presentation?.strikethrough===true)label.style.textDecoration='line-through';
@@ -360,7 +384,9 @@
             append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.estado_cita==='ATENDIDO'?'attended':a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
             const reason=node('div',null,'admission-consultation-reason');append(reason,node('strong','MOTIVO DE CONSULTA'),node('p',a.motivo_consulta?.trim()||'No registrado'));head.appendChild(reason);root.appendChild(head);
             const actions=node('div',null,'admission-care-actions');
-            for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(state==='EN_ATENCION'||state==='EN_ESPERA'?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>transition(state));actions.appendChild(button);}
+            for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(state==='EN_ATENCION'||state==='EN_ESPERA'?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>state==='INDICAR_REEVALUACION'?physicianReevaluation('indicate'):state==='RETIRAR_REEVALUACION'?physicianReevaluation('withdraw'):transition(state));actions.appendChild(button);}
+            if(payload.medical_reevaluation?.pending)actions.appendChild(node('p','REEVALUACIÓN PENDIENTE · verificar procedimientos o autorizar retorno. No finalizar todavía.','admission-tag admission-tag--pending'));
+            else if(payload.medical_reevaluation?.indicated&&payload.medical_reevaluation?.ready)actions.appendChild(node('p','LISTO PARA REEVALUACIÓN · el médico puede finalizar cuando corresponda.','admission-tag admission-tag--ready'));
             if(payload.care_reversal){const reverse=node('button','Retroceder estado','admission-btn');reverse.type='button';reverse.addEventListener('click',()=>reverseCare(payload.care_reversal));actions.appendChild(reverse);}root.appendChild(actions);
             const tabs=node('div',null,'admission-detail-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Información de la cita');
             const panels={};
@@ -439,10 +465,12 @@
         $('specialty').addEventListener('change',()=>{for(const option of $('doctor').options)option.hidden=Boolean(option.value&&$('specialty').value&&option.dataset.specialty!==$('specialty').value);if($('doctor').selectedOptions[0]?.hidden)$('doctor').value='';refreshPickers();});
         board.querySelectorAll('[data-group]').forEach(button=>button.addEventListener('click',()=>{$('group').value=button.dataset.group;page=1;load();}));
         function refreshPickers(){if(window.jQuery?.fn?.selectpicker)window.jQuery(form).find('select').each(function(){if(window.jQuery(this).data('selectpicker'))window.jQuery(this).selectpicker('refresh');});}
-        function updateFilterState(){const filters=data();const advanced=['site_id','specialty_id','estado','grupo','visual'].filter(k=>filters[k]).length+(filters.hasta!==filters.fecha?1:0);$('more-count').textContent=advanced?String(advanced):'';board.querySelectorAll('[data-group]').forEach(button=>{const active=button.dataset.group===(filters.grupo||'')&&!filters.only_reevaluations;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});const review=board.querySelector('[data-review-only]');review.classList.toggle('is-active',Boolean(filters.only_reevaluations));review.setAttribute('aria-pressed',String(Boolean(filters.only_reevaluations)));}
+        function updateFilterState(){const filters=data();const advanced=['site_id','specialty_id','estado','grupo','visual'].filter(k=>filters[k]).length+(filters.hasta!==filters.fecha?1:0);$('more-count').textContent=advanced?String(advanced):'';board.querySelectorAll('[data-group]').forEach(button=>{const active=button.dataset.group===(filters.grupo||'')&&!filters.only_reevaluations&&!filters.only_pending_reevaluations;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});const review=board.querySelector('[data-review-only]');review.classList.toggle('is-active',Boolean(filters.only_reevaluations));review.setAttribute('aria-pressed',String(Boolean(filters.only_reevaluations)));}
         $('reset').addEventListener('click',()=>{form.reset();$('until').value=$('date').value;for(const option of $('doctor').options)option.hidden=false;refreshPickers();page=1;load();});
-        board.querySelector('[data-review-only]').addEventListener('click',()=>{$('only-reviews').checked=!$('only-reviews').checked;$('group').value='';page=1;load();});
-        $('only-reviews').addEventListener('change',()=>{page=1;load();});
+        board.querySelector('[data-review-only]').addEventListener('click',()=>{$('only-reviews').checked=!$('only-reviews').checked;if($('only-reviews').checked)$('only-pending-reviews').checked=false;$('group').value='';page=1;load();});
+        board.querySelector('[data-pending-review-only]').addEventListener('click',()=>{$('only-pending-reviews').checked=!$('only-pending-reviews').checked;if($('only-pending-reviews').checked)$('only-reviews').checked=false;$('group').value='';page=1;load();});
+        $('only-reviews').addEventListener('change',()=>{if($('only-reviews').checked)$('only-pending-reviews').checked=false;page=1;load();});
+        $('only-pending-reviews').addEventListener('change',()=>{if($('only-pending-reviews').checked)$('only-reviews').checked=false;page=1;load();});
         $('availability-panel').addEventListener('toggle',()=>{if($('availability-panel').open)availability(data());resizeWorkspace();});
         $('more-filters').addEventListener('toggle',resizeWorkspace);board.querySelector('.admission-financial-summary').addEventListener('toggle',resizeWorkspace);
         $('back-list').addEventListener('click',()=>{board.dataset.mobileDetail='false';$('patients-tab').focus();});
