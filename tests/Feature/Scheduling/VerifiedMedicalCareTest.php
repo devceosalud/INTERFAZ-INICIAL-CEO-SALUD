@@ -247,7 +247,7 @@ class VerifiedMedicalCareTest extends TestCase
     }
     public function test_verified_administrator_with_medico_keeps_both_roles_and_can_only_attend_own_doctor():void
     {
-        $this->physician->assignRole('ADMINISTRADOR');
+        $this->physician->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web'));
         $this->physician->givePermissionTo([
             \Spatie\Permission\Models\Permission::findOrCreate(S::MVP_ACCESS,'web'),
             \Spatie\Permission\Models\Permission::findOrCreate(S::VIEW,'web'),
