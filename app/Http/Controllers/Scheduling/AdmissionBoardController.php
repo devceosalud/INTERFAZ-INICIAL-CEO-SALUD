@@ -72,7 +72,7 @@ class AdmissionBoardController extends Controller
     public function physicianReevaluation(Request $r,int $appointmentId,string $action,
         \App\Services\Scheduling\AppointmentReevaluationService $service)
     {
-        abort_unless(in_array($action,['indicate','withdraw'],true),404);
+        abort_unless(in_array($action,['indicate','withdraw','resume'],true),404);
         abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','reason','_token']),422);
         $data=$r->validate([
             'expected_state'=>'required|in:EN_ATENCION',
@@ -82,6 +82,17 @@ class AdmissionBoardController extends Controller
         ]);
         $data['action']=$action;
         $a=$service->physicianDecision($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
+    public function confirmOperationalReevaluation(Request $r,int $appointmentId,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','_token']),422);
+        $data=$r->validate(['expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted']);
+        $a=$service->confirmOperational($appointmentId,$r->user(),$data);
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
             ->header('Cache-Control','private, no-store');
     }
