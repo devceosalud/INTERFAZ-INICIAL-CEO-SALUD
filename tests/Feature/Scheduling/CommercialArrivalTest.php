@@ -118,7 +118,10 @@ class CommercialArrivalTest extends TestCase
             $closed=$this->lifecycleAppointment($this->commercial,$this->catalog,['estado_cita'=>$status]);
             $this->care($closed,'EN_ESPERA')->assertUnprocessable();
         }
-        $already=$this->lifecycleAppointment($this->commercial,$this->catalog,['hora_llegada'=>now()]);
+        $already=$this->lifecycleAppointment($this->commercial,$this->catalog);
+        // The timestamp is guarded against mass assignment: model the existing
+        // historical record explicitly, as a legacy import would.
+        $already->forceFill(['hora_llegada'=>now()])->save();
         $this->getJson(route('scheduling.mvp.admission.detail',$already->id))
             ->assertOk()->assertJsonCount(0,'care_actions');
         $this->care($already,'EN_ESPERA')->assertUnprocessable();
