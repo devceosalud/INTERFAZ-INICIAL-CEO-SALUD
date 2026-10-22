@@ -2,6 +2,29 @@
     'use strict';
     const form=root.document?.querySelector('#user-doctor-link');if(!form)return;
     const status=root.document.querySelector('#user-doctor-link-status');
+    const doctorSelect=form.elements.doctor_id;
+    // The shared theme may enhance this control during window.load, creating a
+    // second Bootstrap-select dropdown next to the intentionally native select.
+    // Remove only this form's enhancement; keep user interaction and selection.
+    const initialDoctorId=form.dataset.current || '';
+    let changedByUser=false;
+    doctorSelect.addEventListener('change',()=>{changedByUser=true;});
+    function ensureNativeDoctorSelect(){
+        if(!doctorSelect.isConnected)return;
+        if(root.jQuery?.fn?.selectpicker && root.jQuery(doctorSelect).data('selectpicker')){
+            root.jQuery(doctorSelect).selectpicker('destroy');
+        }
+        const wrapper=doctorSelect.closest('.bootstrap-select');
+        if(wrapper && form.contains(wrapper)){
+            wrapper.parentNode.insertBefore(doctorSelect,wrapper);
+            wrapper.remove();
+        }
+        form.querySelectorAll('.medical-link-field .bootstrap-select').forEach(element=>element.remove());
+        doctorSelect.classList.remove('bs-select-hidden');
+        if(!changedByUser)doctorSelect.value=initialDoctorId;
+    }
+    ensureNativeDoctorSelect();
+    root.addEventListener('load',ensureNativeDoctorSelect,{once:true});
     let busy=false,key=null;
     form.addEventListener('input',()=>{if(!busy)key=null;});
     form.addEventListener('submit',async event=>{
