@@ -16,12 +16,16 @@ final class IsolatedAgendaV2Qa
         $root=dirname(__DIR__,2);
         $ci=getenv('GITHUB_ACTIONS')==='true' && getenv('AGENDA_V2_CI_OWNED')==='DISPOSABLE_SERVICE_ONLY' && PHP_OS_FAMILY==='Linux';
         if($ci && $browser)throw new \RuntimeException('CI runtime is suite-only.');
+        // Separate, fixed Windows recovery port. Same strict schema, user, version
+        // and checkout-owned datadir checks; never accepts a configurable DSN.
+        $recovery=getenv('CEO_RECOVERY_LOCAL_QA')==='OWNED_LOOPBACK_33341' && PHP_OS_FAMILY==='Windows';
+        $port=$recovery?33341:33324;
         if(file_exists($root.'/.env'))throw new \RuntimeException('QA requires an isolated checkout without .env.');
         $db=$browser?'ceosalud_qa_agenda_v2_browser':'ceosalud_qa_agenda_v2_suite';
         $user=$browser?'agenda_v2_browser':'agenda_v2_suite';
         $values=['APP_ENV'=>'testing','APP_DEBUG'=>'false','APP_URL'=>'http://127.0.0.1:8092',
             'APP_KEY'=>'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-            'DB_CONNECTION'=>'mysql','DB_HOST'=>'127.0.0.1','DB_PORT'=>'33324','DB_DATABASE'=>$db,
+            'DB_CONNECTION'=>'mysql','DB_HOST'=>'127.0.0.1','DB_PORT'=>(string)$port,'DB_DATABASE'=>$db,
             'DB_USERNAME'=>$user,'DB_PASSWORD'=>'v2-local-only','DATABASE_URL'=>'','DB_SOCKET'=>'',
             'CACHE_DRIVER'=>'array','LOG_CHANNEL'=>'null','MAIL_MAILER'=>'array','QUEUE_CONNECTION'=>'sync',
             'BROADCAST_DRIVER'=>'null','BCRYPT_ROUNDS'=>'4','SESSION_DRIVER'=>$browser?'file':'array',
@@ -38,11 +42,11 @@ final class IsolatedAgendaV2Qa
         foreach($values as $key=>$value){putenv($key.'='.$value);$_ENV[$key]=$_SERVER[$key]=$value;}
         $app=require $root.'/bootstrap/app.php';$app->make(Kernel::class)->bootstrap();
         $c=config('database.connections.mysql');
-        if(!$app->environment('testing')||config('database.default')!=='mysql'||$c['host']!=='127.0.0.1'||(int)$c['port']!==33324
+        if(!$app->environment('testing')||config('database.default')!=='mysql'||$c['host']!=='127.0.0.1'||(int)$c['port']!==$port
             ||$c['database']!==$db||$c['username']!==$user||!empty($c['url'])||!empty($c['unix_socket']))throw new \RuntimeException('V2 QA refused an unowned connection.');
         $identity=DB::selectOne('SELECT DATABASE() db,@@port port,@@datadir dir,VERSION() version');
         $normalize=fn($v)=>strtolower(rtrim(str_replace('\\','/',$v),'/'));
-        if($identity->db!==$db||(int)$identity->port!==($ci?3306:33324)||!str_starts_with($identity->version,'11.8.9-MariaDB')
+        if($identity->db!==$db||(int)$identity->port!==($ci?3306:$port)||!str_starts_with($identity->version,'11.8.9-MariaDB')
             ||$normalize($identity->dir)!==$normalize($ci?'/var/lib/mysql':$root.'/storage/app/qa-v2/mariadb'))throw new \RuntimeException('V2 QA identity mismatch.');
         // Browser replays may use the original fictional cohort's day without changing any
         // appointment or weakening same-day eligibility. Never active in PHP suites or production.

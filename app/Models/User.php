@@ -37,6 +37,7 @@ class User extends Authenticatable
         'dni',
         'auth_version',
         'is_active',
+        'doctor_id',
     ];
 
     /**
@@ -46,13 +47,19 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_active'=>'boolean', 'auth_version'=>'integer',
+        'is_active'=>'boolean', 'auth_version'=>'integer', 'doctor_id'=>'integer',
     ];
 
 
     /**
      * Obtiene todas las citas registradas por el usuario.
      */
+    /** Identity assigned only by the explicit administrator linkage operation. */
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class);
+    }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class);

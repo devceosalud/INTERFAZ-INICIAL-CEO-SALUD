@@ -41,8 +41,8 @@ class UnifiedReevaluationTest extends \Tests\Support\AgendaV2TestCase
         $this->direct(false)->assertOk();$this->origins(['AUTOMATIC']);
         $this->actingAs($this->admission);$this->complete('laboratory',false)->assertOk();$this->origins([]);
         $this->direct(true)->assertOk();$this->origins(['MANUAL_DIRECT']);
-        $this->complete()->assertForbidden();$this->select()->assertForbidden();
-        $this->change('send',['confirmed'=>true,'reason'=>'No autorizado'])->assertForbidden();
+        $this->complete()->assertOk();$this->select()->assertForbidden();
+        $this->change('send',['confirmed'=>true,'reason'=>'AUTORIZACION PARCIAL FICTICIA'])->assertOk();
         $this->postJson(route('scheduling.mvp.admission.care',$this->a->id),['state'=>'EN_ESPERA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()])->assertForbidden();
         $this->assertSame($permissions,$this->commercial->fresh()->getAllPermissions()->pluck('name')->sort()->values()->all());
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);

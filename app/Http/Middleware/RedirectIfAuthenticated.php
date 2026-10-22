@@ -23,6 +23,14 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                $user=Auth::guard($guard)->user();
+                // Match the post-login destination for an already authenticated session.
+                if (\App\Support\Authorization\AdmissionHomeRedirect::applies($user)) {
+                    return redirect()->route('scheduling.mvp.admission');
+                }
+                if($user->hasRole('MEDICO') && !$user->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)){
+                    return redirect()->route('scheduling.mvp.admission');
+                }
                 return redirect(RouteServiceProvider::HOME);
             }
         }

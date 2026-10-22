@@ -1,0 +1,11 @@
+{
+    "result": "PASS",
+    "checks": {
+        "route:cache": 0,
+        "view:cache": 0,
+        "route:clear": 0,
+        "view:clear": 0,
+        "config:cache": 0,
+        "config:clear": 0
+    }
+}

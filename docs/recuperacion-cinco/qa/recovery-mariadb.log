@@ -1,0 +1,65 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+.......................FF....................................   61 / 1308 (  4%)
+.............................................................  122 / 1308 (  9%)
+............F................................................  183 / 1308 ( 13%)
+.............................................................  244 / 1308 ( 18%)
+.............................................................  305 / 1308 ( 23%)
+...........................................F.................  366 / 1308 ( 27%)
+.............................................................  427 / 1308 ( 32%)
+.............................................................  488 / 1308 ( 37%)
+.............................................................  549 / 1308 ( 41%)
+.............................................................  610 / 1308 ( 46%)
+.............................................................  671 / 1308 ( 51%)
+.............................................................  732 / 1308 ( 55%)
+.............................................................  793 / 1308 ( 60%)
+.............................................................  854 / 1308 ( 65%)
+.............................................................  915 / 1308 ( 69%)
+.............................................................  976 / 1308 ( 74%)
+............................................................. 1037 / 1308 ( 79%)
+............................................................. 1098 / 1308 ( 83%)
+............................................................. 1159 / 1308 ( 88%)
+............................................................. 1220 / 1308 ( 93%)
+............................................................. 1281 / 1308 ( 97%)
+...........................                                   1308 / 1308 (100%)
+
+Time: 09:24.214, Memory: 238.00 MB
+
+There were 4 failures:
+
+1) Tests\Integration\MvpEconomyDirect\EconomicEditConcurrencyTest::test_close_wins_and_edit_cannot_mutate_closed_cash
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Integration\MvpEconomyDirect\EconomicEditConcurrencyTest.php:74
+
+2) Tests\Integration\MvpEconomyDirect\EconomicEditConcurrencyTest::test_edit_wins_then_closure_freezes_corrected_cash_total
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+ Array &0 (
+     0 => 200
+-    1 => 200
++    1 => 403
+ )
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Integration\MvpEconomyDirect\EconomicEditConcurrencyTest.php:81
+
+3) Tests\Feature\Baseline\ApplicationAndAuthenticationSmokeTest::test_application_boots_with_the_isolated_test_configuration
+Failed asserting that 33341 is identical to 33324.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Feature\Baseline\ApplicationAndAuthenticationSmokeTest.php:28
+
+4) Tests\Feature\Scheduling\AdmissionColorCompatibilityTest::test_thirteen_server_states_keep_the_historical_palette_for_all_four_authorized_profiles
+admin PROGRAMADA_SIN_PAGO
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'SIN_PAGO_REAL'
++'CONFIRMADA_SIN_ADELANTO'
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Feature\Scheduling\AdmissionColorCompatibilityTest.php:21
+
+FAILURES!
+Tests: 1308, Assertions: 11710, Failures: 4.

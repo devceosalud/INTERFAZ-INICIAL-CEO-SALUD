@@ -39,7 +39,9 @@ final class MvpPermissionBootstrap
         foreach ($roles as $role) {
             $current = $role->permissions()->orderBy('name')->pluck('name')->all();
             $rows[] = ['id' => $role->id, 'name' => $role->name, 'guard' => $role->guard_name,
-                'permissions_before' => $current, 'additions' => array_values(array_diff(self::REQUIRED, $current))];
+                'permissions_before' => $current,
+                // A newly defined clinical-only role must never inherit the all-role payment/update bootstrap.
+                'additions' => $role->name===ClinicalCapability::ROLE ? [] : array_values(array_diff(self::REQUIRED, $current))];
         }
         $catalogue = Role::orderBy('id')->get(['id', 'name', 'guard_name'])->toArray();
         $plan = ['catalogue_roles' => $catalogue, 'guard' => 'web', 'required' => self::REQUIRED, 'roles' => $rows,
