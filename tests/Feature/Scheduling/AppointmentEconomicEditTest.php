@@ -186,9 +186,10 @@ class AppointmentEconomicEditTest extends TestCase
         $this->get(route('admin.roles.edit',$role))->assertOk()->assertSee('Corregir adelantos registrados')->assertSee('Modificar economía de citas existentes');
         $this->put(route('admin.permissions.update',$role),['name'=>'COMERCIAL','permission_revision'=>\App\Http\Controllers\admin\master\role\RoleController::revision($role),
             'permissions_present'=>'1','permissions'=>Permission::whereIn('name',[C::EDIT_PAYMENT,C::EDIT_PRICING])->pluck('id')->all()])->assertRedirect();
-        $this->assertTrue($this->actor->fresh()->can(C::EDIT_PAYMENT));$this->assertTrue($this->actor->fresh()->can(C::EDIT_PRICING));
-        // A direct permission grant must never turn the COMERCIAL role into an economic editor.
+        // Assign the configured COMERCIAL role before testing its effective grants.
         $this->actor->syncRoles([Role::findByName('COMERCIAL','web')]);
+        $this->assertTrue($this->actor->fresh()->can(C::EDIT_PAYMENT));$this->assertTrue($this->actor->fresh()->can(C::EDIT_PRICING));
+        // Even with inherited permission grants, this role must never edit the economics.
         $this->actingAs($this->actor);
         $this->postJson($this->url('/review'),$this->draft())->assertForbidden();
         $this->assertFalse(Schema::hasTable('appointment_economic_corrections'));
