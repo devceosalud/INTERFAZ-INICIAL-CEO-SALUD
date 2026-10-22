@@ -36,6 +36,12 @@ Route::middleware([
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
             ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
+        // Same Admission screen. Physician identity and appointment ownership
+        // are verified in the service; no new roles or permissions assigned.
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/physician-reevaluation/{action}',
+            [$admission,'physicianReevaluation'])->whereNumber('appointmentId')
+            ->whereIn('action',['indicate','withdraw'])->middleware('throttle:30,1')
+            ->name('scheduling.mvp.admission.physician-reevaluation');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/reevaluation-history',
             \App\Http\Controllers\Scheduling\AppointmentReevaluationHistoryController::class)
