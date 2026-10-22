@@ -1,4 +1,37 @@
 @extends('layouts.app')
+@section('css_data')
+<style>
+/* Scope styles to this form; do not disturb other ERP selectors. */
+#user-doctor-link { max-width: 800px; }
+#user-doctor-link .medical-link-field { margin: 0 0 20px; }
+#user-doctor-link .medical-link-field > label {
+    display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;
+}
+#user-doctor-link select[data-native-select],
+#user-doctor-link textarea[name="reason"] {
+    box-sizing: border-box; display: block; width: 100%; max-width: 100%;
+    min-width: 0; border: 1px solid #cad4d9; border-radius: 6px;
+    background: #fff; color: #24343d; font-size: 14px; line-height: 1.4;
+}
+#user-doctor-link select[data-native-select] {
+    height: 46px; padding: 8px 12px; appearance: auto;
+}
+#user-doctor-link textarea[name="reason"] {
+    min-height: 100px; padding: 11px 12px; resize: vertical;
+}
+#user-doctor-link .medical-link-confirm {
+    display: flex; align-items: flex-start; gap: 9px;
+    max-width: 800px; line-height: 1.5;
+}
+#user-doctor-link .medical-link-confirm input {
+    flex: 0 0 auto; margin-top: 5px;
+}
+#user-doctor-link .medical-link-field :is(select,textarea):focus-visible,
+#user-doctor-link .medical-link-confirm input:focus-visible {
+    outline: 2px solid #2d8a8c; outline-offset: 2px;
+}
+</style>
+@endsection
 @section('body')
 <div id="main-wrapper">
 @include('templates.nav-header')
@@ -18,9 +51,10 @@
         @else
         <form id="user-doctor-link" data-url="{{ route('admin.user.doctor-link.update',$target->id) }}"
             data-version="{{ $target->auth_version }}" data-current="{{ $target->doctor_id }}" data-current-label="{{ $target->doctor?->nombre ?? 'Sin vinculación' }}">
-            <label class="d-block">Médico del catálogo
-                <select data-native-select name="doctor_id" class="form-control" aria-label="Médico del catálogo">
-                    <option value="">Sin vinculación / retirar vínculo</option>
+            <div class="medical-link-field">
+                <label for="medical-link-doctor">Médico del catálogo</label>
+                <select id="medical-link-doctor" data-native-select name="doctor_id" aria-label="Médico del catálogo">
+                    <option value="" @selected($target->doctor_id === null)>Sin vinculación / retirar vínculo</option>
                     @foreach($doctors as $doctor)
                         <option value="{{ $doctor->id }}" @selected($target->doctor_id===$doctor->id)
                             @disabled($doctor->estado!=='ACTIVO' || ($doctor->user && $doctor->user->id!==$target->id))>
@@ -30,9 +64,12 @@
                         </option>
                     @endforeach
                 </select>
-            </label>
-            <label class="d-block mt-3">Motivo<textarea name="reason" class="form-control" required minlength="3" maxlength="500"></textarea></label>
-            <label class="d-block mt-3"><input name="identity_confirmed" type="checkbox" required> He verificado la identidad personal y su correspondencia con el médico seleccionado.</label>
+            </div>
+            <div class="medical-link-field">
+                <label for="medical-link-reason">Motivo de la vinculación</label>
+                <textarea id="medical-link-reason" name="reason" required minlength="3" maxlength="500" placeholder="Explica por qué se vincula esta cuenta con el médico seleccionado"></textarea>
+            </div>
+            <label class="medical-link-confirm"><input name="identity_confirmed" type="checkbox" required> <span>He verificado la identidad personal y su correspondencia con el médico seleccionado.</span></label>
             <button class="btn btn-primary mt-3" type="submit">Revisar vinculación</button>
             <p id="user-doctor-link-status" role="status" aria-live="polite"></p>
         </form>
