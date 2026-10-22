@@ -73,7 +73,7 @@ class AdmissionBoardService
         }
         $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
         $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
-        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0];
+        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0,'reevaluaciones_pendientes'=>0];
         $totals = ['precio'=>0,'pagos_reales'=>0,'pagado_historico'=>0,'credito'=>0,'saldo'=>0,'requieren_revision'=>0];
         foreach ($rows as $a) {
             $kpis['total']++; $kpis[AdmissionStatus::group($a)]++;
