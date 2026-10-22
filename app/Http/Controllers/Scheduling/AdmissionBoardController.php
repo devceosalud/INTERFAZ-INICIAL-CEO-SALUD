@@ -97,6 +97,29 @@ class AdmissionBoardController extends Controller
             ->header('Cache-Control','private, no-store');
     }
 
+    public function registerArrival(Request $r,int $appointmentId,AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','_token']),422);
+        $data=$r->validate([
+            'expected_state'=>'required|in:PROGRAMADO,CONFIRMADO,PACIENTE_LLEGO',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted']);
+        $a=$service->registerArrival($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
+    public function closeDeclinedReevaluation(Request $r,int $appointmentId,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','reason','_token']),422);
+        $data=$r->validate(['expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid','confirmed'=>'required|accepted',
+            'reason'=>'required|string|min:3|max:500']);
+        $a=$service->closeDeclined($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,
+            'reevaluation_declined'=>true])->header('Cache-Control','private, no-store');
+    }
+
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
         abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
