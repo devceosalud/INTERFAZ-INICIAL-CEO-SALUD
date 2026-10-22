@@ -19,12 +19,9 @@
             ])
 
             @endif
-            @if (config('scheduling.enabled') && auth()->user()->hasRole('MEDICO') && auth()->user()->can(\App\Support\Scheduling\ClinicalCapability::VIEW))
-                @include('templates.nav.module',['key'=>'medical-care','label'=>'Atención médica','activePatterns'=>['scheduling.medical.*'],
-                    'items'=>[['label'=>'Mi agenda médica','route'=>'scheduling.medical.index','patterns'=>['scheduling.medical.*']]]])
-            @endif
 
-            @if (config('scheduling.enabled') && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS) && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
+
+            @if (config('scheduling.enabled') && (\App\Support\Scheduling\AdmissionAccess::operational(auth()->user()) || (auth()->user()->hasRole('MEDICO') && auth()->user()->can(\App\Support\Scheduling\ClinicalCapability::VIEW))))
                 @include('templates.nav.module', ['key'=>'operational-admission', 'label'=>'Admisión',
                     'activePatterns'=>['scheduling.mvp.admission*'], 'items'=>[
                         ['label'=>'Agenda de admisión', 'route'=>'scheduling.mvp.admission', 'patterns'=>['scheduling.mvp.admission*']],

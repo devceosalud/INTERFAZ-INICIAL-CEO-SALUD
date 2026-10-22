@@ -29,7 +29,7 @@ class RedirectIfAuthenticated
                     return redirect()->route('scheduling.mvp.admission');
                 }
                 if($user->hasRole('MEDICO') && !$user->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)){
-                    return redirect()->route('scheduling.medical.index');
+                    return redirect()->route('scheduling.mvp.admission');
                 }
                 return redirect(RouteServiceProvider::HOME);
             }

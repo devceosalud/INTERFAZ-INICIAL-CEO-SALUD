@@ -1,0 +1,22 @@
+{
+    "result": "PASS",
+    "invariants": {
+        "appointments": 1,
+        "payments": 1,
+        "paid": "60.00",
+        "price": "120.00",
+        "balance": "60.00",
+        "state": "ATENDIDO",
+        "arrival_recorded": true,
+        "started_recorded": true,
+        "finished_recorded": true,
+        "departure_recorded": true,
+        "same_doctor_link": true,
+        "roles_preserved": true,
+        "requested": 3,
+        "completed": 3,
+        "requested_by_medical": 3,
+        "verified_by_commercial": 3,
+        "clinical_events": 3
+    }
+}

@@ -20,10 +20,10 @@ final class OperationalProcedureService
     ];
 
     public function canSelect(User $u): bool { return $this->eligible($u) && $u->hasRole('ADMINISTRADOR'); }
-    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION']); }
+    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION', 'COMERCIAL']); }
     public function canSend(User $u): bool
     {
-        return $this->eligible($u) && ($u->hasRole('ADMISION')
+        return $this->eligible($u) && ($u->hasAnyRole(['ADMISION','COMERCIAL'])
             || ($u->hasRole('ADMINISTRADOR') && $u->can(self::SUPERVISE)));
     }
     private function eligible(User $u): bool { return $u->is_active && $u->can(C::MVP_ACCESS) && $u->can(C::VIEW); }
