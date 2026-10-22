@@ -266,6 +266,110 @@ class JulioAdmissionReevaluationTest extends TestCase
         ]);
     }
 
+    public function test_commercial_registers_presential_arrival_without_general_update_permission():void
+    {
+        $creator=$this->agendaReader('ADMINISTRADOR');
+        $catalog=$this->createAppointmentCatalog();
+        $a=$this->lifecycleAppointment($creator,$catalog,[
+            'fecha_cita'=>now('America/Lima')->toDateString(),
+            'estado_cita'=>'CONFIRMADO','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $commercial=$this->agendaReader('COMERCIAL');
+        $this->actingAs($commercial);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertOk()->assertJsonPath('can_register_arrival',true)
+            ->assertJsonPath('care_actions.0','EN_ESPERA');
+        $key=(string)Str::uuid();
+        $arrival=['expected_state'=>'CONFIRMADO','confirmed'=>true,'request_key'=>$key];
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),$arrival)
+            ->assertOk()->assertJsonPath('estado_cita','EN_ESPERA');
+        // Same request can safely be retried without a second mark.
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),$arrival)->assertOk();
+        $this->assertNotNull($a->fresh()->hora_llegada);
+        $this->assertSame('EN_ESPERA',$a->fresh()->estado_cita);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('appointment.presentation.present',true);
+        $this->postJson(route('scheduling.mvp.admission.arrival',$a->id),[
+            'expected_state'=>'EN_ESPERA','confirmed'=>true,'request_key'=>(string)Str::uuid(),
+        ])->assertUnprocessable();
+        $this->assertSame(1,$a->events()->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());
+        $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_commercial_closes_only_unresumed_reevaluation_declined_by_patient_with_reason():void
+    {
+        [$physician,$a]=$this->physician();
+        $before=$a->fresh()->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado']);
+        $this->indicate($a)->assertOk();
+        $operator=$this->agendaReader('COMERCIAL');
+        $this->actingAs($operator);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('can_decline_operational_reevaluation',true);
+        $url=route('scheduling.mvp.admission.decline-reevaluation',$a->id);
+        $this->postJson($url,[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid()
+        ])->assertUnprocessable();
+        $key=(string)Str::uuid();
+        $data=['expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>$key,'reason'=>'Paciente decide no regresar al consultorio.'];
+        $this->postJson($url,$data)->assertOk()->assertJsonPath('estado_cita','ATENDIDO');
+        $this->postJson($url,$data)->assertOk();
+        $a=$a->fresh();
+        $this->assertNotNull($a->hora_atendido);
+        $this->assertNull($a->hora_salida);
+        $this->assertSame($before,$a->only(array_keys($before)));
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.declined',true)
+            ->assertJsonPath('medical_reevaluation.ready',false);
+        $this->assertSame(1,$a->events()->where('event_type',AppointmentReevaluationService::PATIENT_DECLINED)->count());
+        $this->assertSame(0,$a->events()->where('event_type',AppointmentReevaluationService::MEDICAL_RESUMED)->count());
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertConflict();
+        // Existing physical exit is still recorded by Admisión.
+        $reception=$this->agendaReader('ADMISION');
+        $reception->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($reception);
+        $this->postJson(route('scheduling.mvp.admission.care',$a->id),[
+            'state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO',
+            'request_key'=>(string)Str::uuid()
+        ])->assertOk();
+        $this->assertNotNull($a->fresh()->hora_salida);
+        $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_patient_refusal_must_not_override_physician_return_or_other_roles():void
+    {
+        [$physician,$a]=$this->physician();
+        $this->indicate($a)->assertOk();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->postJson(route('scheduling.mvp.admission.decline-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid(),'reason'=>'El paciente rechaza el regreso.'
+        ])->assertForbidden();
+        $admission=$this->agendaReader('ADMISION');
+        $this->actingAs($admission);
+        $this->confirm($a)->assertOk();
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertForbidden(); // No generic UPDATE permission granted.
+        $admission->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
+            'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
+            'request_key'=>(string)Str::uuid()
+        ])->assertOk();
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertOk();
+        $this->actingAs($admission);
+        $this->postJson(route('scheduling.mvp.admission.decline-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,
+            'request_key'=>(string)Str::uuid(),'reason'=>'Intento de cierre fuera de momento.'
+        ])->assertUnprocessable();
+        $this->assertSame('EN_ATENCION',$a->fresh()->estado_cita);
+    }
+
     public function test_only_account_two_redirects_to_admission_at_login():void
     {
         // MariaDB can retain an auto-increment counter across rolled-back
