@@ -11,9 +11,8 @@ final class MedicalBoardController extends Controller
 {
     public function index(Request $r)
     {
-        $u=ClinicalAccess::actor($r->user());
-        return response()->view('scheduling.medical.index',['doctor'=>$u->doctor,'today'=>now('America/Lima')->toDateString(),
-            'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre'])])->header('Cache-Control','private, no-store');
+        ClinicalAccess::actor($r->user());
+        return redirect()->route('scheduling.mvp.admission');
     }
     public function feed(Request $r,MedicalBoardService $board)
     {

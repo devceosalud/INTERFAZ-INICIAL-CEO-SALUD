@@ -160,7 +160,7 @@
             body.request_key=procedureRequest.key;
             busy=true;
             try {
-                await request(board.dataset.base+'/'+id+'/procedures/'+action,{method:'POST',body:JSON.stringify(body)});
+                await request(action==='selection'&&detail.clinical?.procedures_url?detail.clinical.procedures_url:board.dataset.base+'/'+id+'/procedures/'+action,{method:'POST',body:JSON.stringify(body)});
                 procedureRequest=null;if(action==='selection'){selectionDraft=null;customProcedureDraft=null;selectionDraftVersion=null;}updateDirty();busy=false;
                 await load(id);
                 notice('Procedimientos y reevaluación actualizados.');
@@ -208,7 +208,7 @@
                 if(direct.can_update){const button=node('button',direct.marked?'Retirar marca manual directa':payload.appointment.estado_cita==='EN_ATENCION'?'Marcar listo para reevaluación':'Marcar reevaluación manual directa','admission-btn');button.type='button';button.dataset.directReevaluation='true';button.addEventListener('click',toggleDirect);box.appendChild(button);}area.appendChild(box);
             }
             if(requested){const meter=node('progress',null,'admission-procedure-progress');meter.max=requested;meter.value=completed;meter.setAttribute('aria-label','Progreso de procedimientos');area.appendChild(meter);}
-            let explanation=!requested?'El administrador todavía no ha confirmado procedimientos para esta cita.':completed+' de '+requested+' procedimientos realizados.';
+            let explanation=!requested?'No hay procedimientos solicitados para esta cita.':completed+' de '+requested+' procedimientos realizados.';
             if(pending.length)explanation+=' Falta '+pending.map(p=>p.label).join(', ')+'.';
             if(data.review.status==='READY')explanation+=data.review.origin==='MANUAL'?' Envío manual autorizado; los pendientes se conservan.':' Paciente listo para volver al médico.';
             else if(data.can_send&&completed)explanation+=' Puedes enviarlo manualmente si corresponde.';
@@ -235,7 +235,7 @@
             if(data.can_select){
                 const editor=node('details',null,'admission-procedure-editor');editor.open=!requested||selectionDraft!==null;
                 editor.appendChild(node('summary','Editar solicitud de procedimientos'));
-                const picker=node('fieldset',null,'admission-procedure-picker');picker.appendChild(node('legend','Solicitud del administrador'));
+                const picker=node('fieldset',null,'admission-procedure-picker');picker.appendChild(node('legend',payload.clinical?'Solicitud del médico responsable':'Solicitud del administrador'));
                 const confirmed=new Set(data.items.map(p=>p.key)),selected=new Set(selectionDraft||confirmed);
                 const draftStatus=node('small',selectionDraft?'Selección sin guardar.':'Marcar casillas no guarda. Confirma expresamente.');
                 for(const[key,label]of Object.entries(data.catalog)){
@@ -320,6 +320,7 @@
             $('count').textContent='· '+payload.total;
             $('reservations').textContent=payload.kpis.reservas+' reservas pendientes · '+payload.kpis.otros+' para revisar';
             $('page').textContent='Página '+page+' de '+Math.max(1,Math.ceil(total/30));$('prev').disabled=page<=1;$('next').disabled=page*30>=total;
+            if(payload.can_view_economy===false)return;
             $('paid-total').textContent=money(payload.totals.pagos_reales);$('balance-total').textContent=money(payload.totals.saldo);
             const totals=$('totals');totals.replaceChildren();const labels={precio:'Precio neto',pagos_reales:'Pagos acreditados',pagado_historico:'Abonado histórico',credito:'Crédito aplicado',saldo:'Saldo atribuido'};
             for(const[key,label]of Object.entries(labels))totals.appendChild(description(label,money(payload.totals[key])));
@@ -360,6 +361,8 @@
             append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.estado_cita==='ATENDIDO'?'attended':a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
             const reason=node('div',null,'admission-consultation-reason');append(reason,node('strong','MOTIVO DE CONSULTA'),node('p',a.motivo_consulta?.trim()||'No registrado'));head.appendChild(reason);root.appendChild(head);
             const actions=node('div',null,'admission-care-actions');
+            for(const action of payload.clinical?.actions||[]){const button=node('button',medicalLabels[action],'admission-btn admission-btn--primary');button.type='button';button.dataset.medicalAction=action;button.addEventListener('click',()=>medicalAction(action));actions.appendChild(button);}
+            if(payload.exoneration_confirmation){const button=node('button','Confirmar exoneración autorizada sin cobro','admission-btn');button.type='button';button.addEventListener('click',confirmExoneration);actions.appendChild(button);}
             for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(state==='EN_ATENCION'||state==='EN_ESPERA'?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>transition(state));actions.appendChild(button);}
             if(payload.care_reversal){const reverse=node('button','Retroceder estado','admission-btn');reverse.type='button';reverse.addEventListener('click',()=>reverseCare(payload.care_reversal));actions.appendChild(reverse);}root.appendChild(actions);if(payload.care_restriction)root.appendChild(node('p',payload.care_restriction,'admission-task-help'));
             const tabs=node('div',null,'admission-detail-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Información de la cita');
@@ -374,19 +377,45 @@
             const proceduresPanel=renderProcedures(payload);if(proceduresPanel)panels.care.appendChild(proceduresPanel);
             if(a.attendance_mode==='TELECONSULTA')panels.care.appendChild(node('p','Teleconsulta registrada. El flujo remoto de atención está pendiente de definición; no se registra presencia ni salida física.'));
             const journey=section('Recorrido de atención'),journeyList=node('ol',null,'admission-journey');for(const[key,label]of Object.entries({llegada:'Llegada',llamado:'Llamado',inicio:'Inicio',fin:'Atendido',salida:'Salida física'}))append(journeyList,append(node('li'),node('time',time(a.tiempos[key])),node('span',label)));journey.appendChild(journeyList);panels.care.appendChild(journey);
-            panels.care.appendChild(link('Abrir en Agenda operativa',a.agenda_url));
+            if(a.agenda_url)panels.care.appendChild(link('Abrir en Agenda operativa',a.agenda_url));
             const tasks=renderOperationalTasks(payload);if(tasks)panels.notes.appendChild(tasks);else panels.notes.appendChild(node('p','No tienes acceso a observaciones operativas.','admission-empty'));
-            const pricing=section('Situación económica'),dl=node('dl');economic(dl,a.economy);append(pricing,dl,node('small','Fuente: '+a.economy.fuente),node('small','Regla de precio: '+(a.pricing_rule||'Histórica / sin clasificación')));for(const payment of payload.payments||[])pricing.appendChild(node('p',money(payment.amount)+' · '+payment.method+' · '+(payment.recorded_at?new Date(payment.recorded_at).toLocaleString('es-PE',{timeZone:'America/Lima'}):'Sin fecha registrada')));pricing.appendChild(link('Registrar pago / OCR en Agenda',a.agenda_url,true));panels.money.appendChild(pricing);
+            if(payload.can_view_economy!==false){const pricing=section('Situación económica'),dl=node('dl');economic(dl,a.economy);append(pricing,dl,node('small','Fuente: '+a.economy.fuente),node('small','Regla de precio: '+(a.pricing_rule||'Histórica / sin clasificación')));for(const payment of payload.payments||[])pricing.appendChild(node('p',money(payment.amount)+' · '+payment.method+' · '+(payment.recorded_at?new Date(payment.recorded_at).toLocaleString('es-PE',{timeZone:'America/Lima'}):'Sin fecha registrada')));pricing.appendChild(link('Registrar pago / OCR en Agenda',a.agenda_url,true));panels.money.appendChild(pricing);}else{tabs.querySelector('[data-detail-tab=money]').hidden=true;panels.money.appendChild(node('p','Acceso económico restringido.'));}
             const contact=section('Ficha y contacto');append(contact,node('p',payload.contact.telefono||'Teléfono sin registrar'),node('small',payload.contact.telefono_secundario||''),node('p','Responsable: '+(a.responsable||'—')),node('small','Sede: '+(a.sede||'Sin registrar')+' · Canal: '+(payload.contact.canal||'—')+' · Medio: '+(payload.contact.medio||'—')),link('Ficha administrativa del paciente',payload.patient_url));
             if(payload.patient_documents_url&&window.AppointmentPatientDocuments){if(!patientDocuments)patientDocuments=window.AppointmentPatientDocuments.create({doc,url:payload.patient_documents_url,appointmentId:a.id,readResponse,onDirty:value=>{documentDraft=value;updateDirty();},onBusy:value=>{busy=value;}});panels.history.appendChild(patientDocuments.element);}
             const docs=section('Comprobantes de pago');if(!payload.documents.length)docs.appendChild(node('p','Sin comprobantes adjuntos.'));for(const d of payload.documents)docs.appendChild(link('Comprobante del pago #'+d.payment_id,d.download_url));panels.history.appendChild(progressive(docs));
             const operational=section('Documentos operativos');if(!payload.can_view_operational_documents)operational.appendChild(node('p','Acceso restringido a documentos privados.'));else {if(!payload.operational_documents?.length)operational.appendChild(node('p','Sin documentos operativos vigentes.'));for(const d of payload.operational_documents||[])operational.appendChild(link(({PRESCRIPTION:'Receta',REPORT:'Informe',ADMINISTRATIVE:'Administrativo'}[d.kind]||'Documento')+' · '+d.label,d.url));operational.appendChild(link('Adjuntar o reemplazar desde Agenda',a.agenda_url));}panels.history.appendChild(progressive(operational));
             const events=section('Actividad registrada'),ul=node('ul',null,'admission-events');for(const e of payload.events)append(ul,append(node('li'),node('span',new Date(e.at).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · '+e.type.replaceAll('_',' ')),node('small',e.actor||'Sin responsable registrado')));if(!payload.events.length)ul.appendChild(node('li','Sin eventos registrados.'));events.appendChild(ul);panels.history.appendChild(progressive(events));
             const history=section('Historial administrativo · hasta 20 citas visibles');for(const item of payload.history){const article=node('article',null,'admission-history-item');append(article,node('strong',item.fecha+' · '+item.hora),node('p',item.doctor+' · '+item.servicio),node('small',(careLabels[item.estado_cita]||item.estado_cita)+' · '+bookingLabel(item.estado_agenda)));const previous=node('dl');economic(previous,item.economy);article.appendChild(previous);history.appendChild(article);}if(!payload.history.length)history.appendChild(node('p','Sin otras citas visibles.'));panels.history.appendChild(progressive(history));
-            panels.history.appendChild(progressive(contact));activateDetailTab(activeDetailTab);resizeWorkspace();
+            if(payload.can_view_economy!==false)panels.history.appendChild(progressive(contact));activateDetailTab(activeDetailTab==='money'&&payload.can_view_economy===false?'care':activeDetailTab);resizeWorkspace();
         }
         function tabKey(event,keys,current){let index=keys.indexOf(current);if(event.key==='ArrowRight')index=(index+1)%keys.length;else if(event.key==='ArrowLeft')index=(index+keys.length-1)%keys.length;else if(event.key==='Home')index=0;else if(event.key==='End')index=keys.length-1;else return null;event.preventDefault();return keys[index];}
         function resizeWorkspace(){const area=board.querySelector('.admission-workspace');if(area&&window.innerWidth>1024)board.style.setProperty('--ad-workspace-height',Math.max(340,window.innerHeight-area.getBoundingClientRect().top-20)+'px');}
+        const medicalLabels={start:'Iniciar atención',finish:'FINALIZAR ATENCIÓN',indicate:'REEVALUACIÓN',withdraw:'Retirar indicación de reevaluación'};
+        let medicalRequest=null,exonerationRequest=null;
+        async function medicalAction(action){
+            if(busy||confirming||!detail?.clinical||!window.Swal)return;
+            const id=selected,clinical=detail.clinical,expected=detail.appointment.estado_cita,reasonRequired=['indicate','withdraw'].includes(action);
+            confirming=true;let answer;
+            try{answer=await window.Swal.fire({title:medicalLabels[action],text:action==='finish'?'Se finaliza la atención. La salida física se registra por separado.':'Se registrará tu actuación como médico responsable de esta cita.',
+                input:reasonRequired?'textarea':undefined,inputLabel:reasonRequired?'Motivo obligatorio':undefined,inputAttributes:{maxlength:'500'},
+                inputValidator:reasonRequired?(v=>String(v||'').trim().length<3?'Indica un motivo de al menos 3 caracteres.':undefined):undefined,
+                showCancelButton:true,confirmButtonText:'Confirmar',cancelButtonText:'Cancelar',focusCancel:true});}finally{confirming=false;}
+            if(!answer?.isConfirmed||selected!==id||detail?.clinical?.revision!==clinical.revision)return;
+            const body={expected_state:expected,revision:clinical.revision,confirmed:true,reason:reasonRequired?String(answer.value).trim():null};
+            const signature=JSON.stringify([id,action,body]);
+            if(medicalRequest?.signature!==signature)medicalRequest={signature,request_key:crypto.randomUUID()};
+            busy=true;
+            try{await request(clinical.care_url+'/'+action,{method:'POST',body:JSON.stringify({...body,request_key:medicalRequest.request_key})});medicalRequest=null;busy=false;await load(id);notice('Actuación registrada en la misma cita.');}
+            catch(error){notice(error.message);}finally{busy=false;}
+        }
+        async function confirmExoneration(){
+            if(busy||confirming||!detail?.exoneration_confirmation||!window.Swal)return;
+            const id=selected,offer=detail.exoneration_confirmation;confirming=true;let answer;
+            try{answer=await window.Swal.fire({title:'Confirmar cita exonerada',text:'Se revalidará la disponibilidad y la exoneración autorizada. No se registrará ningún pago.',showCancelButton:true,confirmButtonText:'Confirmar sin cobro',cancelButtonText:'Cancelar',focusCancel:true});}finally{confirming=false;}
+            if(!answer?.isConfirmed||selected!==id||detail?.exoneration_confirmation?.revision!==offer.revision)return;
+            const signature=JSON.stringify([id,offer.revision]);if(exonerationRequest?.signature!==signature)exonerationRequest={signature,request_key:crypto.randomUUID()};
+            busy=true;try{await request(offer.url,{method:'POST',body:JSON.stringify({revision:offer.revision,confirmed:true,request_key:exonerationRequest.request_key})});exonerationRequest=null;busy=false;await load(id);notice('Cita confirmada sin registrar pagos.');}catch(error){notice(error.message);}finally{busy=false;}
+        }
         async function transition(state){if(busy||!detail)return;const id=detail.appointment.id,expected=detail.appointment.estado_cita;
             if(!window.Swal){notice('No se cargó la confirmación de acciones. Vuelve a abrir el panel.');return;}
             const fallback=Boolean(detail.care_fallback)&&['EN_ATENCION','ATENDIDO'].includes(state);
@@ -399,8 +428,9 @@
                 confirmButtonText:fallback?'Confirmar contingencia':state==='SALIDA_REGISTRADA'?'Confirmar salida':'Confirmar',cancelButtonText:'Cancelar'});}finally{confirming=false;}if(!result.isConfirmed||busy||selected!==id||detail?.appointment.estado_cita!==expected)return;
             busy=true;const buttons=Array.from($('detail').querySelectorAll('.admission-care-actions button'));buttons.forEach(b=>b.disabled=true);$('detail').setAttribute('aria-busy','true');notice('Registrando '+(state==='SALIDA_REGISTRADA'?'salida física':'atención')+'…');
             const commercialArrival=state==='EN_ESPERA'&&Boolean(detail.commercial_arrival_url);
-            const careUrl=commercialArrival?detail.commercial_arrival_url:board.dataset.base+'/'+id+'/care';
-            const data=commercialArrival?{expected_state:expected,request_key:crypto.randomUUID()}
+            const commercialDeparture=state==='SALIDA_REGISTRADA'&&Boolean(detail.commercial_departure_url);
+            const careUrl=commercialArrival?detail.commercial_arrival_url:commercialDeparture?detail.commercial_departure_url:board.dataset.base+'/'+id+'/care';
+            const data=commercialArrival||commercialDeparture?{expected_state:expected,request_key:crypto.randomUUID()}
                 :{state,expected_state:expected,request_key:crypto.randomUUID(),...(fallback?{motivo:String(result.value).trim(),confirmed:true}:{})};
             try{const result=await request(careUrl,{method:'POST',body:JSON.stringify(data)});
                 if(result.detail){const wasReady=detail.appointment.reevaluation?.ready;detail=result.detail;renderDetail(detail);
@@ -410,7 +440,7 @@
             }catch(error){notice(error.message);}finally{busy=false;buttons.forEach(b=>b.disabled=false);$('detail').removeAttribute('aria-busy');}
         }
         async function availability(filters){
-            if(!$('availability-panel').open)return;
+            if(board.dataset.clinicalOnly==='1'||!$('availability-panel').open)return;
             const options=Array.from($('doctor').options).filter(o=>o.value&&o.dataset.active==='1'&&(!filters.doctor_id||o.value===filters.doctor_id)&&(!filters.specialty_id||o.dataset.specialty===filters.specialty_id)).slice(0,6);
             $('availability-note').textContent='Primeros '+options.length+' médicos activos del filtro. Disponibilidad informativa; se revalida al reservar.';
             $('availability').replaceChildren();

@@ -29,9 +29,9 @@ final class ManualReevaluationService
         if(!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true))return false;
         // Preserve the historical direct-return contract, including its existing actors.
         if($a->estado_cita==='ATENDIDO')return true;
-        // Same-episode medical return: only Admisión/admin, with a real medical indication.
+        // Same-episode return: authorized operational staff and a real medical indication.
         // Pending procedures must use the established partial-send rules, never this shortcut.
-        return $actor && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) && $actor->can(C::UPDATE)
+        return $actor && $this->canUpdate($actor)
             && $a->estado_cita==='EN_ATENCION' && !$a->hora_atendido && OperationalProcedureService::active($a)
             && AppointmentReevaluationService::indication($a)['indicated']
             && !DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->exists();

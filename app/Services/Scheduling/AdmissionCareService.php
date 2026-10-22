@@ -30,6 +30,11 @@ class AdmissionCareService
             && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW);
     }
 
+    public static function commercialDeparture(User $actor,string $state): bool
+    {
+        return $state==='SALIDA_REGISTRADA' && self::commercialArrival($actor,'EN_ESPERA');
+    }
+
     public function reversalOffer(Appointment $a, User $actor): ?array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return null;
@@ -75,10 +80,11 @@ class AdmissionCareService
         },3);
     }
 
-    public function transition(int $id, User $actor, array $data, bool $commercialCheckIn=false): Appointment
+    public function transition(int $id, User $actor, array $data, bool $commercialCheckIn=false,bool $commercialDeparture=false): Appointment
     {
         $fallback=in_array($data['state'],['EN_ATENCION','ATENDIDO'],true);
         if($commercialCheckIn)abort_unless(self::commercialArrival($actor,$data['state']),403);
+        elseif($commercialDeparture)abort_unless(self::commercialDeparture($actor,$data['state']),403);
         elseif (!$fallback) self::authorizeState($actor,$data['state']);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         if ($fallback) {
@@ -88,7 +94,7 @@ class AdmissionCareService
                 && mb_strlen(trim($data['motivo']))<=500,422,
                 'Confirma e indica un motivo de al menos tres caracteres para la contingencia.');
         }
-        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback,$commercialCheckIn) {
+        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback,$commercialCheckIn,$commercialDeparture) {
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
@@ -148,6 +154,8 @@ class AdmissionCareService
                 return $a;
             }
             if ($data['state'] === 'SALIDA_REGISTRADA') {
+                if($commercialDeparture)abort_unless(self::commercialDeparture($actor,$data['state']),403);
+                abort_unless($a->estado_cita==='ATENDIDO',422,'Finaliza la atención antes de registrar salida.');
                 $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
                 app(AppointmentHistory::class)->record($a,'ADMISION_SALIDA_REGISTRADA',$actor->id,
                     ['motivo'=>$data['motivo']??null, 'metadata'=>['state'=>'ATENDIDO','timestamp_field'=>'hora_salida','operation_id'=>$op->id]]);

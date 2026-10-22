@@ -38,7 +38,7 @@ class AuthController extends Controller
         }
 
         if(Auth::user()->hasRole('MEDICO') && !Auth::user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)){
-            return redirect()->route('scheduling.medical.index');
+            return redirect()->route('scheduling.mvp.admission');
         }
         return redirect()->route('admin.dashboard.index');
     }

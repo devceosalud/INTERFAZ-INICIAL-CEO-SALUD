@@ -142,9 +142,10 @@ class VerifiedMedicalCareTest extends TestCase
         foreach(['precio_programado','total_pagado','payments','economy','numero_operacion','telefono','discount'] as $forbidden)$this->assertStringNotContainsString('"'.$forbidden.'"',$serialized);
         $this->getJson(route('scheduling.medical.detail',$hidden->id))->assertForbidden();
         $this->postJson(route('scheduling.medical.feed'),['fecha'=>'2026-10-21','doctor_id'=>$other['doctor']->id])->assertUnprocessable();
-        $this->getJson(route('scheduling.mvp.agenda'))->assertForbidden();$this->getJson(route('scheduling.mvp.admission'))->assertForbidden();
+        $this->getJson(route('scheduling.mvp.agenda'))->assertForbidden();$this->getJson(route('scheduling.mvp.admission'))->assertOk();
         $this->getJson(route('admin.user.index'))->assertForbidden();
-        $this->get(route('scheduling.medical.index'))->assertOk()->assertSee('Mi agenda médica')->assertDontSee('Resumen económico');
+        $this->get(route('scheduling.medical.index'))->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('scheduling.mvp.admission'))->assertOk()->assertSee('Agenda de admisión')->assertDontSee('Mi agenda médica');
     }
     public function test_legacy_routes_stay_closed_for_medical_changes_even_if_generic_permissions_are_added():void
     {
@@ -255,7 +256,7 @@ class VerifiedMedicalCareTest extends TestCase
         ]);
         $this->actingAs($this->physician);
         $this->detail()->assertOk();
-        $this->get(route('scheduling.medical.index'))->assertOk();
+        $this->get(route('scheduling.medical.index'))->assertRedirect(route('scheduling.mvp.admission'));
         $this->get(route('scheduling.mvp.admission'))->assertOk();
         $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$this->physician->fresh()->getRoleNames()->all());
 

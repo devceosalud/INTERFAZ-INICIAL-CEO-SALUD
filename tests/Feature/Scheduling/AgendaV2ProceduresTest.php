@@ -26,15 +26,15 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         }
         $this->assertDatabaseCount('appointment_procedure_events',1);
     }
-    public function test_admission_completes_only_requested_procedures_and_commercial_is_read_only(): void
+    public function test_admission_and_commercial_complete_only_requested_procedures(): void
     {
         $this->select()->assertOk();$this->actingAs($this->admission);
         $this->complete()->assertOk();
         $this->detail()->assertOk()->assertJsonPath('procedures.items.0.completed',true)->assertJsonPath('procedures.items.1.completed',false);
         $this->complete('mri')->assertNotFound();
-        $this->actingAs($this->commercial);$this->complete('laboratory')->assertForbidden();
-        $this->change('send',['confirmed'=>true,'reason'=>'Pendiente ficticio'])->assertForbidden();
-        $this->assertDatabaseCount('appointment_procedure_events',2);
+        $this->actingAs($this->commercial);$this->complete('laboratory')->assertOk();
+        $this->change('send',['confirmed'=>true,'reason'=>'Pendiente ficticio'])->assertOk();
+        $this->assertDatabaseCount('appointment_procedure_events',4);
     }
     public function test_all_done_auto_queue_is_orange_in_both_agendas_without_financial_or_clinical_writes(): void
     {
@@ -117,7 +117,7 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->select(['radiography'])->assertOk();$this->complete()->assertOk();
         $r=$this->queue()->assertOk();
         foreach(['diagnostico','telefono','numero_identidad','precio_programado','payment','voucher','historia_clinica','private_path'] as $secret)$this->assertStringNotContainsString($secret,$r->getContent());
-        $this->actingAs($this->commercial);$this->detail()->assertOk()->assertJsonPath('procedures.can_complete',false);
+        $this->actingAs($this->commercial);$this->detail()->assertOk()->assertJsonPath('procedures.can_complete',true);
         $this->commercial->revokePermissionTo(C::VIEW);$this->queue()->assertForbidden();
         $this->change('selection',['procedures'=>['radiography']],0,null,999999)->assertForbidden();
     }

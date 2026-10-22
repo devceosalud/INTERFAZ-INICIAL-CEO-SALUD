@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "checks": [
+    "COMERCIAL no recibe botones clínicos",
+    "Médico ADMINISTRADOR + MEDICO inicia desde Admisión y conserva ambos botones",
+    "Reevaluación pendiente retira Finalizar y mantiene la misma cita",
+    "2 de 3 sigue pendiente",
+    "3 de 3 activa Listos automáticamente y filtro en móvil",
+    "Finalización médica separada de salida física COMERCIAL",
+    "Sin errores JavaScript y sin navegación a otra agenda"
+  ],
+  "errors": []
+}
