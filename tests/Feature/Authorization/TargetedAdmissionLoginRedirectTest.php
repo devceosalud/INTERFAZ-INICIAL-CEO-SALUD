@@ -122,7 +122,7 @@ class TargetedAdmissionLoginRedirectTest extends TestCase
 
         $this->post(route('admin.login.store'), [
             'email' => $user->email, 'password' => 'Fake-login-123',
-        ])->assertRedirect(route('scheduling.medical.index'));
-        $this->get(route('login'))->assertRedirect(route('scheduling.medical.index'));
+        ])->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('login'))->assertRedirect(route('scheduling.mvp.admission'));
     }
 }

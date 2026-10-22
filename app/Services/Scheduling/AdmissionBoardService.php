@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Billing\AppointmentEconomicPosition;
 use App\Support\Billing\Money;
 use App\Support\Scheduling\AdmissionStatus;
+use App\Support\Scheduling\{AdmissionAccess,ClinicalAccess};
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\SchedulingCapability as C;
 use Carbon\Carbon;
@@ -40,11 +41,13 @@ class AdmissionBoardService
 
     public function board(array $filters, User $actor): array
     {
-        $doctors = Doctor::query()->when(!empty($filters['doctor_id']), fn ($q) => $q->whereKey($filters['doctor_id']))
+        $clinicalOnly=AdmissionAccess::clinicalOnly($actor);
+        $doctors = Doctor::query()->when($clinicalOnly,fn($q)=>$q->whereKey($actor->fresh()->doctor_id))->when(!empty($filters['doctor_id']), fn ($q) => $q->whereKey($filters['doctor_id']))
             ->when(!empty($filters['specialty_id']), fn ($q) => $q->where('specialty_id',$filters['specialty_id']))->pluck('id')->all();
         $query = new AgendaQuery($doctors, Carbon::parse($filters['fecha']),
             Carbon::parse($filters['hasta'] ?? $filters['fecha']), $filters['site_id'] ?? null);
         $rows = $this->appointments->rangeQuery($query, $actor->id)->select(self::COLUMNS)
+            ->when($clinicalOnly,fn($q)=>$q->whereIn('estado_agenda',['LEGADO','CONFIRMADA']))
             ->when(!empty($filters['estado']), fn ($q) => $q->where('estado_cita',$filters['estado']))
             ->when(!empty($filters['patient']), function ($q) use ($filters) {
                 // Bound parameters and escaped LIKE metacharacters; POST body keeps identity out of URLs.
@@ -80,10 +83,10 @@ class AdmissionBoardService
             'responsibleUser:id,name','user:id,name','site:id,nombre']);
         $reasons=Appointment::whereIn('id',$pageRows->pluck('id'))->pluck('motivo_consulta','id');
         $history=app(RescheduleHistory::class);$origins=$history->latestForAppointments($pageRows,$actor);
-        return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
-            'reschedules'=>$history->forRange($query,$actor,$filters,fn($a)=>$this->filterRows($a,$filters),30),
+        return $this->protect(['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
+            'reschedules'=>$history->forRange($query,$actor,$filters,fn($a)=>$this->filterRows($clinicalOnly?$a->filter(fn($item)=>(int)$item->doctor_id===(int)$actor->doctor_id && in_array($item->estado_agenda,['LEGADO','CONFIRMADA'],true)):$a,$filters),30),
             'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor)+['reschedule_origin'=>$origins[$a->id]??null,
-                'motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()];
+                'motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()],$clinicalOnly);
     }
 
     private function filterRows(Collection $rows,array $filters): Collection
@@ -124,12 +127,14 @@ class AdmissionBoardService
 
     public function detail(int $id, User $actor): array
     {
+        $clinicalOnly=AdmissionAccess::clinicalOnly($actor);
+        if($clinicalOnly)ClinicalAccess::appointment(ClinicalAccess::actor($actor),Appointment::findOrFail($id));
         $a = Appointment::visibleToOperationalUser($actor)->select(array_merge(self::COLUMNS,['motivo_consulta']))->with([
             'patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad,telefono,telefono_secundario,channel_id,interaction_medium_id',
             'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
         app(ManualReevaluationService::class)->load(collect([$a]));
-        $previous = Appointment::visibleToOperationalUser($actor)->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
+        $previous = Appointment::visibleToOperationalUser($actor)->when($clinicalOnly,fn($q)=>$q->where('doctor_id',$actor->doctor_id)->whereIn('estado_agenda',['LEGADO','CONFIRMADA']))->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
         $positions = $this->economics->forAppointments($previous->push($a));
@@ -156,8 +161,27 @@ class AdmissionBoardService
                     'url'=>$d->url?:route('scheduling.mvp.documents.download',[$a->id,$d->id])])
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
+        $clinical=null;
+        try {
+            $verified=ClinicalAccess::actor($actor);
+            ClinicalAccess::appointment($verified,$a);
+            $clinical=app(MedicalBoardService::class)->detail($id,$verified);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            if($e->getStatusCode()!==403)throw $e;
+        }
         $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
-        return ['reevaluation'=>app(AppointmentReevaluationService::class)->detail($a,$actor,$procedures),'procedures'=>$procedures,'care_reversal'=>app(AdmissionCareService::class)->reversalOffer($a,$actor),
+        if($clinical){
+            $procedures['can_select']=$clinical['procedures']['can_select'];
+            $procedures['catalog']=$clinical['procedures']['catalog'];
+        }
+        return $this->protect(['clinical'=>$clinical ? ['actions'=>$clinical['actions'],'revision'=>$clinical['revision'],
+                'care_url'=>url('/scheduling-mvp/admission/appointments/'.$id.'/medical-care'),
+                'procedures_url'=>route('scheduling.mvp.admission.medical-procedures',$id)] : null,
+            'exoneration_confirmation'=>AdmissionExonerationConfirmation::eligible($a,$actor) && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
+                ? ['url'=>route('scheduling.mvp.admission.confirm-exoneration',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,
+            'commercial_departure_url'=>AdmissionCareService::commercialDeparture($actor,'SALIDA_REGISTRADA')
+                ? route('scheduling.mvp.admission.commercial-departure',$id) : null,
+            'reevaluation'=>app(AppointmentReevaluationService::class)->detail($a,$actor,$procedures),'procedures'=>$procedures,'care_reversal'=>app(AdmissionCareService::class)->reversalOffer($a,$actor),
             'appointment'=>$this->row($a,$positions[$a->id],$actor)+['motivo_consulta'=>$a->motivo_consulta],'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
@@ -167,22 +191,59 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
+            'commercial_arrival_url'=>AdmissionCareService::commercialArrival($actor,'EN_ESPERA')
+                ? route('scheduling.mvp.admission.commercial-arrival',$a->id) : null,
             'care_fallback'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
                 && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null,
             'care_restriction'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
                 && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null
                     ? 'CONTINGENCIA: el médico no tiene cuenta vinculada. Admisión puede registrar únicamente inicio/fin con motivo y auditoría; no es una validación médica.'
                     : (in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)
-                        ? 'El inicio, la finalización y la indicación de reevaluación corresponden al médico responsable desde Mi agenda médica. Admisión conserva llegada, llamado y salida física.' : null),
+                        ? 'El inicio, la finalización y la indicación de reevaluación corresponden al médico responsable desde este panel de Admisión. El personal operativo conserva llegada, llamado autorizado y salida física.' : null),
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
-                'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
+                'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])],$clinicalOnly);
+    }
+
+    private function protect(array $payload,bool $clinicalOnly): array
+    {
+        $payload['can_view_economy']=!$clinicalOnly;
+        if(!$clinicalOnly)return $payload;
+        $redact=function(array $row):array{
+            foreach(['economy','estado_pagado','payment_methods','pricing_rule','documento','responsable','agenda_url'] as $key)$row[$key]=null;
+            $row['presentation']['badges']=array_values(array_filter($row['presentation']['badges']??[],
+                fn($b)=>in_array($b['clave'],['PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','SALIDA_REGISTRADA','TELECONSULTA'],true)));
+            return $row;
+        };
+        if(isset($payload['rows'])){
+            $payload['rows']=array_map($redact,$payload['rows']);
+            $payload['totals']=null;$payload['can_update_care']=false;
+            // The historical reference remains on the same screen and never opens generic Agenda.
+            foreach($payload['reschedules']['items'] as &$item)$item['agenda_url']=null;
+            unset($item);
+        }
+        if(isset($payload['appointment'])){
+            $payload['appointment']=$redact($payload['appointment']);
+            foreach(['payments','documents','operational_documents','history','operational_tasks'] as $key)$payload[$key]=[];
+            $payload['contact']=array_fill_keys(['telefono','telefono_secundario','canal','medio'],null);
+            foreach(['patient_url','patient_documents_url','care_restriction','care_reversal','commercial_arrival_url','commercial_departure_url','exoneration_confirmation'] as $key)$payload[$key]=null;
+            foreach(['can_view_operational_documents','can_manage_operational_tasks','can_complete_operational_tasks','care_fallback'] as $key)$payload[$key]=false;
+            $payload['care_actions']=[];
+        }
+        return $payload;
     }
 
     public function careActions(Appointment $a, User $actor): array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
-        if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW) || !$actor->can(C::UPDATE)
-            || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW)
+            || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (AdmissionCareService::commercialArrival($actor,'EN_ESPERA')) {
+            if($a->estado_cita==='ATENDIDO' && !$a->hora_salida)return ['SALIDA_REGISTRADA'];
+            return in_array($a->estado_cita,['PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'],true)
+                && !$a->hora_llegada && !$a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
+                    ? ['EN_ESPERA'] : [];
+        }
+        if (!$actor->can(C::UPDATE) || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR'])) return [];
         $fallback=UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
             ? UnlinkedDoctorAdmissionFallback::allowedState($a) : null;
         return match ($a->estado_cita) {

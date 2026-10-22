@@ -128,7 +128,8 @@ class AdmissionBoardTest extends TestCase
             $a=$this->lifecycleAppointment($reader,$this->catalog);
             $this->care($a,'EN_ESPERA')->assertForbidden();
             $reader->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
-            $this->care($a,'EN_ESPERA')->assertStatus(in_array($role,['ADMINISTRADOR','ADMISION'],true)?200:403);
+            $another=$this->lifecycleAppointment($reader,$this->catalog);
+            $this->care($another,'EN_ESPERA')->assertStatus(in_array($role,['ADMINISTRADOR','ADMISION'],true)?200:403);
         }
     }
     public function test_missing_capabilities_block_page_feed_detail_and_care_without_writes():void

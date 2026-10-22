@@ -14,12 +14,13 @@ use Illuminate\Validation\Rule;
 
 class AdmissionBoardController extends Controller
 {
-    public function index(AdmissionBoardService $board)
+    public function index(Request $r,AdmissionBoardService $board)
     {
         return response()->view('scheduling.admission.index',[
+            'clinicalOnly'=>$clinicalOnly=\App\Support\Scheduling\AdmissionAccess::clinicalOnly($r->user()),
             'today'=>now('America/Lima')->toDateString(),'defaultSite'=>$board->defaultSite(),
             'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre']),
-            'doctors'=>Doctor::orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
+            'doctors'=>Doctor::when($clinicalOnly,fn($q)=>$q->whereKey($r->user()->doctor_id))->orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
             'specialties'=>Specialty::orderBy('nombre')->get(['id','nombre']),
             'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,'visuals'=>AdmissionBoardService::VISUAL_FILTERS,
         ])->header('Cache-Control','private, no-store')->header('Referrer-Policy','same-origin');
@@ -67,6 +68,41 @@ class AdmissionBoardController extends Controller
             'expected_state'=>'required|string|max:40','motivo'=>'required|string|min:3|max:500']);
         $a = $service->reverse($appointmentId,$r->user(),$data);
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
+    }
+
+    public function commercialArrival(Request $r,int $appointmentId,AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','_token']),422,
+            'La recepción comercial solamente puede registrar llegada.');
+        $data=$r->validate([
+            'request_key'=>'required|uuid',
+            'expected_state'=>['required',Rule::in(['PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'])],
+        ]);
+        abort_unless(AdmissionCareService::commercialArrival($r->user(),'EN_ESPERA'),403);
+        $data['state']='EN_ESPERA';
+        $a=$service->transition($appointmentId,$r->user(),$data,true);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda])
+            ->header('Cache-Control','private, no-store');
+    }
+
+
+    public function commercialDeparture(Request $r,int $appointmentId,AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','_token']),422);
+        $data=$r->validate(['request_key'=>'required|uuid','expected_state'=>'required|in:ATENDIDO']);
+        $data['state']='SALIDA_REGISTRADA';
+        $a=$service->transition($appointmentId,$r->user(),$data,false,true);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,
+            'detail'=>app(AdmissionBoardService::class)->detail($a->id,$r->user())])->header('Cache-Control','private, no-store');
+    }
+
+    public function confirmExoneration(Request $r,int $appointmentId)
+    {
+        abort_if(array_diff(array_keys($r->all()),['request_key','revision','confirmed','_token']),422);
+        $data=$r->validate(['request_key'=>'required|uuid','revision'=>'required|string|size:64','confirmed'=>'required|accepted']);
+        try{$a=app(\App\Services\Scheduling\AdmissionExonerationConfirmation::class)->confirm($appointmentId,$r->user(),$data);}
+        catch(\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e){return response()->json(['message'=>$e->getMessage()],409);}
+        return response()->json(['id'=>$a->id,'estado_agenda'=>$a->estado_agenda])->header('Cache-Control','private, no-store');
     }
 
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)

@@ -14,11 +14,25 @@ class AdmissionCareService
     /** Fail closed until a verified User-to-Doctor association is approved and implemented. */
     public static function authorizeState(User $actor,string $state): void
     {
+        // Preserve the legacy permission checks and status semantics for every
+        // existing caller. Commercial arrival has a separate, narrower endpoint.
         abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
         abort_if(in_array($state,['EN_ATENCION','ATENDIDO','REEVALUACION'],true),403,
             'La acción médica requiere una vinculación verificable entre usuario y médico responsable; todavía no está habilitada.');
         if(in_array($state,['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','SALIDA_REGISTRADA'],true))
             abort_unless($actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+    }
+
+    public static function commercialArrival(User $actor,string $state): bool
+    {
+        return $state==='EN_ESPERA' && $actor->is_active
+            && $actor->hasRole('COMERCIAL') && !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR'])
+            && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW);
+    }
+
+    public static function commercialDeparture(User $actor,string $state): bool
+    {
+        return $state==='SALIDA_REGISTRADA' && self::commercialArrival($actor,'EN_ESPERA');
     }
 
     public function reversalOffer(Appointment $a, User $actor): ?array
@@ -66,10 +80,12 @@ class AdmissionCareService
         },3);
     }
 
-    public function transition(int $id, User $actor, array $data): Appointment
+    public function transition(int $id, User $actor, array $data, bool $commercialCheckIn=false,bool $commercialDeparture=false): Appointment
     {
         $fallback=in_array($data['state'],['EN_ATENCION','ATENDIDO'],true);
-        if (!$fallback) self::authorizeState($actor,$data['state']);
+        if($commercialCheckIn)abort_unless(self::commercialArrival($actor,$data['state']),403);
+        elseif($commercialDeparture)abort_unless(self::commercialDeparture($actor,$data['state']),403);
+        elseif (!$fallback) self::authorizeState($actor,$data['state']);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         if ($fallback) {
             abort_unless(UnlinkedDoctorAdmissionFallback::eligible($original,$actor),403,
@@ -78,7 +94,7 @@ class AdmissionCareService
                 && mb_strlen(trim($data['motivo']))<=500,422,
                 'Confirma e indica un motivo de al menos tres caracteres para la contingencia.');
         }
-        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback) {
+        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback,$commercialCheckIn,$commercialDeparture) {
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
@@ -120,7 +136,26 @@ class AdmissionCareService
                     ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
                 return $a;
             }
+            if($commercialCheckIn){
+                abort_unless(self::commercialArrival($actor,$data['state']),403);
+                // ARRIVAL ONLY: intentionally avoid LegacyAppointmentMutation, which
+                // requires the broad appointment.update permission. Keep the same
+                // transactional state, timestamp and audit contract as Admisión.
+                $beforeTimes=$a->only(['hora_llegada','hora_llamado','hora_atencion','hora_atendido','hora_salida']);
+                abort_if($a->hora_llegada || $a->hora_atencion || $a->hora_atendido || $a->hora_salida,422,
+                    'La llegada ya está registrada o la atención está avanzada.');
+                $a->forceFill(['estado_cita'=>'EN_ESPERA','hora_llegada'=>now(),'updated_by_user_id'=>$actor->id])->save();
+                app(AppointmentHistory::class)->record($a,'ADMISION_ESTADO_ACTUALIZADO',$actor->id,
+                    ['metadata'=>['from'=>$data['expected_state'],'to'=>'EN_ESPERA',
+                        'timestamp_field'=>'hora_llegada','previous_timestamps'=>$beforeTimes,
+                        'operation_id'=>$op->id,'source'=>'COMERCIAL_PATIENT_ARRIVAL_V1']]);
+                DB::table('appointment_operations')->where('id',$op->id)
+                    ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+                return $a;
+            }
             if ($data['state'] === 'SALIDA_REGISTRADA') {
+                if($commercialDeparture)abort_unless(self::commercialDeparture($actor,$data['state']),403);
+                abort_unless($a->estado_cita==='ATENDIDO',422,'Finaliza la atención antes de registrar salida.');
                 $a->forceFill(['hora_salida'=>now(), 'updated_by_user_id'=>$actor->id])->save();
                 app(AppointmentHistory::class)->record($a,'ADMISION_SALIDA_REGISTRADA',$actor->id,
                     ['motivo'=>$data['motivo']??null, 'metadata'=>['state'=>'ATENDIDO','timestamp_field'=>'hora_salida','operation_id'=>$op->id]]);

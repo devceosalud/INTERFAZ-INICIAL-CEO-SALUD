@@ -120,8 +120,8 @@ class MedicalAccessCompatibilityTest extends TestCase
     {
         $this->app['auth']->guard()->logout();
         $medical=$this->createUserWithRole('MEDICO');$medical->forceFill(['doctor_id'=>$this->a->doctor_id,'password'=>Hash::make('Fake-medical-123')])->save();
-        $this->post(route('admin.login.store'),['email'=>$medical->email,'password'=>'Fake-medical-123'])->assertRedirect(route('scheduling.medical.index'));
-        $this->get(route('login'))->assertRedirect(route('scheduling.medical.index'));
+        $this->post(route('admin.login.store'),['email'=>$medical->email,'password'=>'Fake-medical-123'])->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('login'))->assertRedirect(route('scheduling.mvp.admission'));
         $this->app['auth']->guard()->logout();
         $this->actor->forceFill(['password'=>Hash::make('Fake-admission-123')])->save();
         $this->post(route('admin.login.store'),['email'=>$this->actor->email,'password'=>'Fake-admission-123'])->assertRedirect(route('admin.dashboard.index'));
