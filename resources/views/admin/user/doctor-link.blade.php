@@ -54,7 +54,7 @@
             <div class="medical-link-field">
                 <label for="medical-link-doctor">Médico del catálogo</label>
                 <select id="medical-link-doctor" data-native-select name="doctor_id" aria-label="Médico del catálogo">
-                    <option value="">Sin vinculación / retirar vínculo</option>
+                    <option value="" @selected($target->doctor_id === null)>Sin vinculación / retirar vínculo</option>
                     @foreach($doctors as $doctor)
                         <option value="{{ $doctor->id }}" @selected($target->doctor_id===$doctor->id)
                             @disabled($doctor->estado!=='ACTIVO' || ($doctor->user && $doctor->user->id!==$target->id))>
