@@ -38,6 +38,16 @@ final class AppointmentReevaluationService
         return $a->estado_cita === 'EN_ATENCION' && self::indicated($a) && !self::ready($a);
     }
 
+    /** Compatibility: existing medical account requires its own session;
+        an unlinked doctor keeps the old explicit operational workflow. */
+    public static function linkedPhysicianExists(Appointment $a): bool
+    {
+        return \Illuminate\Support\Facades\Schema::hasColumn('users','doctor_id')
+            && User::query()->where('doctor_id',$a->doctor_id)->where('is_active',true)
+                ->whereHas('roles',fn($r)=>$r->where('name','MEDICO')->where('guard_name','web'))
+                ->exists();
+    }
+
     /** No new permission: requires an active MEDICO role, existing Agenda access,
         and a verified doctor_id already linked to the authenticated user. */
     public static function physicianCanAct(User $actor, Appointment $a): bool
