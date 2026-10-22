@@ -33,9 +33,8 @@ final class ManualReevaluationService
         // is mandatory; the direct mark must not bypass pending tests.
         return ($a->estado_cita==='ATENDIDO' && !AppointmentReevaluationService::indicated($a))
             || ($a->estado_cita==='EN_ATENCION'
-                && AppointmentReevaluationService::indicated($a)
-                && !$a->hora_salida
-                && (int)($a->operationalReview?->requested_count??0)===0);
+                && AppointmentReevaluationService::confirmed($a)
+                && !AppointmentReevaluationService::resumed($a) && !$a->hora_salida);
     }
 
     /** One query for the full filtered set; order by event ID, even within one second. */
@@ -63,7 +62,8 @@ final class ManualReevaluationService
         abort_unless($this->canUpdate($actor), 403);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         $hash = hash('sha256', json_encode(['MANUAL_REEVALUATION_V1', $id,
-            (bool) $data['marked'], (bool) $data['expected_marked'], (int) $data['expected_version']]));
+            (bool) $data['marked'], (bool) $data['expected_marked'], (int) $data['expected_version'],
+            trim($data['reason'] ?? '')]));
         return DB::transaction(function () use ($id, $actor, $data, $original, $hash) {
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,
                 'request_key'=>$data['request_key'], 'payload_hash'=>$hash, 'created_at'=>now(), 'updated_at'=>now()]],
@@ -88,9 +88,15 @@ final class ManualReevaluationService
             abort_if($state['marked'] !== (bool) $data['expected_marked'] || $state['version'] !== (int) $data['expected_version'],
                 409, 'La marca de reevaluación cambió. Actualiza antes de continuar.');
             abort_if($state['marked'] === (bool) $data['marked'], 422, 'No hay cambio de marca para guardar.');
+            $pending=(int)($a->operationalReview?->requested_count??0)
+                -(int)($a->operationalReview?->completed_count??0);
+            if($data['marked'] && AppointmentReevaluationService::indicated($a) && $pending>0)
+                abort_unless(mb_strlen(trim($data['reason']??''))>=3,422,
+                    'Justifica el retorno manual con exámenes pendientes.');
             $event = app(AppointmentHistory::class)->record($a, $data['marked'] ? self::MARKED : self::CLEARED, $actor->id,
-                ['metadata'=>['source'=>'ADMISSION_MANUAL_V1', 'operation_id'=>$op->id,
-                    'previous_event_id'=>$state['version'], 'from'=>$state['marked'], 'to'=>(bool) $data['marked']]]);
+                ['motivo'=>trim($data['reason']??'') ?: null,'metadata'=>['source'=>'ADMISSION_MANUAL_V1', 'operation_id'=>$op->id,
+                    'previous_event_id'=>$state['version'], 'from'=>$state['marked'], 'to'=>(bool) $data['marked'],
+                    'pending_procedures_at_authorization'=>$pending]]);
             DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id'=>$id, 'updated_at'=>now()]);
             $a->setRelation('manualReevaluationEvent', $event);
             return $a;
