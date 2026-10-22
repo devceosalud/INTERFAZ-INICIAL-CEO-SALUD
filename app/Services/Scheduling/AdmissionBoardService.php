@@ -73,12 +73,13 @@ class AdmissionBoardService
         }
         $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
         $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
-        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0,'reevaluaciones_pendientes'=>0];
+        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0,'reevaluaciones_pendientes'=>0,'reevaluaciones_prependientes'=>0];
         $totals = ['precio'=>0,'pagos_reales'=>0,'pagado_historico'=>0,'credito'=>0,'saldo'=>0,'requieren_revision'=>0];
         foreach ($rows as $a) {
             $kpis['total']++; $kpis[AdmissionStatus::group($a)]++;
             if(AppointmentReevaluationService::ready($a)) $kpis['reevaluaciones']++;
             if(AppointmentReevaluationService::pending($a)) $kpis['reevaluaciones_pendientes']++;
+            if(AppointmentReevaluationService::prePending($a)) $kpis['reevaluaciones_prependientes']++;
             $p = $positions[$a->id]; $totals['precio'] += $p['price_cents'];
             if ($p['authority'] === 'UNALLOCATED') { $totals['requieren_revision']++; continue; }
             $totals[$p['authority'] === 'LEGACY_SNAPSHOT' ? 'pagado_historico' : 'pagos_reales'] += $p['paid_cents'];
@@ -160,9 +161,9 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
-            'medical_reevaluation'=>['indicated'=>AppointmentReevaluationService::indicated($a),
-                'pending'=>AppointmentReevaluationService::pending($a),
-                'ready'=>AppointmentReevaluationService::ready($a)],
+            'can_confirm_operational_reevaluation'=>AppointmentReevaluationService::operatorCanConfirm($actor)
+                && AppointmentReevaluationService::prePending($a),
+            'medical_reevaluation'=>AppointmentReevaluationService::summary($a),
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
     }
@@ -175,14 +176,13 @@ class AdmissionBoardService
         $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
         if($a->estado_cita==='EN_ATENCION'){
             if($linked && !$ownPhysician) return [];
-            // The two decisions are on the existing Admission panel, never a
-            // second medical module. Non-physicians cannot indicate or withdraw.
-            if(AppointmentReevaluationService::pending($a))
-                return AppointmentReevaluationService::physicianCanAct($actor,$a)
-                    ? ['RETIRAR_REEVALUACION'] : [];
-            if(!AppointmentReevaluationService::indicated($a)
-                && AppointmentReevaluationService::physicianCanAct($actor,$a))
-                return ['INDICAR_REEVALUACION','ATENDIDO'];
+            if(AppointmentReevaluationService::resumed($a)) return $ownPhysician ? ['ATENDIDO'] : [];
+            if(AppointmentReevaluationService::indicated($a)){
+                if(!$ownPhysician) return [];
+                if(AppointmentReevaluationService::ready($a)) return ['INICIAR_REEVALUACION'];
+                return ['RETIRAR_REEVALUACION'];
+            }
+            if($ownPhysician) return ['INDICAR_REEVALUACION','ATENDIDO'];
             return ['ATENDIDO'];
         }
         return match ($a->estado_cita) {
