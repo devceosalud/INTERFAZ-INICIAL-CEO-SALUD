@@ -173,7 +173,7 @@ class MedicalAccessCompatibilityTest extends TestCase
         $this->actingAs($target->fresh())->withSession(['ceosalud_auth_version'=>1]);
         $this->getJson(route('scheduling.medical.index'))->assertForbidden();
 
-        $this->actingAs($this->admin);
+        $this->actingAs($this->admin)->withSession(['ceosalud_auth_version'=>$this->admin->auth_version]);
         $this->postJson(route('admin.user.doctor-link.update',$target->id),[
             'doctor_id'=>$this->a->doctor_id,'expected_doctor_id'=>null,'expected_version'=>1,
             'request_key'=>(string)Str::uuid(),'reason'=>'Vinculación médica FICTICIA aprobada',
