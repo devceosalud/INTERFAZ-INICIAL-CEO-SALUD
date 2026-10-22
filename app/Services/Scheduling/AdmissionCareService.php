@@ -74,8 +74,9 @@ class AdmissionCareService
             if($data['state']==='ATENDIDO'){
                 $a->loadMissing('operationalReview');
                 app(ManualReevaluationService::class)->load(collect([$a]));
-                abort_if(AppointmentReevaluationService::pending($a),422,
-                    'No puedes finalizar: la reevaluación médica continúa pendiente.');
+                abort_if(AppointmentReevaluationService::indicated($a)
+                    && !AppointmentReevaluationService::resumed($a),422,
+                    'La reevaluación requiere confirmación de Admisión, retorno y segunda atención médica antes de finalizar.');
                 // Once a physician has signed an indication, closing that
                 // clinical episode requires the same linked physician.
                 abort_if(AppointmentReevaluationService::indicated($a)
