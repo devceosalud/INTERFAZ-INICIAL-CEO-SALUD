@@ -5,7 +5,7 @@
 }(typeof window!=='undefined'?window:globalThis,function(){
     'use strict';
     const careLabels={PROGRAMADO:'Programado',CONFIRMADO:'Confirmado (atención)',PACIENTE_LLEGO:'Paciente llegó',EN_ESPERA:'En espera',LLAMANDO:'Llamando',EN_ATENCION:'En consultorio',ATENDIDO:'Atendido',CANCELADO:'Cancelado',NO_ASISTIO:'No asistió',RETIRO:'Retiro',REEVALUACION:'Reevaluación (estado heredado)'};
-    const actionLabels={EN_ESPERA:'Registrar llegada',LLAMANDO:'Registrar llamado',EN_ATENCION:'Iniciar atención',ATENDIDO:'Finalizar atención',SALIDA_REGISTRADA:'Registrar salida',INDICAR_REEVALUACION:'Reevaluación',RETIRAR_REEVALUACION:'Retirar reevaluación'};
+    const actionLabels={EN_ESPERA:'Registrar llegada',LLAMANDO:'Registrar llamado',EN_ATENCION:'Iniciar atención',ATENDIDO:'Finalizar atención',SALIDA_REGISTRADA:'Registrar salida',INDICAR_REEVALUACION:'Reevaluación',RETIRAR_REEVALUACION:'Retirar reevaluación',INICIAR_REEVALUACION:'Iniciar reevaluación'};
     function latest(){let revision=0,controller=null;return {cancel(){revision++;controller?.abort();},async run(work,commit){controller?.abort();controller=new AbortController();const current=++revision;try{const value=await work(controller.signal);if(current!==revision)return false;await commit(value);return true;}catch(error){if(current!==revision||error.name==='AbortError')return false;throw error;}}};}
     function polling({run,enabled=()=>true,alive=()=>true,onError=()=>{},schedule=setTimeout,clear=clearTimeout,interval=5000}){
         let stopped=true,timer=null,running=false;
@@ -183,11 +183,15 @@
             if(busy||confirming||!detail?.reevaluation?.direct?.can_update||!window.Swal)return;
             const id=detail.appointment.id,current=detail.reevaluation.direct;
             confirming=true;let answer;
-            try{answer=await window.Swal.fire({title:current.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa',
-                text:current.marked?'Solo se desactiva esta marca. Otros orígenes válidos seguirán activos.':'Retorno al médico dentro de la misma cita ATENDIDO. Se registrará quién lo autoriza, sin crear cita ni cobro.',
+            const pendingExams=Math.max(0,(detail.procedures?.review?.requested_count||0)-(detail.procedures?.review?.completed_count||0));
+            try{answer=await window.Swal.fire({title:current.marked?'Retirar marca manual':'Autorizar reevaluación manual',
+                text:current.marked?'Se desactiva la autorización manual, conservando el historial.':'Se autoriza el retorno sin marcar exámenes como realizados ni crear cita/cobro.',
+                ...(!current.marked?{input:'textarea',inputLabel:pendingExams?'Motivo obligatorio: hay exámenes pendientes':'Motivo (opcional)',
+                    inputAttributes:{maxlength:'500'},inputValidator:value=>pendingExams&&String(value||'').trim().length<3?'Explica el retorno con exámenes pendientes.':undefined}:{}),
                 showCancelButton:true,confirmButtonText:'Confirmar marca',cancelButtonText:'Volver',focusCancel:true});}finally{confirming=false;}
             if(!answer?.isConfirmed||selected!==id)return;
-            const body={marked:!current.marked,expected_marked:current.marked,expected_version:current.version};
+            const body={marked:!current.marked,expected_marked:current.marked,expected_version:current.version,
+                reason:String(answer.value||'').trim()};
             const signature=JSON.stringify([id,body]);if(directRequest?.signature!==signature)directRequest={signature,key:crypto.randomUUID()};
             body.request_key=directRequest.key;busy=true;
             try{await request(board.dataset.base+'/'+id+'/manual-reevaluation',{method:'PATCH',body:JSON.stringify(body)});directRequest=null;busy=false;await select(id);notice('Marca directa actualizada; los demás orígenes y el historial se conservan.');}
@@ -198,16 +202,20 @@
             const area=section('Reevaluación y procedimientos');area.classList.add('clarity-mask');
             const requested=data.items.length,completed=data.items.filter(p=>p.completed).length,pending=data.items.filter(p=>!p.completed);
             const unified=payload.reevaluation||{ready:data.review.status==='READY',origins:[]},direct=unified.direct;
-            const labels={READY:'Listo para reevaluación',NOT_READY:requested?'Pendiente de procedimientos':'Sin procedimientos solicitados',WITHDRAWN:'Reevaluación retirada',SUSPENDED:'Autorización manual suspendida',INACTIVE:'Reevaluación inactiva'};
-            const status=node('div',null,'admission-procedure-status');append(status,node('strong',unified.ready?'Listo para reevaluación':labels[data.review.status]||data.review.status),tag(requested?completed+' de '+requested+' realizados':'Sin procedimientos',unified.ready?'ready':requested&&data.review.status==='NOT_READY'?'pending':['INACTIVE','WITHDRAWN','SUSPENDED'].includes(data.review.status)?'inactive':'neutral'));area.appendChild(status);
+            const labels={READY:'Exámenes verificados',NOT_READY:requested?'Pendiente de procedimientos':'Sin procedimientos solicitados',WITHDRAWN:'Reevaluación retirada',SUSPENDED:'Autorización manual suspendida',INACTIVE:'Reevaluación inactiva'};
+            const step=unified.resumed?'Reevaluación en consultorio':unified.ready?'Listo para reevaluación':unified.pending?'Pendiente de reevaluación':unified.pre_pending?'Pre-reevaluación sin confirmar':labels[data.review.status]||data.review.status;
+            const status=node('div',null,'admission-procedure-status');append(status,node('strong',step),tag(requested?completed+' de '+requested+' realizados':'Sin procedimientos',unified.ready?'ready':unified.pre_pending||unified.pending?'pending':'neutral'));area.appendChild(status);
             if(direct&&(direct.version||direct.can_update)){
                 const box=node('div',null,'admission-direct-return');
-                box.appendChild(node('strong',direct.active?'Origen: marca manual directa de cita ATENDIDO':direct.marked?'Marca directa conservada · inactiva':'Retorno manual directo de cita ATENDIDO'));
+                box.appendChild(node('strong',direct.active?'Retorno manual autorizado':direct.marked?'Marca manual conservada · inactiva':'Autorizar reevaluación manual'));
                 if(direct.actor)box.appendChild(node('small',(direct.marked?'Autorizó: ':'Último cambio: ')+direct.actor.name+' · '+new Date(direct.at).toLocaleString('es-PE',{timeZone:'America/Lima'})));
                 if(direct.can_update){const button=node('button',direct.marked?'Retirar marca manual directa':'Marcar reevaluación manual directa','admission-btn');button.type='button';button.dataset.directReevaluation='true';button.addEventListener('click',toggleDirect);box.appendChild(button);}area.appendChild(box);
             }
             if(requested){const meter=node('progress',null,'admission-procedure-progress');meter.max=requested;meter.value=completed;meter.setAttribute('aria-label','Progreso de procedimientos');area.appendChild(meter);}
-            let explanation=!requested?'El administrador todavía no ha confirmado procedimientos para esta cita.':completed+' de '+requested+' procedimientos realizados.';
+            let explanation=!requested?'No hay procedimientos confirmados para esta cita.':completed+' de '+requested+' procedimientos realizados.';
+            if(unified.pre_pending)explanation+=' Admisión o Comercial debe confirmar primero la indicación médica.';
+            else if(unified.pending)explanation+=' La reevaluación está confirmada; se espera el retorno.';
+            else if(unified.resumed)explanation+=' El médico ya retomó la atención del paciente.';
             if(pending.length)explanation+=' Falta '+pending.map(p=>p.label).join(', ')+'.';
             if(data.review.status==='READY')explanation+=data.review.origin==='MANUAL'?' Envío manual autorizado; los pendientes se conservan.':' Paciente listo para volver al médico.';
             else if(data.can_send&&completed)explanation+=' Puedes enviarlo manualmente si corresponde.';
@@ -290,12 +298,14 @@
         }
         async function physicianReevaluation(action) {
             if(busy||confirming||!detail||!window.Swal)return;
-            const id=detail.appointment.id, withdrawing=action==='withdraw';
+            const id=detail.appointment.id,withdrawing=action==='withdraw',resuming=action==='resume';
             confirming=true;let answer;
             try {
                 answer=await window.Swal.fire({
-                    title:withdrawing?'Retirar indicación de reevaluación':'Indicar reevaluación',
-                    text:withdrawing?'La retirada de la indicación médica quedará auditada.':'La cita seguirá EN ATENCIÓN y pasará al filtro Pendientes de reevaluación hasta que esté lista.',
+                    title:resuming?'Iniciar reevaluación':withdrawing?'Retirar indicación de reevaluación':'Indicar reevaluación',
+                    text:resuming?'Confirma que el paciente regresó al consultorio. Se registrará el inicio de la segunda atención.':
+                        withdrawing?'La retirada de la indicación médica quedará auditada.':
+                            'Se registrará la indicación médica. Admisión o Comercial deberá confirmar la reevaluación antes del retorno.',
                     ...(withdrawing?{input:'textarea',inputLabel:'Motivo obligatorio',inputAttributes:{maxlength:'500'},
                         inputValidator:value=>String(value||'').trim().length<3?'Indica el motivo.':undefined}:{}),
                     showCancelButton:true,confirmButtonText:'Confirmar',cancelButtonText:'Volver',focusCancel:true
@@ -309,8 +319,26 @@
                         request_key:crypto.randomUUID(),...(withdrawing?{reason:String(answer.value).trim()}:{})})
                 });
                 busy=false;await select(id);await load(id);
-                notice(withdrawing?'Indicación retirada con auditoría.':'Reevaluación indicada: pendiente de retorno.');
-            } catch(error) {busy=false;notice(error.message);}
+                notice(resuming?'Reevaluación iniciada: ahora puedes finalizar al terminar la atención.':
+                    withdrawing?'Indicación retirada con auditoría.':'Indicación médica registrada: pre-reevaluación sin confirmar.');
+            }catch(error) {busy=false;notice(error.message);}
+        }
+        async function confirmOperationalReevaluation() {
+            if(busy||confirming||!detail?.can_confirm_operational_reevaluation||!window.Swal)return;
+            const id=detail.appointment.id;confirming=true;let answer;
+            try{answer=await window.Swal.fire({
+                title:'Confirmar reevaluación pendiente',
+                text:'Admisión o Comercial confirma el seguimiento indicado por el médico. Esto no acredita exámenes realizados.',
+                showCancelButton:true,confirmButtonText:'Confirmar reevaluación',cancelButtonText:'Volver',focusCancel:true
+            });}finally{confirming=false;}
+            if(!answer?.isConfirmed||selected!==id)return;
+            busy=true;
+            try{
+                await request(board.dataset.base+'/'+id+'/confirm-reevaluation',{method:'POST',
+                    body:JSON.stringify({expected_state:'EN_ATENCION',confirmed:true,request_key:crypto.randomUUID()})});
+                busy=false;await select(id);await load(id);
+                notice('Reevaluación confirmada; revisa los exámenes o autoriza el retorno manual.');
+            }catch(error){busy=false;notice(error.message);}
         }
         function presentationName(parent, name, presentation) {
             const label=node('span',name,'admission-patient-name');
@@ -330,12 +358,18 @@
                 tr.style.setProperty('--ad-status-background',row.presentation?.fringe?.color||row.presentation?.fondo||'#ffffff');
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 const date=cell();append(date,node('strong',row.hora),node('small',row.fecha.slice(5).split('-').reverse().join('/')));
+                if(row.reevaluation?.ready && row.reevaluation?.indicated) tr.classList.add('is-ready-for-reevaluation');
                 const patient=cell();presentationName(patient,row.patient,{...row.presentation,badges:(row.presentation?.badges||[]).filter(b=>['TELECONSULTA','ADICIONAL','FUERA_HORARIO','HERIDA','POSTOPERATORIO','CONCILIAR_PAGO'].includes(b.clave))});
                 patient.appendChild(node('small','H.C. '+(row.historia||'—')+' · '+(row.documento||'—')));patient.appendChild(node('small',row.motivo_resumen||'Motivo: no registrado','admission-reason-summary'));
                 cell(row.doctor,row.servicio);const status=cell();append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.estado_cita==='ATENDIDO'?'attended':row.grupo==='desactivadas'?'inactive':['PROGRAMADO','CONFIRMADO'].includes(row.estado_cita)?'pending':'neutral'));const booking=bookingIndicator(doc,row.estado_agenda);if(booking)status.appendChild(booking);if(row.economy?.financial_status)status.appendChild(node('small',row.economy.financial_status.label,'admission-economic-state'));
                 const procedures=cell(),progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'},ready=row.reevaluation?.ready??progress.status==='READY';
                 if(progress.requested)procedures.appendChild(node('span',progress.completed+' de '+progress.requested+' realizados'));
-                procedures.appendChild(tag(ready?'Listo para reevaluación':progress.status==='NOT_READY'?(progress.requested?'Pendientes':'Sin solicitud'):({WITHDRAWN:'Retirado',SUSPENDED:'Suspendido',INACTIVE:'Inactivo'}[progress.status]||progress.status),ready?'ready':progress.requested&&progress.status==='NOT_READY'?'pending':['INACTIVE','WITHDRAWN','SUSPENDED'].includes(progress.status)?'inactive':'neutral'));
+                const review=row.reevaluation||{};
+                const title=review.resumed?'Reevaluación en consultorio':ready?'Listo para reevaluación':
+                    review.pending?'Pendiente de reevaluación':review.pre_pending?'Pre-reevaluación sin confirmar':
+                    progress.status==='NOT_READY'?(progress.requested?'Exámenes pendientes':'Sin solicitud'):
+                    ({WITHDRAWN:'Retirado',SUSPENDED:'Suspendido',INACTIVE:'Inactivo',READY:'Exámenes verificados'}[progress.status]||progress.status);
+                procedures.appendChild(tag(title,ready?'ready':review.pending||review.pre_pending?'pending':'neutral'));
                 body.appendChild(tr);
             }
             if(!payload.rows.length){const tr=node('tr'),td=node('td','No hay citas visibles que coincidan con estos filtros.');td.colSpan=5;tr.appendChild(td);body.appendChild(tr);}
@@ -384,9 +418,12 @@
             append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.estado_cita==='ATENDIDO'?'attended':a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
             const reason=node('div',null,'admission-consultation-reason');append(reason,node('strong','MOTIVO DE CONSULTA'),node('p',a.motivo_consulta?.trim()||'No registrado'));head.appendChild(reason);root.appendChild(head);
             const actions=node('div',null,'admission-care-actions');
-            for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(state==='EN_ATENCION'||state==='EN_ESPERA'?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>state==='INDICAR_REEVALUACION'?physicianReevaluation('indicate'):state==='RETIRAR_REEVALUACION'?physicianReevaluation('withdraw'):transition(state));actions.appendChild(button);}
-            if(payload.medical_reevaluation?.pending)actions.appendChild(node('p','REEVALUACIÓN PENDIENTE · verificar procedimientos o autorizar retorno. No finalizar todavía.','admission-tag admission-tag--pending'));
-            else if(payload.medical_reevaluation?.indicated&&payload.medical_reevaluation?.ready)actions.appendChild(node('p','LISTO PARA REEVALUACIÓN · el médico puede finalizar cuando corresponda.','admission-tag admission-tag--ready'));
+            for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(['EN_ATENCION','EN_ESPERA','INICIAR_REEVALUACION'].includes(state)?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>state==='INDICAR_REEVALUACION'?physicianReevaluation('indicate'):state==='RETIRAR_REEVALUACION'?physicianReevaluation('withdraw'):state==='INICIAR_REEVALUACION'?physicianReevaluation('resume'):transition(state));actions.appendChild(button);}
+            if(payload.can_confirm_operational_reevaluation){const confirm=node('button','Confirmar reevaluación pendiente','admission-btn admission-btn--primary');confirm.type='button';confirm.addEventListener('click',confirmOperationalReevaluation);actions.appendChild(confirm);}
+            if(payload.medical_reevaluation?.pre_pending)actions.appendChild(node('p','PRE-REEVALUACIÓN SIN CONFIRMAR · Admisión o Comercial debe confirmar la indicación.','admission-tag admission-tag--pending'));
+            else if(payload.medical_reevaluation?.pending)actions.appendChild(node('p','PENDIENTE DE REEVALUACIÓN · revisar exámenes o autorizar retorno manual.','admission-tag admission-tag--pending'));
+            else if(payload.medical_reevaluation?.ready)actions.appendChild(node('p','LISTO PARA REEVALUACIÓN · el médico debe iniciar la segunda atención.','admission-tag admission-tag--ready'));
+            else if(payload.medical_reevaluation?.resumed)actions.appendChild(node('p','REEVALUACIÓN EN CONSULTORIO · el médico puede finalizar al terminar.','admission-tag admission-tag--ready'));
             if(payload.care_reversal){const reverse=node('button','Retroceder estado','admission-btn');reverse.type='button';reverse.addEventListener('click',()=>reverseCare(payload.care_reversal));actions.appendChild(reverse);}root.appendChild(actions);
             const tabs=node('div',null,'admission-detail-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Información de la cita');
             const panels={};
