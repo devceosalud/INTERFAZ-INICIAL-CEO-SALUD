@@ -301,6 +301,9 @@
                 const tones={PROGRAMADO:'#c5a13e',LISTO_REEVALUACION:'#ce7a30',PRESENTE:'#32948c',PAGO_REAL:'#bd9c39',DESACTIVADA:'#bd5963',REEMBOLSO_SOLICITADO:'#bd5963',SALIDA_REGISTRADA:'#6f9c97',ATENDIDO:'#74dccb'};
                 tr.title=row.presentation?.fringe?.description||'';
                 tr.style.setProperty('--ad-status-color',tones[row.presentation?.fringe?.key]||row.presentation?.fringe?.color||'#dce8e9');
+                // The server owns the full-row palette; do not mistake the
+                // accent/border colour for the background of an appointment.
+                tr.style.setProperty('--ad-status-background',row.presentation?.fringe?.color||row.presentation?.fondo||'#ffffff');
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 const date=cell();append(date,node('strong',row.hora),node('small',row.fecha.slice(5).split('-').reverse().join('/')));
                 const patient=cell();presentationName(patient,row.patient,{...row.presentation,badges:(row.presentation?.badges||[]).filter(b=>['TELECONSULTA','ADICIONAL','FUERA_HORARIO','HERIDA','POSTOPERATORIO','CONCILIAR_PAGO'].includes(b.clave))});
