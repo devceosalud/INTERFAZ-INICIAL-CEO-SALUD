@@ -60,6 +60,7 @@ class AdmissionBoardService
         app(ManualReevaluationService::class)->load($rows);
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
         if (!empty($filters['grupo'])) $rows = $rows->filter(fn ($a) => AdmissionStatus::group($a) === $filters['grupo'])->values();
+        if (!empty($filters['only_pending_reevaluations'])) $rows=$rows->filter(fn($a)=>AppointmentReevaluationService::pending($a))->values();
         if (!empty($filters['only_reevaluations']) || ($filters['tab']??'citas')==='reevaluaciones') $rows=$rows->filter(fn($a)=>AppointmentReevaluationService::ready($a))->values();
         if (!empty($filters['visual'])) {
             $visualPositions=$this->economics->forAppointments($rows,[]);
