@@ -45,6 +45,12 @@ Route::middleware([
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/confirm-reevaluation',
             [$admission,'confirmOperationalReevaluation'])->whereNumber('appointmentId')
             ->middleware('throttle:30,1')->name('scheduling.mvp.admission.confirm-reevaluation');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/arrival',
+            [$admission,'registerArrival'])->whereNumber('appointmentId')
+            ->middleware('throttle:30,1')->name('scheduling.mvp.admission.arrival');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/decline-reevaluation',
+            [$admission,'closeDeclinedReevaluation'])->whereNumber('appointmentId')
+            ->middleware('throttle:20,1')->name('scheduling.mvp.admission.decline-reevaluation');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/reevaluation-history',
             \App\Http\Controllers\Scheduling\AppointmentReevaluationHistoryController::class)
