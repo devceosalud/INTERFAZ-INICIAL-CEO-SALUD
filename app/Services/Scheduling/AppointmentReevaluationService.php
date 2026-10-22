@@ -11,31 +11,74 @@ final class AppointmentReevaluationService
 {
     public const MEDICAL_INDICATED = 'REEVALUACION_MEDICA_INDICADA';
     public const MEDICAL_WITHDRAWN = 'REEVALUACION_MEDICA_RETIRADA';
+    public const OPERATIONAL_CONFIRMED = 'REEVALUACION_OPERATIVA_CONFIRMADA';
+    public const MEDICAL_RESUMED = 'REEVALUACION_MEDICA_RETOMADA';
 
-    /** Read the latest physician decision. Ordinary operational marks remain separate. */
+    /** Load the latest events in batches: every state belongs to the SAME appointment. */
     public static function loadIndications(\Illuminate\Support\Collection $appointments): void
     {
         if ($appointments->isEmpty()) return;
-        $latest = \App\Models\AppointmentEvent::query()->whereIn('id', function ($q) use ($appointments) {
-            $q->from('appointment_events')->selectRaw('MAX(id)')
-                ->whereIn('appointment_id', $appointments->pluck('id'))
-                ->whereIn('event_type', [self::MEDICAL_INDICATED, self::MEDICAL_WITHDRAWN])
-                ->groupBy('appointment_id');
-        })->get()->keyBy('appointment_id');
-        foreach ($appointments as $a) $a->setRelation('medicalReevaluationEvent', $latest->get($a->id));
+        foreach ([
+            'medicalReevaluationEvent' => [self::MEDICAL_INDICATED, self::MEDICAL_WITHDRAWN],
+            'operationalConfirmationEvent' => [self::OPERATIONAL_CONFIRMED],
+            'medicalReturnEvent' => [self::MEDICAL_RESUMED],
+        ] as $relation => $types) {
+            $latest = \App\Models\AppointmentEvent::query()->whereIn('id', function ($q) use ($appointments, $types) {
+                $q->from('appointment_events')->selectRaw('MAX(id)')
+                    ->whereIn('appointment_id', $appointments->pluck('id'))
+                    ->whereIn('event_type', $types)->groupBy('appointment_id');
+            })->get()->keyBy('appointment_id');
+            foreach ($appointments as $a) $a->setRelation($relation, $latest->get($a->id));
+        }
+    }
+
+    private static function event(Appointment $a, string $relation, array $types): ?\App\Models\AppointmentEvent
+    {
+        return $a->relationLoaded($relation) ? $a->getRelation($relation)
+            : $a->events()->whereIn('event_type', $types)->orderByDesc('id')->first();
+    }
+
+    private static function indication(Appointment $a): ?\App\Models\AppointmentEvent
+    {
+        return self::event($a, 'medicalReevaluationEvent', [self::MEDICAL_INDICATED, self::MEDICAL_WITHDRAWN]);
     }
 
     public static function indicated(Appointment $a): bool
     {
-        $event = $a->relationLoaded('medicalReevaluationEvent')
-            ? $a->getRelation('medicalReevaluationEvent')
-            : $a->events()->whereIn('event_type',[self::MEDICAL_INDICATED,self::MEDICAL_WITHDRAWN])->orderByDesc('id')->first();
-        return $event?->event_type === self::MEDICAL_INDICATED;
+        return self::indication($a)?->event_type === self::MEDICAL_INDICATED;
+    }
+
+    public static function confirmed(Appointment $a): bool
+    {
+        if (!self::indicated($a)) return false;
+        $event = self::event($a, 'operationalConfirmationEvent', [self::OPERATIONAL_CONFIRMED]);
+        return $event && $event->id > self::indication($a)->id;
+    }
+
+    public static function resumed(Appointment $a): bool
+    {
+        if (!self::confirmed($a)) return false;
+        $event = self::event($a, 'medicalReturnEvent', [self::MEDICAL_RESUMED]);
+        $confirm = self::event($a, 'operationalConfirmationEvent', [self::OPERATIONAL_CONFIRMED]);
+        return $event && $event->id > $confirm->id;
+    }
+
+    public static function prePending(Appointment $a): bool
+    {
+        return $a->estado_cita === 'EN_ATENCION' && self::indicated($a) && !self::confirmed($a);
     }
 
     public static function pending(Appointment $a): bool
     {
-        return $a->estado_cita === 'EN_ATENCION' && self::indicated($a) && !self::ready($a);
+        return $a->estado_cita === 'EN_ATENCION' && self::confirmed($a)
+            && !self::ready($a) && !self::resumed($a);
+    }
+
+    public static function operatorCanConfirm(User $actor): bool
+    {
+        return (bool) $actor->is_active && $actor->hasAnyRole(['ADMISION', 'COMERCIAL'])
+            && $actor->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+            && $actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW);
     }
 
     /** Compatibility: existing medical account requires its own session;
@@ -94,50 +137,96 @@ final class AppointmentReevaluationService
             $a->loadMissing('operationalReview');
             app(ManualReevaluationService::class)->load(collect([$a]));
             abort_if($decision==='indicate' && $active,422,'La reevaluación ya está indicada.');
+            abort_if($decision==='resume' && (!self::ready($a) || self::resumed($a)),422,
+                'El retorno debe estar confirmado y listo antes de iniciar la reevaluación.');
             abort_if($decision==='withdraw' && !$active,422,'No hay indicación activa.');
+            abort_if($decision==='withdraw' && self::resumed($a),422,'El médico ya retomó la atención.');
             if($decision==='withdraw'){
                 abort_if(self::ready($a),422,'La reevaluación ya está lista.');
                 abort_unless(mb_strlen(trim($data['reason']??''))>=3,422,'Indica el motivo de retirar la reevaluación.');
             }
-            $event=app(AppointmentHistory::class)->record($a,$decision==='indicate'
-                ? self::MEDICAL_INDICATED:self::MEDICAL_WITHDRAWN,$actor->id,
+            $eventType=match($decision){
+                'indicate'=>self::MEDICAL_INDICATED,
+                'withdraw'=>self::MEDICAL_WITHDRAWN,
+                'resume'=>self::MEDICAL_RESUMED,
+            };
+            $event=app(AppointmentHistory::class)->record($a,$eventType,$actor->id,
                 ['motivo'=>$decision==='withdraw'?trim($data['reason']):null,
                  'metadata'=>['source'=>'VERIFIED_PHYSICIAN_SAME_APPOINTMENT_V1',
                      'doctor_id'=>(int)$a->doctor_id,'previous_event_id'=>$latest?->id,'operation_id'=>$op->id]]);
             DB::table('appointment_operations')->where('id',$op->id)
                 ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
-            $a->setRelation('medicalReevaluationEvent',$event);
+            if($decision==='resume') $a->setRelation('medicalReturnEvent',$event);
+            else $a->setRelation('medicalReevaluationEvent',$event);
+            return $a;
+        },3);
+    }
+
+    /** Reception / commercial confirms the physician's indication, without marking exams done. */
+    public function confirmOperational(int $id, User $actor, array $data): Appointment
+    {
+        abort_unless(self::operatorCanConfirm($actor),403);
+        $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
+        $hash=hash('sha256',json_encode(['OPERATIVE_CONFIRMATION_V1',$id,$data]));
+        return DB::transaction(function () use ($id,$actor,$original,$data,$hash) {
+            DB::table('appointment_operations')->upsert([[
+                'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,
+                'created_at'=>now(),'updated_at'=>now(),
+            ]],['actor_user_id','request_key'],['request_key']);
+            $op=DB::table('appointment_operations')->where('actor_user_id',$actor->id)
+                ->where('request_key',$data['request_key'])->lockForUpdate()->first();
+            abort_unless(hash_equals($op->payload_hash,$hash),409,'Operación duplicada con datos distintos.');
+            if($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)
+                ->whereKey($op->appointment_id)->firstOr(fn()=>abort(404));
+            \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
+            $a=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn()=>abort(404));
+            abort_unless((int)$a->doctor_id===(int)$original->doctor_id
+                && $a->estado_cita==='EN_ATENCION' && $data['expected_state']==='EN_ATENCION'
+                && $a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
+                && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true),409,'La atención cambió. Actualiza la cita.');
+            app(ManualReevaluationService::class)->load(collect([$a]));
+            abort_unless(self::indicated($a) && !self::confirmed($a),422,
+                'Solo puedes confirmar una pre-reevaluación médica que aún no esté confirmada.');
+            $event=app(AppointmentHistory::class)->record($a,self::OPERATIONAL_CONFIRMED,$actor->id,[
+                'metadata'=>['source'=>'OPERATIVE_CONFIRMATION_V1',
+                    'indication_event_id'=>self::indication($a)->id,'operation_id'=>$op->id]]);
+            DB::table('appointment_operations')->where('id',$op->id)
+                ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+            $a->setRelation('operationalConfirmationEvent',$event);
             return $a;
         },3);
     }
 
     public static function directReady(Appointment $a): bool
     {
-        return $a->relationLoaded('manualReevaluationEvent')
-            && $a->getRelation('manualReevaluationEvent')?->event_type === ManualReevaluationService::MARKED
-            && ($a->estado_cita === 'ATENDIDO' || ($a->estado_cita === 'EN_ATENCION' && self::indicated($a))) && !$a->hora_salida
-            && in_array($a->estado_agenda, ['LEGADO','CONFIRMADA'], true);
+        $event=self::event($a,'manualReevaluationEvent',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED]);
+        if ($event?->event_type !== ManualReevaluationService::MARKED || $a->hora_salida
+            || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return false;
+        if ($a->estado_cita==='ATENDIDO') return !self::indicated($a);
+        return $a->estado_cita==='EN_ATENCION' && self::confirmed($a)
+            && $event->id > self::indication($a)->id;
     }
 
     public static function ready(Appointment $a): bool
     {
-        // Once the verified physician has FINISHED this clinical episode,
-        // it is no longer waiting for a return to the consultorio.
-        // Preserve the legacy manual direct return for ATENDIDO episodes
-        // that never had a new medical indication.
-        if ($a->estado_cita==='ATENDIDO' && self::indicated($a)) return false;
+        if (self::indicated($a)) {
+            return $a->estado_cita==='EN_ATENCION' && self::confirmed($a) && !self::resumed($a)
+                && (self::directReady($a) || OperationalProcedureService::ready($a));
+        }
         return self::directReady($a) || OperationalProcedureService::ready($a);
     }
 
     public static function summary(Appointment $a): array
     {
+        $ready=self::ready($a);
         $origins=[];
-        if (self::directReady($a)) $origins[]='MANUAL_DIRECT';
-        if (OperationalProcedureService::ready($a)) {
+        if ($ready && self::directReady($a)) $origins[]='MANUAL_DIRECT';
+        if ($ready && OperationalProcedureService::ready($a)) {
             $origins[]=$a->operationalReview->origin === 'MANUAL' ? 'MANUAL_PARTIAL' : 'AUTOMATIC';
         }
-        return ['ready'=>count($origins)>0,'pending'=>$a->estado_cita==='EN_ATENCION' && self::indicated($a) && count($origins)===0,
-            'indicated'=>self::indicated($a),'origins'=>$origins];
+        return ['ready'=>$ready,'pre_pending'=>self::prePending($a),
+            'pending'=>self::pending($a),'confirmed'=>self::confirmed($a),
+            'resumed'=>self::resumed($a),'indicated'=>self::indicated($a),'origins'=>$origins];
     }
 
     public function detail(Appointment $a, User $actor, array $procedures): array
