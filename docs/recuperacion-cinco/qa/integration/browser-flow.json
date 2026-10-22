@@ -1,0 +1,67 @@
+{
+  "result": "PASS",
+  "checks": 15,
+  "results": [
+    {
+      "name": "Médico bloqueado antes de llegada",
+      "result": "PASS"
+    },
+    {
+      "name": "Otro médico no puede firmar",
+      "result": "PASS"
+    },
+    {
+      "name": "Llegada COMERCIAL en interfaz",
+      "result": "PASS"
+    },
+    {
+      "name": "Indicación sin confirmación operativa",
+      "result": "PASS"
+    },
+    {
+      "name": "Confirmación independiente y 0/3 pendientes",
+      "result": "PASS"
+    },
+    {
+      "name": "1/3 comprobados por COMERCIAL",
+      "result": "PASS"
+    },
+    {
+      "name": "2/3 comprobados por COMERCIAL",
+      "result": "PASS"
+    },
+    {
+      "name": "3/3 comprobados por COMERCIAL",
+      "result": "PASS"
+    },
+    {
+      "name": "Listo no equivale a segunda revisión realizada",
+      "result": "PASS"
+    },
+    {
+      "name": "Rechazo bloqueado tras retorno médico",
+      "result": "PASS"
+    },
+    {
+      "name": "Finalización y salida separadas, economía conservada",
+      "result": "PASS"
+    },
+    {
+      "name": "Recorrido manual y salida en interfaz",
+      "result": "PASS"
+    },
+    {
+      "name": "Recorrido declined y salida en interfaz",
+      "result": "PASS"
+    },
+    {
+      "name": "Recorrido normal y salida en interfaz",
+      "result": "PASS"
+    },
+    {
+      "name": "Sin adelanto visible y reserva ajena sigue privada",
+      "result": "PASS"
+    }
+  ],
+  "errors": []
+}

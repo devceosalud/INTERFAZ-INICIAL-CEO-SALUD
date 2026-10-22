@@ -18,7 +18,7 @@ class UserController extends Controller
     public function __construct(){ $this->middleware(['auth','role:ADMINISTRADOR']); }
     public function index()
     {
-        return response()->view('admin.user.index',['users'=>User::with('roles')->orderBy('name')->get()])
+        return response()->view('admin.user.index',['users'=>User::with(['roles','doctor:id,nombre'])->orderBy('name')->get()])
             ->header('Cache-Control','private, no-store');
     }
     public function store(Request $r,UserAccountAccess $access)
@@ -68,23 +68,56 @@ class UserController extends Controller
     }
     public function edit(int $user)
     {
-        $user=User::findOrFail($user);
-        return response()->view('admin.user.edit',['user'=>$user,'roles'=>Role::where('guard_name','web')->orderBy('name')->get()])
+        $user=User::with('doctor')->findOrFail($user);
+        $events=\App\Models\UserAccountEvent::where('target_user_id',$user->id)->where('event_type',\App\Services\UserDoctorLink::EVENT)->orderByDesc('id')->paginate(30);
+        return response()->view('admin.user.edit',['user'=>$user,'target'=>$user,
+            'doctors'=>\App\Models\Doctor::with('user:id,doctor_id,name')->orderBy('nombre')->get(),
+            'events'=>$events,'people'=>User::whereIn('id',$events->pluck('actor_user_id'))->pluck('name','id'),
+            'roles'=>Role::where('guard_name','web')->orderBy('name')->get()])
             ->header('Cache-Control','private, no-store');
     }
     public function update(int $user,Request $r,UserAccountAccess $access)
     {
         $user=User::findOrFail($user);
-        $d=$r->validate(['role'=>['required','integer',Rule::exists('roles','id')->where('guard_name','web')]]);
+        $d=$r->validate(['role'=>['required','integer',Rule::exists('roles','id')->where('guard_name','web')],
+            'confirm_remove_medico'=>'sometimes|accepted']);
         DB::transaction(function()use($user,$r,$d,$access){
             $actor=$access->lockAdministrator($r->user(),[$user->id]);$target=User::whereKey($user->id)->lockForUpdate()->firstOrFail();
-            $access->assertAdministratorRemains($target,[(int)$d['role']]);$before=$target->roles()->pluck('roles.id')->all();
-            $target->syncRoles(Role::findOrFail($d['role']));
+            $before=$target->roles()->pluck('roles.id')->map(fn($id)=>(int)$id)->sort()->values()->all();
+            $selectedRole=Role::findOrFail($d['role']);
+            $isMedical=$selectedRole->name==='MEDICO';
+            $isAdministrator=$target->hasRole('ADMINISTRADOR','web');
+            if(!$isMedical && $isAdministrator && $target->hasRole('MEDICO','web')){
+                abort_unless($r->boolean('confirm_remove_medico'),422,
+                    'Confirma expresamente la retirada de MEDICO de esta cuenta administrativa.');
+            }
+            if($isMedical){
+                abort_if($target->id===$actor->id,403,'Otro administrador debe validar tu acceso médico.');
+                $clinical=\App\Support\Scheduling\ClinicalCapability::all();
+                // Explicitly support the legacy administrator's same account. Never silently
+                // replace staff roles or strip direct permissions to make MEDICO fit.
+                abort_if($target->roles()->whereNotIn('name',['ADMINISTRADOR','MEDICO'])->exists(),422,
+                    'Esta cuenta posee otros roles. No se sustituyen silenciosamente al agregar MEDICO.');
+                abort_if($selectedRole->permissions()->whereNotIn('name',$clinical)->exists()
+                    || (!$isAdministrator && $target->permissions()->whereNotIn('name',$clinical)->exists()),422,
+                    'Revisa los permisos directos de esta cuenta o del rol MEDICO; no se eliminan automáticamente.');
+            }
+            $proposed=$isMedical?array_values(array_unique(array_merge($before,[(int)$selectedRole->id]))):[(int)$selectedRole->id];
+            $access->assertAdministratorRemains($target,$proposed);
+            if($isMedical)$target->assignRole($selectedRole);
+            else $target->syncRoles($selectedRole);
+            $after=$target->roles()->pluck('roles.id')->map(fn($id)=>(int)$id)->sort()->values()->all();
+            // Revoke only the changed medical account's sessions, not those of other workers.
+            $medicalRoleId=Role::where('name','MEDICO')->where('guard_name','web')->value('id');
+            if($before!==$after && $medicalRoleId
+                && (in_array((int)$medicalRoleId,$before,true) || in_array((int)$medicalRoleId,$after,true))){
+                $access->rotateAccess($target);$target->save();
+            }
             \Illuminate\Support\Facades\Log::notice('authorization.user_role_updated',['actor_user_id'=>$actor->id,
-                'target_user_id'=>$target->id,'before_role_ids'=>$before,'after_role_ids'=>[(int)$d['role']]]);
+                'target_user_id'=>$target->id,'before_role_ids'=>$before,'after_role_ids'=>$after]);
             $key=(string)Str::uuid();
             $access->record($target,$actor,'ROLES_ASSIGNED',$key,hash('sha256','ROLES_ASSIGNED:'.$key),null,
-                ['before_role_ids'=>$before,'after_role_ids'=>[(int)$d['role']]]);
+                ['before_role_ids'=>$before,'after_role_ids'=>$after]);
         },3);
         return redirect()->route('admin.user.index')->with('exito','Rol asignado correctamente al usuario');
     }
@@ -98,7 +131,7 @@ class UserController extends Controller
         return Validator::make($r->all(),['usuario_id_edit'=>'required|integer','nombre_usuario_edit'=>'required|string|max:255',
             'email_edit'=>$emailRules,'dni_edit'=>$dniRules,'password'=>'nullable|string|min:8|max:128']+$this->protectedFields());
     }
-    private function protectedFields():array{return ['is_active'=>'prohibited','auth_version'=>'prohibited','role'=>'prohibited','permissions'=>'prohibited'];}
+    private function protectedFields():array{return ['is_active'=>'prohibited','auth_version'=>'prohibited','role'=>'prohibited','permissions'=>'prohibited','doctor_id'=>'prohibited'];}
     private function invalid(array $errors){return response()->json(['code'=>0,'error'=>$errors]);}
     private function uniqueFailure(QueryException $error)
     {

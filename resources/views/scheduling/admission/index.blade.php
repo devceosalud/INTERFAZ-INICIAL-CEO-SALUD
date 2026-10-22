@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('body_class', 'admission-viewport')
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-reschedule-history.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
@@ -11,11 +12,11 @@
     @include('templates.header')
     @include('templates.sidebar')
     <div class="content-body admission-page"><main id="admission-board" class="admission-board"
-        data-feed="{{ route('scheduling.mvp.admission.feed') }}" data-base="{{ url('/scheduling-mvp/admission/appointments') }}"
+        data-clinical-only="{{ $clinicalOnly ? '1' : '0' }}" data-feed="{{ route('scheduling.mvp.admission.feed') }}" data-base="{{ url('/scheduling-mvp/admission/appointments') }}"
         data-availability="{{ route('scheduling.mvp.availability') }}" data-agenda="{{ route('scheduling.mvp.agenda') }}">
         <div class="admission-commandbar">
             <header class="admission-heading"><div><p class="admission-eyebrow">ATENCIÓN Y SEGUIMIENTO</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
-                <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
+                <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create" @if($clinicalOnly) hidden @endif>{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
                 @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
@@ -45,22 +46,29 @@
                     </div>
                 </details>
             </form>
-            <div class="admission-context-line"><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><details class="admission-financial-summary"><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales de todos los resultados filtrados. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
+            <div class="admission-context-line"><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><details class="admission-financial-summary" @if($clinicalOnly) hidden @endif><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales de todos los resultados filtrados. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
             <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
         </div>
         <div class="admission-workspace">
             <section class="admission-main" aria-label="Pacientes y reevaluaciones">
-                <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
+                <details id="admission-reschedule-panel" class="admission-reschedule-panel" hidden>
+                    <summary>Reprogramaciones del día <span id="admission-reschedule-count"></span></summary>
+                    <p>Referencias históricas según los filtros. No forman parte de la cola de atención, los indicadores ni los importes. Las acciones corresponden a la cita vigente.</p>
+                    <div id="admission-reschedule-list"></div>
+                    <button id="admission-reschedule-previous" type="button" class="admission-btn" hidden>Referencias anteriores</button>
+                    <button id="admission-reschedule-latest" type="button" class="admission-btn" hidden>Referencias recientes</button>
+                </details>
+                <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button @if($clinicalOnly) hidden @endif id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
                     <div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div>
                     <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención</th><th>Procedimientos</th></tr></thead><tbody id="admission-rows"></tbody></table></div>
                     <div class="admission-pagination"><button type="button" id="admission-prev" class="admission-btn">Anterior</button><span id="admission-page"></span><button type="button" id="admission-next" class="admission-btn">Siguiente</button></div>
                 </div>
-                <div id="admission-queue-panel" role="tabpanel" aria-labelledby="admission-queue-tab" hidden><x-utils.operational-reevaluations :compact="true" /></div>
+                <div id="admission-queue-panel" role="tabpanel" aria-labelledby="admission-queue-tab" hidden>@unless($clinicalOnly)<x-utils.operational-reevaluations :compact="true" />@endunless</div>
             </section>
             <aside class="admission-detail" aria-label="Detalle de cita"><div class="admission-section-head"><h2>Detalle del paciente</h2><button id="admission-back-list" type="button" class="admission-btn admission-btn--quiet">Volver a la lista</button></div><div id="admission-detail" class="admission-detail-body"><p class="admission-empty">Selecciona un paciente para consultar el motivo y gestionar su atención.</p></div></aside>
         </div>
-        <details class="admission-availability" id="admission-availability-panel"><summary>Turnos y disponibilidad <span>Consulta complementaria · fecha inicial del filtro</span></summary><p id="admission-availability-note"></p><div id="admission-availability" class="admission-availability-grid"></div>@unless($defaultSite)<p class="admission-footnote">Magdalena del Mar no tiene una identificación única en el catálogo. Usa el filtro de sede; no se reasignan citas históricas.</p>@endunless</details>
+        <details class="admission-availability" id="admission-availability-panel" @if($clinicalOnly) hidden @endif><summary>Turnos y disponibilidad <span>Consulta complementaria · fecha inicial del filtro</span></summary><p id="admission-availability-note"></p><div id="admission-availability" class="admission-availability-grid"></div>@unless($defaultSite)<p class="admission-footnote">Magdalena del Mar no tiene una identificación única en el catálogo. Usa el filtro de sede; no se reasignan citas históricas.</p>@endunless</details>
     </main></div>
     @include('templates.footer')
 </div>

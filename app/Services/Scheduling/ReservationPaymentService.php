@@ -18,6 +18,8 @@ class ReservationPaymentService
 {
     public function submit(int $id, User $actor, array $data, \Illuminate\Http\UploadedFile|array|null $proof = null): Appointment
     {
+        $withoutDeposit=($data['without_deposit']??false)===true;
+        if($withoutDeposit)$this->authorizeWithoutDeposit($actor,$data);
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403);
         if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
@@ -26,7 +28,12 @@ class ReservationPaymentService
         $indication=\App\Models\AppointmentReevaluationIndication::where('bound_appointment_id',$id)->first();
         $files=AppointmentPaymentProofs::files($proof,$data);
         unset($data['proof'],$data['proofs']); $storedPaths = [];
-        try { return DB::transaction(function () use ($original, $id, $actor, $data, $files, &$storedPaths,$indication) {
+        try { return DB::transaction(function () use ($original, $id, $actor, $data, $files, &$storedPaths,$indication,$withoutDeposit) {
+            if($withoutDeposit){
+                $fresh=User::whereKey($actor->id)->lockForUpdate()->firstOr(fn()=>abort(403));
+                abort_unless($fresh->auth_version===$actor->auth_version,403);
+                $this->authorizeWithoutDeposit($fresh,$data);
+            }
             if($storedPaths){\Illuminate\Support\Facades\Storage::disk('local')->delete($storedPaths);$storedPaths=[];}
             $hash = hash('sha256', json_encode([$id, $data]).AppointmentPaymentProofs::fingerprint($files));
             // Upsert only the same UUID: acquires an exclusive key lock without replacing the original hash/result.
@@ -45,6 +52,8 @@ class ReservationPaymentService
                 substr($a->fecha_cita,0,10),$actor->id,$a->id,true,(int)$a->doctor_id);
             abort_if(in_array($a->estado_cita, ['CANCELADO', 'NO_ASISTIO', 'RETIRO', 'ATENDIDO'], true), 409, 'La cita no admite otro cobro.');
             $positions = app(AppointmentEconomicPosition::class); $p = $positions->forAppointment($a);
+            if($withoutDeposit)abort_unless(self::withoutDepositEligible($a,$actor,$p),422,
+                'La excepción requiere una reserva privada sin pagos, créditos ni exoneración, con saldo pendiente.');
             if ($p['allocation_required']) { throw ValidationException::withMessages(['payment' => 'Este documento necesita atribución financiera por cita antes de otro pago.']); }
             $amount = Money::cents($data['payment']['amount'] ?? 0); $payment=null;
             if (($amount > 0 || ($data['confirm'] ?? false) === true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION' && $a->tipo_agendamiento === 'ADICIONAL') {
@@ -79,7 +88,7 @@ class ReservationPaymentService
                 'updated_by_user_id' => $actor->id]);
             if (($amount > 0 || ($data['confirm'] ?? false) === true) && $a->estado_agenda === 'PENDIENTE_CONFIRMACION') {
                 if ($doctor->estado !== 'ACTIVO') { throw ValidationException::withMessages(['doctor_id' => 'El médico está inactivo. Conserva la reserva para seguimiento humano.']); }
-                if (!AppointmentEconomicPosition::allowsConfirmation($p) && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo o exoneración autorizada.']); }
+                if (!$withoutDeposit && !AppointmentEconomicPosition::allowsConfirmation($p) && !($a->es_exonerado && trim($a->autorizado_por ?? '') !== '')) { throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo o exoneración autorizada.']); }
                 $slots = app(AppointmentSlotValidator::class); $date = substr($a->fecha_cita, 0, 10); $time = substr($a->hora_cita, 0, 5);
                 if ($a->tipo_agendamiento === 'FUERA_HORARIO') $slots->assertOutsideHours($a->doctor_id, $date, $time, $a->duracion_cita);
                 else $slots->assertValid($a->doctor_id, $date, $time, $a->duracion_cita, $a->site_id, $a->id, true, true);
@@ -89,8 +98,10 @@ class ReservationPaymentService
             }
             if ($files) app(AppointmentPaymentProofs::class)->store($a,$payment,$actor->id,$files,$data['proof_review'],$storedPaths);
             DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $a->id, 'updated_at' => now()]);
-            app(AppointmentHistory::class)->record($a, $amount > 0 ? 'PAGO_REGISTRADO' : 'CONFIRMACION_AGENDA', $actor->id,
-                ['metadata' => ['operation_id' => $op->id, 'amount' => Money::decimal($amount), 'tipo_agendamiento' => $a->tipo_agendamiento]]);
+            app(AppointmentHistory::class)->record($a, $withoutDeposit ? 'CONFIRMACION_SIN_ADELANTO' : ($amount > 0 ? 'PAGO_REGISTRADO' : 'CONFIRMACION_AGENDA'), $actor->id,
+                ['motivo'=>$withoutDeposit?trim($data['reason']):null,'metadata' => ['operation_id' => $op->id, 'amount' => Money::decimal($amount), 'tipo_agendamiento' => $a->tipo_agendamiento,
+                    'without_deposit'=>$withoutDeposit,'explicit_confirmation'=>$withoutDeposit,
+                    'before_agenda_state'=>$withoutDeposit?'PENDIENTE_CONFIRMACION':null,'after_agenda_state'=>$a->estado_agenda]]);
             return $a;
         },3); } catch (\Throwable $error) {
             if ($storedPaths) { \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPaths); }
@@ -98,5 +109,35 @@ class ReservationPaymentService
                 throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('La operación coincidió con otra escritura. Reintenta usando la misma solicitud; no repitas el cobro con una nueva clave.');
             throw $error;
         }
+    }
+
+    public static function withoutDepositActor(User $actor): bool
+    {
+        $u=$actor->fresh();
+        return $u && $u->is_active && $u->hasRole('ADMISION','web')
+            && \App\Support\Scheduling\ClinicalAccess::has($u,Capability::MVP_ACCESS)
+            && \App\Support\Scheduling\ClinicalAccess::has($u,Capability::VIEW)
+            && \App\Support\Scheduling\ClinicalAccess::has($u,Capability::CREATE);
+    }
+
+    public static function withoutDepositEligible(Appointment $a,User $actor,array $p): bool
+    {
+        return self::withoutDepositActor($actor) && $a->estado_agenda==='PENDIENTE_CONFIRMACION'
+            && in_array($a->estado_cita,['PROGRAMADO','CONFIRMADO'],true)
+            && !$a->es_exonerado && !$a->hora_llegada && !$a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
+            && empty($p['allocation_required']) && $p['paid_cents']===0 && $p['credit_cents']===0
+            && $p['balance_cents']>0 && $p['price_cents']>0
+            && !\App\Models\VoucherItem::whereIn('item_type',['cita',Appointment::class])->where('item_id',$a->id)->exists();
+    }
+
+    private function authorizeWithoutDeposit(User $actor,array $data): void
+    {
+        abort_unless(self::withoutDepositActor($actor),403,'Solo ADMISION puede confirmar sin adelanto.');
+        \Illuminate\Support\Facades\Validator::make($data,[
+            'request_key'=>'required|uuid','expected_revision'=>'required|string|size:64',
+            'confirmed'=>'required|accepted','reason'=>'required|string|min:5|max:500',
+        ])->validate();
+        abort_unless(($data['confirm']??false)===true && Money::cents($data['payment']['amount']??0)===0
+            && mb_strlen(trim($data['reason']))>=5,422);
     }
 }

@@ -39,6 +39,7 @@ class LegacyAppointmentMutation
             Doctor::whereIn('id', $doctorIds)->orderBy('id')->lockForUpdate()->get();
             $a = Appointment::visibleToAgendaUser($actor->id)->lockForUpdate()->whereKey($original->id)->firstOr(fn () => abort(404));
             abort_if((int) $a->doctor_id !== (int) $original->doctor_id, 409, 'La cita cambió de médico. Actualiza antes de editar.');
+            abort_if($a->estado_cita!==$data['estado_cita'] && (in_array($data['estado_cita'],['EN_ATENCION','ATENDIDO'],true) || $a->estado_cita==='EN_ATENCION'),403,'Utiliza el recorrido autorizado de Admisión para actuaciones clínicas.');
             abort_if(($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA' && in_array($data['estado_cita'],['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','EN_ATENCION','ATENDIDO'],true) && $a->estado_cita!==$data['estado_cita'],422,'El flujo de atención remota está pendiente de definición. No se registra presencia física.');
             AppointmentClosingGuard::assertLegacyUpdate($a, $data['estado_cita']);
             if ($a->estado_cita === 'ATENDIDO' && $data['estado_cita'] !== 'ATENDIDO') {

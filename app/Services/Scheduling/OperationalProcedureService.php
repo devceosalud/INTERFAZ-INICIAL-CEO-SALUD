@@ -19,11 +19,15 @@ final class OperationalProcedureService
         'hyaluronic_acid' => 'Ácido hialurónico',
     ];
 
-    public function canSelect(User $u): bool { return $this->eligible($u) && $u->hasRole('ADMINISTRADOR'); }
-    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION']); }
+    public function canSelect(User $u): bool {
+        if($this->eligible($u) && $u->hasRole('ADMINISTRADOR'))return true;
+        try{\App\Support\Scheduling\ClinicalAccess::actor($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);return true;}
+        catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;return false;}
+    }
+    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION','COMERCIAL']); }
     public function canSend(User $u): bool
     {
-        return $this->eligible($u) && ($u->hasRole('ADMISION')
+        return $this->eligible($u) && ($u->hasAnyRole(['ADMISION','COMERCIAL'])
             || ($u->hasRole('ADMINISTRADOR') && $u->can(self::SUPERVISE)));
     }
     private function eligible(User $u): bool { return $u->is_active && $u->can(C::MVP_ACCESS) && $u->can(C::VIEW); }
@@ -92,13 +96,16 @@ final class OperationalProcedureService
             'selection' => $this->canSelect($u), 'completion' => $this->canComplete($u),
             'send', 'withdraw' => $this->canSend($u), default => false,
         }, 403);
-        Appointment::visibleToAgendaUser($u->id)->whereKey($id)->firstOr(fn () => abort(404));
-        DB::transaction(function () use ($id, $u, $action, $data) {
+        $original=Appointment::visibleToAgendaUser($u->id)->whereKey($id)->firstOr(fn () => abort(404));
+        $clinical=$action==='selection' && !$this->eligible($u);
+        if($clinical){\App\Support\Scheduling\ClinicalAccess::appointment($u,$original);abort_unless($original->estado_cita==='EN_ATENCION' && !$original->hora_atendido && !$original->hora_salida,422);}
+        AppointmentReevaluationService::transaction(function () use ($id, $u, $action, $data,$clinical) {
             $hash = hash('sha256', json_encode(['OPERATIONAL_PROCEDURES', $id, $action, $data]));
             DB::table('appointment_operations')->upsert([['actor_user_id' => $u->id, 'request_key' => $data['request_key'],
                 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
             $op = DB::table('appointment_operations')->where('actor_user_id', $u->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash, $hash), 409, 'La solicitud ya corresponde a otra operación.');
+            if($clinical)[$u,$locked]=\App\Support\Scheduling\ClinicalAccess::lock($u,$id,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);
             $a = Appointment::visibleToAgendaUser($u->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             if ($op->appointment_id) return;
             $review = DB::table('appointment_operational_reviews')->where('appointment_id', $id)->lockForUpdate()->first();

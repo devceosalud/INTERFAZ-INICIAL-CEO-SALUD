@@ -21,6 +21,11 @@ class Doctor extends Model
     /**
      * Obtiene la especialidad del doctor.
      */
+    public function user()
+    {
+        return $this->hasOne(User::class);
+    }
+
     public function specialty()
     {
         return $this->belongsTo(Specialty::class);

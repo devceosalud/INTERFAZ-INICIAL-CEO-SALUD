@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "checks": [
+    "ADMINISTRADOR revisa y guarda descuento después de pago: mismo servicio, pago60 intacto, precio100, saldo40 y auditoría visible",
+    "Reprogramación desde editor existente: referencia original, enlace a misma cita vigente en nueva fecha e importes conservados",
+    "Agenda Operativa muestra origen histórico sin ocupar el intervalo anterior",
+    "Vinculación por nombre integrada al editor de usuario existente"
+  ],
+  "errors": []
+}

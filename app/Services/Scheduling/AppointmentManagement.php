@@ -25,6 +25,8 @@ final class AppointmentManagement
     public static function payload(Appointment $a, User $actor): array
     {
         return ['revision'=>self::revision($a),'can_edit'=>self::canEdit($a,$actor),
+            'can_correct_payment'=>AppointmentEconomicEdit::allowed($actor,'PAYMENT'),
+            'can_adjust_pricing'=>AppointmentEconomicEdit::allowed($actor,'PRICING'),
             'can_change_mode'=>self::canChangeMode($a,$actor),
             'can_reschedule'=>$actor->can(C::RESCHEDULE) && Appointment::visibleToAgendaUser($actor->id)->whereKey($a->id)->exists()
                 && in_array($a->estado_cita,['PROGRAMADO','CONFIRMADO'],true),

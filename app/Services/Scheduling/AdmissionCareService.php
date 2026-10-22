@@ -29,7 +29,7 @@ class AdmissionCareService
             && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW),403);
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
         $hash=hash('sha256',json_encode(['OPERATIONAL_ARRIVAL_V1',$id,$data]));
-        return DB::transaction(function()use($id,$actor,$original,$data,$hash){
+        return AppointmentReevaluationService::transaction(function()use($id,$actor,$original,$data,$hash){
             DB::table('appointment_operations')->upsert([[
                 'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()
@@ -63,7 +63,7 @@ class AdmissionCareService
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return null;
         if (!$actor->is_active || !$actor->hasAnyRole(['ADMINISTRADOR','ADMISION']) || !$actor->can(C::UPDATE)
             || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true) || $a->hora_atendido || $a->hora_salida
-            || !in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)) return null;
+            || !in_array($a->estado_cita,['EN_ESPERA','LLAMANDO'],true)) return null;
         // Any later event invalidates the offer, including an edit that returns to the same state (ABA).
         $last = $a->events()->orderByDesc('id')->first();
         if (!$last || $last->event_type !== 'ADMISION_ESTADO_ACTUALIZADO' || !isset($last->metadata['previous_timestamps'])
@@ -78,7 +78,7 @@ class AdmissionCareService
             && $actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
         abort_unless(mb_strlen(trim($data['motivo']))>=3,422,'Indica el motivo de corrección.');
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
-        return DB::transaction(function() use($id,$actor,$data,$original) {
+        return AppointmentReevaluationService::transaction(function() use($id,$actor,$data,$original) {
             $hash=hash('sha256',json_encode(['CARE_REVERSAL',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
@@ -105,21 +105,34 @@ class AdmissionCareService
 
     public function transition(int $id, User $actor, array $data): Appointment
     {
-        abort_unless($actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
+        abort_unless($actor->is_active,403);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
-        return DB::transaction(function () use ($id,$actor,$data,$original) {
+        $clinical=in_array($data['state'],['EN_ATENCION','ATENDIDO'],true);
+        $verified=AppointmentReevaluationService::physicianCanAct($actor,$original);
+        if($clinical && !$verified){
+            abort_unless(UnlinkedDoctorAdmissionFallback::eligible($original,$actor),403);
+            abort_unless(($data['confirmed']??false) && mb_strlen(trim($data['motivo']??''))>=3,422,'Confirma la contingencia e indica un motivo.');
+        }elseif(!$clinical)abort_unless($actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE)
+            && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+        return AppointmentReevaluationService::transaction(function () use ($id,$actor,$data,$original,$clinical,$verified) {
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
             $op = DB::table('appointment_operations')->where('actor_user_id',$actor->id)->where('request_key',$data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash,$hash),409,'El identificador ya corresponde a otra operación.');
             if ($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)->whereKey($op->appointment_id)->firstOr(fn () => abort(404));
+            if($clinical && $verified){
+                [$actor,$locked]=\App\Support\Scheduling\ClinicalAccess::lock($actor,$id,
+                    $data['state']==='EN_ATENCION'?\App\Support\Scheduling\ClinicalCapability::START:\App\Support\Scheduling\ClinicalCapability::FINISH);
+            }
             Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             abort_if((int)$a->doctor_id !== (int)$original->doctor_id || $a->estado_cita !== $data['expected_state'],409,'La cita cambió. Actualiza antes de continuar.');
             abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
+            if($clinical && !$verified)abort_unless(UnlinkedDoctorAdmissionFallback::eligible($a,$actor),403);
+            if($data['state']==='EN_ATENCION')abort_unless($a->hora_llegada && !$a->hora_atencion,422,'Registra la llegada antes de iniciar atención.');
             if($data['state']==='ATENDIDO'){
-                $a->loadMissing('operationalReview');
+                $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
                 app(ManualReevaluationService::class)->load(collect([$a]));
                 abort_if(AppointmentReevaluationService::indicated($a)
                     && !AppointmentReevaluationService::resumed($a),422,
@@ -149,13 +162,16 @@ class AdmissionCareService
             $beforeTimes=$a->only(['hora_llegada','hora_llamado','hora_atencion','hora_atendido','hora_salida']);
             $request = Request::create('/','POST',['appointment_id'=>$id,'estado_cita'=>$data['state'],'request_key'=>$data['request_key']]);
             $request->setUserResolver(fn () => $actor);
-            $a = app(LegacyAppointmentMutation::class)->update($request);
+            if($clinical){
+                $a->forceFill(['estado_cita'=>$data['state'],'updated_by_user_id'=>$actor->id])->save();
+            }else $a = app(LegacyAppointmentMutation::class)->update($request);
             $time = match($data['state']) {'EN_ESPERA'=>'hora_llegada','LLAMANDO'=>'hora_llamado','EN_ATENCION'=>'hora_atencion','ATENDIDO'=>'hora_atendido'};
             // Record only the action just performed; never synthesize missing previous timestamps.
             if (!$a->{$time}) $a->forceFill([$time=>now()])->save();
             app(AppointmentHistory::class)->record($a,'ADMISION_ESTADO_ACTUALIZADO',$actor->id,
                 ['metadata'=>['from'=>$data['expected_state'],'to'=>$data['state'],'timestamp_field'=>$time,
-                    'previous_timestamps'=>$beforeTimes,'operation_id'=>$op->id]]);
+                    'previous_timestamps'=>$beforeTimes,'operation_id'=>$op->id,
+                    'physician_signed'=>$clinical && $verified,'source'=>$clinical?($verified?'VERIFIED_PHYSICIAN_CARE_V1':'ADMISION_FALLBACK_UNLINKED_DOCTOR_V1'):'ADMISSION_CARE_V1']]);
             DB::table('appointment_operations')->where('id',$op->id)->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
             return $a;
         },3);

@@ -14,12 +14,13 @@ use Illuminate\Validation\Rule;
 
 class AdmissionBoardController extends Controller
 {
-    public function index(AdmissionBoardService $board)
+    public function index(Request $r,AdmissionBoardService $board)
     {
         return response()->view('scheduling.admission.index',[
+            'clinicalOnly'=>$clinicalOnly=\App\Support\Scheduling\AdmissionAccess::clinicalOnly($r->user()),
             'today'=>now('America/Lima')->toDateString(),'defaultSite'=>$board->defaultSite(),
             'sites'=>Site::activo()->orderBy('nombre')->get(['id','nombre']),
-            'doctors'=>Doctor::orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
+            'doctors'=>Doctor::when($clinicalOnly,fn($q)=>$q->whereKey($r->user()->doctor_id))->orderBy('nombre')->get(['id','nombre','specialty_id','estado']),
             'specialties'=>Specialty::orderBy('nombre')->get(['id','nombre']),
             'labels'=>AdmissionStatus::LABELS,'states'=>AdmissionStatus::STATES,'visuals'=>AdmissionBoardService::VISUAL_FILTERS,
         ])->header('Cache-Control','private, no-store')->header('Referrer-Policy','same-origin');
@@ -36,7 +37,7 @@ class AdmissionBoardController extends Controller
             'visual'=>['nullable',Rule::in(array_keys(AdmissionBoardService::VISUAL_FILTERS))],
             'only_reevaluations'=>'nullable|boolean',
             'only_pending_reevaluations'=>'nullable|boolean',
-            'page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
+            'history_before'=>'nullable|integer|min:1','page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.
         if (!$r->exists('site_id')) $data['site_id'] = $board->defaultSite()?->id;
@@ -62,7 +63,7 @@ class AdmissionBoardController extends Controller
     public function reverseCare(Request $r, int $appointmentId, AdmissionCareService $service)
     {
         abort_unless($r->user()->hasAnyRole(['ADMINISTRADOR','ADMISION']), 403);
-        abort_if(array_diff(array_keys($r->all()), ['expected_event_id','expected_state','request_key','motivo','_token']),422);
+        abort_if(array_diff(array_keys($r->all()), ['expected_event_id','expected_state','request_key','motivo','confirmed','_token']),422);
         $data = $r->validate(['request_key'=>'required|uuid','expected_event_id'=>'required|integer|min:1',
             'expected_state'=>'required|string|max:40','motivo'=>'required|string|min:3|max:500']);
         $a = $service->reverse($appointmentId,$r->user(),$data);
@@ -120,12 +121,34 @@ class AdmissionBoardController extends Controller
             'reevaluation_declined'=>true])->header('Cache-Control','private, no-store');
     }
 
+    public function confirmExoneration(Request $r,int $appointmentId)
+    {
+        abort_if(array_diff(array_keys($r->all()),['request_key','revision','confirmed','_token']),422);
+        $data=$r->validate(['request_key'=>'required|uuid','revision'=>'required|string|size:64','confirmed'=>'required|accepted']);
+        try{$a=app(\App\Services\Scheduling\AdmissionExonerationConfirmation::class)->confirm($appointmentId,$r->user(),$data);}
+        catch(\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e){return response()->json(['message'=>$e->getMessage()],409);}
+        return response()->json(['id'=>$a->id,'estado_agenda'=>$a->estado_agenda])->header('Cache-Control','private, no-store');
+    }
+
+    public function confirmWithoutDeposit(Request $r,int $appointmentId)
+    {
+        abort_unless(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor($r->user()),403);
+        abort_if(array_diff(array_keys($r->all()),['request_key','revision','confirmed','reason','_token']),422);
+        $data=$r->validate(['request_key'=>'required|uuid','revision'=>'required|string|size:64',
+            'confirmed'=>'required|accepted','reason'=>'required|string|min:5|max:500']);
+        try{$a=app(\App\Services\Scheduling\ReservationPaymentService::class)->submit($appointmentId,$r->user(),[
+            'request_key'=>$data['request_key'],'expected_revision'=>$data['revision'],'confirmed'=>$data['confirmed'],
+            'reason'=>$data['reason'],'confirm'=>true,'without_deposit'=>true,'payment'=>['amount'=>0]]);}
+        catch(\App\Exceptions\Scheduling\AppointmentSlotUnavailableException $e){return response()->json(['message'=>$e->getMessage()],409);}
+        return response()->json(['id'=>$a->id,'estado_agenda'=>$a->estado_agenda])->header('Cache-Control','private, no-store');
+    }
+
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
-        abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
+        abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','confirmed','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
         $data = $r->validate(['request_key'=>'required|uuid','expected_state'=>['required',Rule::in(AdmissionStatus::STATES)],
             'state'=>'required|in:EN_ESPERA,LLAMANDO,EN_ATENCION,ATENDIDO,SALIDA_REGISTRADA',
-            'motivo'=>'nullable|string|max:2000']);
+            'motivo'=>'nullable|string|max:2000','confirmed'=>'sometimes|accepted']);
         $a = $service->transition($appointmentId,$r->user(),$data);
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda]+($data['state']==='SALIDA_REGISTRADA' ? ['detail'=>app(AdmissionBoardService::class)->detail($a->id,$r->user())] : []))
             ->header('Cache-Control','private, no-store');

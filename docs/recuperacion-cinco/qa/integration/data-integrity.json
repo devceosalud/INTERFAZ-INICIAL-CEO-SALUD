@@ -1,0 +1,26 @@
+{
+    "result": "PASS",
+    "checks": [
+        "paid: atendido y salida separados",
+        "paid: dinero original conservado",
+        "paid: solo retorno real genera segunda atención",
+        "normal: atendido y salida separados",
+        "normal: dinero original conservado",
+        "normal: solo retorno real genera segunda atención",
+        "manual: atendido y salida separados",
+        "manual: dinero original conservado",
+        "manual: solo retorno real genera segunda atención",
+        "manual: tres procedimientos pendientes conservados",
+        "declined: atendido y salida separados",
+        "declined: dinero original conservado",
+        "declined: solo retorno real genera segunda atención",
+        "declined: tres procedimientos pendientes conservados",
+        "Excepción sin adelanto conserva pago y saldo reales",
+        "Una autorización real y auditada sin adelanto",
+        "Sin voucher ficticio para confirmar sin adelanto",
+        "Reserva privada no alterada",
+        "Reprogramación conserva identidad y duración",
+        "Descuento autorizado conserva pago60 y recalcula saldo40",
+        "Corrección y reprogramación mantienen un único pago"
+    ]
+}

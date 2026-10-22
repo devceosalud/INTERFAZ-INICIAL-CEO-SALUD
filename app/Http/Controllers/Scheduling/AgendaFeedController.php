@@ -66,6 +66,18 @@ class AgendaFeedController extends Controller
      * @param  array<string, mixed>  $data
      * @return Collection<int, Doctor>
      */
+    public function history(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->fresh()?->is_active,403);
+        $data=$request->validate(['vista'=>'required|in:'.implode(',',AgendaRange::views()),'fecha'=>'required|date_format:Y-m-d',
+            'doctor_id'=>'nullable|array|max:'.self::MAX_SELECTED,'doctor_id.*'=>'integer|exists:doctors,id',
+            'specialty_id'=>'nullable|integer|exists:specialties,id','site_id'=>'nullable|integer|exists:sites,id','history_before'=>'nullable|integer|min:1']);
+        $range=new AgendaRange($data['vista'],Carbon::parse($data['fecha']));
+        $shown=$this->selectableDoctors($data)->take(isset($data['doctor_id'])?self::MAX_SELECTED:self::DEFAULT_SHOWN);
+        $query=new \App\Support\Scheduling\AgendaQuery($shown->pluck('id')->all(),$range->start(),$range->end(),isset($data['site_id'])?(int)$data['site_id']:null);
+        return response()->json(app(\App\Services\Scheduling\RescheduleHistory::class)->forRange($query,$request->user(),$data))->header('Cache-Control','private, no-store');
+    }
+
     protected function selectableDoctors(array $data): Collection
     {
         return Doctor::with('specialty:id,nombre')

@@ -9,6 +9,22 @@ use Illuminate\Support\Facades\DB;
 /** Read-only union of independent return-to-doctor decisions; never migrates or invents evidence. */
 final class AppointmentReevaluationService
 {
+    /** MariaDB snapshot isolation may reject a current read with error 1020.
+        Retry the complete, rolled-back operation with a fresh snapshot, never
+        continue a partial clinical decision or acknowledge an uncommitted write. */
+    public static function transaction(\Closure $callback,int $attempts=3)
+    {
+        $outer=DB::transactionLevel();
+        for($try=1;;$try++){
+            try{return DB::transaction($callback,$attempts);}
+            catch(\Illuminate\Database\QueryException $e){
+                if((int)($e->errorInfo[1]??0)!==1020 || $outer>0 || $try>=$attempts)throw $e;
+            }
+        }
+    }
+    // Historical aliases keep imported audit readers compatible; no second state machine.
+    public const INDICATED = self::MEDICAL_INDICATED;
+    public const WITHDRAWN = self::MEDICAL_WITHDRAWN;
     public const MEDICAL_INDICATED = 'REEVALUACION_MEDICA_INDICADA';
     public const MEDICAL_WITHDRAWN = 'REEVALUACION_MEDICA_RETIRADA';
     public const OPERATIONAL_CONFIRMED = 'REEVALUACION_OPERATIVA_CONFIRMADA';
@@ -25,11 +41,21 @@ final class AppointmentReevaluationService
             'medicalReturnEvent' => [self::MEDICAL_RESUMED],
             'reevaluationDeclinedEvent' => [self::PATIENT_DECLINED],
         ] as $relation => $types) {
+            // MySQL does not make a MAX(id) subquery a current read merely
+            // because the OUTER SELECT has FOR UPDATE. Avoid that snapshot
+            // trap inside a write transaction after waiting on the appointment.
+            if(DB::transactionLevel()>0){
+                foreach($appointments as $a){
+                    $events=\App\Models\AppointmentEvent::where('appointment_id',$a->id)->lockForUpdate()->get();
+                    $a->setRelation($relation,$events->whereIn('event_type',$types)->sortByDesc('id')->first());
+                }
+                continue;
+            }
             $latest = \App\Models\AppointmentEvent::query()->whereIn('id', function ($q) use ($appointments, $types) {
                 $q->from('appointment_events')->selectRaw('MAX(id)')
                     ->whereIn('appointment_id', $appointments->pluck('id'))
                     ->whereIn('event_type', $types)->groupBy('appointment_id');
-            })->get()->keyBy('appointment_id');
+            })->when(DB::transactionLevel()>0,fn($q)=>$q->lockForUpdate())->get()->keyBy('appointment_id');
             foreach ($appointments as $a) $a->setRelation($relation, $latest->get($a->id));
         }
     }
@@ -37,7 +63,7 @@ final class AppointmentReevaluationService
     private static function event(Appointment $a, string $relation, array $types): ?\App\Models\AppointmentEvent
     {
         return $a->relationLoaded($relation) ? $a->getRelation($relation)
-            : $a->events()->whereIn('event_type', $types)->orderByDesc('id')->first();
+            : $a->events()->whereIn('event_type', $types)->orderByDesc('id')->when(DB::transactionLevel()>0,fn($q)=>$q->lockForUpdate())->first();
     }
 
     private static function indication(Appointment $a): ?\App\Models\AppointmentEvent
@@ -115,24 +141,23 @@ final class AppointmentReevaluationService
         and a verified doctor_id already linked to the authenticated user. */
     public static function physicianCanAct(User $actor, Appointment $a): bool
     {
-        if (!$actor->is_active || !$actor->hasRole('MEDICO')
-            || !$actor->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
-            || !$actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW)
-            || !\Illuminate\Support\Facades\Schema::hasColumn('users','doctor_id')) return false;
-        $linked=(int)DB::table('users')->where('id',$actor->id)->value('doctor_id');
-        return $linked>0 && $linked===(int)$a->doctor_id
-            && \App\Models\Doctor::whereKey($linked)->where('estado','ACTIVO')->exists();
+        try {
+            $u=\App\Support\Scheduling\ClinicalAccess::actor($actor);
+            \App\Support\Scheduling\ClinicalAccess::appointment($u,$a);
+            return true;
+        }catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;return false;}
     }
 
     /** Records the physician's own clinical instruction in the existing event ledger.
         Every write is bound to a doctor, an unchanged appointment and a replay key. */
     public function physicianDecision(int $id, User $actor, array $data): Appointment
     {
+        abort_unless(($data['confirmed']??false),422,'Confirma expresamente la actuación.');
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
         abort_unless(self::physicianCanAct($actor,$original),403);
         $decision=$data['action'];
         $payloadHash=hash('sha256',json_encode(['MEDICAL_REEVALUATION_V1',$id,$decision,$data]));
-        return DB::transaction(function()use($id,$actor,$original,$data,$decision,$payloadHash){
+        return self::transaction(function()use($id,$actor,$original,$data,$decision,$payloadHash){
             DB::table('appointment_operations')->upsert([[
                 'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$payloadHash,'created_at'=>now(),'updated_at'=>now(),
@@ -142,6 +167,9 @@ final class AppointmentReevaluationService
             abort_unless(hash_equals($op->payload_hash,$payloadHash),409,'Operación duplicada con datos distintos.');
             if ($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)
                 ->whereKey($op->appointment_id)->firstOr(fn()=>abort(404));
+            $cap=match($decision){'indicate'=>\App\Support\Scheduling\ClinicalCapability::INDICATE,
+                'withdraw'=>\App\Support\Scheduling\ClinicalCapability::WITHDRAW, 'resume'=>\App\Support\Scheduling\ClinicalCapability::START};
+            [$actor,$locked]=\App\Support\Scheduling\ClinicalAccess::lock($actor,$id,$cap);
             \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn()=>abort(404));
             abort_unless(self::physicianCanAct($actor,$a),403);
@@ -156,6 +184,7 @@ final class AppointmentReevaluationService
             $a->setRelation('medicalReevaluationEvent',$latest);
             $a->loadMissing('operationalReview');
             app(ManualReevaluationService::class)->load(collect([$a]));
+            $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
             abort_if($decision==='indicate' && $active,422,'La reevaluación ya está indicada.');
             abort_if($decision==='resume' && (!self::ready($a) || self::resumed($a)),422,
                 'El retorno debe estar confirmado y listo antes de iniciar la reevaluación.');
@@ -185,10 +214,11 @@ final class AppointmentReevaluationService
     /** Reception / commercial confirms the physician's indication, without marking exams done. */
     public function confirmOperational(int $id, User $actor, array $data): Appointment
     {
+        abort_unless(($data['confirmed']??false),422,'Confirma expresamente la actuación.');
         abort_unless(self::operatorCanConfirm($actor),403);
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
         $hash=hash('sha256',json_encode(['OPERATIVE_CONFIRMATION_V1',$id,$data]));
-        return DB::transaction(function () use ($id,$actor,$original,$data,$hash) {
+        return self::transaction(function () use ($id,$actor,$original,$data,$hash) {
             DB::table('appointment_operations')->upsert([[
                 'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,
                 'created_at'=>now(),'updated_at'=>now(),
@@ -198,6 +228,9 @@ final class AppointmentReevaluationService
             abort_unless(hash_equals($op->payload_hash,$hash),409,'Operación duplicada con datos distintos.');
             if($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)
                 ->whereKey($op->appointment_id)->firstOr(fn()=>abort(404));
+            $fresh=User::whereKey($actor->id)->lockForUpdate()->firstOr(fn()=>abort(403));
+            abort_unless($fresh->auth_version===$actor->auth_version && self::operatorCanConfirm($fresh),403);
+            $actor=$fresh;
             \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn()=>abort(404));
             abort_unless((int)$a->doctor_id===(int)$original->doctor_id
@@ -205,6 +238,7 @@ final class AppointmentReevaluationService
                 && $a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
                 && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true),409,'La atención cambió. Actualiza la cita.');
             app(ManualReevaluationService::class)->load(collect([$a]));
+            $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
             abort_unless(self::indicated($a) && !self::confirmed($a),422,
                 'Solo puedes confirmar una pre-reevaluación médica que aún no esté confirmada.');
             $event=app(AppointmentHistory::class)->record($a,self::OPERATIONAL_CONFIRMED,$actor->id,[
@@ -223,11 +257,12 @@ final class AppointmentReevaluationService
      */
     public function closeDeclined(int $id, User $actor, array $data): Appointment
     {
+        abort_unless(($data['confirmed']??false),422,'Confirma expresamente la actuación.');
         abort_unless(self::operatorCanConfirm($actor),403);
         abort_unless(mb_strlen(trim($data['reason']))>=3,422,'Indica por qué el paciente no regresará.');
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
         $hash=hash('sha256',json_encode(['PATIENT_DECLINED_REEVALUATION_V1',$id,$data]));
-        return DB::transaction(function () use ($id,$actor,$original,$data,$hash) {
+        return self::transaction(function () use ($id,$actor,$original,$data,$hash) {
             DB::table('appointment_operations')->upsert([[
                 'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,
                 'created_at'=>now(),'updated_at'=>now(),
@@ -237,11 +272,15 @@ final class AppointmentReevaluationService
             abort_unless(hash_equals($op->payload_hash,$hash),409,'Operación duplicada con datos distintos.');
             if($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)
                 ->whereKey($op->appointment_id)->firstOr(fn()=>abort(404));
+            $fresh=User::whereKey($actor->id)->lockForUpdate()->firstOr(fn()=>abort(403));
+            abort_unless($fresh->auth_version===$actor->auth_version && self::operatorCanConfirm($fresh),403);
+            $actor=$fresh;
             \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn()=>abort(404));
             abort_unless((int)$original->doctor_id===(int)$a->doctor_id
                 && $data['expected_state']==='EN_ATENCION',409,'La cita cambió. Actualiza.');
             app(ManualReevaluationService::class)->load(collect([$a]));
+            $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
             abort_unless(self::operatorCanDecline($actor,$a),422,
                 'Solo se permite cerrar una reevaluación indicada y todavía no retomada por el médico.');
             $a->forceFill(['estado_cita'=>'ATENDIDO','hora_atendido'=>now(),
@@ -307,13 +346,16 @@ final class AppointmentReevaluationService
     public function history(int $id, User $actor, int $page=1, ?array $cursor=null): array
     {
         Appointment::visibleToOperationalUser($actor)->whereKey($id)->firstOr(fn()=>abort(404));
+        $types=[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED,
+            self::MEDICAL_INDICATED,self::MEDICAL_WITHDRAWN,self::OPERATIONAL_CONFIRMED,
+            self::MEDICAL_RESUMED,self::PATIENT_DECLINED];
         $cursor??=['direct_until'=>(int)(DB::table('appointment_events')->where('appointment_id',$id)
-            ->whereIn('event_type',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED])->max('id')??0),
+            ->whereIn('event_type',$types)->max('id')??0),
             'procedure_until'=>(int)(DB::table('appointment_procedure_events')->where('appointment_id',$id)->max('id')??0)];
         $direct=DB::table('appointment_events as e')->leftJoin('users as u','u.id','=','e.actor_user_id')
             ->where('e.appointment_id',$id)->where('e.id','<=',$cursor['direct_until'])
-            ->whereIn('e.event_type',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED])
-            ->select(['e.id','e.event_type as action','e.occurred_at as at','e.actor_user_id','u.name',DB::raw("'MANUAL_DIRECT' as source"),DB::raw('NULL as snapshot')]);
+            ->whereIn('e.event_type',$types)
+            ->select(['e.id','e.event_type as action','e.occurred_at as at','e.actor_user_id','u.name',DB::raw("'MANUAL_DIRECT' as source"),'e.motivo as snapshot']);
         $structured=DB::table('appointment_procedure_events as e')->leftJoin('users as u','u.id','=','e.actor_user_id')
             ->where('e.appointment_id',$id)->where('e.id','<=',$cursor['procedure_until'])
             ->select(['e.id','e.action','e.occurred_at as at','e.actor_user_id','u.name',DB::raw("'PROCEDURES' as source"),'e.after as snapshot']);
@@ -327,7 +369,7 @@ final class AppointmentReevaluationService
                 $review=json_decode($e->snapshot,true)['review']??[];
                 $entry+=['requested'=>(int)($review['requested_count']??0),'completed'=>(int)($review['completed_count']??0),
                     'origin'=>$review['origin']??null,'status'=>$review['status']??null,'reason'=>$review['reason']??null];
-            }
+            }else $entry['reason']=$e->snapshot;
             return $entry;
         })->values()->all()];
     }
@@ -338,7 +380,7 @@ final class AppointmentReevaluationService
             ->whereDate('fecha_cita',now('America/Lima')->toDateString())
             ->where(function($q){
                 $q->whereHas('operationalReview',fn($r)=>$r->whereNotNull('ready_at')->orWhere('requested_count','>',0))
-                    ->orWhereHas('events',fn($e)=>$e->whereIn('event_type',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED]));
+                    ->orWhereHas('events',fn($e)=>$e->whereIn('event_type',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED,self::MEDICAL_INDICATED]));
             })->select(['id','patient_id','doctor_id','service_id','fecha_cita','hora_cita','estado_agenda','estado_cita','hora_salida'])
             ->with(['operationalReview.decidedBy:id,name','patient:id,nombre,apellido_paterno,apellido_materno','doctor:id,nombre','service:id,nombre'])->get();
         app(ManualReevaluationService::class)->load($appointments);
@@ -350,7 +392,8 @@ final class AppointmentReevaluationService
             if(self::directReady($a)) $activeTimes[]=$direct['at'];
             if(OperationalProcedureService::ready($a)) $activeTimes[]=$review['ready_at'];
             sort($activeTimes);
-            $status=$summary['ready']?'READY':$review['status'];
+            $status=$summary['ready']?'READY':($summary['pre_pending']?'PRE_PENDING':($summary['resumed']?'RESUMED':($summary['declined']?'DECLINED':$review['status'])));
+            if(!$summary['ready'] && $status==='READY')$status='NOT_READY';
             if(!$summary['ready'] && !$procedures['requested_count'] && $direct['version']) {
                 $status=$direct['marked']?'INACTIVE':'WITHDRAWN';
             }

@@ -241,7 +241,8 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->actingAs($other);
         $this->indicate($a)->assertForbidden();
         $this->actingAs($u);
-        $u->forceFill(['doctor_id'=>999])->save();
+        $different=$this->createAppointmentCatalog()['doctor'];
+        $u->forceFill(['doctor_id'=>$different->id])->save();
         $this->indicate($a)->assertForbidden();
         $this->assertDatabaseMissing('appointment_events',[
             'appointment_id'=>$a->id,'event_type'=>AppointmentReevaluationService::MEDICAL_INDICATED

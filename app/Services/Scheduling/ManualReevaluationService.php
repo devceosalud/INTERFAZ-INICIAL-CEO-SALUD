@@ -40,11 +40,18 @@ final class ManualReevaluationService
     /** One query for the full filtered set; order by event ID, even within one second. */
     public function load(Collection $appointments): void
     {
+        if(DB::transactionLevel()>0){
+            foreach($appointments as $a){
+                $events=AppointmentEvent::where('appointment_id',$a->id)->lockForUpdate()->with('actor:id,name')->get();
+                $a->setRelation('manualReevaluationEvent',$events->whereIn('event_type',[self::MARKED,self::CLEARED])->sortByDesc('id')->first());
+            }
+            AppointmentReevaluationService::loadIndications($appointments);return;
+        }
         $latest = AppointmentEvent::query()->whereIn('id', function ($q) use ($appointments) {
             $q->from('appointment_events')->selectRaw('MAX(id)')
                 ->whereIn('appointment_id', $appointments->pluck('id'))
                 ->whereIn('event_type', [self::MARKED, self::CLEARED])->groupBy('appointment_id');
-        })->with('actor:id,name')->get()->keyBy('appointment_id');
+        })->with('actor:id,name')->when(DB::transactionLevel()>0,fn($q)=>$q->lockForUpdate())->get()->keyBy('appointment_id');
         foreach ($appointments as $a) $a->setRelation('manualReevaluationEvent', $latest->get($a->id));
         AppointmentReevaluationService::loadIndications($appointments);
     }
@@ -64,7 +71,7 @@ final class ManualReevaluationService
         $hash = hash('sha256', json_encode(['MANUAL_REEVALUATION_V1', $id,
             (bool) $data['marked'], (bool) $data['expected_marked'], (int) $data['expected_version'],
             trim($data['reason'] ?? '')]));
-        return DB::transaction(function () use ($id, $actor, $data, $original, $hash) {
+        return AppointmentReevaluationService::transaction(function () use ($id, $actor, $data, $original, $hash) {
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,
                 'request_key'=>$data['request_key'], 'payload_hash'=>$hash, 'created_at'=>now(), 'updated_at'=>now()]],
                 ['actor_user_id', 'request_key'], ['request_key']);
@@ -79,6 +86,7 @@ final class ManualReevaluationService
             }
             Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $a = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
+            $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
             abort_if((int) $a->doctor_id !== (int) $original->doctor_id, 409, 'La cita cambió. Actualiza antes de continuar.');
             abort_unless($this->eligible($a), 422, 'Solo se permite reevaluación manual en una cita ATENDIDO con agenda confirmada o heredada.');
             // Current read after the appointment lock also works at MySQL REPEATABLE READ.
