@@ -31,7 +31,7 @@ final class ManualReevaluationService
         // medical episode, the physician must first indicate reevaluation.
         // If procedures were ordered, their dedicated verification/send flow
         // is mandatory; the direct mark must not bypass pending tests.
-        return $a->estado_cita==='ATENDIDO'
+        return ($a->estado_cita==='ATENDIDO' && !AppointmentReevaluationService::indicated($a))
             || ($a->estado_cita==='EN_ATENCION'
                 && AppointmentReevaluationService::indicated($a)
                 && !$a->hora_salida
