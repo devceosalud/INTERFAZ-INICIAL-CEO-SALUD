@@ -185,6 +185,22 @@ class MedicalAccessCompatibilityTest extends TestCase
         $this->get(route('scheduling.mvp.admission'))->assertOk();
         $this->get(route('admin.user.index'))->assertOk();
         $this->getJson(route('scheduling.medical.detail',$this->a->id))->assertOk();
+
+        // A generic role-edit click may not accidentally remove the doctor's identity.
+        $this->actingAs($this->admin);
+        $adminRole=Role::findByName('ADMINISTRADOR','web');
+        $this->putJson(route('admin.user.update',$target->id),['role'=>$adminRole->id])->assertUnprocessable();
+        $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$target->fresh()->getRoleNames()->all());
+        $this->get(route('admin.user.edit',$target->id))->assertOk()
+            ->assertSee('confirm_remove_medico',false);
+        // An explicit secondary confirmation can withdraw the medical role while preserving admin.
+        $this->put(route('admin.user.update',$target->id),[
+            'role'=>$adminRole->id,'confirm_remove_medico'=>'1',
+        ])->assertRedirect();
+        $this->assertTrue($target->fresh()->hasRole('ADMINISTRADOR'));
+        $this->assertFalse($target->fresh()->hasRole('MEDICO'));
+        $this->assertSame(3,$target->fresh()->auth_version);
+        $this->assertSame($this->a->doctor_id,$target->fresh()->doctor_id);
     }
 
 }
