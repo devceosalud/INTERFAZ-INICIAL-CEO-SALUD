@@ -181,8 +181,14 @@ class AdmissionBoardService
     public function careActions(Appointment $a, User $actor): array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
-        if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW) || !$actor->can(C::UPDATE)
-            || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW)
+            || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (AdmissionCareService::commercialArrival($actor,'EN_ESPERA')) {
+            return in_array($a->estado_cita,['PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'],true)
+                && !$a->hora_llegada && !$a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
+                    ? ['EN_ESPERA'] : [];
+        }
+        if (!$actor->can(C::UPDATE) || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR'])) return [];
         $fallback=UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
             ? UnlinkedDoctorAdmissionFallback::allowedState($a) : null;
         return match ($a->estado_cita) {
