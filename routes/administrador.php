@@ -81,6 +81,10 @@ Route::delete('/admin/role/destroy/{role}', [RoleController::class, 'destroy'])-
 
 
 
+Route::get('/admin/user/{user}/doctor-link', [\App\Http\Controllers\admin\master\user\UserDoctorLinkController::class,'edit'])
+    ->whereNumber('user')->name('admin.user.doctor-link');
+Route::post('/admin/user/{user}/doctor-link', [\App\Http\Controllers\admin\master\user\UserDoctorLinkController::class,'update'])
+    ->whereNumber('user')->name('admin.user.doctor-link.update');
 Route::get('/admin/user/index', [UserController::class, 'index'])->name('admin.user.index');
 Route::post('/admin/user/store', [UserController::class, 'store'])->name('admin.user.store');
 Route::put('/admin/user/update/user/list', [UserController::class, 'updateUser'])->name('admin.user.update.list');

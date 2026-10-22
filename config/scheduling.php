@@ -20,6 +20,10 @@ return [
     */
     'enabled' => (bool) env('SCHEDULING_MVP_ENABLED', false),
 
+    // Explicitly enabled during a controlled rollout only. Admisión may record
+    // start/finish for an unlinked professional; no medical indications or signatures.
+    'unlinked_doctor_admission_fallback' => (bool) env('SCHEDULING_UNLINKED_DOCTOR_FALLBACK_ENABLED', false),
+
     'pilot_payment_without_manual_cash_shift' => (bool) env('SCHEDULING_PILOT_PAYMENT_WITHOUT_MANUAL_CASH_SHIFT', false),
 
     /*

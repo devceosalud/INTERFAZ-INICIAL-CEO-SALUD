@@ -22,8 +22,10 @@ class MvpGuardNormalizationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp(); Storage::fake('local');
-        // Reproduce the pre-RC minimal legacy catalogue; the new schedule definition is not part of it.
-        Permission::whereIn('name',['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage'])->delete();
+        // Reproduce the pre-RC minimal legacy catalogue, excluding later additive definitions.
+        \Spatie\Permission\Models\Role::where('name',\App\Support\Scheduling\ClinicalCapability::ROLE)->delete();
+        Permission::whereIn('name',array_merge(['doctor.schedule.manage','appointment.documents.view','appointment.documents.manage',C::EDIT_PAYMENT,C::EDIT_PRICING],
+            \App\Support\Scheduling\ClinicalCapability::all()))->delete();
         $this->buildLegacyMvpGuards();
     }
     private function snapshot(): array

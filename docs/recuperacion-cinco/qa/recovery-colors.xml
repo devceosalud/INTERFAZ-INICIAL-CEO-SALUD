@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="1" assertions="272" errors="0" warnings="0" failures="0" skipped="0" time="3.098279">
+    <testsuite name="Feature" tests="1" assertions="272" errors="0" warnings="0" failures="0" skipped="0" time="3.098279">
+      <testsuite name="Tests\Feature\Scheduling\AdmissionColorCompatibilityTest" file="C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Feature\Scheduling\AdmissionColorCompatibilityTest.php" tests="1" assertions="272" errors="0" warnings="0" failures="0" skipped="0" time="3.098279">
+        <testcase name="test_thirteen_server_states_keep_the_historical_palette_for_all_four_authorized_profiles" class="Tests\Feature\Scheduling\AdmissionColorCompatibilityTest" classname="Tests.Feature.Scheduling.AdmissionColorCompatibilityTest" file="C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Feature\Scheduling\AdmissionColorCompatibilityTest.php" line="14" assertions="272" time="3.098279"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

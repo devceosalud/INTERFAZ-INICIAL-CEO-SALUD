@@ -20,10 +20,10 @@ final class OperationalProcedureService
     ];
 
     public function canSelect(User $u): bool { return $this->eligible($u) && $u->hasRole('ADMINISTRADOR'); }
-    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION']); }
+    public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION', 'COMERCIAL']); }
     public function canSend(User $u): bool
     {
-        return $this->eligible($u) && ($u->hasRole('ADMISION')
+        return $this->eligible($u) && ($u->hasAnyRole(['ADMISION','COMERCIAL'])
             || ($u->hasRole('ADMINISTRADOR') && $u->can(self::SUPERVISE)));
     }
     private function eligible(User $u): bool { return $u->is_active && $u->can(C::MVP_ACCESS) && $u->can(C::VIEW); }
@@ -55,8 +55,10 @@ final class OperationalProcedureService
             && $review->completed_count === $review->requested_count ? 'READY' : 'NOT_READY';
     }
 
-    public function detail(Appointment $a, User $u): array
+    public function detail(Appointment $a, User $u, bool $medical=false): array
     {
+        $canSelect=$medical ? ($a->estado_cita==='EN_ATENCION' && self::active($a)
+            && \App\Support\Scheduling\ClinicalAccess::has($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES)) : $this->canSelect($u);
         $a->loadMissing('operationalReview.decidedBy');
         $items = DB::table('appointment_requested_procedures')->where('appointment_id', $a->id)
             ->where('selected', true)->orderBy('id')->get();
@@ -68,10 +70,10 @@ final class OperationalProcedureService
             'version' => $review?->version ?? 0,
             'requested_count' => $items->count(), 'completed_count' => $done,
             'pending_count' => $items->count()-$done,
-            'catalog' => $this->canSelect($u) ? self::CATALOG : [],
-            'can_select' => $this->canSelect($u), 'can_complete' => $this->canComplete($u),
-            'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty(),
-            'can_withdraw' => $this->canSend($u) && $status === 'READY',
+            'catalog' => $canSelect ? self::CATALOG : [],
+            'can_select' => $canSelect, 'can_complete' => !$medical && $this->canComplete($u),
+            'can_send' => !$medical && $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty(),
+            'can_withdraw' => !$medical && $this->canSend($u) && $status === 'READY',
             'items' => $items->map(fn ($p) => ['key' => $p->procedure_key,
                 'label' => $p->custom_label ?? self::CATALOG[$p->procedure_key] ?? 'Procedimiento histórico', 'custom' => $p->custom_label !== null,
                 'requested_by' => $people[$p->requested_by_user_id] ?? 'Usuario no disponible',
@@ -85,21 +87,32 @@ final class OperationalProcedureService
         ];
     }
 
-    public function mutate(int $id, User $u, string $action, array $data): void
+    public function mutate(int $id, User $u, string $action, array $data, bool $medical=false): void
     {
-        abort_unless(match ($action) {
+        if($medical){
+            abort_unless($action==='selection',403);
+            $fresh=\App\Support\Scheduling\ClinicalAccess::actor($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);
+            \App\Support\Scheduling\ClinicalAccess::appointment($fresh,Appointment::findOrFail($id));
+        } else abort_unless(match ($action) {
             'selection' => $this->canSelect($u), 'completion' => $this->canComplete($u),
             'send', 'withdraw' => $this->canSend($u), default => false,
         }, 403);
         Appointment::visibleToAgendaUser($u->id)->whereKey($id)->firstOr(fn () => abort(404));
-        DB::transaction(function () use ($id, $u, $action, $data) {
+        DB::transaction(function () use ($id, $u, $action, $data, $medical) {
+            if($medical){
+                [$u,$a]=\App\Support\Scheduling\ClinicalAccess::lock($u,$id,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);
+            }
             $hash = hash('sha256', json_encode(['OPERATIONAL_PROCEDURES', $id, $action, $data]));
             DB::table('appointment_operations')->upsert([['actor_user_id' => $u->id, 'request_key' => $data['request_key'],
                 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]], ['actor_user_id', 'request_key'], ['request_key']);
             $op = DB::table('appointment_operations')->where('actor_user_id', $u->id)->where('request_key', $data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash, $hash), 409, 'La solicitud ya corresponde a otra operación.');
-            $a = Appointment::visibleToAgendaUser($u->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
+            if(!$medical)$a = Appointment::visibleToAgendaUser($u->id)->whereKey($id)->lockForUpdate()->firstOr(fn () => abort(404));
             if ($op->appointment_id) return;
+            if($medical){
+                \App\Support\Scheduling\ClinicalAccess::activeCare($a);
+                abort_unless($a->estado_cita==='EN_ATENCION' && self::active($a),422,'Indica procedimientos durante la atención presencial de hoy.');
+            }
             $review = DB::table('appointment_operational_reviews')->where('appointment_id', $id)->lockForUpdate()->first();
             abort_unless((int) ($review?->version ?? 0) === $data['expected_version'], 409, 'Los procedimientos cambiaron. Actualiza antes de guardar.');
             if (!$review) {
@@ -121,6 +134,9 @@ final class OperationalProcedureService
                     $key='c:'.$item['id'];
                     abort_if(isset($existing[$key]) && $existing[$key]->custom_label!==$label,409,'El nombre de una solicitud confirmada se conserva. Retírala y registra una nueva si necesitas corregirla.');
                     $labels[$key]=$label;$keys[]=$key;
+                }
+                if($medical)foreach($existing as $key=>$p){
+                    abort_if($p->selected && $p->completed_at && !in_array($key,$keys,true),422,'No retires procedimientos ya realizados. Su historial se conserva.');
                 }
                 foreach ($existing as $key => $p) {
                     $selected = in_array($key, $keys, true);

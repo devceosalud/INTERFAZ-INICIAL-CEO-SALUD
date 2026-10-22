@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Reanudación de cita ficticia confirmada en ejecución anterior; no repite la autorización",
+    "Confirmación explícita ADMISION, cancelar no envía, amarillo en toda fila, pago cero/saldo120 y otra reserva privada oculta",
+    "Descuento administrativo y reprogramación ya guardados por UI en ejecución anterior: verificados sin repetir escrituras",
+    "Reprogramación desde editor existente: referencia original, enlace a misma cita vigente en nueva fecha e importes conservados",
+    "Agenda Operativa muestra origen histórico sin ocupar el intervalo anterior",
+    "Vinculación por nombre integrada al editor de usuario existente"
+  ],
+  "errors": []
+}

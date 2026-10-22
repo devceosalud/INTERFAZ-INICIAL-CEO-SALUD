@@ -1,0 +1,6 @@
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.admission-reschedule-reference').filter({ hasText: '12:40' }) to be visible[22m
+[2m    57 × locator resolved to hidden <article data-history-event-id="10" class="admission-reschedule-reference">…</article>[22m
+
+    at C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\recuperacion-cinco-requerimientos-20261022\tests\Support\recovery-extra-browser.cjs:46:105

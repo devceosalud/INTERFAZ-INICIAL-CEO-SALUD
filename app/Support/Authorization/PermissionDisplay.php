@@ -9,6 +9,12 @@ namespace App\Support\Authorization;
 final class PermissionDisplay
 {
     private const LABELS = [
+        'appointment.clinical.view' => ['Consultar mis citas médicas', 'Requiere rol MEDICO, cuenta y médico activos y vínculo verificado. No concede acceso económico ni a otros profesionales.'],
+        'appointment.clinical.start' => ['Iniciar mi atención médica', 'Inicia la atención de una cita propia con llegada registrada por Admisión.'],
+        'appointment.clinical.finish' => ['Finalizar mi atención médica', 'Finaliza una atención propia sin registrar salida física ni pagos.'],
+        'appointment.clinical.reevaluation.indicate' => ['Indicar reevaluación pendiente', 'Registra la indicación médica en la misma cita; no significa listo para reevaluación.'],
+        'appointment.clinical.reevaluation.withdraw' => ['Retirar mi indicación de reevaluación', 'Retira justificadamente la indicación de una cita del médico, conservando auditoría.'],
+        'appointment.clinical.procedures.request' => ['Indicar procedimientos de mi cita', 'Solicita procedimientos en la propia atención. No permite certificar su realización ni administrar el catálogo.'],
         'appointment.mvp.access' => ['Ingresar a la Agenda', 'Permite abrir el módulo de Agenda, junto con el permiso de consulta.'],
         'appointment.view' => ['Ver citas de Agenda', 'Consulta las citas autorizadas según las reglas de visibilidad.'],
         'appointment.create' => ['Registrar citas y reservas', 'Permite crear reservas privadas y solicitar confirmación de citas.'],
@@ -22,6 +28,8 @@ final class PermissionDisplay
         'appointment.hold.extend' => ['Ampliar retención temporal de horario', 'Extiende una retención temporal; no significa cita extendida de dos intervalos.'],
         'appointment.payment.submit' => ['Registrar adelantos y pagos', 'Permite ingresar cobros cuando se cumplan los requisitos de Caja.'],
         'appointment.payment.verify' => ['Verificar pagos', 'Permite revisar y verificar pagos según las reglas financieras.'],
+        'appointment.payment.correction.edit' => ['Corregir adelantos registrados', 'Edita el importe o referencia de un pago existente tras revisar y confirmar, con motivo y auditoría. No autoriza modificar turnos cerrados ni documentos fiscales.'],
+        'appointment.pricing.adjust.edit' => ['Modificar economía de citas existentes', 'Corrige la tarifa, descuentos y recargos válidos de una cita, incluso con adelanto. Exige revisión, confirmación y auditoría; no modifica el catálogo global.'],
         'appointment.down_payment.override' => ['Autorizar excepción al adelanto mínimo', 'Permite autorizar una excepción al adelanto requerido para una cita.'],
         'appointment.zero_cost.request' => ['Solicitar cita sin costo', 'Solicita una gratuidad; no permite aprobarla por sí solo.'],
         'appointment.zero_cost.approve' => ['Aprobar cita sin costo', 'Autoriza una gratuidad conforme a las reglas del sistema.'],

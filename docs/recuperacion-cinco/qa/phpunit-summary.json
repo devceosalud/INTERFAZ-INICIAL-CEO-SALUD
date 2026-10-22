@@ -1,0 +1,22 @@
+{
+  "sqlite": {
+    "name": "",
+    "tests": "1283",
+    "assertions": "11745",
+    "errors": "0",
+    "warnings": "0",
+    "failures": "0",
+    "skipped": "0",
+    "time": "783.393760"
+  },
+  "mariadb": {
+    "name": "",
+    "tests": "1310",
+    "assertions": "11997",
+    "errors": "0",
+    "warnings": "0",
+    "failures": "0",
+    "skipped": "0",
+    "time": "564.155938"
+  }
+}

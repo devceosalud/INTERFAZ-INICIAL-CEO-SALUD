@@ -31,11 +31,18 @@ Route::middleware([
             ->middleware('throttle:60,1')->name('scheduling.mvp.admission.procedures');
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care-reversal', [$admission, 'reverseCare'])
             ->whereNumber('appointmentId')->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care-reversal');
-        Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
-        Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
-        Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
+        // Legacy care keeps its existing broad update middleware and authorization.
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
             ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
+        // COMERCIAL gets only the dedicated arrival transition, not general UPDATE.
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/arrival', [$admission,'commercialArrival'])
+            ->whereNumber('appointmentId')->middleware('throttle:60,1')->name('scheduling.mvp.admission.commercial-arrival');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/departure', [$admission,'commercialDeparture'])
+            ->whereNumber('appointmentId')->middleware('throttle:60,1')->name('scheduling.mvp.admission.commercial-departure');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/confirm-exoneration', [$admission,'confirmExoneration'])
+            ->whereNumber('appointmentId')->middleware('throttle:30,1')->name('scheduling.mvp.admission.confirm-exoneration');
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/confirm-without-deposit', [$admission,'confirmWithoutDeposit'])
+            ->whereNumber('appointmentId')->middleware('throttle:30,1')->name('scheduling.mvp.admission.confirm-without-deposit');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/reevaluation-history',
             \App\Http\Controllers\Scheduling\AppointmentReevaluationHistoryController::class)
@@ -54,6 +61,12 @@ Route::middleware([
             ->whereNumber('appointmentId')->whereNumber('taskId')->middleware('throttle:30,1')
             ->name('scheduling.mvp.admission.tasks.completion');
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/economic-edit')->whereNumber('appointmentId')->group(function(){
+            $controller=\App\Http\Controllers\Scheduling\AppointmentEconomicEditController::class;
+            Route::get('/',[$controller,'index'])->name('scheduling.mvp.economic-edit.index');
+            Route::post('/review',[$controller,'review'])->middleware('throttle:30,1')->name('scheduling.mvp.economic-edit.review');
+            Route::put('/',[$controller,'save'])->middleware('throttle:20,1')->name('scheduling.mvp.economic-edit.save');
+        });
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
             ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');
         Route::get('/scheduling-mvp/agenda/heatmap/preview', [\App\Http\Controllers\Scheduling\AgendaHeatmapController::class, 'preview'])
@@ -117,6 +130,8 @@ Route::middleware([
 
         Route::get('/scheduling-mvp/agenda/feed', AgendaFeedController::class)
             ->name('scheduling.mvp.agenda.feed');
+        Route::get('/scheduling-mvp/agenda/reschedule-history',[AgendaFeedController::class,'history'])
+            ->middleware('throttle:60,1')->name('scheduling.mvp.agenda.reschedule-history');
 
         Route::post('/scheduling-mvp/agenda/patient-lookup', AgendaPatientLookupController::class)
             ->name('scheduling.mvp.agenda.patient-lookup');
@@ -164,4 +179,30 @@ Route::middleware(['scheduling-mvp', 'auth', 'throttle:60,1'])->post('/ui-teleme
 Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR'])->group(function () {
     Route::get('/scheduling-mvp/agenda/heatmap', [AgendaHeatmapController::class, 'index'])->name('scheduling.mvp.agenda.heatmap');
     Route::get('/scheduling-mvp/agenda/heatmap/data', [AgendaHeatmapController::class, 'data'])->name('scheduling.mvp.agenda.heatmap.data');
+});
+
+
+// Physician access has its own least-privilege grants: no generic Agenda or economic access.
+Route::middleware(['auth','scheduling-mvp'])->prefix('/scheduling-mvp/medical')->group(function(){
+    $medical=\App\Http\Controllers\Scheduling\MedicalBoardController::class;
+    Route::get('/',[$medical,'index'])->name('scheduling.medical.index');
+    Route::post('/feed',[$medical,'feed'])->name('scheduling.medical.feed');
+    Route::get('/appointments/{appointmentId}',[$medical,'detail'])->whereNumber('appointmentId')->name('scheduling.medical.detail');
+    Route::post('/appointments/{appointmentId}/care/{action}',[$medical,'care'])->whereNumber('appointmentId')
+        ->whereIn('action',['start','finish','indicate','withdraw'])->name('scheduling.medical.care');
+    Route::post('/appointments/{appointmentId}/procedures',[$medical,'procedures'])->whereNumber('appointmentId')->name('scheduling.medical.procedures');
+});
+
+// Shared Admission screen: clinical-only accounts remain scoped to their own confirmed appointments.
+Route::middleware(['auth','scheduling-mvp',\App\Support\Scheduling\AdmissionAccess::class])->group(function(){
+    $admission=\App\Http\Controllers\Scheduling\AdmissionBoardController::class;
+    $medical=\App\Http\Controllers\Scheduling\MedicalBoardController::class;
+    Route::get('/scheduling-mvp/admission',[$admission,'index'])->name('scheduling.mvp.admission');
+    Route::post('/scheduling-mvp/admission/feed',[$admission,'feed'])->name('scheduling.mvp.admission.feed');
+    Route::get('/scheduling-mvp/admission/appointments/{appointmentId}',[$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
+    Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/medical-care/{action}',[$medical,'care'])
+        ->whereNumber('appointmentId')->whereIn('action',['start','finish','indicate','withdraw'])
+        ->middleware('throttle:60,1')->name('scheduling.mvp.admission.medical-care');
+    Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/medical-procedures',[$medical,'procedures'])
+        ->whereNumber('appointmentId')->middleware('throttle:60,1')->name('scheduling.mvp.admission.medical-procedures');
 });

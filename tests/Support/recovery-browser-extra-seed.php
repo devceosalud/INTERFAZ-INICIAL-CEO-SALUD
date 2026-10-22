@@ -1,0 +1,20 @@
+<?php
+if(PHP_SAPI!=='cli')throw new RuntimeException('CLI only');
+require dirname(__DIR__,2).'/vendor/autoload.php';
+\Tests\Support\RescheduleVisualQa::boot();
+$dir=storage_path('app/qa-reschedule-visual');
+if(file_exists($dir.'/recovery-extra-fixture.json'))throw new RuntimeException('Existing fictional cohort preserved');
+$f=json_decode(file_get_contents($dir.'/browser-fixture.json'),true);
+$helper=new class{use \Tests\Concerns\BuildsAgendaLifecycleData;public function make($u,$c,$a){return $this->lifecycleAppointment($u,$c,$a);}};
+$actor=\App\Models\User::findOrFail($f['actor_id']);$medical=\App\Models\User::findOrFail($f['medical_id']);
+$medical->givePermissionTo([\App\Support\Scheduling\SchedulingCapability::EDIT_PRICING,\App\Support\Scheduling\SchedulingCapability::EDIT_PAYMENT,\App\Support\Scheduling\SchedulingCapability::RESCHEDULE]);
+$source=\App\Models\Appointment::findOrFail($f['appointment_id']);
+$catalog=['doctor'=>$source->doctor,'service'=>$source->service,'rate'=>$source->additionalRate];
+$common=['fecha_cita'=>'2026-10-21','duracion_cita'=>20,'tipo_agendamiento'=>'REGULAR','precio_programado'=>120,'catalog_price'=>120,'saldo_pendiente'=>120,'total_pagado'=>0,'estado_pagado'=>'PENDIENTE'];
+$unpaid=$helper->make($actor,$catalog,$common+['hora_cita'=>'13:00','estado_agenda'=>'PENDIENTE_CONFIRMACION']);
+$private=$helper->make($actor,$catalog,$common+['hora_cita'=>'13:40','estado_agenda'=>'PENDIENTE_CONFIRMACION']);
+$paid=$helper->make($actor,$catalog,$common+['hora_cita'=>'12:40','estado_agenda'=>'CONFIRMADA']);
+app(\App\Services\Scheduling\ReservationPaymentService::class)->submit($paid->id,$actor,['request_key'=>(string)\Illuminate\Support\Str::uuid(),'payment'=>['amount'=>'60','method'=>'EFECTIVO']]);
+foreach([[$unpaid,'SIN ADELANTO'],[$private,'RESERVA PRIVADA'],[$paid,'ECONOMIA REPROGRAMACION']] as [$a,$label])$a->patient->update(['nombre'=>$label,'apellido_paterno'=>'PACIENTE FICTICIO','apellido_materno'=>'QA']);
+file_put_contents($dir.'/recovery-extra-fixture.json',json_encode($f+['unpaid_id'=>$unpaid->id,'private_id'=>$private->id,'paid_id'=>$paid->id],JSON_PRETTY_PRINT));
+echo "Additional fictional journeys prepared; no real records.\n";

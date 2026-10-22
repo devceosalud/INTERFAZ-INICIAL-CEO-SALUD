@@ -1,0 +1,12 @@
+{
+  "main": "033c3fd60ba7620dd32d82d96f8e21c64fdea759",
+  "reference": "f29019a1f3649149a31af3447e67e009970a7277",
+  "pr67_css_block": "UNCHANGED",
+  "historical_migrations_sha256": {
+    "database/migrations/2026_10_21_200000_define_direct_appointment_economic_permissions.php": "03886497ce086cef163efcd8d1f59998cb81518f0a5223ef551e291a457c7879",
+    "database/migrations/2026_10_21_210000_link_users_to_doctors.php": "5f7354ab4494b82d06df9931c818040529f5889d3f8fe9249855150f43df7353",
+    "database/migrations/2026_10_21_210100_define_medical_role_and_permissions.php": "cb619cd58a85e30f38f598d34b585d3aca10cd32fd7ccff4c72d5c990dd3a363"
+  },
+  "new_tables": 0,
+  "new_mysql_states": 0
+}
