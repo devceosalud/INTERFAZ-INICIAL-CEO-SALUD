@@ -69,6 +69,23 @@ class AdmissionBoardController extends Controller
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
     }
 
+    public function physicianReevaluation(Request $r,int $appointmentId,string $action,
+        \App\Services\Scheduling\AppointmentReevaluationService $service)
+    {
+        abort_unless(in_array($action,['indicate','withdraw'],true),404);
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','confirmed','reason','_token']),422);
+        $data=$r->validate([
+            'expected_state'=>'required|in:EN_ATENCION',
+            'request_key'=>'required|uuid',
+            'confirmed'=>'required|accepted',
+            'reason'=>$action==='withdraw'?'required|string|min:3|max:500':'nullable|string|max:500',
+        ]);
+        $data['action']=$action;
+        $a=$service->physicianDecision($appointmentId,$r->user(),$data);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])
+            ->header('Cache-Control','private, no-store');
+    }
+
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
         abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
