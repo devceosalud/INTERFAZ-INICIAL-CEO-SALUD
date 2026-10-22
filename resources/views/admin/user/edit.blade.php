@@ -113,6 +113,17 @@
                                         </div>
                                     @endforeach
 
+                                    @if ($user->hasRole('MEDICO') && $user->hasRole('ADMINISTRADOR'))
+                                        <p class="alert alert-warning text-dark mt-2" role="note">
+                                            Esta cuenta posee MEDICO y ADMINISTRADOR. Elegir un rol distinto de MEDICO
+                                            sustituirá los roles actuales y puede retirar el acceso clínico.
+                                        </p>
+                                        <label class="d-block mt-2">
+                                            <input type="checkbox" name="confirm_remove_medico" value="1">
+                                            Confirmo expresamente que quiero retirar MEDICO si selecciono otro rol.
+                                        </label>
+                                    @endif
+
                                     {!! Form::submit('Asignar Rol al usuario', ['class' => 'btn btn-primary mt-4 btn-rounded']) !!}
 
                                     {!! Form::close() !!}
