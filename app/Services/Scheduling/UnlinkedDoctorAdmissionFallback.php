@@ -4,6 +4,7 @@ namespace App\Services\Scheduling;
 
 use App\Models\Appointment;
 use App\Models\User;
+use App\Models\UserAccountEvent;
 use App\Support\Scheduling\SchedulingCapability as C;
 
 /**
@@ -30,9 +31,12 @@ final class UnlinkedDoctorAdmissionFallback
             && in_array($appointment->estado_agenda, ['LEGADO','CONFIRMADA'], true)
             && !$appointment->hora_atendido && !$appointment->hora_salida
             && $appointment->doctor_id
-            // Linking any user immediately closes the exception for that doctor;
-            // it cannot be reopened by deactivating or revoking that user's access.
-            && !User::query()->where('doctor_id', $appointment->doctor_id)->exists();
+            // Linking any user closes the exception, including inactive accounts.
+            && !User::query()->where('doctor_id', $appointment->doctor_id)->exists()
+            // Once a physician has had a verified link, removing it must not
+            // silently reopen this contingency for the same professional.
+            && !UserAccountEvent::query()->where('event_type', 'DOCTOR_LINK_CHANGED')
+                ->where('metadata->after->doctor_id', (int) $appointment->doctor_id)->exists();
     }
 
     public static function allowedState(Appointment $appointment): ?string
