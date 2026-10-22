@@ -340,6 +340,29 @@
                 notice('Reevaluación confirmada; revisa los exámenes o autoriza el retorno manual.');
             }catch(error){busy=false;notice(error.message);}
         }
+        async function closeDeclinedReevaluation() {
+            if(busy||confirming||!detail?.can_decline_operational_reevaluation||!window.Swal)return;
+            const id=detail.appointment.id;
+            confirming=true;let answer;
+            try{answer=await window.Swal.fire({
+                title:'Paciente no continuará con la reevaluación',
+                text:'Esta acción cierra administrativamente la primera atención porque el paciente decidió no regresar. No se registrará una reevaluación médica ni exámenes realizados.',
+                input:'textarea',inputLabel:'Motivo obligatorio (registrar decisión del paciente)',
+                inputAttributes:{maxlength:'500'},
+                inputValidator:value=>String(value||'').trim().length<3?'Indica el motivo de la decisión del paciente.':undefined,
+                showCancelButton:true,confirmButtonText:'Cerrar por rechazo del paciente',
+                cancelButtonText:'Volver',focusCancel:true,icon:'warning'
+            });}finally{confirming=false;}
+            if(!answer?.isConfirmed||selected!==id)return;
+            busy=true;
+            try{
+                await request(board.dataset.base+'/'+id+'/decline-reevaluation',{method:'POST',
+                    body:JSON.stringify({expected_state:'EN_ATENCION',confirmed:true,
+                        request_key:crypto.randomUUID(),reason:String(answer.value).trim()})});
+                busy=false;await select(id);await load(id);
+                notice('Atención cerrada por decisión del paciente. Reevaluación no realizada; Admisión puede registrar la salida.');
+            }catch(error){busy=false;notice(error.message);}
+        }
         function presentationName(parent, name, presentation) {
             const label=node('span',name,'admission-patient-name');
             if(presentation?.strikethrough===true)label.style.textDecoration='line-through';
@@ -365,7 +388,7 @@
                 const procedures=cell(),progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'},ready=row.reevaluation?.ready??progress.status==='READY';
                 if(progress.requested)procedures.appendChild(node('span',progress.completed+' de '+progress.requested+' realizados'));
                 const review=row.reevaluation||{};
-                const title=review.resumed?'Reevaluación en consultorio':ready?'Listo para reevaluación':
+                const title=review.declined?'Reevaluación no realizada (rechazada)':review.resumed?'Reevaluación en consultorio':ready?'Listo para reevaluación':
                     review.pending?'Pendiente de reevaluación':review.pre_pending?'Pre-reevaluación sin confirmar':
                     progress.status==='NOT_READY'?(progress.requested?'Exámenes pendientes':'Sin solicitud'):
                     ({WITHDRAWN:'Retirado',SUSPENDED:'Suspendido',INACTIVE:'Inactivo',READY:'Exámenes verificados'}[progress.status]||progress.status);
@@ -420,7 +443,9 @@
             const actions=node('div',null,'admission-care-actions');
             for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(['EN_ATENCION','EN_ESPERA','INICIAR_REEVALUACION'].includes(state)?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>state==='INDICAR_REEVALUACION'?physicianReevaluation('indicate'):state==='RETIRAR_REEVALUACION'?physicianReevaluation('withdraw'):state==='INICIAR_REEVALUACION'?physicianReevaluation('resume'):transition(state));actions.appendChild(button);}
             if(payload.can_confirm_operational_reevaluation){const confirm=node('button','Confirmar reevaluación pendiente','admission-btn admission-btn--primary');confirm.type='button';confirm.addEventListener('click',confirmOperationalReevaluation);actions.appendChild(confirm);}
-            if(payload.medical_reevaluation?.pre_pending)actions.appendChild(node('p','PRE-REEVALUACIÓN SIN CONFIRMAR · Admisión o Comercial debe confirmar la indicación.','admission-tag admission-tag--pending'));
+            if(payload.can_decline_operational_reevaluation){const decline=node('button','Paciente no desea reevaluación · Finalizar','admission-btn');decline.type='button';decline.addEventListener('click',closeDeclinedReevaluation);actions.appendChild(decline);}
+            if(payload.medical_reevaluation?.declined)actions.appendChild(node('p','ATENCIÓN CERRADA · el paciente decidió no realizar la reevaluación. No se ha registrado una segunda evaluación médica.','admission-tag admission-tag--neutral'));
+            else if(payload.medical_reevaluation?.pre_pending)actions.appendChild(node('p','PRE-REEVALUACIÓN SIN CONFIRMAR · Admisión o Comercial debe confirmar la indicación.','admission-tag admission-tag--pending'));
             else if(payload.medical_reevaluation?.pending)actions.appendChild(node('p','PENDIENTE DE REEVALUACIÓN · revisar exámenes o autorizar retorno manual.','admission-tag admission-tag--pending'));
             else if(payload.medical_reevaluation?.ready)actions.appendChild(node('p','LISTO PARA REEVALUACIÓN · el médico debe iniciar la segunda atención.','admission-tag admission-tag--ready'));
             else if(payload.medical_reevaluation?.resumed)actions.appendChild(node('p','REEVALUACIÓN EN CONSULTORIO · el médico puede finalizar al terminar.','admission-tag admission-tag--ready'));
@@ -454,7 +479,12 @@
             if(!window.Swal){notice('No se cargó la confirmación de acciones. Vuelve a abrir el panel.');return;}
             let result;confirming=true;try{result=await window.Swal.fire({title:actionLabels[state],text:state==='SALIDA_REGISTRADA'?'¿Confirmas que el paciente salió físicamente del establecimiento?':'Se registrará la actuación y su responsable. No cambia pagos ni el precio.',icon:'question',showCancelButton:true,confirmButtonText:state==='SALIDA_REGISTRADA'?'Confirmar salida':'Confirmar',cancelButtonText:'Cancelar'});}finally{confirming=false;}if(!result.isConfirmed||busy||selected!==id||detail?.appointment.estado_cita!==expected)return;
             busy=true;const buttons=Array.from($('detail').querySelectorAll('.admission-care-actions button'));buttons.forEach(b=>b.disabled=true);$('detail').setAttribute('aria-busy','true');notice('Registrando '+(state==='SALIDA_REGISTRADA'?'salida física':'atención')+'…');
-            try{const result=await request(board.dataset.base+'/'+id+'/care',{method:'POST',body:JSON.stringify({state,expected_state:expected,request_key:crypto.randomUUID()})});
+            try{
+                const dedicatedArrival=state==='EN_ESPERA' && detail?.can_register_arrival;
+                const endpoint=board.dataset.base+'/'+id+(dedicatedArrival?'/arrival':'/care');
+                const payload=dedicatedArrival?{expected_state:expected,confirmed:true,request_key:crypto.randomUUID()}
+                    :{state,expected_state:expected,request_key:crypto.randomUUID()};
+                const result=await request(endpoint,{method:'POST',body:JSON.stringify(payload)});
                 if(result.detail){const wasReady=detail.appointment.reevaluation?.ready;detail=result.detail;renderDetail(detail);
                     if(currentFeed){const row=currentFeed.rows.find(r=>r.id===id);if(row)Object.assign(row,detail.appointment);if(wasReady&&!detail.appointment.reevaluation?.ready)currentFeed.kpis.reevaluaciones=Math.max(0,currentFeed.kpis.reevaluaciones-1);renderRows(currentFeed);revision='';}
                     notice('Salida registrada. Se conserva el estado ATENDIDO y sus pagos.');
