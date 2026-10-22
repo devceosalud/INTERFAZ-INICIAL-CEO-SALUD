@@ -187,7 +187,7 @@ class MedicalAccessCompatibilityTest extends TestCase
         $this->getJson(route('scheduling.medical.detail',$this->a->id))->assertOk();
 
         // A generic role-edit click may not accidentally remove the doctor's identity.
-        $this->actingAs($this->admin);
+        $this->actingAs($this->admin)->withSession(['ceosalud_auth_version'=>$this->admin->auth_version]);
         $adminRole=Role::findByName('ADMINISTRADOR','web');
         $this->putJson(route('admin.user.update',$target->id),['role'=>$adminRole->id])->assertUnprocessable();
         $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$target->fresh()->getRoleNames()->all());
