@@ -19,8 +19,8 @@
                 <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
-                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
-                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
+                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
+                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @elseif($key==='reevaluaciones_pendientes') data-pending-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
                 @endforeach
             </section>
             <form id="admission-filters" class="admission-filters" autocomplete="off">
@@ -31,6 +31,7 @@
                     <button type="submit" class="admission-btn admission-btn--primary">Aplicar filtros</button>
                 </div>
                 <div class="admission-filter-secondary">
+                    <label class="admission-review-filter"><input type="checkbox" name="only_pending_reevaluations" value="1" id="admission-only-pending-reviews"> Pendientes de reevaluación</label>
                     <label class="admission-review-filter"><input type="checkbox" name="only_reevaluations" value="1" id="admission-only-reviews"> Solo listos para reevaluación</label>
                     <div class="admission-filter-actions"><button type="button" id="admission-today" class="admission-btn admission-btn--quiet" data-today="{{ $today }}">Hoy</button><button type="button" id="admission-reset" class="admission-btn admission-btn--quiet">Restablecer</button></div>
                 </div>

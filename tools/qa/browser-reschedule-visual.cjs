@@ -30,7 +30,7 @@ const fixture=read('browser-fixture.json'),secret=read('browser-secret.json'),ba
     fecha_cita:'2026-10-24',hora_cita:'12:00',expected_fecha_cita:'2026-10-21',expected_hora_cita:'12:20',expected_revision:revision,motivo:'Cambio FICTICIO de fecha para QA visual'});
    assert.equal(move.status,200,JSON.stringify(move.body));
    await board();const marker=page.locator('.agenda-day-row[data-row-start="12:20"] .agenda-rescheduled-marker');await marker.waitFor();
-   assert.match(await marker.innerText(),/REPROGRAMADA → 24\/10\/2026, 12:00/);assert.match(await marker.innerText(),/liberado y disponible/);
+   assert.match(await marker.innerText(),/REPROGRAMADA \| 21\/10\/2026 12:20–12:40 → 24\/10\/2026 12:00/);assert.match(await marker.innerText(),/liberado y disponible/);
    assert.equal(await marker.getAttribute('data-appointment-id'),null);assert.equal(await page.locator('#agenda-total-busy').innerText(),'0');
    await marker.scrollIntoViewIfNeeded();await shot('02-despues-agenda-desktop.png');
    await page.setViewportSize({width:390,height:844});await marker.scrollIntoViewIfNeeded();await shot('03-despues-agenda-mobile.png');
@@ -44,7 +44,7 @@ const fixture=read('browser-fixture.json'),secret=read('browser-secret.json'),ba
    const payload=await direct('/scheduling-mvp/admission/feed','POST',{fecha:'2026-10-21',site_id:null});assert.equal(payload.body.kpis.total,0);assert.equal(payload.body.totals.pagos_reales,'0.00');
    await shot('04-admision-historial-desktop.png');await page.setViewportSize({width:390,height:844});await shot('05-admision-historial-mobile.png');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth)<=391);await page.setViewportSize({width:1440,height:1000});
-   await historical.getByRole('link',{name:'Ver cita vigente'}).click();await page.locator('.admission-reschedule-origin').waitFor();
+   await historical.getByRole('link',{name:'Ver cita reprogramada'}).click();await page.locator('.admission-reschedule-origin').waitFor();
    const current=await direct('/scheduling-mvp/admission/feed','POST',{fecha:'2026-10-24',site_id:null});assert.equal(current.body.kpis.total,1);assert.equal(current.body.totals.pagos_reales,'60.00');
    assert.equal(current.body.rows[0].reschedule_origin.from_time,'12:20');assert.equal(await page.locator('.admission-reschedule-origin').evaluate(e=>e.closest('td').cellIndex),1);await shot('06-admision-cita-vigente.png');
   });
@@ -68,7 +68,7 @@ const fixture=read('browser-fixture.json'),secret=read('browser-secret.json'),ba
    const move=await direct('/scheduling-mvp/agenda/appointments/'+fixture.appointment_id+'/reschedule','PATCH',{fecha_cita:'2026-10-26',hora_cita:'12:40',
     expected_fecha_cita:'2026-10-24',expected_hora_cita:'12:00',motivo:'Segunda reprogramacion FICTICIA'});assert.equal(move.status,200,JSON.stringify(move.body));
    await board();const marker=page.locator('.agenda-day-row[data-row-start="12:20"] .agenda-rescheduled-marker');await marker.waitFor();assert.match(await marker.innerText(),/Cita vigente: 26\/10\/2026, 12:40/);
-   const url=await marker.getByRole('button',{name:'Ver cita vigente'});await url.click();await page.waitForURL('**/scheduling-mvp/agenda?**fecha=2026-10-26**');
+   const url=await marker.getByRole('button',{name:'Ver cita reprogramada'});await url.click();await page.waitForURL('**/scheduling-mvp/agenda?**fecha=2026-10-26**');
    await page.locator('.agenda-day-entry[data-appointment-id="'+fixture.appointment_id+'"]').first().waitFor();await shot('10-destino-vigente.png');
   });
   assert.deepEqual(report.errors,[]);save();

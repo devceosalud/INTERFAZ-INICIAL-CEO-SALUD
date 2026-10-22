@@ -1,0 +1,9 @@
+{
+    "phase": "AUDIT_CANDIDATE",
+    "reference": "local review with parent 2e81877557fc07d7bb6bf3f31e06f2f100b958e8",
+    "checked": 541,
+    "mismatches": [],
+    "result": "MATCH",
+    "writes": 0,
+    "database_access": false
+}

@@ -20,11 +20,11 @@ test('legacy history without duration remains anchored at its original time',()=
 test('marker is read-only, stops row activation and opens only current appointment',()=>{
     let opened=null;const marker=history.marker(doc,item,'available',i=>opened=i);
     assert.equal(marker.dataset.appointmentId,undefined);assert.equal(marker.dataset.contextType,undefined);
-    assert.match(marker.children[0].textContent,/REPROGRAMADA → 24\/10\/2026, 12:00/);
+    assert.match(marker.children[0].textContent,/REPROGRAMADA \| 21\/10\/2026 12:20–13:00 → 24\/10\/2026 12:00/);
     assert.match(marker.children[1].textContent,/Cita vigente: 26\/10\/2026, 12:40/);
     assert.match(marker.children[1].textContent,/liberado y disponible/);
     let stopped=0;marker.listeners.click({stopPropagation(){stopped++;}});marker.listeners.keydown({stopPropagation(){stopped++;}});assert.equal(stopped,2);
-    marker.children[2].listeners.click({preventDefault(){}});assert.equal(opened,item);
+    assert.equal(marker.children[2].textContent,'Ver cita reprogramada');marker.children[2].listeners.click({preventDefault(){}});assert.equal(opened,item);
 });
 test('reused occupied interval is never labelled available by historical marker',()=>{
     const marker=history.marker(doc,item,'occupied',()=>{});

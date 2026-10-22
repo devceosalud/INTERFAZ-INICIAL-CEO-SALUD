@@ -34,6 +34,7 @@ final class AgendaAppointmentPresentation
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
+        if (\App\Services\Scheduling\AppointmentReevaluationService::pending($appointment)) $badges[] = 'PENDIENTE_REEVALUACION';
         if ($ready) $badges[] = 'LISTO_REEVALUACION';
         if ($released) $badges[] = 'DESACTIVADA';
         if ($refundRequested) $badges[] = 'REEMBOLSO_SOLICITADO';

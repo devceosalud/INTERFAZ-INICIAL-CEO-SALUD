@@ -1,0 +1,28 @@
+{
+  "scope": "Synthetic future-writer event contract; NO authenticated physician action tested or enabled",
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Pendiente es chip secundario: mismo color operativo, cita y saldo",
+      "result": "PASS"
+    },
+    {
+      "name": "Filtros pendientes y listos son excluyentes y funcionan en móvil",
+      "result": "PASS"
+    },
+    {
+      "name": "Admisión completa el procedimiento y listo sustituye pendiente sin recargar",
+      "result": "PASS"
+    },
+    {
+      "name": "Se conserva autoría de indicación y realización; no se habilita acción médica",
+      "result": "PASS"
+    },
+    {
+      "name": "Salida física administrativa separada conserva dinero y presentación de salida",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "phase_a_approved": false
+}
