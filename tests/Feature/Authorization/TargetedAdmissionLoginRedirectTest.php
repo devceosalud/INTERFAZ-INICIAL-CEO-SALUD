@@ -48,6 +48,25 @@ class TargetedAdmissionLoginRedirectTest extends TestCase
         $this->assertCount(0, $user->fresh()->roles);
     }
 
+    public function test_verified_administrator_medico_dual_role_keeps_user_two_admission_redirect(): void
+    {
+        config()->set('scheduling.enabled', true);
+        $user = $this->account(2, 'julio@ceosalud.com');
+        $user->assignRole([
+            Role::findOrCreate('ADMINISTRADOR', 'web'),
+            Role::findOrCreate('MEDICO', 'web'),
+        ]);
+        $this->grantAdmissionView($user);
+
+        $this->post(route('admin.login.store'), [
+            'email' => $user->email, 'password' => 'Fake-login-123',
+        ])->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('login'))->assertRedirect(route('scheduling.mvp.admission'));
+        $this->assertTrue($user->fresh()->hasRole('ADMINISTRADOR'));
+        $this->assertTrue($user->fresh()->hasRole('MEDICO'));
+        $this->assertNull($user->fresh()->doctor_id);
+    }
+
     public static function wrongIdentity(): array
     {
         return [
