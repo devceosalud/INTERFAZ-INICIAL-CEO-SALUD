@@ -47,7 +47,16 @@ class CommercialArrivalTest extends TestCase
         $financial=$a->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado','estado_agenda']);
         $this->assertFalse($this->commercial->can(C::UPDATE));
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
-            ->assertOk()->assertJsonPath('care_actions.0','EN_ESPERA')->assertJsonCount(1,'care_actions');
+            ->assertOk()->assertJsonPath('care_actions.0','EN_ESPERA')
+            ->assertJsonPath('commercial_arrival_url',route('scheduling.mvp.admission.commercial-arrival',$a->id))
+            ->assertJsonCount(1,'care_actions');
+        // The original /care endpoint must NOT be usable by COMERCIAL.
+        $this->postJson(route('scheduling.mvp.admission.care',$a->id),[
+            'state'=>'EN_ESPERA','expected_state'=>'PROGRAMADO','request_key'=>(string)Str::uuid()
+        ])->assertForbidden();
+        $this->postJson(route('scheduling.mvp.admission.commercial-arrival',$a->id),[
+            'state'=>'LLAMANDO','expected_state'=>'PROGRAMADO','request_key'=>(string)Str::uuid()
+        ])->assertUnprocessable();
         $requestKey=(string)Str::uuid();
         $this->care($a,'EN_ESPERA',$requestKey)->assertOk()->assertJsonPath('estado_cita','EN_ESPERA');
         // Retrying the identical request must not duplicate the event or the timestamp.
