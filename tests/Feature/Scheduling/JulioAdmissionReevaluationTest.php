@@ -129,6 +129,24 @@ class JulioAdmissionReevaluationTest extends TestCase
         ]);
     }
 
+    public function test_clinical_indication_fails_closed_without_a_verified_existing_link():void
+    {
+        $u=$this->agendaReader('ADMINISTRADOR');
+        Role::firstOrCreate(['name'=>'MEDICO','guard_name'=>'web']);
+        $u->assignRole('MEDICO');
+        $catalog=$this->createAppointmentCatalog();
+        $a=$this->lifecycleAppointment($u,$catalog,[
+            'estado_cita'=>'EN_ATENCION','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $a->forceFill(['hora_llegada'=>now(),'hora_atencion'=>now()])->save();
+        $this->actingAs($u);
+        $this->indicate($a)->assertForbidden();
+        $this->assertDatabaseMissing('appointment_events',[
+            'appointment_id'=>$a->id,
+            'event_type'=>AppointmentReevaluationService::MEDICAL_INDICATED,
+        ]);
+    }
+
     public function test_only_account_two_redirects_to_admission_at_login():void
     {
         $this->agendaReader('ADMINISTRADOR');
