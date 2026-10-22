@@ -29,8 +29,8 @@ final class ManualReevaluationService
         if(!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return false;
         // Keep the old direct mark for attended appointments. During an open
         // medical episode, the physician must first indicate reevaluation.
-        // If procedures were ordered, their dedicated verification/send flow
-        // is mandatory; the direct mark must not bypass pending tests.
+        // Manual return is audited and requires an explicit reason when any
+        // ordered exam remains pending. It never marks the exams as completed.
         return ($a->estado_cita==='ATENDIDO' && !AppointmentReevaluationService::indicated($a))
             || ($a->estado_cita==='EN_ATENCION'
                 && AppointmentReevaluationService::confirmed($a)
