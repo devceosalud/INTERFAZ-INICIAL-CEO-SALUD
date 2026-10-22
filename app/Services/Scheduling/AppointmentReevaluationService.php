@@ -13,6 +13,7 @@ final class AppointmentReevaluationService
     public const MEDICAL_WITHDRAWN = 'REEVALUACION_MEDICA_RETIRADA';
     public const OPERATIONAL_CONFIRMED = 'REEVALUACION_OPERATIVA_CONFIRMADA';
     public const MEDICAL_RESUMED = 'REEVALUACION_MEDICA_RETOMADA';
+    public const PATIENT_DECLINED = 'REEVALUACION_RECHAZADA_POR_PACIENTE';
 
     /** Load the latest events in batches: every state belongs to the SAME appointment. */
     public static function loadIndications(\Illuminate\Support\Collection $appointments): void
@@ -22,6 +23,7 @@ final class AppointmentReevaluationService
             'medicalReevaluationEvent' => [self::MEDICAL_INDICATED, self::MEDICAL_WITHDRAWN],
             'operationalConfirmationEvent' => [self::OPERATIONAL_CONFIRMED],
             'medicalReturnEvent' => [self::MEDICAL_RESUMED],
+            'reevaluationDeclinedEvent' => [self::PATIENT_DECLINED],
         ] as $relation => $types) {
             $latest = \App\Models\AppointmentEvent::query()->whereIn('id', function ($q) use ($appointments, $types) {
                 $q->from('appointment_events')->selectRaw('MAX(id)')
@@ -72,6 +74,24 @@ final class AppointmentReevaluationService
     {
         return $a->estado_cita === 'EN_ATENCION' && self::confirmed($a)
             && !self::ready($a) && !self::resumed($a);
+    }
+
+    public static function declined(Appointment $a): bool
+    {
+        $event=self::event($a,'reevaluationDeclinedEvent',[self::PATIENT_DECLINED]);
+        $indication=self::indication($a);
+        return $a->estado_cita==='ATENDIDO' && $event !== null && $indication !== null
+            && $event->id > $indication->id;
+    }
+
+    public static function operatorCanDecline(User $actor, Appointment $a): bool
+    {
+        return self::operatorCanConfirm($actor)
+            && ($a->attendance_mode ?? 'PRESENCIAL') === 'PRESENCIAL'
+            && $a->estado_cita === 'EN_ATENCION'
+            && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)
+            && $a->hora_atencion && !$a->hora_atendido && !$a->hora_salida
+            && self::indicated($a) && !self::resumed($a);
     }
 
     public static function operatorCanConfirm(User $actor): bool
@@ -197,6 +217,48 @@ final class AppointmentReevaluationService
         },3);
     }
 
+    /**
+     * Patient declines the return. This is an administrative closure of the
+     * first visit, NOT medical reevaluation, NOT completion of pending exams.
+     */
+    public function closeDeclined(int $id, User $actor, array $data): Appointment
+    {
+        abort_unless(self::operatorCanConfirm($actor),403);
+        abort_unless(mb_strlen(trim($data['reason']))>=3,422,'Indica por qué el paciente no regresará.');
+        $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn()=>abort(404));
+        $hash=hash('sha256',json_encode(['PATIENT_DECLINED_REEVALUATION_V1',$id,$data]));
+        return DB::transaction(function () use ($id,$actor,$original,$data,$hash) {
+            DB::table('appointment_operations')->upsert([[
+                'actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,
+                'created_at'=>now(),'updated_at'=>now(),
+            ]],['actor_user_id','request_key'],['request_key']);
+            $op=DB::table('appointment_operations')->where('actor_user_id',$actor->id)
+                ->where('request_key',$data['request_key'])->lockForUpdate()->first();
+            abort_unless(hash_equals($op->payload_hash,$hash),409,'Operación duplicada con datos distintos.');
+            if($op->appointment_id) return Appointment::visibleToAgendaUser($actor->id)
+                ->whereKey($op->appointment_id)->firstOr(fn()=>abort(404));
+            \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
+            $a=Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->lockForUpdate()->firstOr(fn()=>abort(404));
+            abort_unless((int)$original->doctor_id===(int)$a->doctor_id
+                && $data['expected_state']==='EN_ATENCION',409,'La cita cambió. Actualiza.');
+            app(ManualReevaluationService::class)->load(collect([$a]));
+            abort_unless(self::operatorCanDecline($actor,$a),422,
+                'Solo se permite cerrar una reevaluación indicada y todavía no retomada por el médico.');
+            $a->forceFill(['estado_cita'=>'ATENDIDO','hora_atendido'=>now(),
+                'updated_by_user_id'=>$actor->id])->save();
+            $event=app(AppointmentHistory::class)->record($a,self::PATIENT_DECLINED,$actor->id,[
+                'motivo'=>trim($data['reason']),
+                'metadata'=>['source'=>'DECLINED_RETURN_ADMINISTRATIVE_CLOSE_V1',
+                    'indication_event_id'=>self::indication($a)->id,
+                    'operation_id'=>$op->id,'from'=>'EN_ATENCION','to'=>'ATENDIDO',
+                    'clinical_reevaluation_performed'=>false,'exams_verified_by_this_action'=>false]]);
+            DB::table('appointment_operations')->where('id',$op->id)
+                ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+            $a->setRelation('reevaluationDeclinedEvent',$event);
+            return $a;
+        },3);
+    }
+
     public static function directReady(Appointment $a): bool
     {
         $event=self::event($a,'manualReevaluationEvent',[ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED]);
@@ -224,7 +286,7 @@ final class AppointmentReevaluationService
         if ($ready && OperationalProcedureService::ready($a)) {
             $origins[]=$a->operationalReview->origin === 'MANUAL' ? 'MANUAL_PARTIAL' : 'AUTOMATIC';
         }
-        return ['ready'=>$ready,'pre_pending'=>self::prePending($a),
+        return ['ready'=>$ready,'declined'=>self::declined($a),'pre_pending'=>self::prePending($a),
             'pending'=>self::pending($a),'confirmed'=>self::confirmed($a),
             'resumed'=>self::resumed($a),'indicated'=>self::indicated($a),'origins'=>$origins];
     }
