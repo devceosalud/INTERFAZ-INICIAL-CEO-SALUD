@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('body_class', 'admission-viewport')
 @section('css_data')
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-reschedule-history.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
@@ -18,8 +19,8 @@
                 <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create">{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
-                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
-                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
+                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
+                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @elseif($key==='reevaluaciones_pendientes') data-pending-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
                 @endforeach
             </section>
             <form id="admission-filters" class="admission-filters" autocomplete="off">
@@ -30,6 +31,7 @@
                     <button type="submit" class="admission-btn admission-btn--primary">Aplicar filtros</button>
                 </div>
                 <div class="admission-filter-secondary">
+                    <label class="admission-review-filter"><input type="checkbox" name="only_pending_reevaluations" value="1" id="admission-only-pending-reviews"> Pendientes de reevaluación</label>
                     <label class="admission-review-filter"><input type="checkbox" name="only_reevaluations" value="1" id="admission-only-reviews"> Solo listos para reevaluación</label>
                     <div class="admission-filter-actions"><button type="button" id="admission-today" class="admission-btn admission-btn--quiet" data-today="{{ $today }}">Hoy</button><button type="button" id="admission-reset" class="admission-btn admission-btn--quiet">Restablecer</button></div>
                 </div>
@@ -49,6 +51,13 @@
         </div>
         <div class="admission-workspace">
             <section class="admission-main" aria-label="Pacientes y reevaluaciones">
+                <details id="admission-reschedule-panel" class="admission-reschedule-panel" hidden>
+                    <summary>Reprogramaciones del día <span id="admission-reschedule-count"></span></summary>
+                    <p>Referencias históricas según los filtros. No forman parte de la cola de atención, los indicadores ni los importes. Las acciones corresponden a la cita vigente.</p>
+                    <div id="admission-reschedule-list"></div>
+                    <button id="admission-reschedule-previous" type="button" class="admission-btn" hidden>Referencias anteriores</button>
+                    <button id="admission-reschedule-latest" type="button" class="admission-btn" hidden>Referencias recientes</button>
+                </details>
                 <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
                     <div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div>

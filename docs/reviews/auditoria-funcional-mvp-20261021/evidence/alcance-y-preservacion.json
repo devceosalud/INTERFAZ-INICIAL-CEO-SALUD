@@ -1,0 +1,29 @@
+{
+  "base": "2e81877557fc07d7bb6bf3f31e06f2f100b958e8",
+  "protected_files_identical": [
+    "app/Models/User.php",
+    "app/Models/Doctor.php",
+    "app/Services/Scheduling/RescheduleHistory.php",
+    "app/Services/Scheduling/RescheduleAppointmentService.php",
+    "app/Services/Scheduling/OperationalProcedureService.php",
+    "app/Services/Scheduling/AppointmentEconomicEdit.php",
+    "app/Services/Scheduling/AppointmentDiscount.php",
+    "app/Services/Scheduling/ReservationPaymentService.php",
+    "app/Services/Scheduling/AppointmentPriceResolver.php",
+    "public/js/scheduling/agenda.js",
+    "public/js/scheduling/agenda-day-grid.js",
+    "composer.json",
+    "composer.lock",
+    "config/auth.php",
+    "config/scheduling.php"
+  ],
+  "schema_migration_diff_empty": true,
+  "association_not_implemented": true,
+  "medical_writer_enabled": false,
+  "phase_a_approved": false,
+  "phase_b_started": false,
+  "runtime_fingerprints": 541,
+  "base_worktrees_clean": true,
+  "original_economic_worktree_dirty_state_and_12_fingerprints_preserved": true,
+  "new_screenshots": 31
+}

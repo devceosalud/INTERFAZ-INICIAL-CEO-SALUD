@@ -129,17 +129,20 @@ class CashierShifts extends Component
             return; // POR SEGURIDAD: SI DE ALGUN MODO NO HAY TURNO, NO HACEMOS NADA
         }
 
-        abort_unless(CashierShift::manual()->whereKey($this->turno->id)->where('user_id', auth()->id())->exists(), 403);
-        $montoSistema = $this->montoSistema; //CONGELAMOS EL VALOR CALCULADO, PARA NO RECALCULAR DOS VECES
-
-        $this->turno->update([
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            // Serialize reconciliation with payment recording and authorized economic corrections.
+            $shift=CashierShift::manual()->whereKey($this->turno->id)->where('user_id',auth()->id())->lockForUpdate()->firstOr(fn()=>abort(403));
+            abort_unless($shift->estado==='ABIERTO' && !$shift->cerrado_en,409,'El turno ya fue cerrado.');
+            $montoSistema=$shift->calcularMontoSistema();
+            $shift->update([
             'monto_sistema' => $montoSistema,
             'monto_contado' => $this->montoContado,
             'diferencia' => round($this->montoContado - $montoSistema, 2),
             'observaciones_cierre' => $this->observacionesCierre,
             'cerrado_en' => now(),
             'estado' => 'CERRADO'
-        ]);
+            ]);
+        },3);
 
         $this->turno = null;
         $this->cajas = Cashier::manual()->where('estado', 'activo')->orderBy('nombre')->get();

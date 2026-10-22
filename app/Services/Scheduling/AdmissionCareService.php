@@ -11,12 +11,22 @@ use Illuminate\Support\Facades\DB;
 /** Administrative care actions delegate existing legacy authorization/financial guards. */
 class AdmissionCareService
 {
+    /** Fail closed until a verified User-to-Doctor association is approved and implemented. */
+    public static function authorizeState(User $actor,string $state): void
+    {
+        abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
+        abort_if(in_array($state,['EN_ATENCION','ATENDIDO','REEVALUACION'],true),403,
+            'La acción médica requiere una vinculación verificable entre usuario y médico responsable; todavía no está habilitada.');
+        if(in_array($state,['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','SALIDA_REGISTRADA'],true))
+            abort_unless($actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+    }
+
     public function reversalOffer(Appointment $a, User $actor): ?array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return null;
         if (!$actor->is_active || !$actor->hasAnyRole(['ADMINISTRADOR','ADMISION']) || !$actor->can(C::UPDATE)
             || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true) || $a->hora_atendido || $a->hora_salida
-            || !in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)) return null;
+            || !in_array($a->estado_cita,['EN_ESPERA','LLAMANDO'],true)) return null;
         // Any later event invalidates the offer, including an edit that returns to the same state (ABA).
         $last = $a->events()->orderByDesc('id')->first();
         if (!$last || $last->event_type !== 'ADMISION_ESTADO_ACTUALIZADO' || !isset($last->metadata['previous_timestamps'])
@@ -58,7 +68,7 @@ class AdmissionCareService
 
     public function transition(int $id, User $actor, array $data): Appointment
     {
-        abort_unless($actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
+        self::authorizeState($actor,$data['state']);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         return DB::transaction(function () use ($id,$actor,$data,$original) {
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));

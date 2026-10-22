@@ -31,7 +31,7 @@ class AdmissionBoardTest extends TestCase
     private function feed(array $extra=[]){return $this->postJson(route('scheduling.mvp.admission.feed'),array_replace(['fecha'=>now()->toDateString()],$extra));}
     private function appointment(array $extra=[]){return $this->lifecycleAppointment($this->actor,$this->catalog,$extra);}
     private function detail(int $id){return $this->getJson(route('scheduling.mvp.admission.detail',$id));}
-    private function updatePermission():void {$this->actor->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));}
+    private function updatePermission():void {$this->actor->syncRoles(\Spatie\Permission\Models\Role::findOrCreate('ADMISION','web'));$this->actor->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));}
     private function care($a,string $state,?string $key=null,array $extra=[]){return $this->postJson(route('scheduling.mvp.admission.care',$a->id),array_replace(['state'=>$state,'expected_state'=>$a->estado_cita,'request_key'=>$key??(string)Str::uuid()],$extra));}
 
     public function test_default_is_actual_magdalena_id_and_today_in_lima_without_creating_site():void
@@ -128,7 +128,7 @@ class AdmissionBoardTest extends TestCase
             $a=$this->lifecycleAppointment($reader,$this->catalog);
             $this->care($a,'EN_ESPERA')->assertForbidden();
             $reader->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
-            $this->care($a,'EN_ESPERA')->assertOk();
+            $this->care($a,'EN_ESPERA')->assertStatus(in_array($role,['ADMINISTRADOR','ADMISION'],true)?200:403);
         }
     }
     public function test_missing_capabilities_block_page_feed_detail_and_care_without_writes():void
@@ -137,17 +137,19 @@ class AdmissionBoardTest extends TestCase
         $this->get(route('scheduling.mvp.admission'))->assertForbidden();$this->feed()->assertForbidden();$this->detail($a->id)->assertForbidden();$this->care($a,'EN_ESPERA')->assertForbidden();
         $this->actingAs($this->actor);$this->care($a,'EN_ESPERA')->assertForbidden();$this->assertDatabaseCount('appointment_operations',0);
     }
-    public function test_care_progression_is_idempotent_audited_and_keeps_financial_history_intact():void
+    public function test_administrative_progression_is_idempotent_audited_and_does_not_start_medical_care():void
     {
         $this->updatePermission();$a=$this->appointment(['total_pagado'=>50,'estado_pagado'=>'PARCIAL','saldo_pendiente'=>50]);
         $a=$a->fresh();$financial=$a->only(['precio_programado','total_pagado','saldo_pendiente','estado_pagado','estado_agenda']);
-        foreach(['EN_ESPERA','LLAMANDO','EN_ATENCION','ATENDIDO'] as $target){
+        foreach(['EN_ESPERA','LLAMANDO'] as $target){
             $key=(string)Str::uuid();$this->care($a,$target,$key)->assertOk();$this->care($a,$target,$key)->assertOk();$a=$a->fresh();
             $this->feed()->assertOk()->assertJsonPath('kpis.'.AdmissionStatus::group($a),1);
         }
-        foreach(['hora_llegada','hora_llamado','hora_atencion','hora_atendido'] as $field)$this->assertNotNull($a->{$field});
+        foreach(['hora_llegada','hora_llamado'] as $field)$this->assertNotNull($a->{$field});
+        foreach(['hora_atencion','hora_atendido','hora_salida'] as $field)$this->assertNull($a->{$field});
+        $this->care($a,'EN_ATENCION')->assertForbidden();$this->care($a,'ATENDIDO')->assertForbidden();
         $this->assertSame($financial,$a->only(array_keys($financial)));$this->assertDatabaseCount('payments',0);
-        $this->assertSame(4,$a->events()->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());
+        $this->assertSame(2,$a->events()->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());
         $this->care($a,'EN_ESPERA')->assertUnprocessable();
     }
     public function test_pending_closed_wrong_state_and_manipulated_finances_cannot_transition():void
@@ -156,14 +158,14 @@ class AdmissionBoardTest extends TestCase
         foreach(['PENDIENTE_CONFIRMACION','CONFIRMADA'] as $agenda){$a=$this->appointment(['estado_agenda'=>$agenda]);
             if($agenda==='PENDIENTE_CONFIRMACION')$this->care($a,'EN_ESPERA')->assertUnprocessable();
             $this->care($a,'EN_ESPERA',null,['total_pagado'=>999])->assertUnprocessable();
-            $this->care($a,'EN_ATENCION',null,['expected_state'=>'EN_ESPERA'])->assertConflict();
+            $this->care($a,'EN_ATENCION',null,['expected_state'=>'EN_ESPERA'])->assertForbidden();
         }
         foreach(['ATENDIDO','CANCELADO','NO_ASISTIO','RETIRO'] as $closed)$this->care($this->appointment(['estado_cita'=>$closed]),'EN_ESPERA')->assertUnprocessable();
         $this->assertDatabaseCount('appointment_operations',0);$this->assertDatabaseCount('payments',0);
     }
     public function test_ocr_payment_confirmation_and_admission_share_exact_same_appointment_and_money():void
     {
-        Storage::fake('local');foreach([C::CREATE,C::SUBMIT_PAYMENT,C::UPDATE] as $p)$this->actor->givePermissionTo(Permission::findOrCreate($p,'web'));
+        Storage::fake('local');$this->actor->syncRoles(\Spatie\Permission\Models\Role::findOrCreate('ADMISION','web'));foreach([C::CREATE,C::SUBMIT_PAYMENT,C::UPDATE] as $p)$this->actor->givePermissionTo(Permission::findOrCreate($p,'web'));
         $this->catalog['rate']->update(['nombre'=>'TARIFA ESTANDAR','tipo_tarifa'=>'MONTO_FIJO']);
         $c=Cashier::create(['nombre'=>'Caja integración ficticia','estado'=>'ACTIVO']);
         CashierShift::create(['cashier_id'=>$c->id,'user_id'=>$this->actor->id,'monto_apertura'=>0,'abierto_en'=>now(),'estado'=>'ABIERTO']);

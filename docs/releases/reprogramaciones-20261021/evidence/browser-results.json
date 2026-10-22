@@ -1,0 +1,30 @@
+{
+  "browser": "155.0.8059.79",
+  "cases": [
+    {
+      "name": "Antes: cita vigente en 12:20 con S/60 reales",
+      "result": "PASS"
+    },
+    {
+      "name": "Reprogramar por backend real con revision y CSRF conserva el pago",
+      "result": "PASS"
+    },
+    {
+      "name": "Admisión: referencia sin cola, KPI ni ingresos en la fecha original",
+      "result": "PASS"
+    },
+    {
+      "name": "Semana y mes: insignias DOM accesibles separadas de eventos reales",
+      "result": "PASS"
+    },
+    {
+      "name": "Nueva cita confirmada reutiliza 12:20 y conserva la marca histórica secundaria",
+      "result": "PASS"
+    },
+    {
+      "name": "Segunda reprogramación conserva ambos orígenes y el enlace al destino vigente",
+      "result": "PASS"
+    }
+  ],
+  "errors": []
+}

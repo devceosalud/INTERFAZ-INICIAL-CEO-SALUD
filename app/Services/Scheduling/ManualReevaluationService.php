@@ -38,6 +38,7 @@ final class ManualReevaluationService
                 ->whereIn('event_type', [self::MARKED, self::CLEARED])->groupBy('appointment_id');
         })->with('actor:id,name')->get()->keyBy('appointment_id');
         foreach ($appointments as $a) $a->setRelation('manualReevaluationEvent', $latest->get($a->id));
+        AppointmentReevaluationService::loadIndications($appointments);
     }
 
     public function state(Appointment $a): array

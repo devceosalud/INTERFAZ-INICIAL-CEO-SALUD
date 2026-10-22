@@ -791,7 +791,22 @@ class Sales extends Component
         $this->turno = $actualShift;
         $appointments = $this->appointmentCart();
         \App\Models\Doctor::whereIn('id', $appointments->pluck('doctor_id'))->orderBy('id')->lockForUpdate()->get();
-        Appointment::whereIn('id', $appointments->pluck('id'))->orderBy('id')->lockForUpdate()->get();
+        try {
+            $lockedAppointments = Appointment::whereIn('id', $appointments->pluck('id'))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+        } catch (\Illuminate\Database\QueryException $exception) {
+            // MariaDB may reject an obsolete snapshot before returning the current rows.
+            if ((int) ($exception->errorInfo[1] ?? 0) !== 1020) { throw $exception; }
+            throw ValidationException::withMessages(['carrito'=>'La cita cambió mientras se revisaba el ticket. Recarga Caja antes de cobrar o emitir.']);
+        }
+        // A direct economic edit may commit between reading the cart and acquiring its locks.
+        foreach ($appointments as $appointment) {
+            $locked = $lockedAppointments->get($appointment->id);
+            foreach (['precio_programado','total_pagado','saldo_pendiente'] as $field) {
+                if (!$locked || \App\Support\Billing\Money::cents($locked->$field) !== \App\Support\Billing\Money::cents($appointment->$field)) {
+                    throw ValidationException::withMessages(['carrito'=>'La economía de la cita cambió. Recarga el ticket y revisa el saldo antes de cobrar o emitir.']);
+                }
+            }
+        }
         if ($this->ticketOrigenId) {
             $ticket = Voucher::visibleToAgendaUser((int) auth()->id())->whereKey($this->ticketOrigenId)->lockForUpdate()->firstOr(fn () => abort(404));
             if ($ticket->childVouchers()->exists()) { throw ValidationException::withMessages(['ticket' => 'El ticket ya tiene un documento relacionado. Consulta Caja.']); }

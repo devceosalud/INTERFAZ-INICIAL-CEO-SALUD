@@ -1,0 +1,97 @@
+[
+  {
+    "path": "app/Http/Controllers/Scheduling/AdmissionBoardController.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Services/Scheduling/AdmissionBoardService.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Services/Scheduling/AdmissionCareService.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Services/Scheduling/AppointmentReevaluationService.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Services/Scheduling/LegacyAppointmentMutation.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Services/Scheduling/ManualReevaluationService.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Support/Scheduling/AgendaAppointmentPresentation.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "app/Support/Scheduling/AgendaLegend.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "public/js/scheduling/admission-board.js",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "public/js/scheduling/agenda-reschedule-history.js",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "tests/Feature/Scheduling/AdmissionBoardTest.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "tests/Feature/Scheduling/MedicalIdentityAndReevaluationProjectionTest.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "tests/JavaScript/agenda-quick-management.test.js",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "tests/JavaScript/reschedule-visual-history.test.js",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "tests/Support/functional-audit-browser-seed.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "tests/Support/functional-audit-indication-fixture.php",
+    "result": "PASS",
+    "type": "PHP"
+  },
+  {
+    "path": "tools/qa/browser-functional-audit-phase-a.cjs",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "tools/qa/browser-reevaluation-read-contract.cjs",
+    "result": "PASS",
+    "type": "JS"
+  },
+  {
+    "path": "tools/qa/browser-reschedule-visual.cjs",
+    "result": "PASS",
+    "type": "JS"
+  }
+]

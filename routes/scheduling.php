@@ -54,6 +54,12 @@ Route::middleware([
             ->whereNumber('appointmentId')->whereNumber('taskId')->middleware('throttle:30,1')
             ->name('scheduling.mvp.admission.tasks.completion');
         $workflow = \App\Http\Controllers\Scheduling\AppointmentWorkflowController::class;
+        Route::prefix('/scheduling-mvp/agenda/appointments/{appointmentId}/economic-edit')->whereNumber('appointmentId')->group(function(){
+            $controller=\App\Http\Controllers\Scheduling\AppointmentEconomicEditController::class;
+            Route::get('/',[$controller,'index'])->name('scheduling.mvp.economic-edit.index');
+            Route::post('/review',[$controller,'review'])->middleware('throttle:30,1')->name('scheduling.mvp.economic-edit.review');
+            Route::put('/',[$controller,'save'])->middleware('throttle:20,1')->name('scheduling.mvp.economic-edit.save');
+        });
         Route::post('/scheduling-mvp/agenda/appointments/{appointmentId}/reevaluation-indications',[\App\Http\Controllers\Scheduling\ReevaluationIndicationController::class,'store'])
             ->whereNumber('appointmentId')->middleware('permission:'.\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)->name('scheduling.mvp.reevaluation-indications.store');
         Route::get('/scheduling-mvp/agenda/heatmap/preview', [\App\Http\Controllers\Scheduling\AgendaHeatmapController::class, 'preview'])
@@ -117,6 +123,8 @@ Route::middleware([
 
         Route::get('/scheduling-mvp/agenda/feed', AgendaFeedController::class)
             ->name('scheduling.mvp.agenda.feed');
+        Route::get('/scheduling-mvp/agenda/reschedule-history',[AgendaFeedController::class,'history'])
+            ->middleware('throttle:60,1')->name('scheduling.mvp.agenda.reschedule-history');
 
         Route::post('/scheduling-mvp/agenda/patient-lookup', AgendaPatientLookupController::class)
             ->name('scheduling.mvp.agenda.patient-lookup');

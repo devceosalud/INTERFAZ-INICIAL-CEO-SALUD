@@ -1,0 +1,111 @@
+{
+  "mode": "after",
+  "browser": "155.0.8059.79",
+  "checks": [
+    {
+      "point": 1,
+      "name": "Red marker with explicit original date",
+      "result": "PASS",
+      "red": {
+        "expected": "rgb(254, 242, 242)",
+        "actual": "rgb(254, 242, 242)",
+        "equal": true
+      },
+      "originalDate": true
+    },
+    {
+      "point": 1,
+      "name": "Navigate from historical interval to current appointment",
+      "result": "PASS"
+    },
+    {
+      "point": 1,
+      "name": "Admission history remains separate and red",
+      "result": "PASS"
+    },
+    {
+      "point": 3,
+      "name": "All cells use backend operational background",
+      "result": "PASS",
+      "colors": [
+        {
+          "id": 2,
+          "key": "SIN_PAGO_REAL",
+          "expected": "rgb(253, 240, 217)",
+          "actual": "rgb(253, 240, 217)",
+          "equal": true
+        },
+        {
+          "id": 3,
+          "key": "PRESENTE",
+          "expected": "rgb(153, 246, 228)",
+          "actual": "rgb(153, 246, 228)",
+          "equal": true
+        },
+        {
+          "id": 4,
+          "key": "PRESENTE",
+          "expected": "rgb(153, 246, 228)",
+          "actual": "rgb(153, 246, 228)",
+          "equal": true
+        },
+        {
+          "id": 5,
+          "key": "ATENDIDO",
+          "expected": "rgb(116, 220, 203)",
+          "actual": "rgb(116, 220, 203)",
+          "equal": true
+        },
+        {
+          "id": 6,
+          "key": "ATENDIDO",
+          "expected": "rgb(116, 220, 203)",
+          "actual": "rgb(116, 220, 203)",
+          "equal": true
+        },
+        {
+          "id": 7,
+          "key": "DESACTIVADA",
+          "expected": "rgb(254, 202, 202)",
+          "actual": "rgb(254, 202, 202)",
+          "equal": true
+        },
+        {
+          "id": 8,
+          "key": "LISTO_REEVALUACION",
+          "expected": "rgb(255, 194, 138)",
+          "actual": "rgb(255, 194, 138)",
+          "equal": true
+        },
+        {
+          "id": 9,
+          "key": "PRESENTE",
+          "expected": "rgb(153, 246, 228)",
+          "actual": "rgb(153, 246, 228)",
+          "equal": true
+        }
+      ]
+    },
+    {
+      "point": 3,
+      "name": "Selection/mobile/filter keep labels and zero real payment accurate",
+      "result": "PASS"
+    },
+    {
+      "point": 3,
+      "name": "Read-only navigation leaves board and financial totals unchanged",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "phase_a_approved": false,
+  "medical_start_by_admission": {
+    "expected_http": 403,
+    "actual_http": 403,
+    "result": "PASS_DENIED_WITHOUT_VERIFIED_IDENTITY"
+  },
+  "medical_identity": {
+    "status": "BLOCKED",
+    "reason": "No authenticated User-to-Doctor association in candidate; no physician role or association fabricated"
+  }
+}

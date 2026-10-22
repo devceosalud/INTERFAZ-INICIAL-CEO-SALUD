@@ -57,26 +57,16 @@ class AdmissionBoardService
                 });
             })
             ->with('operationalReview')->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
-        app(ManualReevaluationService::class)->load($rows);
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
-        if (!empty($filters['grupo'])) $rows = $rows->filter(fn ($a) => AdmissionStatus::group($a) === $filters['grupo'])->values();
-        if (!empty($filters['only_reevaluations']) || ($filters['tab']??'citas')==='reevaluaciones') $rows=$rows->filter(fn($a)=>AppointmentReevaluationService::ready($a))->values();
-        if (!empty($filters['visual'])) {
-            $visualPositions=$this->economics->forAppointments($rows,[]);
-            $rows=$rows->filter(function($a)use($filters,$visualPositions){
-                $presentation=\App\Support\Scheduling\AgendaAppointmentPresentation::of($a,$visualPositions[$a->id]);
-                return $filters['visual']==='CONCILIAR_PAGO'
-                    ? in_array('CONCILIAR_PAGO',array_column($presentation['badges'],'clave'),true)
-                    : $presentation['clave']===$filters['visual'];
-            })->values();
-        }
+        $rows=$this->filterRows($rows,$filters);
         $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
         $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
-        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0];
+        $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0,'reevaluaciones_pendientes'=>0];
         $totals = ['precio'=>0,'pagos_reales'=>0,'pagado_historico'=>0,'credito'=>0,'saldo'=>0,'requieren_revision'=>0];
         foreach ($rows as $a) {
             $kpis['total']++; $kpis[AdmissionStatus::group($a)]++;
             if(AppointmentReevaluationService::ready($a)) $kpis['reevaluaciones']++;
+            if(AppointmentReevaluationService::pending($a)) $kpis['reevaluaciones_pendientes']++;
             $p = $positions[$a->id]; $totals['precio'] += $p['price_cents'];
             if ($p['authority'] === 'UNALLOCATED') { $totals['requieren_revision']++; continue; }
             $totals[$p['authority'] === 'LEGACY_SNAPSHOT' ? 'pagado_historico' : 'pagos_reales'] += $p['paid_cents'];
@@ -89,8 +79,27 @@ class AdmissionBoardService
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
             'responsibleUser:id,name','user:id,name','site:id,nombre']);
         $reasons=Appointment::whereIn('id',$pageRows->pluck('id'))->pluck('motivo_consulta','id');
+        $history=app(RescheduleHistory::class);$origins=$history->latestForAppointments($pageRows,$actor);
         return ['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
-            'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor)+['motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()];
+            'reschedules'=>$history->forRange($query,$actor,$filters,fn($a)=>$this->filterRows($a,$filters),30),
+            'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor)+['reschedule_origin'=>$origins[$a->id]??null,
+                'motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()];
+    }
+
+    private function filterRows(Collection $rows,array $filters): Collection
+    {
+        app(ManualReevaluationService::class)->load($rows);
+        if(!empty($filters['only_pending_reevaluations']))$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::pending($a))->values();
+        if(!empty($filters['grupo']))$rows=$rows->filter(fn($a)=>AdmissionStatus::group($a)===$filters['grupo'])->values();
+        if(!empty($filters['only_reevaluations'])||($filters['tab']??'citas')==='reevaluaciones')$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::ready($a))->values();
+        if(!empty($filters['visual'])){
+            $positions=$this->economics->forAppointments($rows,[]);
+            $rows=$rows->filter(function($a)use($filters,$positions){
+                $p=\App\Support\Scheduling\AgendaAppointmentPresentation::of($a,$positions[$a->id]);
+                return $filters['visual']==='CONCILIAR_PAGO'?in_array('CONCILIAR_PAGO',array_column($p['badges'],'clave'),true):$p['clave']===$filters['visual'];
+            })->values();
+        }
+        return $rows;
     }
 
     private function row(Appointment $a, array $p, User $actor): array
@@ -158,6 +167,7 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
+            'care_restriction'=>in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)?'El inicio, la finalización y la indicación de reevaluación requieren una cuenta vinculada al médico responsable. La vinculación médica todavía no está habilitada.':null,
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
     }
@@ -165,10 +175,11 @@ class AdmissionBoardService
     public function careActions(Appointment $a, User $actor): array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
-        if (!$actor->can(C::UPDATE) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW) || !$actor->can(C::UPDATE)
+            || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],
-            'EN_ESPERA'=>['LLAMANDO','EN_ATENCION'], 'LLAMANDO'=>['EN_ATENCION'], 'EN_ATENCION'=>['ATENDIDO'], 'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
+            'EN_ESPERA'=>['LLAMANDO'], 'LLAMANDO','EN_ATENCION'=>[], 'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
         };
     }
 }
