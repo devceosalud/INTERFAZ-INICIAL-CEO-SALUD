@@ -34,10 +34,12 @@ Route::middleware([
         Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
         Route::post('/scheduling-mvp/admission/feed', [$admission,'feed'])->name('scheduling.mvp.admission.feed');
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}', [$admission,'detail'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.detail');
-        // Scoped commercial check-in is authorized per state inside AdmissionCareService.
-        // Do not grant appointment.update to COMERCIAL just to record patient arrival.
+        // Legacy care keeps its existing broad update middleware and authorization.
         Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/care', [$admission,'care'])->whereNumber('appointmentId')
-            ->middleware('throttle:60,1')->name('scheduling.mvp.admission.care');
+            ->middleware('permission:'.SchedulingCapability::UPDATE)->name('scheduling.mvp.admission.care');
+        // COMERCIAL gets only the dedicated arrival transition, not general UPDATE.
+        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/arrival', [$admission,'commercialArrival'])
+            ->whereNumber('appointmentId')->middleware('throttle:60,1')->name('scheduling.mvp.admission.commercial-arrival');
         // Appointment-bound operational follow-up; task content never enters the agenda feed.
         Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/reevaluation-history',
             \App\Http\Controllers\Scheduling\AppointmentReevaluationHistoryController::class)
