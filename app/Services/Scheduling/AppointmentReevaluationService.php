@@ -108,6 +108,11 @@ final class AppointmentReevaluationService
 
     public static function ready(Appointment $a): bool
     {
+        // Once the verified physician has FINISHED this clinical episode,
+        // it is no longer waiting for a return to the consultorio.
+        // Preserve the legacy manual direct return for ATENDIDO episodes
+        // that never had a new medical indication.
+        if ($a->estado_cita==='ATENDIDO' && self::indicated($a)) return false;
         return self::directReady($a) || OperationalProcedureService::ready($a);
     }
 
