@@ -106,11 +106,20 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
             ->assertJsonPath('medical_reevaluation.ready',true)
             ->assertJsonPath('care_actions.0','ATENDIDO');
+        $other=$this->agendaReader('ADMINISTRADOR');
+        $other->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+        $this->actingAs($other);
+        $this->finish($a)->assertForbidden();
+        $this->actingAs($u);
         $this->finish($a)->assertOk()->assertJsonPath('estado_cita','ATENDIDO');
         $fresh=$a->fresh();
         $this->assertNull($fresh->hora_salida);
         $this->assertNotNull($fresh->hora_atendido);
         $this->assertSame($before,$fresh->only(array_keys($before)));
+        $this->postJson(route('scheduling.mvp.admission.feed'),[
+            'fecha'=>now('America/Lima')->toDateString()
+        ])->assertOk()->assertJsonPath('kpis.reevaluaciones',0)
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
         $this->assertDatabaseCount('payments',0);
     }
 
