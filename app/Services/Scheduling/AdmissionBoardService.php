@@ -161,6 +161,8 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
+            'can_register_arrival'=>AdmissionCareService::canRegisterArrival($a,$actor),
+            'can_decline_operational_reevaluation'=>AppointmentReevaluationService::operatorCanDecline($actor,$a),
             'can_confirm_operational_reevaluation'=>AppointmentReevaluationService::operatorCanConfirm($actor)
                 && AppointmentReevaluationService::prePending($a),
             'medical_reevaluation'=>AppointmentReevaluationService::summary($a),
@@ -171,7 +173,9 @@ class AdmissionBoardService
     public function careActions(Appointment $a, User $actor): array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
-        if (!$actor->can(C::UPDATE) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        if (!$actor->can(C::UPDATE)) return AdmissionCareService::canRegisterArrival($a,$actor)
+            ? ['EN_ESPERA'] : [];
+        if (!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
         $linked=AppointmentReevaluationService::linkedPhysicianExists($a);
         $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
         if($a->estado_cita==='EN_ATENCION'){
