@@ -72,12 +72,18 @@ test('internal server details never appear in the medical page',async()=>{
 function linkageUi({confirm=()=>true,fetch=async()=>response({message:'Guardado'})}={}){
  const status=new Element(),button=new Element('button'),calls=[];
  const form=new Element('form');form.dataset={url:'/user/7/doctor-link',version:'0',current:'',currentLabel:'Sin vínculo'};form.reportValidity=()=>true;form.querySelector=()=>button;
- form.elements={doctor_id:{value:'3',selectedOptions:[{textContent:'MEDICO FICTICIO'}]},reason:{value:'Verificación FICTICIA'},identity_confirmed:{checked:true}};
+ const doctorListeners={};
+ form.elements={doctor_id:{value:'',selectedOptions:[{textContent:'MEDICO FICTICIO'}],
+   isConnected:true,addEventListener:(type,fn)=>{doctorListeners[type]=fn;},
+   closest:()=>null,classList:{remove(){}}},reason:{value:'Verificación FICTICIA'},identity_confirmed:{checked:true}};
+ form.querySelectorAll=()=>[];form.contains=()=>false;
  let uuid=0;const root={document:{querySelector:s=>s==='#user-doctor-link'?form:s==='#user-doctor-link-status'?status:s==='meta[name=csrf-token]'?{content:'FICTICIO-CSRF'}:null,getElementById:()=>status},
   confirm,crypto:{randomUUID:()=> 'UUID-FICTICIO-'+(++uuid)},location:{reload(){}},
-  fetch:async(url,options)=>{calls.push(JSON.parse(options.body));return fetch(url,options);}};
+  addEventListener(){},fetch:async(url,options)=>{calls.push(JSON.parse(options.body));return fetch(url,options);}};
  vm.runInNewContext(fs.readFileSync('public/js/admin/master/user/doctor-link.js','utf8'),{window:root,globalThis:root});
- return {form,status,calls,submit:()=>form.listeners.submit({preventDefault(){}})};
+ // Simulate an explicit physician selection by the administrator after the form loads.
+ form.elements.doctor_id.value='3';doctorListeners.change();
+  return {form,status,calls,submit:()=>form.listeners.submit({preventDefault(){}})};
 }
 test('cancelled administrator identity review does not persist a link',async()=>{
  const ui=linkageUi({confirm:()=>false});await ui.submit();assert.equal(ui.calls.length,0);
