@@ -60,9 +60,21 @@
 
 #admission-detail .admission-history-disclosure{border-top:1px solid #dce8e9;padding:10px 0}#admission-detail .admission-history-disclosure>summary{cursor:pointer;font-size:12px;font-weight:650;color:#24555e}#admission-detail .admission-history-disclosure>section{border:0;padding-top:8px}
 
-/* The backend owns the operational palette. Cover cells and mobile-card gaps alike. */
-.admission-table tr[data-appointment-id],.admission-table tr[data-appointment-id]>td{background-color:var(--ad-status-background,#fff)}
-.admission-table tr[data-appointment-id].is-selected{background-color:var(--ad-status-background,#fff);outline:2px solid var(--ad-status-color,var(--ad-brand));outline-offset:-2px;box-shadow:none}
-.admission-table tr[data-appointment-id]:hover{background-color:var(--ad-status-background,#fff);outline:1px solid var(--ad-status-color,var(--ad-brand));outline-offset:-1px}
+/* Mantener los fondos completos según la presentación del servidor. */
+.admission-table tr[data-appointment-id],
+.admission-table tr[data-appointment-id] > td {
+    background-color: var(--ad-status-background, #fff);
+}
+.admission-table tr[data-appointment-id].is-selected {
+    background-color: var(--ad-status-background, #fff);
+    outline: 2px solid var(--ad-status-color, var(--ad-brand));
+    outline-offset: -2px;
+    box-shadow: none;
+}
+.admission-table tr[data-appointment-id]:hover {
+    background-color: var(--ad-status-background, #fff);
+    outline: 1px solid var(--ad-status-color, var(--ad-brand));
+    outline-offset: -1px;
+}
 
 .admission-filter-secondary{flex-wrap:wrap}.admission-kpi[data-pending-review-only] strong{color:#475569}
