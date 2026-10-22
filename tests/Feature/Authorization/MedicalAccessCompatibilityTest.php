@@ -135,15 +135,72 @@ class MedicalAccessCompatibilityTest extends TestCase
         $this->assertEquals($appointments,DB::table('appointments')->get()->toArray());$this->assertSame($users,User::count());
         $this->actingAs($this->actor)->getJson(route('scheduling.mvp.admission.detail',$this->a->id))->assertOk();
     }
-    public function test_user_role_editor_warns_before_replacing_existing_staff_role_with_medico():void
+    public function test_user_role_editor_warns_about_other_staff_roles_without_silently_replacing_them():void
     {
         $target=$this->createUserWithRole('ADMISION');$roles=$target->roles()->pluck('roles.id')->all();
         $this->get(route('admin.user.edit',$target->id))->assertOk()
-            ->assertSee('medical-role-replacement-warning',false)
-            ->assertSee('Asignar MEDICO reemplazará los roles actuales:')
-            ->assertSee('ADMISION')->assertSee('cuenta clínica personal separada');
+            ->assertSee('medical-role-incompatible-warning',false)
+            ->assertSee('No se quitarán esos roles automáticamente')
+            ->assertSee('ADMISION');
+        $this->putJson(route('admin.user.update',$target->id),['role'=>Role::findByName('MEDICO','web')->id])->assertUnprocessable();
         $this->assertSame($roles,$target->roles()->pluck('roles.id')->all());
         $this->assertNull($target->fresh()->doctor_id);
+    }
+
+    public function test_existing_administrator_keeps_role_permissions_and_identity_when_medico_is_added():void
+    {
+        $target=$this->createUserWithRole('ADMINISTRADOR');
+        $target->givePermissionTo([
+            Permission::findOrCreate(S::MVP_ACCESS,'web'),Permission::findOrCreate(S::VIEW,'web'),
+            Permission::findOrCreate(S::SUBMIT_PAYMENT,'web'),
+        ]);
+        $perms=$target->permissions()->orderBy('permissions.id')->pluck('permissions.id')->all();
+        $oldPassword=$target->password;$oldAdminEpoch=$this->admin->auth_version;
+        $medicoRole=Role::findByName('MEDICO','web');
+        $this->get(route('admin.user.edit',$target->id))->assertOk()
+            ->assertSee('medical-role-additive-note',false)
+            ->assertSee('Agregar MEDICO conserva ADMINISTRADOR');
+        $this->put(route('admin.user.update',$target->id),['role'=>$medicoRole->id])->assertRedirect();
+        $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$target->fresh()->getRoleNames()->all());
+        $this->assertSame($perms,$target->fresh()->permissions()->orderBy('permissions.id')->pluck('permissions.id')->all());
+        $this->assertSame($oldPassword,$target->fresh()->password);
+        $this->assertSame(1,$target->fresh()->auth_version);
+        $this->assertSame($oldAdminEpoch,$this->admin->fresh()->auth_version);
+        // Repeated assignment does not revoke a session when the effective roles did not change.
+        $this->put(route('admin.user.update',$target->id),['role'=>$medicoRole->id])->assertRedirect();
+        $this->assertSame(1,$target->fresh()->auth_version);
+        $this->assertNull($target->fresh()->doctor_id);
+        $this->actingAs($target->fresh())->withSession(['ceosalud_auth_version'=>1]);
+        $this->getJson(route('scheduling.medical.index'))->assertForbidden();
+
+        $this->actingAs($this->admin)->withSession(['ceosalud_auth_version'=>$this->admin->auth_version]);
+        $this->postJson(route('admin.user.doctor-link.update',$target->id),[
+            'doctor_id'=>$this->a->doctor_id,'expected_doctor_id'=>null,'expected_version'=>1,
+            'request_key'=>(string)Str::uuid(),'reason'=>'Vinculación médica FICTICIA aprobada',
+            'confirmed'=>true,'identity_confirmed'=>true,
+        ])->assertOk();
+        $this->assertSame($this->a->doctor_id,$target->fresh()->doctor_id);
+        $this->assertSame(2,$target->fresh()->auth_version);
+        $this->actingAs($target->fresh())->withSession(['ceosalud_auth_version'=>2]);
+        $this->get(route('scheduling.mvp.admission'))->assertOk();
+        $this->get(route('admin.user.index'))->assertOk();
+        $this->getJson(route('scheduling.medical.detail',$this->a->id))->assertOk();
+
+        // A generic role-edit click may not accidentally remove the doctor's identity.
+        $this->actingAs($this->admin)->withSession(['ceosalud_auth_version'=>$this->admin->auth_version]);
+        $adminRole=Role::findByName('ADMINISTRADOR','web');
+        $this->putJson(route('admin.user.update',$target->id),['role'=>$adminRole->id])->assertUnprocessable();
+        $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$target->fresh()->getRoleNames()->all());
+        $this->get(route('admin.user.edit',$target->id))->assertOk()
+            ->assertSee('confirm_remove_medico',false);
+        // An explicit secondary confirmation can withdraw the medical role while preserving admin.
+        $this->put(route('admin.user.update',$target->id),[
+            'role'=>$adminRole->id,'confirm_remove_medico'=>'1',
+        ])->assertRedirect();
+        $this->assertTrue($target->fresh()->hasRole('ADMINISTRADOR'));
+        $this->assertFalse($target->fresh()->hasRole('MEDICO'));
+        $this->assertSame(3,$target->fresh()->auth_version);
+        $this->assertSame($this->a->doctor_id,$target->fresh()->doctor_id);
     }
 
 }
