@@ -171,7 +171,10 @@ class AdmissionBoardService
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         if (!$actor->can(C::UPDATE) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        $linked=AppointmentReevaluationService::linkedPhysicianExists($a);
+        $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
         if($a->estado_cita==='EN_ATENCION'){
+            if($linked && !$ownPhysician) return [];
             // The two decisions are on the existing Admission panel, never a
             // second medical module. Non-physicians cannot indicate or withdraw.
             if(AppointmentReevaluationService::pending($a))
