@@ -26,7 +26,16 @@ final class ManualReevaluationService
 
     public function eligible(Appointment $a): bool
     {
-        return $a->estado_cita === 'ATENDIDO' && in_array($a->estado_agenda, ['LEGADO', 'CONFIRMADA'], true);
+        if(!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return false;
+        // Keep the old direct mark for attended appointments. During an open
+        // medical episode, the physician must first indicate reevaluation.
+        // If procedures were ordered, their dedicated verification/send flow
+        // is mandatory; the direct mark must not bypass pending tests.
+        return $a->estado_cita==='ATENDIDO'
+            || ($a->estado_cita==='EN_ATENCION'
+                && AppointmentReevaluationService::indicated($a)
+                && !$a->hora_salida
+                && (int)($a->operationalReview?->requested_count??0)===0);
     }
 
     /** One query for the full filtered set; order by event ID, even within one second. */
