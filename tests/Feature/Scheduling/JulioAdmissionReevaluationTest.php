@@ -158,13 +158,19 @@ class JulioAdmissionReevaluationTest extends TestCase
 
     public function test_only_account_two_redirects_to_admission_at_login():void
     {
-        $this->agendaReader('ADMINISTRADOR');
-        $julio=$this->agendaReader('ADMINISTRADOR');
-        $this->assertSame(2,(int)$julio->id);
-        Role::firstOrCreate(['name'=>'MEDICO','guard_name'=>'web']);
-        $julio->assignRole('MEDICO');
-        $julio->forceFill(['name'=>'GERENTE JULIO QUIROZ',
+        // MariaDB can retain an auto-increment counter across rolled-back
+        // test transactions. Persist the explicit fictitious #2 identity
+        // instead of relying on the next sequence value.
+        $julio=User::factory()->make();
+        $julio->forceFill(['id'=>2,'name'=>'GERENTE JULIO QUIROZ',
             'password'=>Hash::make('Test-Only-Complex-Password')])->save();
+        foreach(['ADMINISTRADOR','MEDICO'] as $role){
+            $julio->assignRole(Role::firstOrCreate(['name'=>$role,'guard_name'=>'web']));
+        }
+        foreach([C::MVP_ACCESS,C::VIEW] as $permission){
+            $julio->givePermissionTo(Permission::findOrCreate($permission,'web'));
+        }
+        $this->assertSame(2,(int)$julio->id);
         $this->post('/admin/SingIn',['email'=>$julio->email,'password'=>'Test-Only-Complex-Password'])
             ->assertRedirect(route('scheduling.mvp.admission'));
         auth()->logout();
