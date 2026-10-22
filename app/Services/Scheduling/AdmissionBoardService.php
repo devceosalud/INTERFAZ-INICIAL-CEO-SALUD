@@ -167,6 +167,8 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
+            'commercial_arrival_url'=>AdmissionCareService::commercialArrival($actor,'EN_ESPERA')
+                ? route('scheduling.mvp.admission.commercial-arrival',$a->id) : null,
             'care_fallback'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
                 && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null,
             'care_restriction'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
