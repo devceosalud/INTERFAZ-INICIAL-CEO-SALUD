@@ -182,7 +182,7 @@ class AppointmentEconomicEditTest extends TestCase
         $roles=DB::table('role_has_permissions')->get()->toJson();$migration->up();$migration->up();$migration->down();
         $this->assertSame($roles,DB::table('role_has_permissions')->get()->toJson());
         $this->assertSame(2,Permission::whereIn('name',[C::EDIT_PAYMENT,C::EDIT_PRICING])->count());
-        $this->actor->revokePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);$role=Role::findByName('COMERCIAL','web');$admin=$this->agendaReader('ADMINISTRADOR');$this->actingAs($admin);
+        $this->actor->revokePermissionTo([C::EDIT_PAYMENT,C::EDIT_PRICING]);$role=Role::findOrCreate('COMERCIAL','web');$admin=$this->agendaReader('ADMINISTRADOR');$this->actingAs($admin);
         $this->get(route('admin.roles.edit',$role))->assertOk()->assertSee('Corregir adelantos registrados')->assertSee('Modificar economía de citas existentes');
         $this->put(route('admin.permissions.update',$role),['name'=>'COMERCIAL','permission_revision'=>\App\Http\Controllers\admin\master\role\RoleController::revision($role),
             'permissions_present'=>'1','permissions'=>Permission::whereIn('name',[C::EDIT_PAYMENT,C::EDIT_PRICING])->pluck('id')->all()])->assertRedirect();
