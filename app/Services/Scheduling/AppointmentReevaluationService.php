@@ -42,12 +42,13 @@ final class AppointmentReevaluationService
         and a verified doctor_id already linked to the authenticated user. */
     public static function physicianCanAct(User $actor, Appointment $a): bool
     {
-        return (bool) $actor->is_active && $actor->hasRole('MEDICO')
-            && $actor->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
-            && $actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW)
-            && \Illuminate\Support\Facades\Schema::hasColumn('users','doctor_id')
-            && (int)\Illuminate\Support\Facades\DB::table('users')->where('id',$actor->id)->value('doctor_id') > 0
-            && (int)\Illuminate\Support\Facades\DB::table('users')->where('id',$actor->id)->value('doctor_id') === (int)$a->doctor_id;
+        if (!$actor->is_active || !$actor->hasRole('MEDICO')
+            || !$actor->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+            || !$actor->can(\App\Support\Scheduling\SchedulingCapability::VIEW)
+            || !\Illuminate\Support\Facades\Schema::hasColumn('users','doctor_id')) return false;
+        $linked=(int)DB::table('users')->where('id',$actor->id)->value('doctor_id');
+        return $linked>0 && $linked===(int)$a->doctor_id
+            && \App\Models\Doctor::whereKey($linked)->where('estado','ACTIVO')->exists();
     }
 
     /** Records the physician's own clinical instruction in the existing event ledger.
