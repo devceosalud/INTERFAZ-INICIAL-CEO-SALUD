@@ -75,13 +75,18 @@ class UserController extends Controller
     public function update(int $user,Request $r,UserAccountAccess $access)
     {
         $user=User::findOrFail($user);
-        $d=$r->validate(['role'=>['required','integer',Rule::exists('roles','id')->where('guard_name','web')]]);
+        $d=$r->validate(['role'=>['required','integer',Rule::exists('roles','id')->where('guard_name','web')],
+            'confirm_remove_medico'=>'sometimes|accepted']);
         DB::transaction(function()use($user,$r,$d,$access){
             $actor=$access->lockAdministrator($r->user(),[$user->id]);$target=User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             $before=$target->roles()->pluck('roles.id')->map(fn($id)=>(int)$id)->sort()->values()->all();
             $selectedRole=Role::findOrFail($d['role']);
             $isMedical=$selectedRole->name==='MEDICO';
             $isAdministrator=$target->hasRole('ADMINISTRADOR','web');
+            if(!$isMedical && $isAdministrator && $target->hasRole('MEDICO','web')){
+                abort_unless($r->boolean('confirm_remove_medico'),422,
+                    'Confirma expresamente la retirada de MEDICO de esta cuenta administrativa.');
+            }
             if($isMedical){
                 abort_if($target->id===$actor->id,403,'Otro administrador debe validar tu acceso médico.');
                 $clinical=\App\Support\Scheduling\ClinicalCapability::all();
