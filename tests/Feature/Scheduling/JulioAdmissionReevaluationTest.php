@@ -72,6 +72,13 @@ class JulioAdmissionReevaluationTest extends TestCase
             ],$extra));
     }
 
+    private function confirm(Appointment $a)
+    {
+        return $this->postJson(route('scheduling.mvp.admission.confirm-reevaluation',$a->id),[
+            'expected_state'=>'EN_ATENCION','confirmed'=>true,'request_key'=>(string)Str::uuid()
+        ]);
+    }
+
     private function finish(Appointment $a)
     {
         return $this->postJson(route('scheduling.mvp.admission.care',$a->id),[
@@ -79,9 +86,9 @@ class JulioAdmissionReevaluationTest extends TestCase
         ]);
     }
 
-    public function test_linked_physician_indicates_on_same_admission_and_finishes_after_manual_return():void
+    public function test_physician_indicates_operator_confirms_and_physician_returns_before_finishing():void
     {
-        [$u,$a]=$this->physician();
+        [$physician,$a]=$this->physician();
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
             ->assertOk()->assertJsonPath('care_actions.0','INDICAR_REEVALUACION')
             ->assertJsonPath('care_actions.1','ATENDIDO');
@@ -89,31 +96,53 @@ class JulioAdmissionReevaluationTest extends TestCase
         $key=(string)Str::uuid();
         $this->indicate($a,'indicate',['request_key'=>$key])->assertOk();
         $this->indicate($a,'indicate',['request_key'=>$key])->assertOk();
-        $a=$a->fresh();
-        $this->assertSame('EN_ATENCION',$a->estado_cita);
         $this->assertSame(1,$a->events()->where('event_type',AppointmentReevaluationService::MEDICAL_INDICATED)->count());
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
-            ->assertJsonPath('medical_reevaluation.pending',true)
+            ->assertJsonPath('medical_reevaluation.pre_pending',true)
+            ->assertJsonPath('medical_reevaluation.pending',false)
             ->assertJsonPath('care_actions.0','RETIRAR_REEVALUACION');
+        $this->postJson(route('scheduling.mvp.admission.feed'),[
+            'fecha'=>now('America/Lima')->toDateString()
+        ])->assertOk()->assertJsonPath('kpis.reevaluaciones_prependientes',1)
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
+        $this->finish($a)->assertUnprocessable();
+        $this->indicate($a,'resume')->assertUnprocessable();
+
+        $operator=$this->agendaReader('ADMISION');
+        $this->actingAs($operator);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertOk()->assertJsonPath('can_confirm_operational_reevaluation',true);
+        $this->confirm($a)->assertOk();
+        $this->confirm($a)->assertUnprocessable(); // A different operation key cannot reconfirm.
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.pre_pending',false)
+            ->assertJsonPath('medical_reevaluation.pending',true)
+            ->assertJsonPath('medical_reevaluation.ready',false);
         $this->postJson(route('scheduling.mvp.admission.feed'),[
             'fecha'=>now('America/Lima')->toDateString(),'only_pending_reevaluations'=>true
         ])->assertOk()->assertJsonPath('kpis.reevaluaciones_pendientes',1);
-        $this->finish($a)->assertUnprocessable();
         $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$a->id),[
             'marked'=>true,'expected_marked'=>false,'expected_version'=>0,
             'request_key'=>(string)Str::uuid()
         ])->assertOk();
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
-            ->assertJsonPath('medical_reevaluation.ready',true)
+            ->assertJsonPath('medical_reevaluation.ready',true);
+        $this->actingAs($physician);
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('care_actions.0','INICIAR_REEVALUACION');
+        $this->finish($a)->assertUnprocessable();
+        $this->indicate($a,'resume')->assertOk();
+        $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
+            ->assertJsonPath('medical_reevaluation.resumed',true)
             ->assertJsonPath('care_actions.0','ATENDIDO');
         $other=$this->agendaReader('ADMINISTRADOR');
         $other->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
         $this->actingAs($other);
         $this->finish($a)->assertForbidden();
-        $this->actingAs($u);
+        $this->actingAs($physician);
         $this->finish($a)->assertOk()->assertJsonPath('estado_cita','ATENDIDO');
         $fresh=$a->fresh();
-        $this->assertNull($fresh->hora_salida);
+        $this->assertNull($fresh->hora_salida); // Admisión will record the physical exit later.
         $this->assertNotNull($fresh->hora_atendido);
         $this->assertSame($before,$fresh->only(array_keys($before)));
         $this->postJson(route('scheduling.mvp.admission.feed'),[
@@ -121,6 +150,25 @@ class JulioAdmissionReevaluationTest extends TestCase
         ])->assertOk()->assertJsonPath('kpis.reevaluaciones',0)
             ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
         $this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_operator_confirmation_requires_qualified_role_and_active_medical_indication():void
+    {
+        [$physician,$a]=$this->physician();
+        $admin=$this->agendaReader('ADMINISTRADOR');
+        $this->actingAs($admin);
+        $this->confirm($a)->assertForbidden();
+
+        $operator=$this->agendaReader('COMERCIAL');
+        $this->actingAs($operator);
+        $this->confirm($a)->assertUnprocessable();
+        $this->actingAs($physician);
+        $this->indicate($a)->assertOk();
+        $this->actingAs($operator);
+        $this->confirm($a)->assertOk();
+        $this->assertDatabaseHas('appointment_events',[
+            'appointment_id'=>$a->id,'event_type'=>AppointmentReevaluationService::OPERATIONAL_CONFIRMED
+        ]);
     }
 
     public function test_other_administrator_or_different_linked_physician_cannot_sign_julios_indication():void
