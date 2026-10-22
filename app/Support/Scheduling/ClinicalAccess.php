@@ -23,14 +23,15 @@ final class ClinicalAccess
             && self::has($fresh,ClinicalCapability::VIEW) && self::has($fresh,$capability)
             && $fresh->doctor_id && Doctor::whereKey($fresh->doctor_id)->where('estado','ACTIVO')->exists(),403,
             'Se requiere una cuenta médica activa, vinculada y autorizada.');
-        // Reusing an existing account never legitimizes an old over-privileged medical profile.
-        // Check every assigned role and direct grant; keep them intact for administrative review.
-        // Other roles also unlock role-only ERP routes, even with no explicit permissions.
-        abort_if($fresh->roles()->where('name','<>',ClinicalCapability::ROLE)->exists()
-            || $fresh->roles()->whereHas('permissions',
+        // Only an explicitly verified account with MEDICO and its own doctor link may
+        // perform clinical actions. Its pre-existing ADMINISTRADOR role can be retained,
+        // but it does not grant medical access to any administrator by itself.
+        $isAdministrator=$fresh->roles()->where('name','ADMINISTRADOR')->where('guard_name','web')->exists();
+        abort_if($fresh->roles()->whereNotIn('name',[ClinicalCapability::ROLE,'ADMINISTRADOR'])->exists()
+            || $fresh->roles()->where('name',ClinicalCapability::ROLE)->whereHas('permissions',
                 fn($q)=>$q->whereNotIn('name',ClinicalCapability::all()))->exists()
-            || $fresh->permissions()->whereNotIn('name',ClinicalCapability::all())->exists(),403,
-            'Revisa los roles y permisos de esta cuenta: el acceso médico requiere únicamente el rol MEDICO y sus capacidades clínicas.');
+            || (!$isAdministrator && $fresh->permissions()->whereNotIn('name',ClinicalCapability::all())->exists()),403,
+            'Revisa los roles y permisos de esta cuenta: solo MEDICO o MEDICO + ADMINISTRADOR verificados pueden acceder a la atención clínica.');
         return $fresh;
     }
 
