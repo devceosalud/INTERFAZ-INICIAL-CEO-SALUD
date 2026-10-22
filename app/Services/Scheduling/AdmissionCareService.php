@@ -14,13 +14,13 @@ class AdmissionCareService
     /** Fail closed until a verified User-to-Doctor association is approved and implemented. */
     public static function authorizeState(User $actor,string $state): void
     {
-        abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW),403);
+        // Preserve the legacy permission checks and status semantics for every
+        // existing caller. Commercial arrival has a separate, narrower endpoint.
+        abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
         abort_if(in_array($state,['EN_ATENCION','ATENDIDO','REEVALUACION'],true),403,
-            'El inicio, fin y las indicaciones médicas requieren una cuenta clínica verificada.');
-        // COMERCIAL is authorized to record patient arrival only, never called/clinical
-        // states or general appointment editing. No appointment.update grant is required.
-        if(self::commercialArrival($actor,$state)) return;
-        abort_unless($actor->can(C::UPDATE) && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+            'La acción médica requiere una vinculación verificable entre usuario y médico responsable; todavía no está habilitada.');
+        if(in_array($state,['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','SALIDA_REGISTRADA'],true))
+            abort_unless($actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
     }
 
     public static function commercialArrival(User $actor,string $state): bool
@@ -75,10 +75,11 @@ class AdmissionCareService
         },3);
     }
 
-    public function transition(int $id, User $actor, array $data): Appointment
+    public function transition(int $id, User $actor, array $data, bool $commercialCheckIn=false): Appointment
     {
         $fallback=in_array($data['state'],['EN_ATENCION','ATENDIDO'],true);
-        if (!$fallback) self::authorizeState($actor,$data['state']);
+        if($commercialCheckIn)abort_unless(self::commercialArrival($actor,$data['state']),403);
+        elseif (!$fallback) self::authorizeState($actor,$data['state']);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         if ($fallback) {
             abort_unless(UnlinkedDoctorAdmissionFallback::eligible($original,$actor),403,
@@ -87,7 +88,7 @@ class AdmissionCareService
                 && mb_strlen(trim($data['motivo']))<=500,422,
                 'Confirma e indica un motivo de al menos tres caracteres para la contingencia.');
         }
-        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback) {
+        return DB::transaction(function () use ($id,$actor,$data,$original,$fallback,$commercialCheckIn) {
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
@@ -129,7 +130,8 @@ class AdmissionCareService
                     ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
                 return $a;
             }
-            if(self::commercialArrival($actor,$data['state'])){
+            if($commercialCheckIn){
+                abort_unless(self::commercialArrival($actor,$data['state']),403);
                 // ARRIVAL ONLY: intentionally avoid LegacyAppointmentMutation, which
                 // requires the broad appointment.update permission. Keep the same
                 // transactional state, timestamp and audit contract as Admisión.
