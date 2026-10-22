@@ -1,0 +1,15 @@
+#medical-board .admission-workspace{margin-top:12px}
+#medical-board .admission-table td{background:var(--medical-row-bg,#fff);border-color:#dce7e8}
+#medical-board .admission-table tr.is-selected{outline:2px solid #357d82;outline-offset:-2px}
+#medical-board .admission-table tr{cursor:pointer}
+#medical-board .medical-procedure{display:flex;gap:8px;align-items:flex-start;margin:8px 0}
+#medical-board .medical-form{padding:12px 15px;display:grid;gap:8px}
+#medical-board .medical-form textarea{width:100%;min-height:62px;border:1px solid #bdcfd1;border-radius:6px;padding:8px}
+#medical-board [hidden]{display:none!important}
+#medical-back{display:none}
+@media(max-width:900px){
+ #medical-board[data-mobile-detail="true"] .admission-main{display:none}
+ #medical-board[data-mobile-detail="true"] .admission-detail{display:flex}
+ #medical-board:not([data-mobile-detail="true"]) .admission-detail{display:none}
+ #medical-back{display:inline-block}
+}

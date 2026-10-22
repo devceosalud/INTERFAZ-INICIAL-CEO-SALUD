@@ -8,6 +8,7 @@
         </div>
 
         <ul class="erp-nav" id="erp-nav-tree">
+            @if (!auth()->user()->hasRole('MEDICO') || auth()->user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES))
             @include('templates.nav.module', [
                 'key' => 'common-home',
                 'label' => 'Inicio',
@@ -16,6 +17,12 @@
                     ['label' => 'Dashboard', 'route' => 'admin.dashboard.index', 'patterns' => ['admin.dashboard.*']],
                 ],
             ])
+
+            @endif
+            @if (config('scheduling.enabled') && auth()->user()->hasRole('MEDICO') && auth()->user()->can(\App\Support\Scheduling\ClinicalCapability::VIEW))
+                @include('templates.nav.module',['key'=>'medical-care','label'=>'Atención médica','activePatterns'=>['scheduling.medical.*'],
+                    'items'=>[['label'=>'Mi agenda médica','route'=>'scheduling.medical.index','patterns'=>['scheduling.medical.*']]]])
+            @endif
 
             @if (config('scheduling.enabled') && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS) && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
                 @include('templates.nav.module', ['key'=>'operational-admission', 'label'=>'Admisión',

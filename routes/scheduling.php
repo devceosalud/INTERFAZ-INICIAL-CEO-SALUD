@@ -173,3 +173,15 @@ Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR'])->group(funct
     Route::get('/scheduling-mvp/agenda/heatmap', [AgendaHeatmapController::class, 'index'])->name('scheduling.mvp.agenda.heatmap');
     Route::get('/scheduling-mvp/agenda/heatmap/data', [AgendaHeatmapController::class, 'data'])->name('scheduling.mvp.agenda.heatmap.data');
 });
+
+
+// Physician access has its own least-privilege grants: no generic Agenda or economic access.
+Route::middleware(['auth','scheduling-mvp'])->prefix('/scheduling-mvp/medical')->group(function(){
+    $medical=\App\Http\Controllers\Scheduling\MedicalBoardController::class;
+    Route::get('/',[$medical,'index'])->name('scheduling.medical.index');
+    Route::post('/feed',[$medical,'feed'])->name('scheduling.medical.feed');
+    Route::get('/appointments/{appointmentId}',[$medical,'detail'])->whereNumber('appointmentId')->name('scheduling.medical.detail');
+    Route::post('/appointments/{appointmentId}/care/{action}',[$medical,'care'])->whereNumber('appointmentId')
+        ->whereIn('action',['start','finish','indicate','withdraw'])->name('scheduling.medical.care');
+    Route::post('/appointments/{appointmentId}/procedures',[$medical,'procedures'])->whereNumber('appointmentId')->name('scheduling.medical.procedures');
+});

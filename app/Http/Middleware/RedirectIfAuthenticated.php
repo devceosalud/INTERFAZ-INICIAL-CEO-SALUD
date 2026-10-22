@@ -23,6 +23,10 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                $user=Auth::guard($guard)->user();
+                if($user->hasRole('MEDICO') && !$user->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)){
+                    return redirect()->route('scheduling.medical.index');
+                }
                 return redirect(RouteServiceProvider::HOME);
             }
         }

@@ -105,7 +105,7 @@ class AdmissionBoardService
     private function row(Appointment $a, array $p, User $actor): array
     {
         $manual=app(ManualReevaluationService::class);
-        return ['manual_reevaluation'=>$manual->state($a)+['can_update'=>$manual->canUpdate($actor)&&$manual->eligible($a)],
+        return ['manual_reevaluation'=>$manual->state($a)+['can_update'=>$manual->canUpdate($actor)&&$manual->eligible($a,$actor)],
             'reevaluation'=>AppointmentReevaluationService::summary($a), 'id'=>$a->id,'numero'=>$a->numero_cita,'fecha'=>substr($a->fecha_cita,0,10),'hora'=>substr($a->hora_cita,0,5),
             'patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre]))),
             'documento'=>$a->patient?->numero_identidad,'historia'=>$a->patient?->historia_clinica,
@@ -167,7 +167,7 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
-            'care_restriction'=>in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)?'El inicio, la finalización y la indicación de reevaluación requieren una cuenta vinculada al médico responsable. La vinculación médica todavía no está habilitada.':null,
+            'care_restriction'=>in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)?'El inicio, la finalización y la indicación de reevaluación corresponden al médico responsable desde Mi agenda médica. Admisión conserva llegada, llamado y salida física.':null,
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
     }

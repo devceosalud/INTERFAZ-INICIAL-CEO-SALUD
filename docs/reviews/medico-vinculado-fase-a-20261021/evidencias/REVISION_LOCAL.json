@@ -1,0 +1,20 @@
+{
+  "base_sha": "a8bd76d8e10090decfde56c7402be585da723fcf",
+  "branch": "codex/medico-vinculado-fase-a-20261021",
+  "published_update": false,
+  "production_accessed": false,
+  "main_remote_sha": "1f840e90912d2ce8c55ce7502a22a1d582492bc3",
+  "pr57_head_sha": "a8bd76d8e10090decfde56c7402be585da723fcf",
+  "pr57_draft": true,
+  "qa_owned_services_stopped": [
+    8099,
+    33331
+  ],
+  "unrelated_worktrees_preserved": true,
+  "source_files": 821,
+  "private_qa_adapters": [
+    "tests/Feature/Baseline/ApplicationAndAuthenticationSmokeTest.php",
+    "tests/Support/IsolatedAgendaV2Qa.php"
+  ],
+  "secret_pattern_review": "PASS; only fictitious fixtures; no databases/credentials exported"
+}

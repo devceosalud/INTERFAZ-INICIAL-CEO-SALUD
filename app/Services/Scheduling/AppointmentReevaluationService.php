@@ -46,7 +46,10 @@ final class AppointmentReevaluationService
     {
         return $a->relationLoaded('manualReevaluationEvent')
             && $a->getRelation('manualReevaluationEvent')?->event_type === ManualReevaluationService::MARKED
-            && $a->estado_cita === 'ATENDIDO' && !$a->hora_salida
+            && ($a->estado_cita==='ATENDIDO' || ($a->estado_cita==='EN_ATENCION' && !$a->hora_atendido
+                && OperationalProcedureService::active($a) && self::indication($a)['indicated']
+                && $a->manualReevaluationEvent->id > ($a->medicalReevaluationEvent?->id??PHP_INT_MAX)))
+            && !$a->hora_salida
             && in_array($a->estado_agenda, ['LEGADO','CONFIRMADA'], true);
     }
 
@@ -71,7 +74,7 @@ final class AppointmentReevaluationService
         if (!$a->relationLoaded('manualReevaluationEvent')) app(ManualReevaluationService::class)->load(collect([$a]));
         $manual=app(ManualReevaluationService::class);
         $direct=$manual->state($a)+['active'=>self::directReady($a),
-            'can_update'=>$manual->canUpdate($actor)&&$manual->eligible($a)];
+            'can_update'=>$manual->canUpdate($actor)&&$manual->eligible($a,$actor)];
         $history=$this->history($a->id,$actor);
         return self::summary($a)+['medical_indication'=>self::indication($a),'direct'=>$direct,'procedural'=>$procedures['review'],
             'history'=>$history['rows'],'history_meta'=>array_diff_key($history,['rows'=>true])];

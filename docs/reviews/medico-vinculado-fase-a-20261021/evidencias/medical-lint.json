@@ -1,0 +1,202 @@
+[
+  {
+    "file": "app/Http/Controllers/Scheduling/MedicalBoardController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Scheduling/MedicalBoardController.php"
+  },
+  {
+    "file": "app/Http/Controllers/Scheduling/OperationalProcedureController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/Scheduling/OperationalProcedureController.php"
+  },
+  {
+    "file": "app/Http/Controllers/admin/master/role/RoleController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/admin/master/role/RoleController.php"
+  },
+  {
+    "file": "app/Http/Controllers/admin/master/user/UserController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/admin/master/user/UserController.php"
+  },
+  {
+    "file": "app/Http/Controllers/admin/master/user/UserDoctorLinkController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/admin/master/user/UserDoctorLinkController.php"
+  },
+  {
+    "file": "app/Http/Controllers/authenticator/auth/AuthController.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Controllers/authenticator/auth/AuthController.php"
+  },
+  {
+    "file": "app/Http/Middleware/RedirectIfAuthenticated.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Http/Middleware/RedirectIfAuthenticated.php"
+  },
+  {
+    "file": "app/Models/Doctor.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Models/Doctor.php"
+  },
+  {
+    "file": "app/Models/User.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Models/User.php"
+  },
+  {
+    "file": "app/Services/Scheduling/AdmissionBoardService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/AdmissionBoardService.php"
+  },
+  {
+    "file": "app/Services/Scheduling/AppointmentReevaluationService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/AppointmentReevaluationService.php"
+  },
+  {
+    "file": "app/Services/Scheduling/ManualReevaluationService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/ManualReevaluationService.php"
+  },
+  {
+    "file": "app/Services/Scheduling/MedicalBoardService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/MedicalBoardService.php"
+  },
+  {
+    "file": "app/Services/Scheduling/MedicalCareService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/MedicalCareService.php"
+  },
+  {
+    "file": "app/Services/Scheduling/OperationalProcedureService.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/Scheduling/OperationalProcedureService.php"
+  },
+  {
+    "file": "app/Services/UserDoctorLink.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Services/UserDoctorLink.php"
+  },
+  {
+    "file": "app/Support/Authorization/PermissionDisplay.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Support/Authorization/PermissionDisplay.php"
+  },
+  {
+    "file": "app/Support/Scheduling/ClinicalAccess.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Support/Scheduling/ClinicalAccess.php"
+  },
+  {
+    "file": "app/Support/Scheduling/ClinicalCapability.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Support/Scheduling/ClinicalCapability.php"
+  },
+  {
+    "file": "app/Support/Scheduling/MvpPermissionBootstrap.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in app/Support/Scheduling/MvpPermissionBootstrap.php"
+  },
+  {
+    "file": "database/migrations/2026_10_21_210000_link_users_to_doctors.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in database/migrations/2026_10_21_210000_link_users_to_doctors.php"
+  },
+  {
+    "file": "database/migrations/2026_10_21_210100_define_medical_role_and_permissions.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in database/migrations/2026_10_21_210100_define_medical_role_and_permissions.php"
+  },
+  {
+    "file": "public/js/admin/master/user/doctor-link.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/scheduling/admission-board.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "public/js/scheduling/medical-board.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "routes/administrador.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in routes/administrador.php"
+  },
+  {
+    "file": "routes/scheduling.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in routes/scheduling.php"
+  },
+  {
+    "file": "tests/Feature/Admin/DoctorCatalogIdentityCompatibilityTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Admin/DoctorCatalogIdentityCompatibilityTest.php"
+  },
+  {
+    "file": "tests/Feature/Authorization/MedicalAccessCompatibilityTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Authorization/MedicalAccessCompatibilityTest.php"
+  },
+  {
+    "file": "tests/Feature/Authorization/UserDoctorLinkTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Authorization/UserDoctorLinkTest.php"
+  },
+  {
+    "file": "tests/Feature/Scheduling/MvpGuardNormalizationTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Scheduling/MvpGuardNormalizationTest.php"
+  },
+  {
+    "file": "tests/Feature/Scheduling/MvpPermissionBootstrapTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Scheduling/MvpPermissionBootstrapTest.php"
+  },
+  {
+    "file": "tests/Feature/Scheduling/SchedulingMvpFoundationTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Scheduling/SchedulingMvpFoundationTest.php"
+  },
+  {
+    "file": "tests/Feature/Scheduling/VerifiedMedicalCareTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Feature/Scheduling/VerifiedMedicalCareTest.php"
+  },
+  {
+    "file": "tests/Integration/AgendaV2/MedicalIdentityConcurrencyTest.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Integration/AgendaV2/MedicalIdentityConcurrencyTest.php"
+  },
+  {
+    "file": "tests/JavaScript/medical-actions.test.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "file": "tests/Support/medical-browser-inspect.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Support/medical-browser-inspect.php"
+  },
+  {
+    "file": "tests/Support/medical-browser-seed.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Support/medical-browser-seed.php"
+  },
+  {
+    "file": "tests/Support/medical-care-worker.php",
+    "exit_code": 0,
+    "output": "No syntax errors detected in tests/Support/medical-care-worker.php"
+  },
+  {
+    "file": "tools/qa/browser-verified-medical-care.cjs",
+    "exit_code": 0,
+    "output": ""
+  }
+]

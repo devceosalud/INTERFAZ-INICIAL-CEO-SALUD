@@ -18,7 +18,7 @@ class UserController extends Controller
     public function __construct(){ $this->middleware(['auth','role:ADMINISTRADOR']); }
     public function index()
     {
-        return response()->view('admin.user.index',['users'=>User::with('roles')->orderBy('name')->get()])
+        return response()->view('admin.user.index',['users'=>User::with(['roles','doctor:id,nombre'])->orderBy('name')->get()])
             ->header('Cache-Control','private, no-store');
     }
     public function store(Request $r,UserAccountAccess $access)
@@ -79,7 +79,21 @@ class UserController extends Controller
         DB::transaction(function()use($user,$r,$d,$access){
             $actor=$access->lockAdministrator($r->user(),[$user->id]);$target=User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             $access->assertAdministratorRemains($target,[(int)$d['role']]);$before=$target->roles()->pluck('roles.id')->all();
-            $target->syncRoles(Role::findOrFail($d['role']));
+            $selectedRole=Role::findOrFail($d['role']);
+            if($selectedRole->name==='MEDICO'){
+                abort_if($target->id===$actor->id,403,'Otro administrador debe validar tu acceso médico.');
+                $clinical=\App\Support\Scheduling\ClinicalCapability::all();
+                abort_if($selectedRole->permissions()->whereNotIn('name',$clinical)->exists()
+                    || $target->permissions()->whereNotIn('name',$clinical)->exists(),422,
+                    'La cuenta o el rol tiene permisos directos ajenos al perfil médico. Revisa sus accesos antes de asignar MEDICO; no se eliminan automáticamente.');
+            }
+            $target->syncRoles($selectedRole);
+            // Revoke only affected medical sessions; unrelated role contracts stay unchanged.
+            $medicalRoleId=Role::where('name','MEDICO')->where('guard_name','web')->value('id');
+            if($before!==[(int)$d['role']] && $medicalRoleId
+                && (in_array((int)$medicalRoleId,array_map('intval',$before),true) || (int)$d['role']===(int)$medicalRoleId)){
+                $access->rotateAccess($target);$target->save();
+            }
             \Illuminate\Support\Facades\Log::notice('authorization.user_role_updated',['actor_user_id'=>$actor->id,
                 'target_user_id'=>$target->id,'before_role_ids'=>$before,'after_role_ids'=>[(int)$d['role']]]);
             $key=(string)Str::uuid();
@@ -98,7 +112,7 @@ class UserController extends Controller
         return Validator::make($r->all(),['usuario_id_edit'=>'required|integer','nombre_usuario_edit'=>'required|string|max:255',
             'email_edit'=>$emailRules,'dni_edit'=>$dniRules,'password'=>'nullable|string|min:8|max:128']+$this->protectedFields());
     }
-    private function protectedFields():array{return ['is_active'=>'prohibited','auth_version'=>'prohibited','role'=>'prohibited','permissions'=>'prohibited'];}
+    private function protectedFields():array{return ['is_active'=>'prohibited','auth_version'=>'prohibited','role'=>'prohibited','permissions'=>'prohibited','doctor_id'=>'prohibited'];}
     private function invalid(array $errors){return response()->json(['code'=>0,'error'=>$errors]);}
     private function uniqueFailure(QueryException $error)
     {
