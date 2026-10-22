@@ -160,6 +160,9 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
+            'medical_reevaluation'=>['indicated'=>AppointmentReevaluationService::indicated($a),
+                'pending'=>AppointmentReevaluationService::pending($a),
+                'ready'=>AppointmentReevaluationService::ready($a)],
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
     }
