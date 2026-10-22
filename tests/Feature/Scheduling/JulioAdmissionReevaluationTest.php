@@ -32,6 +32,14 @@ class JulioAdmissionReevaluationTest extends TestCase
         // lacks that historical migration, so reproduce the real schema only
         // in this disposable test database (no production migrations).
         if (!Schema::hasColumn('users','doctor_id')) {
+            // SQLite can roll back test-only DDL inside RefreshDatabase.
+            // MariaDB DDL implicitly commits and destroys PHPUnit savepoints:
+            // do not alter its schema mid-test. The production link was
+            // verified separately; the MariaDB authorization-negative and
+            // redirect coverage still run without schema alterations.
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+                $this->markTestSkipped('La migración heredada users.doctor_id no figura en main; no alterar MariaDB de pruebas dentro de una transacción.');
+            }
             Schema::table('users',static function(Blueprint $table){
                 $table->unsignedBigInteger('doctor_id')->nullable();
             });
