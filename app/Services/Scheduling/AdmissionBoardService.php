@@ -167,7 +167,13 @@ class AdmissionBoardService
             'operational_tasks'=>$followUp['tasks'],'can_manage_operational_tasks'=>$followUp['can_manage'],
             'can_complete_operational_tasks'=>$followUp['can_complete'],
             'care_actions'=>$this->careActions($a,$actor),
-            'care_restriction'=>in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)?'El inicio, la finalización y la indicación de reevaluación corresponden al médico responsable desde Mi agenda médica. Admisión conserva llegada, llamado y salida física.':null,
+            'care_fallback'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
+                && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null,
+            'care_restriction'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
+                && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null
+                    ? 'CONTINGENCIA: el médico no tiene cuenta vinculada. Admisión puede registrar únicamente inicio/fin con motivo y auditoría; no es una validación médica.'
+                    : (in_array($a->estado_cita,['EN_ESPERA','LLAMANDO','EN_ATENCION'],true)
+                        ? 'El inicio, la finalización y la indicación de reevaluación corresponden al médico responsable desde Mi agenda médica. Admisión conserva llegada, llamado y salida física.' : null),
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])];
     }
@@ -177,9 +183,13 @@ class AdmissionBoardService
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         if (!$actor->is_active || !$actor->can(C::MVP_ACCESS) || !$actor->can(C::VIEW) || !$actor->can(C::UPDATE)
             || !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR']) || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
+        $fallback=UnlinkedDoctorAdmissionFallback::eligible($a,$actor)
+            ? UnlinkedDoctorAdmissionFallback::allowedState($a) : null;
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],
-            'EN_ESPERA'=>['LLAMANDO'], 'LLAMANDO','EN_ATENCION'=>[], 'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
+            'EN_ESPERA'=>$fallback ? ['LLAMANDO',$fallback] : ['LLAMANDO'],
+            'LLAMANDO','EN_ATENCION'=>$fallback ? [$fallback] : [],
+            'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
         };
     }
 }
