@@ -14,11 +14,20 @@ class AdmissionCareService
     /** Fail closed until a verified User-to-Doctor association is approved and implemented. */
     public static function authorizeState(User $actor,string $state): void
     {
-        abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE),403);
+        abort_unless($actor->is_active && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW),403);
         abort_if(in_array($state,['EN_ATENCION','ATENDIDO','REEVALUACION'],true),403,
-            'La acción médica requiere una vinculación verificable entre usuario y médico responsable; todavía no está habilitada.');
-        if(in_array($state,['PACIENTE_LLEGO','EN_ESPERA','LLAMANDO','SALIDA_REGISTRADA'],true))
-            abort_unless($actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+            'El inicio, fin y las indicaciones médicas requieren una cuenta clínica verificada.');
+        // COMERCIAL is authorized to record patient arrival only, never called/clinical
+        // states or general appointment editing. No appointment.update grant is required.
+        if(self::commercialArrival($actor,$state)) return;
+        abort_unless($actor->can(C::UPDATE) && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
+    }
+
+    public static function commercialArrival(User $actor,string $state): bool
+    {
+        return $state==='EN_ESPERA' && $actor->is_active
+            && $actor->hasRole('COMERCIAL') && !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR'])
+            && $actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW);
     }
 
     public function reversalOffer(Appointment $a, User $actor): ?array
@@ -116,6 +125,22 @@ class AdmissionCareService
                             'doctor_id'=>(int)$a->doctor_id,'actor_role'=>'ADMISION_O_ADMINISTRADOR',
                             'physician_signed'=>false,'operation_id'=>$op->id,
                             'before'=>$before,'after'=>$a->only(array_keys($before))]]);
+                DB::table('appointment_operations')->where('id',$op->id)
+                    ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+                return $a;
+            }
+            if(self::commercialArrival($actor,$data['state'])){
+                // ARRIVAL ONLY: intentionally avoid LegacyAppointmentMutation, which
+                // requires the broad appointment.update permission. Keep the same
+                // transactional state, timestamp and audit contract as Admisión.
+                $beforeTimes=$a->only(['hora_llegada','hora_llamado','hora_atencion','hora_atendido','hora_salida']);
+                abort_if($a->hora_llegada || $a->hora_atencion || $a->hora_atendido || $a->hora_salida,422,
+                    'La llegada ya está registrada o la atención está avanzada.');
+                $a->forceFill(['estado_cita'=>'EN_ESPERA','hora_llegada'=>now(),'updated_by_user_id'=>$actor->id])->save();
+                app(AppointmentHistory::class)->record($a,'ADMISION_ESTADO_ACTUALIZADO',$actor->id,
+                    ['metadata'=>['from'=>$data['expected_state'],'to'=>'EN_ESPERA',
+                        'timestamp_field'=>'hora_llegada','previous_timestamps'=>$beforeTimes,
+                        'operation_id'=>$op->id,'source'=>'COMERCIAL_PATIENT_ARRIVAL_V1']]);
                 DB::table('appointment_operations')->where('id',$op->id)
                     ->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
                 return $a;
