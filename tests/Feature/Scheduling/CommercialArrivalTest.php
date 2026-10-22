@@ -29,8 +29,10 @@ class CommercialArrivalTest extends TestCase
 
     private function care(Appointment $a,string $state,?string $key=null,array $extra=[])
     {
-        return $this->postJson(route('scheduling.mvp.admission.care',$a->id),array_replace([
-            'state'=>$state,'expected_state'=>$a->estado_cita,
+        $checkIn=$state==='EN_ESPERA';
+        $route=$checkIn?'scheduling.mvp.admission.commercial-arrival':'scheduling.mvp.admission.care';
+        return $this->postJson(route($route,$a->id),array_replace([
+            ...($checkIn?[]:['state'=>$state]),'expected_state'=>$a->estado_cita,
             'request_key'=>$key??(string) Str::uuid(),
         ],$extra));
     }
