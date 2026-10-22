@@ -245,8 +245,38 @@ class VerifiedMedicalCareTest extends TestCase
         $this->medical('finish')->assertOk();$this->assertNull($this->a->fresh()->hora_salida);
         $this->assertDatabaseHas('appointment_requested_procedures',['appointment_id'=>$this->a->id,'procedure_key'=>'laboratory','selected'=>true]);
     }
+    public function test_verified_administrator_with_medico_keeps_both_roles_and_can_only_attend_own_doctor():void
+    {
+        $this->physician->assignRole('ADMINISTRADOR');
+        $this->physician->givePermissionTo([
+            \Spatie\Permission\Models\Permission::findOrCreate(S::MVP_ACCESS,'web'),
+            \Spatie\Permission\Models\Permission::findOrCreate(S::VIEW,'web'),
+            \Spatie\Permission\Models\Permission::findOrCreate(S::SUBMIT_PAYMENT,'web'),
+        ]);
+        $this->actingAs($this->physician);
+        $this->detail()->assertOk();
+        $this->get(route('scheduling.medical.index'))->assertOk();
+        $this->get(route('scheduling.mvp.admission'))->assertOk();
+        $this->assertEqualsCanonicalizing(['ADMINISTRADOR','MEDICO'],$this->physician->fresh()->getRoleNames()->all());
+
+        // Administrative capability does not broaden the clinical appointment scope.
+        $other=$this->createAppointmentCatalog();
+        $another=$this->lifecycleAppointment($this->actor,$other,[
+            'fecha_cita'=>'2026-10-21','hora_cita'=>'12:20','estado_agenda'=>'CONFIRMADA',
+        ]);
+        $this->getJson(route('scheduling.medical.detail',$another->id))->assertForbidden();
+        $this->postJson(route('scheduling.medical.care',[$another->id,'start']),[
+            'request_key'=>(string)Str::uuid(),'expected_state'=>$another->estado_cita,
+            'revision'=>MedicalCareService::revision($another),'confirmed'=>true,
+        ])->assertForbidden();
+        $this->begin();$this->medical('finish')->assertOk();
+        $this->assertDatabaseHas('appointment_events',[
+            'appointment_id'=>$this->a->id,'event_type'=>'ATENCION_MEDICA_FINALIZADA',
+            'actor_user_id'=>$this->physician->id,
+        ]);
+    }
+
     public static function incompatibleProfiles():array{return [
-        'administrator_role_only'=>['ADMINISTRADOR',false],'administrator_grants'=>['ADMINISTRADOR',true],
         'admission_role_only'=>['ADMISION',false],'admission_grants'=>['ADMISION',true],'direct'=>['DIRECT',true]];}
     /** @dataProvider incompatibleProfiles */
     public function test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access(string $profile,bool $granted):void
