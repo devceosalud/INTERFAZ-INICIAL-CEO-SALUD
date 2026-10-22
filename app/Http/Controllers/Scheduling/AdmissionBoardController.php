@@ -69,6 +69,21 @@ class AdmissionBoardController extends Controller
         return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita])->header('Cache-Control','private, no-store');
     }
 
+    public function commercialArrival(Request $r,int $appointmentId,AdmissionCareService $service)
+    {
+        abort_if(array_diff(array_keys($r->all()),['expected_state','request_key','_token']),422,
+            'La recepción comercial solamente puede registrar llegada.');
+        $data=$r->validate([
+            'request_key'=>'required|uuid',
+            'expected_state'=>['required',Rule::in(['PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'])],
+        ]);
+        abort_unless(AdmissionCareService::commercialArrival($r->user(),'EN_ESPERA'),403);
+        $data['state']='EN_ESPERA';
+        $a=$service->transition($appointmentId,$r->user(),$data,true);
+        return response()->json(['id'=>$a->id,'estado_cita'=>$a->estado_cita,'estado_agenda'=>$a->estado_agenda])
+            ->header('Cache-Control','private, no-store');
+    }
+
     public function care(Request $r, int $appointmentId, AdmissionCareService $service)
     {
         abort_if(array_diff(array_keys($r->all()),['state','expected_state','request_key','motivo','confirmed','_token']),422,'Esta acción solo actualiza el recorrido de atención.');
