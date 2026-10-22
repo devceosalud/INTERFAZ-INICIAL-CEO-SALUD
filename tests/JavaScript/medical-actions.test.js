@@ -87,3 +87,12 @@ test('link retries retain the UUID and never leak server diagnostics',async()=>{
  await ui.submit();assert.doesNotMatch(ui.status.textContent,/SQL|SECRET|PATIENT/);await ui.submit();
  assert.equal(ui.calls.length,2);assert.deepEqual(ui.calls[0],ui.calls[1]);assert.equal(ui.calls[0].doctor_id,3);assert.equal(ui.calls[0].expected_doctor_id,null);
 });
+
+test('pending reevaluation hides finish and explains restriction until backend reports ready',async()=>{
+ let ready=false;
+ const ui=medicalUi({details:async()=>{const data=detail(1,'EN_ATENCION',ready?['finish','withdraw']:['withdraw']);data.appointment.reevaluation={pending:!ready,ready};return response(data);}});
+ await settle();await ui.clickRow(0);assert.equal(ui.action('finish'),undefined);
+ assert.match(ui.ids['medical-detail'].textContent,/No se puede finalizar/);assert.ok(ui.action('withdraw'));
+ ready=true;await ui.clickRow(0);assert.ok(ui.action('finish'));assert.doesNotMatch(ui.ids['medical-detail'].textContent,/No se puede finalizar/);
+ assert.equal(ui.posts.length,0);
+});

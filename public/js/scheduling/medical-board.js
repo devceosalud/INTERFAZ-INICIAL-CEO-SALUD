@@ -71,7 +71,7 @@
         }
         container.appendChild(actions);
         if(a.reevaluation.ready)container.appendChild(node('p','LISTO PARA REEVALUACIÓN · Continúa la misma atención y finalízala cuando corresponda.','admission-empty'));
-        else if(a.reevaluation.pending)container.appendChild(node('p','PENDIENTE DE REEVALUACIÓN · Admisión verificará los procedimientos o marcará listo conforme a sus reglas.','admission-empty'));
+        else if(a.reevaluation.pending)container.appendChild(node('p','PENDIENTE DE REEVALUACIÓN · No se puede finalizar hasta que esté listo para reevaluación o retires justificadamente la indicación. Admisión verificará los procedimientos o marcará listo conforme a sus reglas.','admission-empty'));
         const p=detail.procedures,section=node('section');section.appendChild(node('h4','Procedimientos: '+p.completed_count+' realizados · '+p.pending_count+' pendientes'));
         for(const item of p.items)section.appendChild(node('p',item.label+' · '+(item.completed?'Realizado por '+item.completed_by:'Pendiente')+' · solicitado por '+item.requested_by));
         if(!p.items.length)section.appendChild(node('p','No hay procedimientos solicitados. Una lista vacía no activa listo automáticamente.'));

@@ -97,6 +97,14 @@
                                                 {!! Form::radio('role', $role->id, $user->hasRole($role->id), ['class' => 'mr-1']) !!}
                                                 {{ $role->name }}
                                             </label>
+                                            @if ($role->name === 'MEDICO' && $user->roles->contains(fn($current) => $current->name !== 'MEDICO'))
+                                                <p id="medical-role-replacement-warning" class="alert alert-warning text-dark mt-2" role="note">
+                                                    Asignar MEDICO reemplazará los roles actuales:
+                                                    <strong>{{ $user->roles->pluck('name')->implode(', ') }}</strong>.
+                                                    Revisa si corresponde utilizar una cuenta clínica personal separada para conservar los accesos administrativos de esta cuenta.
+                                                    No se cambia ningún rol hasta que confirmes la asignación con el botón del formulario.
+                                                </p>
+                                            @endif
                                         </div>
                                     @endforeach
 

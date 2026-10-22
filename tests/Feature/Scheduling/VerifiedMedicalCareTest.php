@@ -192,4 +192,87 @@ class VerifiedMedicalCareTest extends TestCase
         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){$this->assertSame(403,$e->getStatusCode());}
         $this->assertSame('EN_ATENCION',$this->a->fresh()->estado_cita);$this->assertNull($this->a->fresh()->hora_atendido);
     }
+    public static function pendingProgress():array{return ['empty'=>[false],'partially_completed'=>[true]];}
+    /** @dataProvider pendingProgress */
+    public function test_pending_indication_blocks_finish_without_changing_history_or_procedures(bool $partial):void
+    {
+        $this->begin();
+        if($partial){$this->selection()->assertOk();}
+        $this->medical('indicate')->assertOk();
+        if($partial){$this->actingAs($this->actor);$this->complete('laboratory')->assertOk();$this->actingAs($this->physician);}
+        $before=$this->a->fresh()->getAttributes();$money=$this->money();
+        $events=DB::table('appointment_events')->orderBy('id')->get()->toArray();
+        $procedures=DB::table('appointment_requested_procedures')->orderBy('id')->get()->toArray();
+        $operations=DB::table('appointment_operations')->count();
+        $detail=$this->detail()->assertOk()->assertJsonPath('appointment.reevaluation.pending',true);
+        $this->assertNotContains('finish',$detail->json('actions'));
+        $this->medical('finish')->assertUnprocessable()->assertJsonPath('message',
+            'No puedes finalizar mientras la reevaluación esté pendiente. Debe estar listo para reevaluación o retirarse justificadamente la indicación.');
+        $this->assertSame($before,$this->a->fresh()->getAttributes());$this->assertEquals($money,$this->money());
+        $this->assertEquals($events,DB::table('appointment_events')->orderBy('id')->get()->toArray());
+        $this->assertEquals($procedures,DB::table('appointment_requested_procedures')->orderBy('id')->get()->toArray());
+        $this->assertSame($operations,DB::table('appointment_operations')->count());
+    }
+    public function test_manual_ready_allows_finish_but_withdrawing_ready_reinstates_the_pending_guard():void
+    {
+        $this->begin();$this->medical('indicate')->assertOk();
+        $mark=function(bool $value){
+            $this->actingAs($this->actor);
+            $event=$this->a->events()->whereIn('event_type',[\App\Services\Scheduling\ManualReevaluationService::MARKED,\App\Services\Scheduling\ManualReevaluationService::CLEARED])->orderByDesc('id')->first();
+            $this->patchJson(route('scheduling.mvp.admission.manual-reevaluation',$this->a->id),[
+                'marked'=>$value,'expected_marked'=>$event?->event_type===\App\Services\Scheduling\ManualReevaluationService::MARKED,
+                'expected_version'=>$event?->id??0,'request_key'=>(string)Str::uuid()])->assertOk();
+            $this->actingAs($this->physician);
+        };
+        $mark(true);$detail=$this->detail()->assertJsonPath('appointment.reevaluation.ready',true);
+        $this->assertContains('finish',$detail->json('actions'));$stale=$detail->json('revision');
+        $mark(false);$this->medical('finish',['revision'=>$stale])->assertConflict();
+        $this->medical('finish')->assertUnprocessable();
+        $mark(true);$this->medical('finish')->assertOk()->assertJsonPath('appointment.estado_cita','ATENDIDO');
+        $this->assertNull($this->a->fresh()->hora_salida);
+        $this->assertSame(1,$this->a->events()->where('event_type',R::INDICATED)->count());
+    }
+    public function test_reopening_a_completed_procedure_blocks_finish_until_ready_again():void
+    {
+        $this->begin();$this->selection(['laboratory'])->assertOk();$this->medical('indicate')->assertOk();
+        $this->actingAs($this->actor);$this->complete('laboratory')->assertOk();
+        $this->actingAs($this->physician);$ready=$this->detail()->assertJsonPath('appointment.reevaluation.ready',true);
+        $this->assertContains('finish',$ready->json('actions'));
+        $this->actingAs($this->actor);$this->complete('laboratory',false)->assertOk();$this->actingAs($this->physician);
+        $this->assertNotContains('finish',$this->detail()->assertJsonPath('appointment.reevaluation.pending',true)->json('actions'));
+        $this->medical('finish')->assertUnprocessable();
+        $this->actingAs($this->actor);$this->complete('laboratory')->assertOk();$this->actingAs($this->physician);
+        $this->medical('finish')->assertOk();$this->assertNull($this->a->fresh()->hora_salida);
+        $this->assertDatabaseHas('appointment_requested_procedures',['appointment_id'=>$this->a->id,'procedure_key'=>'laboratory','selected'=>true]);
+    }
+    public static function incompatibleProfiles():array{return [
+        'administrator_role_only'=>['ADMINISTRADOR',false],'administrator_grants'=>['ADMINISTRADOR',true],
+        'admission_role_only'=>['ADMISION',false],'admission_grants'=>['ADMISION',true],'direct'=>['DIRECT',true]];}
+    /** @dataProvider incompatibleProfiles */
+    public function test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access(string $profile,bool $granted):void
+    {
+        $this->begin();
+        if($profile==='DIRECT')$this->physician->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate(S::SUBMIT_PAYMENT,'web'));
+        else{
+            $role=\Spatie\Permission\Models\Role::findOrCreate($profile,'web');
+            if($granted)$role->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate(S::UPDATE,'web'));
+            $this->physician->assignRole($role);
+        }
+        $roles=$this->physician->roles()->orderBy('roles.id')->pluck('roles.id')->all();
+        $direct=$this->physician->permissions()->orderBy('permissions.id')->pluck('permissions.id')->all();
+        $before=$this->a->fresh()->getAttributes();$events=$this->a->events()->count();
+        $inherited=DB::table('role_has_permissions')->orderBy('role_id')->orderBy('permission_id')->get()->toArray();
+        $this->actingAs($this->physician);$this->detail()->assertForbidden();
+        $this->getJson(route('scheduling.medical.index'))->assertForbidden();
+        $this->postJson(route('scheduling.medical.feed'),['fecha'=>'2026-10-21'])->assertForbidden();
+        foreach(['start','finish','indicate','withdraw'] as $action)$this->medical($action)->assertForbidden();
+        $this->selection()->assertForbidden();
+        try{DB::transaction(fn()=>\App\Support\Scheduling\ClinicalAccess::lock($this->physician,$this->a->id,C::FINISH));$this->fail('Mixed profile accepted inside transaction');}
+        catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){$this->assertSame(403,$e->getStatusCode());}
+        $this->assertSame($roles,$this->physician->roles()->orderBy('roles.id')->pluck('roles.id')->all());
+        $this->assertSame($direct,$this->physician->permissions()->orderBy('permissions.id')->pluck('permissions.id')->all());
+        $this->assertSame($before,$this->a->fresh()->getAttributes());$this->assertSame($events,$this->a->events()->count());
+        $this->assertEquals($inherited,DB::table('role_has_permissions')->orderBy('role_id')->orderBy('permission_id')->get()->toArray());
+    }
+
 }

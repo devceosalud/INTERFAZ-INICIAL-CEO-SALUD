@@ -135,4 +135,15 @@ class MedicalAccessCompatibilityTest extends TestCase
         $this->assertEquals($appointments,DB::table('appointments')->get()->toArray());$this->assertSame($users,User::count());
         $this->actingAs($this->actor)->getJson(route('scheduling.mvp.admission.detail',$this->a->id))->assertOk();
     }
+    public function test_user_role_editor_warns_before_replacing_existing_staff_role_with_medico():void
+    {
+        $target=$this->createUserWithRole('ADMISION');$roles=$target->roles()->pluck('roles.id')->all();
+        $this->get(route('admin.user.edit',$target->id))->assertOk()
+            ->assertSee('medical-role-replacement-warning',false)
+            ->assertSee('Asignar MEDICO reemplazará los roles actuales:')
+            ->assertSee('ADMISION')->assertSee('cuenta clínica personal separada');
+        $this->assertSame($roles,$target->roles()->pluck('roles.id')->all());
+        $this->assertNull($target->fresh()->doctor_id);
+    }
+
 }

@@ -1,0 +1,18 @@
+✔ cancelled physician confirmation sends no mutation (8.8997ms)
+✔ an uncertain physician response reuses the operation UUID and exact review (4.5819ms)
+✔ double click cannot create two simultaneous clinical requests (1.546ms)
+✔ newly rendered controls stay disabled until the successful save refresh finishes (1.4614ms)
+✔ medical controls only display effective backend actions (1.1647ms)
+✔ late previous patient detail cannot replace the latest selection (2.2292ms)
+✔ internal server details never appear in the medical page (2.0237ms)
+✔ cancelled administrator identity review does not persist a link (1.9769ms)
+✔ link retries retain the UUID and never leak server diagnostics (1.3582ms)
+✔ pending reevaluation hides finish and explains restriction until backend reports ready (2.9448ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 184.0492

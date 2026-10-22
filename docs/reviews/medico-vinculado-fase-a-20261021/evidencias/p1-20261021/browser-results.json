@@ -1,0 +1,79 @@
+{
+  "browser": "155.0.8059.79",
+  "scope": "FICTITIOUS_LOCAL_ONLY",
+  "cases": [
+    {
+      "name": "Administrador revisa una cuenta existente sin crear duplicados ni asignar por coincidencias",
+      "result": "PASS"
+    },
+    {
+      "name": "Editor advierte que MEDICO reemplaza los roles existentes sin cambiar la cuenta al consultar",
+      "result": "PASS"
+    },
+    {
+      "name": "Médico no inicia antes de llegada; cancelación de confirmación no guarda cambios",
+      "result": "PASS"
+    },
+    {
+      "name": "Médico vinculado inicia atención y dispone de Finalizar atención y Reevaluación",
+      "result": "PASS"
+    },
+    {
+      "name": "Indicación médica, listo manual por Admisión y retirada médica conservan decisiones e historial separados",
+      "result": "PASS"
+    },
+    {
+      "name": "Médico indica procedimientos propios y pendiente sin cambiar estado, color ni dinero",
+      "result": "PASS"
+    },
+    {
+      "name": "Pendiente bloquea Finalizar en la pantalla y en el endpoint sin alterar cita ni dinero",
+      "result": "PASS"
+    },
+    {
+      "name": "Admisión distingue pendientes/listos y conserva el color principal en escritorio y móvil",
+      "result": "PASS"
+    },
+    {
+      "name": "Admisión completa procedimientos; listo reemplaza pendiente con contadores separados",
+      "result": "PASS"
+    },
+    {
+      "name": "Médico continúa la misma cita y finaliza sin salida física ni cobros nuevos",
+      "result": "PASS"
+    },
+    {
+      "name": "Otro médico y cuentas sin vínculo reciben403; Admisión no elude el control",
+      "result": "PASS"
+    },
+    {
+      "name": "Revocación por administrador invalida solo la cuenta médica y conserva el historial",
+      "result": "PASS"
+    },
+    {
+      "name": "Base ficticia conserva una cita, un pago real y autoría médica tras retirar el vínculo",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "01-antes-cuenta-existente.png",
+    "02-despues-vinculo-auditado.png",
+    "03-permisos-medicos-minimos.png",
+    "03a-advertencia-reemplazo-rol.png",
+    "04-antes-llegada-medico.png",
+    "05-inicio-medico-desktop.png",
+    "05a-listo-manual-sin-procedimientos.png",
+    "05b-indicacion-retirada-historial.png",
+    "06-pendiente-medico-desktop.png",
+    "07-pendiente-medico-mobile.png",
+    "06a-pendiente-sin-finalizar.png",
+    "08-pendiente-admision-desktop.png",
+    "09-pendiente-admision-mobile.png",
+    "10-listo-admision-desktop.png",
+    "11-listo-admision-mobile.png",
+    "12-finalizacion-medica.png",
+    "13-medico-sin-vinculo-403.png",
+    "14-revocacion-historial.png"
+  ]
+}

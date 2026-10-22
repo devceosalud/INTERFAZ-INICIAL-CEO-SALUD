@@ -48,6 +48,13 @@ async function call(page,url,method='GET',data){return page.evaluate(async({url,
    await admin.page.goto(base+'/admin/role/edit/'+fixture.medical_role_id);
    await admin.page.getByText('Consultar mis citas médicas',{exact:true}).waitFor();await shot(admin.page,'03-permisos-medicos-minimos');
   });
+  await step('Editor advierte que MEDICO reemplaza los roles existentes sin cambiar la cuenta al consultar',async()=>{
+   await admin.page.goto(base+'/admin/user/edit/'+fixture.actor_id);
+   await admin.page.locator('#medical-role-replacement-warning').waitFor();
+   assert.match(await admin.page.locator('#medical-role-replacement-warning').textContent(),/ADMISION/);
+   assert.match(await admin.page.locator('#medical-role-replacement-warning').textContent(),/cuenta clínica personal separada/);
+   await shot(admin.page,'03a-advertencia-reemplazo-rol');
+  });
   admission=await session(secret.email);medical=await session(fixture.existing_email);
   medical.page.on('dialog',async d=>{if(cancelled){cancelled=false;await d.dismiss();}else await d.accept(d.type()==='prompt'?'Indicación médica FICTICIA para completar pruebas':undefined);});
   await step('Médico no inicia antes de llegada; cancelación de confirmación no guarda cambios',async()=>{
@@ -113,6 +120,18 @@ async function call(page,url,method='GET',data){return page.evaluate(async({url,
    await medical.page.setViewportSize({width:390,height:844});await shot(medical.page,'07-pendiente-medico-mobile');
    assert.ok(await medical.page.evaluate(()=>document.documentElement.scrollWidth)<=391);
    await medical.page.setViewportSize({width:1440,height:1000});
+  });
+  await step('Pendiente bloquea Finalizar en la pantalla y en el endpoint sin alterar cita ni dinero',async()=>{
+   assert.equal(await medical.page.locator('[data-medical-action=finish]').count(),0);
+   await medical.page.getByText(/No se puede finalizar hasta/).waitFor();
+   const before=(await call(medical.page,'/scheduling-mvp/medical/appointments/'+id)).body;
+   const result=await call(medical.page,'/scheduling-mvp/medical/appointments/'+id+'/care/finish','POST',{
+    expected_state:before.appointment.estado_cita,revision:before.revision,confirmed:true,reason:'Intento FICTICIO pendiente',request_key:require('node:crypto').randomUUID()});
+   assert.equal(result.status,422);
+   const after=(await call(medical.page,'/scheduling-mvp/medical/appointments/'+id)).body;
+   assert.equal(after.revision,before.revision);assert.deepEqual(after.appointment,before.appointment);assert.deepEqual(after.events,before.events);
+   assert.deepEqual(after.procedures,before.procedures);assert.equal(after.appointment.reevaluation.pending,true);
+   await shot(medical.page,'06a-pendiente-sin-finalizar');
   });
   await step('Admisión distingue pendientes/listos y conserva el color principal en escritorio y móvil',async()=>{
    await admission.page.reload();await admissionRow().waitFor();

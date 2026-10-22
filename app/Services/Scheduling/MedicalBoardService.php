@@ -47,7 +47,7 @@ final class MedicalBoardService
         $actions=[];
         if($open && in_array($a->estado_cita,['EN_ESPERA','LLAMANDO'],true) && !$a->hora_atencion && ClinicalAccess::has($u,C::START))$actions[]='start';
         if($open && $a->estado_cita==='EN_ATENCION'){
-            if(ClinicalAccess::has($u,C::FINISH))$actions[]='finish';
+            if(!AppointmentReevaluationService::pending($a) && ClinicalAccess::has($u,C::FINISH))$actions[]='finish';
             if(!$indication['indicated'] && !AppointmentReevaluationService::ready($a) && ClinicalAccess::has($u,C::INDICATE))$actions[]='indicate';
             if($indication['indicated'] && ClinicalAccess::has($u,C::WITHDRAW))$actions[]='withdraw';
         }

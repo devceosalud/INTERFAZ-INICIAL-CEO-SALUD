@@ -1,0 +1,88 @@
+{
+  "base_sha": "72363c3d0bedb0fc801b36a54db3f40951f5bc90",
+  "before_tests": 1236,
+  "after_tests": 1246,
+  "preserved_cases": 1236,
+  "missing_cases": [],
+  "new_cases": [
+    "Tests.Feature.Authorization.MedicalAccessCompatibilityTest::test_user_role_editor_warns_before_replacing_existing_staff_role_with_medico",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set \"administrator_grants\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set \"administrator_role_only\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set \"admission_grants\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set \"admission_role_only\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set \"direct\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_manual_ready_allows_finish_but_withdrawing_ready_reinstates_the_pending_guard",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_pending_indication_blocks_finish_without_changing_history_or_procedures with data set \"empty\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_pending_indication_blocks_finish_without_changing_history_or_procedures with data set \"partially_completed\"",
+    "Tests.Feature.Scheduling.VerifiedMedicalCareTest::test_reopening_a_completed_procedure_blocks_finish_until_ready_again"
+  ],
+  "groups_overlap": true,
+  "matrix": [
+    {
+      "function": "1. Crear y guardar citas",
+      "before": 116,
+      "after": 117,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "2. Editar, confirmar, cancelar y reprogramar",
+      "before": 61,
+      "after": 61,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "3. Disponibilidad, ocupación y horarios",
+      "before": 148,
+      "after": 148,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "4. Crear, editar y desactivar médicos",
+      "before": 19,
+      "after": 19,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "5. Crear, editar, activar y desactivar usuarios",
+      "before": 40,
+      "after": 41,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "6. Roles y permisos existentes",
+      "before": 56,
+      "after": 56,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "7. Perfiles actuales y visibilidad",
+      "before": 64,
+      "after": 74,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "8. Adelantos, descuentos, pagos y Caja",
+      "before": 100,
+      "after": 100,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "9. Llegada, procedimientos y reevaluación",
+      "before": 56,
+      "after": 65,
+      "result": "SIN REGRESIÓN DETECTADA"
+    },
+    {
+      "function": "10. Históricos y usuarios sin vínculo",
+      "before": 127,
+      "after": 128,
+      "result": "SIN REGRESIÓN DETECTADA"
+    }
+  ],
+  "mariadb": {
+    "before": 1257,
+    "after": 1267,
+    "preserved": 1257,
+    "missing": []
+  }
+}

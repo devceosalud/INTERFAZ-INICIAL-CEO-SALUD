@@ -46,6 +46,14 @@ final class MedicalCareService
                 $type='ATENCION_MEDICA_INICIADA';
             }elseif($action==='finish'){
                 abort_unless($a->estado_cita==='EN_ATENCION',422,'La atención debe estar iniciada.');
+                // Current reads after the appointment lock: do not trust an earlier READY snapshot.
+                $a->setRelation('medicalReevaluationEvent',$a->events()->whereIn('event_type',[
+                    AppointmentReevaluationService::INDICATED,AppointmentReevaluationService::WITHDRAWN])->orderByDesc('id')->lockForUpdate()->first());
+                $a->setRelation('manualReevaluationEvent',$a->events()->whereIn('event_type',[
+                    ManualReevaluationService::MARKED,ManualReevaluationService::CLEARED])->orderByDesc('id')->lockForUpdate()->first());
+                $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
+                abort_if(AppointmentReevaluationService::pending($a),422,
+                    'No puedes finalizar mientras la reevaluación esté pendiente. Debe estar listo para reevaluación o retirarse justificadamente la indicación.');
                 $a->forceFill(['estado_cita'=>'ATENDIDO','hora_atendido'=>now(),'updated_by_user_id'=>$u->id])->save();
                 $type='ATENCION_MEDICA_FINALIZADA';
             }else{

@@ -1,0 +1,13 @@
+PASS Administrador revisa una cuenta existente sin crear duplicados ni asignar por coincidencias
+PASS Editor advierte que MEDICO reemplaza los roles existentes sin cambiar la cuenta al consultar
+PASS Médico no inicia antes de llegada; cancelación de confirmación no guarda cambios
+PASS Médico vinculado inicia atención y dispone de Finalizar atención y Reevaluación
+PASS Indicación médica, listo manual por Admisión y retirada médica conservan decisiones e historial separados
+PASS Médico indica procedimientos propios y pendiente sin cambiar estado, color ni dinero
+PASS Pendiente bloquea Finalizar en la pantalla y en el endpoint sin alterar cita ni dinero
+PASS Admisión distingue pendientes/listos y conserva el color principal en escritorio y móvil
+PASS Admisión completa procedimientos; listo reemplaza pendiente con contadores separados
+PASS Médico continúa la misma cita y finaliza sin salida física ni cobros nuevos
+PASS Otro médico y cuentas sin vínculo reciben403; Admisión no elude el control
+PASS Revocación por administrador invalida solo la cuenta médica y conserva el historial
+PASS Base ficticia conserva una cita, un pago real y autoría médica tras retirar el vínculo

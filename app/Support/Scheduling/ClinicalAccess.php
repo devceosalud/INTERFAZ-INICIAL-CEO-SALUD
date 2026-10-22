@@ -24,11 +24,13 @@ final class ClinicalAccess
             && $fresh->doctor_id && Doctor::whereKey($fresh->doctor_id)->where('estado','ACTIVO')->exists(),403,
             'Se requiere una cuenta médica activa, vinculada y autorizada.');
         // Reusing an existing account never legitimizes an old over-privileged medical profile.
-        // Keep those grants intact for administrative review; do not activate clinical access.
-        abort_if($fresh->roles()->where('name',ClinicalCapability::ROLE)->whereHas('permissions',
+        // Check every assigned role and direct grant; keep them intact for administrative review.
+        // Other roles also unlock role-only ERP routes, even with no explicit permissions.
+        abort_if($fresh->roles()->where('name','<>',ClinicalCapability::ROLE)->exists()
+            || $fresh->roles()->whereHas('permissions',
                 fn($q)=>$q->whereNotIn('name',ClinicalCapability::all()))->exists()
             || $fresh->permissions()->whereNotIn('name',ClinicalCapability::all())->exists(),403,
-            'Revisa los permisos de esta cuenta: el perfil médico admite únicamente capacidades clínicas.');
+            'Revisa los roles y permisos de esta cuenta: el acceso médico requiere únicamente el rol MEDICO y sus capacidades clínicas.');
         return $fresh;
     }
 

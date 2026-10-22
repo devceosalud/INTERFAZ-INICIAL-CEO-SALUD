@@ -1,0 +1,26 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+FF.                                                                 3 / 3 (100%)
+
+Time: 00:01.034, Memory: 58.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\Scheduling\VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set #0 ('ADMINISTRADOR')
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\tests\Feature\Scheduling\VerifiedMedicalCareTest.php:263
+
+2) Tests\Feature\Scheduling\VerifiedMedicalCareTest::test_effective_incompatible_grants_deny_all_clinical_entry_points_without_stripping_access with data set #1 ('ADMISION')
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\medico-vinculado-fase-a-20261021\tests\Feature\Scheduling\VerifiedMedicalCareTest.php:263
+
+FAILURES!
+Tests: 3, Assertions: 22, Failures: 2.
