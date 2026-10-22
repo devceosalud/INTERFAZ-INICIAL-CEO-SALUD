@@ -77,3 +77,10 @@
     outline: 1px solid var(--ad-status-color, var(--ad-brand));
     outline-offset: -1px;
 }
+
+/* Un paciente LISTO para reevaluación se reconoce por naranja, incluso sin abrir detalle. */
+.admission-table tr.is-ready-for-reevaluation{background:#fff0d8}
+.admission-table tr.is-ready-for-reevaluation:hover{background:#ffe6c0}
+.admission-table tr.is-ready-for-reevaluation.is-selected{background:#ffdfad}
+.admission-table tr.is-ready-for-reevaluation td:first-child{border-left-color:#df8020}
+.admission-kpi[data-pending-review-only] strong{color:#9c5814}
