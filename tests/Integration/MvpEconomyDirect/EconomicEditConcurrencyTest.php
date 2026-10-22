@@ -21,7 +21,7 @@ class EconomicEditConcurrencyTest extends TestCase
         if(getenv('AGENDA_V2_QA_RUNTIME')!=='agenda-v2-11.8.9')$this->markTestSkipped('Guarded disposable MariaDB only.');
         Artisan::call('migrate:fresh',['--force'=>true]);
         foreach($this->rescheduleVisualFixture() as $key=>$value)$this->{$key}=$value;
-        $this->actor->givePermissionTo(C::EDIT_PAYMENT);$this->actor->assignRole(Role::findOrCreate('RECEPCION','web'));
+        $this->actor->givePermissionTo(C::EDIT_PAYMENT);$this->actor->syncRoles([Role::findOrCreate('ADMINISTRADOR','web')]);
         $this->actingAs($this->actor);
     }
     protected function tearDown():void {\Carbon\Carbon::setTestNow();parent::tearDown();}
