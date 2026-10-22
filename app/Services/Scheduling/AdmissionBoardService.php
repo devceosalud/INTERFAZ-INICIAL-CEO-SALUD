@@ -78,6 +78,7 @@ class AdmissionBoardService
         foreach ($rows as $a) {
             $kpis['total']++; $kpis[AdmissionStatus::group($a)]++;
             if(AppointmentReevaluationService::ready($a)) $kpis['reevaluaciones']++;
+            if(AppointmentReevaluationService::pending($a)) $kpis['reevaluaciones_pendientes']++;
             $p = $positions[$a->id]; $totals['precio'] += $p['price_cents'];
             if ($p['authority'] === 'UNALLOCATED') { $totals['requieren_revision']++; continue; }
             $totals[$p['authority'] === 'LEGACY_SNAPSHOT' ? 'pagado_historico' : 'pagos_reales'] += $p['paid_cents'];
