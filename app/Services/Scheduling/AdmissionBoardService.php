@@ -187,7 +187,8 @@ class AdmissionBoardService
         }
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],
-            'EN_ESPERA'=>['LLAMANDO','EN_ATENCION'], 'LLAMANDO'=>['EN_ATENCION'],
+            'EN_ESPERA'=>$linked&&!$ownPhysician?['LLAMANDO']:['LLAMANDO','EN_ATENCION'],
+            'LLAMANDO'=>$linked&&!$ownPhysician?[]:['EN_ATENCION'],
             'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
         };
     }
