@@ -183,6 +183,7 @@ final class OperationalProcedureService
             DB::table('appointment_procedure_events')->insert(['appointment_id' => $id, 'actor_user_id' => $u->id,
                 'request_key' => $data['request_key'], 'action' => strtoupper($action), 'before' => json_encode($before),
                 'after' => json_encode($this->snapshot($id)), 'occurred_at' => now()]);
+            if($action==='selection')app(MedicalProcedureFollowupService::class)->synchronize($a,$u,$data['request_key']);
             DB::table('appointment_operations')->where('id', $op->id)->update(['appointment_id' => $id, 'updated_at' => now()]);
         }, 3);
     }

@@ -203,3 +203,10 @@ Route::middleware(['auth','scheduling-mvp',\App\Support\Scheduling\AdmissionAcce
             ->name('scheduling.mvp.admission.physician-reevaluation');
 });
 
+// Linked physicians only; no automatic administrator grant. Controller/service revalidate ClinicalAccess.
+Route::middleware(['auth','scheduling-mvp'])->prefix('scheduling-mvp/medical-followups')->group(function(){
+    Route::get('/',[\App\Http\Controllers\Scheduling\MedicalProcedureFollowupController::class,'index'])->name('scheduling.mvp.medical-followups');
+    Route::post('/feed',[\App\Http\Controllers\Scheduling\MedicalProcedureFollowupController::class,'feed'])->middleware('throttle:90,1')->name('scheduling.mvp.medical-followups.feed');
+    Route::get('/{followupId}',[\App\Http\Controllers\Scheduling\MedicalProcedureFollowupController::class,'show'])->whereNumber('followupId');
+    Route::patch('/{followupId}',[\App\Http\Controllers\Scheduling\MedicalProcedureFollowupController::class,'update'])->whereNumber('followupId')->middleware('throttle:30,1');
+});

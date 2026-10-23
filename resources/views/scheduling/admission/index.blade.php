@@ -17,7 +17,7 @@
         data-availability="{{ route('scheduling.mvp.availability') }}" data-agenda="{{ route('scheduling.mvp.agenda') }}">
         <div class="admission-commandbar">
             <header class="admission-heading"><div><p class="admission-eyebrow">ATENCIÓN Y SEGUIMIENTO</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
-                <div class="admission-actions">
+                <div class="admission-actions">@if(\App\Support\Scheduling\AdmissionRolePolicy::followups(auth()->user()))<a class="admission-btn" href="{{ route('scheduling.mvp.medical-followups') }}">Seguimiento de pacientes</a>@endif
                     <button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create" @if($clinicalOnly) hidden @endif>{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <form id="admission-filters" class="admission-filters" autocomplete="off">

@@ -13,12 +13,16 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
     public function test_additive_migration_preserves_legacy_appointment_tasks_and_events():void
     {
         $migration=require database_path('migrations/2026_10_16_020000_create_appointment_operational_procedures.php');
+        $followups=require database_path('migrations/2026_10_23_030000_create_medical_procedure_followups.php');
+        $followups->down(); // Empty extension depends on the legacy request table (MariaDB FK).
         $migration->down();
         app(AdmissionTaskService::class)->create($this->a->id,$this->admin,'Observación libre histórica ficticia',(string)Str::uuid());
         $tables=['appointments','appointment_events','appointment_admission_tasks','appointment_admission_task_events','payments','vouchers'];
         $before=[];foreach($tables as $t)$before[$t]=DB::table($t)->orderBy('id')->get()->toJson();
         $migration->up();
         Schema::table('appointment_requested_procedures',fn(\Illuminate\Database\Schema\Blueprint $t)=>$t->string('custom_label',500)->nullable());
+        (require database_path('migrations/2026_10_23_010000_add_procedure_request_identity.php'))->up();
+        $followups->up();
         foreach($tables as $t)$this->assertSame($before[$t],DB::table($t)->orderBy('id')->get()->toJson(),$t);
         $this->assertDatabaseCount('appointment_operational_reviews',0);$this->assertDatabaseCount('appointment_requested_procedures',0);
         $this->select()->assertOk();
