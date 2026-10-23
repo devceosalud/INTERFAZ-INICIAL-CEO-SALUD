@@ -1,0 +1,33 @@
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
+const {chromium}=require(path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const root=path.resolve(__dirname,'../..'),d=path.join(root,'storage/app/demo-pr70'),c=JSON.parse(fs.readFileSync(path.join(d,'private/config.json'))),f=JSON.parse(fs.readFileSync(path.join(d,'fixture.json'))),phase=process.argv[2]||'after',out=path.join(root,'storage/app/qa-corporate',phase),results=[],errors=[];
+assert.ok(['before','after'].includes(phase));assert.equal(c.url,'http://127.0.0.1:8000');assert.equal(c.schema,'ceosalud_demo_pr70');assert.equal(c.db_port,33343);fs.mkdirSync(out,{recursive:true});
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});try{
+ const ctx=await browser.newContext();await ctx.addInitScript(()=>Object.defineProperty(document,'hidden',{get:()=>true}));await ctx.route('**/*',async r=>{const url=new URL(r.request().url());if(url.origin!==c.url)return r.abort();
+  // Replay only the presentation of the verified main snapshot. APIs, fixtures,
+  // permissions and all application JavaScript remain real and unchanged.
+  if(phase==='before'&&url.pathname==='/css/scheduling/agenda-corporate.css')return r.fulfill({contentType:'text/css',body:''});
+  if(phase==='before'&&r.request().resourceType()==='document'&&url.pathname==='/scheduling-mvp/agenda'){
+   const response=await r.fetch();let body=await response.text();if(body.includes('agenda-overview-help')){body=body.replace(/<button[^>]*class="agenda-help agenda-overview-help"[^>]*>\?<\/button>/,'');body=body.replace(/(<header class="agenda-commandbar"[\s\S]*?<\/header>)/,'$1<p class="agenda-follow-up-notice" role="note">Seguimiento: pagos reales, pacientes presentes, cancelaciones y retiros efectivos. Las reservas privadas conservan su responsable autorizado.</p>');}return r.fulfill({response,body});
+  }return r.continue();});const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(c.url);await p.locator('[name=email]').fill(f.accounts.admin.email);await p.locator('[name=password]').fill(c.web_password);await Promise.all([p.waitForNavigation(),p.getByRole('button',{name:'Iniciar sesión',exact:true}).click()]);
+ for(const [width,height] of [[1366,668],[1440,800],[1536,744],[1920,928],[390,844]]){
+  await p.setViewportSize({width,height});
+  for(const agenda of ['agenda','admission'])for(const selected of [false,true]){
+   await p.goto(c.url+'/scheduling-mvp/'+agenda+'?fecha='+f.date+'&doctor_id=1'+(selected?'&appointment_id=3':''));
+   if(agenda==='agenda'){await p.waitForFunction(()=>Number(document.getElementById('agenda-total-busy')?.textContent)>0);if(selected)await p.waitForFunction(()=>document.getElementById('agenda-quick-patient-id')?.value==='3');}
+   else {await p.locator('tr[data-appointment-id]').first().waitFor({state:selected?'attached':'visible'});if(selected)await p.locator('#admission-detail .admission-consultation-reason').waitFor();}
+   await p.waitForLoadState('networkidle');await p.evaluate(()=>document.fonts.ready);
+   const m=await p.evaluate(({agenda,selected})=>{
+    const board=document.querySelector('main'),panel=document.querySelector(agenda==='agenda'?'#agenda-day-grid':'.admission-table-scroll'),r=panel.getBoundingClientRect(),head=panel.querySelector('thead,.agenda-row-head')?.getBoundingClientRect(),rowSelector=agenda==='agenda'?'.agenda-day-entry--appointment':'tr[data-appointment-id]',rows=[...panel.querySelectorAll(rowSelector)],visible=rows.filter(n=>{const b=n.getBoundingClientRect();return b.height>0&&b.top>=Math.max(r.top,head?.bottom||0)-1&&b.bottom<=Math.min(r.bottom,innerHeight)+1}),cols=[...document.querySelectorAll('.agenda-operations,.agenda-registration,.admission-detail')].filter(n=>getComputedStyle(n).display!=='none');
+    const colors=rows.map(n=>({id:n.dataset.appointmentId,color:getComputedStyle(n).backgroundColor,cells:[...n.querySelectorAll('td,.agenda-day-cell')].map(e=>getComputedStyle(e).backgroundColor)}));
+    return {font:getComputedStyle(board).fontFamily,visibleAppointments:visible.length,listTop:r.top,listHeight:r.height,overflow:document.documentElement.scrollWidth>innerWidth+1,panels:cols.map(n=>({class:n.className,width:n.getBoundingClientRect().width})),colors,kpis:[...document.querySelectorAll('.admission-kpi [data-kpi]')].map(n=>({key:n.dataset.kpi,text:n.textContent})),verticalDividers:rows[0]?[...rows[0].querySelectorAll('td,.agenda-day-cell')].map(n=>getComputedStyle(n).borderRightWidth):[]};
+   },{agenda,selected});
+   assert.equal(m.overflow,false,JSON.stringify({width,agenda,selected,...m}));results.push({width,height,agenda,selected,...m});await p.screenshot({path:path.join(out,agenda+'-'+width+'-'+(selected?'selected':'list')+'.png')});
+   if(phase==='after'&&width>=1366){const b=JSON.parse(fs.readFileSync(path.join(root,'storage/app/qa-corporate/before/result.json'))).results.find(r=>r.width===width&&r.agenda===agenda&&r.selected===selected);assert.ok(m.visibleAppointments>=b.visibleAppointments,'Densidad comparable: '+JSON.stringify({before:b.visibleAppointments,after:m.visibleAppointments,width,agenda,selected}));}
+   if(agenda==='admission'&&!selected&&width===1440){const row=p.locator('tr[data-appointment-id="3"]');await row.focus();await p.keyboard.press('Enter');await p.locator('#admission-detail .admission-consultation-reason').waitFor();assert.equal(await p.locator('#admission-back-list').isVisible(),true);await p.locator('#admission-back-list').click();}
+  }
+ }
+ assert.deepEqual(errors,[]);assert.equal(new Set(results.map(r=>r.font)).size,1);
+ if(phase==='after'){const before=JSON.parse(fs.readFileSync(path.join(root,'storage/app/qa-corporate/before/result.json')));for(const r of results){const b=before.results.find(b=>b.width===r.width&&b.agenda===r.agenda&&b.selected===r.selected);assert.deepEqual(r.colors,b.colors,'Mismos fondos completos, estados y celdas');assert.deepEqual(r.kpis,b.kpis,'Mismos KPI');}}
+ fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({result:'PASS',phase,views:results.length,errors,results},null,2));console.log(JSON.stringify({result:'PASS',phase,views:results.length,measurements:results.map(({width,height,agenda,selected,visibleAppointments,listTop})=>({width,height,agenda,selected,visibleAppointments,listTop}))}));
+}catch(e){fs.writeFileSync(path.join(out,'failure.txt'),e.stack);throw e;}finally{await browser.close();}})().catch(e=>{console.error(e.stack);process.exitCode=1});

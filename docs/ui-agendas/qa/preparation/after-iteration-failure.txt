@@ -1,0 +1,2 @@
+AssertionError [ERR_ASSERTION]: Densidad comparable: {"before":6,"after":5,"width":1440,"agenda":"admission","selected":false}
+    at C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\refinamiento-visual-agendas-20261023\tests\Support\agenda-corporate-browser.cjs:26:218

@@ -1,0 +1,51 @@
+{
+  "result": "PASS",
+  "base_main": "0ce2b9b54b67db4a681e0330697bce6dab38b881",
+  "unchanged_groups": [
+    {
+      "path": "app",
+      "unchanged": true
+    },
+    {
+      "path": "routes",
+      "unchanged": true
+    },
+    {
+      "path": "database",
+      "unchanged": true
+    },
+    {
+      "path": "config",
+      "unchanged": true
+    },
+    {
+      "path": "public/js",
+      "unchanged": true
+    },
+    {
+      "path": "composer.json",
+      "unchanged": true
+    },
+    {
+      "path": "composer.lock",
+      "unchanged": true
+    },
+    {
+      "path": "package.json",
+      "unchanged": true
+    },
+    {
+      "path": "package-lock.json",
+      "unchanged": true
+    }
+  ],
+  "production_files": [
+    "public/css/scheduling/agenda-corporate.css",
+    "resources/views/scheduling/agenda/index.blade.php",
+    "resources/views/scheduling/admission/index.blade.php",
+    "resources/views/scheduling/agenda/partials/toolbar.blade.php"
+  ],
+  "api_contract": "Mismo código de servicios, controladores, rutas y JavaScript; fondos y KPI comparados por navegador",
+  "schemas": "Sin migraciones ni cambios de esquema de producto",
+  "css_sha256": "cdb45ab0c0cd802bdd0beee25ea997327bab4a4f3c536493f5974b5254430092"
+}

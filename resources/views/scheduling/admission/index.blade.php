@@ -5,6 +5,7 @@
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-corporate.css') }}" rel="stylesheet">
 @endsection
 @section('body')
 <div id="main-wrapper" class="menu-toggle">

@@ -9,6 +9,7 @@
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/fullcalendar/css/main.min.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda.css') }}" rel="stylesheet">
     <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-layout.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-corporate.css') }}" rel="stylesheet">
 @endsection
 
 @section('body')
@@ -149,6 +150,9 @@
                                         @endif
                                     </span>
                                 @endforeach
+                                @if(auth()->user()->hasRole('ADMINISTRADOR'))
+                                    <button type="button" class="agenda-help agenda-overview-help" data-help-title="Sobre esta agenda" data-help-text="Seguimiento: pagos reales, pacientes presentes, cancelaciones y retiros efectivos. Las reservas privadas conservan su responsable autorizado." aria-expanded="false" aria-controls="agenda-help-pop" aria-label="Ayuda sobre esta agenda" title="Sobre esta agenda">?</button>
+                                @endif
                             </div>
                             <p class="agenda-center__foot" id="agenda-detail-hint"></p>
                             <details id="agenda-withdrawal-history" hidden><summary>Retiros previos · horario liberado <span id="agenda-withdrawal-count"></span></summary><div id="agenda-withdrawal-history-list"></div></details>

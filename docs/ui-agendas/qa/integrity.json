@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "scope": "ceosalud_demo_pr70",
+  "payments": 2,
+  "paid_sum": 120,
+  "vouchers": 2,
+  "F": {
+    "price": 100,
+    "paid": 60,
+    "balance": 40
+  },
+  "new_without_deposit": [
+    {
+      "appointment": 14,
+      "paid": 0,
+      "balance": 120,
+      "voucher": false
+    },
+    {
+      "appointment": 15,
+      "paid": 0,
+      "balance": 120,
+      "voucher": false
+    }
+  ],
+  "reschedule": "Una cita, dos eventos, duración conservada",
+  "duplicate_authorizations": 0
+}
