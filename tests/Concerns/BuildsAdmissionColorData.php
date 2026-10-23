@@ -18,7 +18,7 @@ trait BuildsAdmissionColorData
         $definitions=[
             'PROGRAMADA_SIN_PAGO'=>['PROGRAMADO','SIN_PAGO_REAL','#fdf0d9',[]],
             'PAGO_REAL'=>['PROGRAMADO','PAGO_REAL','#fff2a6',[]],
-            'EXONERADA'=>['PROGRAMADO','SIN_PAGO_REAL','#fdf0d9',['es_exonerado'=>true,'autorizado_por'=>'AUTORIZADOR FICTICIO','motivo_exoneracion'=>'EXONERACION FICTICIA','precio_programado'=>0,'saldo_pendiente'=>0]],
+            'EXONERADA'=>['PROGRAMADO','EXONERADA','#fff2a6',['es_exonerado'=>true,'autorizado_por'=>'AUTORIZADOR FICTICIO','motivo_exoneracion'=>'EXONERACION FICTICIA','precio_programado'=>0,'saldo_pendiente'=>0]],
             'LLEGADA'=>['PACIENTE_LLEGO','PRESENTE','#99f6e4',['hora_llegada'=>now()]],
             'EN_ESPERA'=>['EN_ESPERA','PRESENTE','#99f6e4',['hora_llegada'=>now()]],
             'EN_ATENCION'=>['EN_ATENCION','PRESENTE','#99f6e4',['hora_llegada'=>now(),'hora_atencion'=>now()]],

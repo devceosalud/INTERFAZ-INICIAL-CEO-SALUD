@@ -1,6 +1,6 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.AgendaAppointmentIndicators=api;}(typeof window!=='undefined'?window:globalThis,function(){
 'use strict';
-const priorities={DESACTIVADA:0,REEMBOLSO_SOLICITADO:1,SALIDA_REGISTRADA:2,LISTO_REEVALUACION:3,CONCILIAR_PAGO:4,CONFIRMADA_SIN_ADELANTO:4,TELECONSULTA:5,HERIDA:6,POSTOPERATORIO:7,ADICIONAL:8,FUERA_HORARIO:9};
+const priorities={DESACTIVADA:0,REEMBOLSO_SOLICITADO:1,SALIDA_REGISTRADA:2,LISTO_REEVALUACION:3,CONCILIAR_PAGO:4,EXONERADA:4,CONFIRMADA_SIN_ADELANTO:4,TELECONSULTA:5,HERIDA:6,POSTOPERATORIO:7,ADICIONAL:8,FUERA_HORARIO:9};
 function split(badges,limit=3){const unique=[...new Map((badges||[]).filter(b=>b.clave!=='PAGO_REAL').map(b=>[b.clave,b])).values()].sort((a,b)=>(priorities[a.clave]??20)-(priorities[b.clave]??20));return {visible:unique.filter((b,i)=>i<limit||(priorities[b.clave]??20)<5),extra:unique.filter((b,i)=>i>=limit&&(priorities[b.clave]??20)>=5)};}
 function append(doc,parent,badges,{limit=3,compact=false}={}){
  const {visible,extra}=split(badges,limit);if(!visible.length)return;const group=doc.createElement('span');group.className='agenda-indicators';

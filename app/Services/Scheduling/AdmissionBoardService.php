@@ -22,7 +22,7 @@ class AdmissionBoardService
         'LISTO_REEVALUACION'=>'Naranja · Listo para reevaluación', 'ATENDIDO'=>'Turquesa · Atendido', 'PRESENTE'=>'Turquesa · Paciente presente',
         'PAGO_REAL'=>'Amarillo · Pago real', 'CONFIRMADA_SIN_ADELANTO'=>'Amarillo · Confirmada sin adelanto', 'DESACTIVADA'=>'Rojo · Cancelada / retiro',
         'REEMBOLSO_SOLICITADO'=>'Rojo · Reembolso solicitado', 'SALIDA_REGISTRADA'=>'Salida registrada',
-        'CONCILIAR_PAGO'=>'Revisión financiera', 'RESERVA_SIN_PAGO'=>'Reserva sin pago', 'SIN_PAGO_REAL'=>'Sin pago real',
+        'CONCILIAR_PAGO'=>'Revisión financiera', 'EXONERADA'=>'Exonerada autorizada', 'RESERVA_SIN_PAGO'=>'Reserva sin pago', 'SIN_PAGO_REAL'=>'Sin pago real',
     ];
     private const COLUMNS = ['id','numero_cita','user_id','responsible_user_id','patient_id','doctor_id','service_id','site_id',
         'tipo_agendamiento','fecha_cita','hora_cita','estado_cita','estado_agenda','estado_pagado','precio_programado','total_pagado',

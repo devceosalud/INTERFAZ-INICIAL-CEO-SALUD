@@ -22,6 +22,7 @@ final class AgendaAppointmentPresentation
             && ($position['balance_cents']??0)>0
             && ($appointment->getAttribute('confirmed_without_deposit')
                 ?? $appointment->events()->where('event_type','CONFIRMACION_SIN_ADELANTO')->exists());
+        $exempt=(bool)$appointment->es_exonerado && OperationalText::trim((string)$appointment->autorizado_por)!=='';
         $refundRequested = ($position['refund_reserved_cents'] ?? 0) > 0;
         $ready = \App\Services\Scheduling\AppointmentReevaluationService::ready($appointment);
 
@@ -34,12 +35,14 @@ final class AgendaAppointmentPresentation
         elseif ($ready && (!$uncertain || \App\Services\Scheduling\AppointmentReevaluationService::directReady($appointment))) $key = 'LISTO_REEVALUACION';
         elseif ($appointment->estado_cita === 'ATENDIDO') $key = 'ATENDIDO';
         elseif ($present) $key = 'PRESENTE';
+        elseif ($exempt) $key = 'EXONERADA';
         elseif ($paid) $key = 'PAGO_REAL';
         elseif ($withoutDeposit) $key = 'CONFIRMADA_SIN_ADELANTO';
         else $key = ! $uncertain && $appointment->estado_agenda === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
+        if ($exempt) $badges[] = 'EXONERADA';
         if ($withoutDeposit) $badges[] = 'CONFIRMADA_SIN_ADELANTO';
         if (\App\Services\Scheduling\AppointmentReevaluationService::pending($appointment)) $badges[] = 'PENDIENTE_REEVALUACION';
         if ($ready) $badges[] = 'LISTO_REEVALUACION';
