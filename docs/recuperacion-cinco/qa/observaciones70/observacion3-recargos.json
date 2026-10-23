@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Revisión 110.00 con pago60 intacto",
+    "Revisión 108.00 con pago60 intacto",
+    "Revisión 120.00 con pago60 intacto",
+    "Tres revisiones sin guardar conservan precio100/pago60/saldo40"
+  ]
+}

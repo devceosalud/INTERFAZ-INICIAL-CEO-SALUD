@@ -41,13 +41,14 @@ class OperationalRegistrationController extends Controller
     public function economy(Request $request, int $appointmentId, AppointmentEconomicPosition $position)
     {
         $a = Appointment::visibleToOperationalUser($request->user())->whereKey($appointmentId)->firstOr(fn () => abort(404));
-        $canEdit = \App\Services\Scheduling\AppointmentManagement::canEdit($a,$request->user());
+        $canEdit = \App\Services\Scheduling\AppointmentManagement::canEditDetails($a,$request->user());
         return response()->json($position->publicPosition($a) + app(\App\Services\Scheduling\RegularReservationAvailability::class)->describe($a) + [
             'additional_conversion'=>app(\App\Services\Scheduling\AdditionalReservationConversion::class)->offer($a,$request->user()),
             'management'=>\App\Services\Scheduling\AppointmentManagement::payload($a,$request->user()),
             'can_confirm_additional'=>$a->tipo_agendamiento!=='ADICIONAL'||$request->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE_ADDITIONAL),
             'payment_review'=>app(\App\Services\Scheduling\AppointmentPaymentReview::class)->payload($a,$request->user()), 'can_record_indication'=>$request->user()->can(\App\Services\Scheduling\ReevaluationIndicationService::CAPABILITY)
-                && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit, 'es_exonerado' => (bool) $a->es_exonerado]
+                && $a->estado_cita==='ATENDIDO' && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true), 'can_edit_notes' => $canEdit,
+                'can_edit_flags'=>\App\Services\Scheduling\AppointmentManagement::canEdit($a,$request->user()), 'es_exonerado' => (bool) $a->es_exonerado]
             + $a->only(['motivo_consulta', 'observaciones', 'autorizado_por', 'is_postoperative', 'has_diabetic_wound', 'motivo_exoneracion',
                 'duration_slots','pricing_rule', 'referral_origin', 'discount_reason', 'catalog_price', 'discount_type', 'discount_value', 'discount_amount']));
     }

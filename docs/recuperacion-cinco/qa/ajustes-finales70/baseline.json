@@ -1,0 +1,26 @@
+{
+  "menu": [],
+  "focus": {
+    "selected": true,
+    "class": "is-selected",
+    "focused": false,
+    "outline": "rgb(189, 156, 57) solid 2px",
+    "top": 1723.328125,
+    "bottom": 1829.109375
+  },
+  "completeWithoutConfirmation": {
+    "row": "10:00\n22/10\n\t\nDEMO PR70 RECHAZA REEVALUACION PACIENTE FICTICIO D\nH.C. DEMO70-D · 99970004\nESCENARIO FICTICIO D: RECHAZA REEVALUACION. Solo pruebas locales.\n\tDR JULIO FICTICIO PR70\nCONSULTA FICTICIA JULIO\n\tEn consultorio\nHorario confirmado\nPendiente de pago\n\t0 de 3 realizadosPor confirmar · Pre-reevaluación sin confirmar",
+    "color": "rgb(153, 246, 228)",
+    "confirmVisible": false,
+    "kpis": {
+      "total": "12",
+      "por_llegar": "6",
+      "en_espera": "1",
+      "en_consultorio": "2",
+      "reevaluaciones_pendientes": "1",
+      "reevaluaciones": "0",
+      "atendidos": "1"
+    }
+  },
+  "ownership": "Inspección adicional de rutas y propietario requerida; reserva privada12 no visible a Admisión."
+}

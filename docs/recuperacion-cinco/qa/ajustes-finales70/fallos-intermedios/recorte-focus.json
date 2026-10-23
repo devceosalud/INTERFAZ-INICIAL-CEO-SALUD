@@ -1,0 +1,5 @@
+{
+  "steps": [],
+  "errors": [],
+  "message": "AssertionError [ERR_ASSERTION]: {\"focus\":true,\"visible\":false,\"row\":{\"x\":17.5,\"y\":844.875,\"width\":844.578125,\"height\":99.34375,\"top\":844.875,\"right\":862.078125,\"bottom\":944.21875,\"left\":17.5},\"scroll\":{\"x\":15,\"y\":350.5,\"width\":857.078125,\"height\":593.5,\"top\":350.5,\"right\":872.078125,\"bottom\":944,\"left\":15},\"outline\":\"3px\"}\n\nfalse !== true\n\n    at C:\\Users\\USUARIO\\Desktop\\ERPSISTEMAS\\SISTEMAS\\INTERFAZ-INICIAL-CEO-SALUD\\.worktrees\\integracion-cinco-main-20261022\\tests\\Support\\final-adjustments70-browser.cjs:11:532"
+}

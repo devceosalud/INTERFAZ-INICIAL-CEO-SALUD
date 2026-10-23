@@ -26,10 +26,9 @@ class OperationalDateTest extends TestCase
             $shown=$this->lifecycleAppointment($owner,$catalog,['fecha_cita'=>'2026-10-31']);
             $this->lifecycleAppointment($owner,$catalog,['fecha_cita'=>'2026-11-01']);
             foreach(['ADMISION'=>'/admissionist/appointment','ADMINISTRADOR'=>'/admin/appointment','RECEPCION'=>'/receptionist/appointment'] as $role=>$url){
-                $this->actingAs($this->agendaReader($role))->get($url)->assertOk()
-                    ->assertViewHas('operationalToday','2026-10-31')
-                    ->assertViewHas('appointments',fn($rows)=>$rows->pluck('id')->all()===[$shown->id])
-                    ->assertSee('data-operational-today="2026-10-31"',false);
+                $this->actingAs($this->agendaReader($role))->get($url)->assertRedirect(route('scheduling.mvp.agenda'));
+                $this->get(route('scheduling.mvp.agenda'))->assertOk()->assertViewHas('today','2026-10-31');
+                $this->postJson(route('scheduling.mvp.admission.feed'),['fecha'=>'2026-10-31','site_id'=>null])->assertOk()->assertJsonPath('total',1)->assertJsonPath('rows.0.id',$shown->id);
             }
         }finally{Carbon::setTestNow();}
     }

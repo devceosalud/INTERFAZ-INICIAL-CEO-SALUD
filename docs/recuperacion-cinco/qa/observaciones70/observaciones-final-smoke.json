@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "steps": [
+    "KPI y cola:1 por confirmar,0 confirmadas pendientes,1 otro procedimiento sin retorno",
+    "Cola real actualiza Por confirmar→Confirmada pendiente, sin mezclar otros procedimientos",
+    "Lista vacía ofrece restablecimiento efectivo sin recargar, incluyendo búsqueda",
+    "Referencia histórica roja completa y enlace contenido en móvil",
+    "Resumen definitivo conserva60 abonado/60 saldo actual y prevé50 con nuevo10"
+  ],
+  "errors": []
+}

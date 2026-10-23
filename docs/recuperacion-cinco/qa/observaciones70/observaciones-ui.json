@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Login julio",
+    "Login admision",
+    "Login admin",
+    "Login comercial",
+    "Login medico2",
+    "1: historia inline ordenada, sin acciones y enlace real",
+    "2: histórico60, nuevo0/10, saldo actual60 y previsto60/50",
+    "3: acceso directo al mismo editor, descuento100/60/40 auditado",
+    "3: economía bloqueada para admision",
+    "3: economía bloqueada para comercial",
+    "3: Julio conserva capacidad administrativa",
+    "5: Por confirmar→Confirmada pendiente, KPI estables",
+    "5: 3/3→naranja listo, cambio/toggle/reset sin navegación",
+    "1/5: vista móvil"
+  ],
+  "errors": []
+}

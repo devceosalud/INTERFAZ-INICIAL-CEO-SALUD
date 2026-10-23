@@ -1,0 +1,32 @@
+{
+  "sqlite": {
+    "tests": 1223,
+    "assertions": 11209,
+    "result": "PASS"
+  },
+  "mariadb": {
+    "tests": 1248,
+    "assertions": 11431,
+    "result": "PASS"
+  },
+  "javascript": {
+    "tests": 351,
+    "result": "PASS"
+  },
+  "chromium_colors": {
+    "result": "PASS",
+    "checks": 208
+  },
+  "chromium_flow": {
+    "result": "PASS",
+    "checks": 15
+  },
+  "chromium_economy": {
+    "result": "PASS",
+    "checks": 4
+  },
+  "browser_data": {
+    "result": "PASS",
+    "checks": 21
+  }
+}

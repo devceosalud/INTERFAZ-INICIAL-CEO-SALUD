@@ -50,7 +50,8 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
     }
     public function test_sensitive_operational_pages_do_not_load_session_replay_analytics():void
     {
-        foreach([route('scheduling.mvp.agenda'),route('scheduling.mvp.admission'),route('admissionit.appointment.index')] as $url){
+        $this->get(route('admissionit.appointment.index'))->assertRedirect(route('scheduling.mvp.agenda'));
+        foreach([route('scheduling.mvp.agenda'),route('scheduling.mvp.admission')] as $url){
             $this->get($url)->assertOk()->assertDontSee('www.clarity.ms')->assertDontSee('ywr4tcbik1');
         }
     }

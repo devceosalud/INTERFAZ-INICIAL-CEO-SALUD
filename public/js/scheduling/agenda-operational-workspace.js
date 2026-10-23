@@ -174,6 +174,7 @@
             const fields=[ui.reason,ui.note,postoperative,hasWound].filter(Boolean);
             const locks=fields.map(field=>field.disabled);
             const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,has_diabetic_wound:Boolean(hasWound?.checked),is_postoperative:Boolean(postoperative?.checked)});
+            if(hasWound?.disabled)delete notes.has_diabetic_wound;if(postoperative?.disabled)delete notes.is_postoperative;
             if(lastPosition?.management?.revision){notes.request_key=root.crypto.randomUUID();notes.expected_revision=lastPosition.management.revision;}
             fields.forEach(field=>field.disabled=true);
             setWorking(true); inlineStatus('notes', '');
@@ -197,7 +198,13 @@
             if (ui.method.value === 'EFECTIVO') { ui.operation.value = ''; }
             try { ui.balance.value = model.decimal(ui.waived.checked ? 0 : Math.max(0, balance - model.cents(ui.amount.value || '0'))); }
             catch (_) { ui.balance.value = 'Revisa el importe'; }
-            config.quoted?.({status:quoteReady?'ready':'pending',precio_programado:ui.price.value,advance:ui.amount.value,balance:ui.balance.value});
+            try {
+                const projection=model.paymentProjection(lastPosition||{pago_real:'0',saldo:model.decimal(ui.waived.checked?0:balance)},ui.amount.value);
+                if(byId('paid-label'))byId('paid-label').textContent=projection.paidLabel;
+                if(byId('current-balance'))byId('current-balance').value=projection.currentBalance??'Por conciliar';
+                ui.paid.value=projection.paid??'Por conciliar';ui.balance.value=projection.balance??'Por conciliar';
+                config.quoted?.({status:quoteReady?'ready':'pending',precio_programado:ui.price.value,...projection});
+            } catch (_) {config.quoted?.({status:'error',message:'Revisa el importe del nuevo adelanto.'});}
             if (config.changed) { config.changed(); }
         }
         function economy(p) {
@@ -266,7 +273,7 @@
                 if (catalogPrice) catalogPrice.value = result.catalog_price ?? result.precio_programado;
                 ui.price.value = result.precio_programado; ui.paid.value = '0.00';
                 quoteReady = true; quoteStatus.hidden = true; calculate();
-                config.quoted?.({...result,status:'ready',advance:ui.amount?.value||'0.00',balance:ui.balance?.value??result.precio_programado});
+                config.quoted?.({...result,status:'ready',paid:'0.00',currentBalance:ui.waived.checked?'0.00':result.precio_programado,advance:ui.amount?.value||'0.00',balance:ui.balance?.value??result.precio_programado});
             } catch (error) {
                 if (version !== quoteVersion || config.context()?.appointment_id) return;
                 quoteReady = false;
@@ -333,6 +340,10 @@
                 const data = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)));
                 if (version !== captureVersion || captureDirty) { return; }
                 const p = data.patient;
+                const canWrite=p.can_write!==false;
+                ['phone','phone-secondary','channel','medium'].forEach(name=>ui[name].disabled=!canWrite);
+                ui['save-patient'].disabled=!canWrite;
+                if(!canWrite)inlineStatus('patient',p.write_restriction||'Ficha de solo lectura.');
                 capturePatient = p;
                 if (config.patientLoaded) { config.patientLoaded(p); }
                 ui.phone.value = p.telefono || ''; document.getElementById('agenda-patient-phone-summary').textContent = p.telefono || 'Sin celular'; ui['phone-secondary'].value = p.telefono_secundario || '';
@@ -341,6 +352,12 @@
         }
         async function register(options) {
             if (working) { return; }
+            let withoutDepositReason=null;
+            if(options.withoutDeposit){
+                if(Number(ui.amount.value||0)>0||ui.proof.files?.length||ui.operation.value.trim()||ui.waived.checked){config.notice('Para confirmar sin adelanto, retira el nuevo pago, sus comprobantes y la exoneración.',true);return;}
+                if(!root.Swal)return;setWorking(true);
+                try{const answer=await root.Swal.fire({target:document.querySelector('.modal.show')||document.body,title:'Guardar y confirmar sin adelanto',allowOutsideClick:false,text:'El horario quedará confirmado, pagado S/ 0 y saldo completo pendiente. No es una exoneración. Indica el motivo de autorización.',input:'textarea',inputAttributes:{maxlength:'500'},inputValidator:v=>String(v||'').trim().length<5?'Indica un motivo de al menos 5 caracteres.':undefined,showCancelButton:true,confirmButtonText:'Guardar y confirmar sin adelanto',cancelButtonText:'Cancelar',focusCancel:true});if(!answer.isConfirmed)return;withoutDepositReason=String(answer.value).trim();}finally{setWorking(false);}
+            }
             const reasonText=ui.reason.value.replace(/^[\s\u200B\uFEFF]+|[\s\u200B\uFEFF]+$/g,'');
             const reasonError=byId('reason-error');
             if(!reasonText||reasonText.length>2000){
@@ -378,6 +395,7 @@
                     attendance_mode: byId('attendance-mode')?.value || 'PRESENCIAL', booking_type: options.bookingType, motivo_consulta: reasonText, observaciones: ui.note.value || null,
                     es_exonerado: ui.waived.checked, autorizado_por: ui.authorized.value || null,
                     payment: options.pending ? model.payment('0','EFECTIVO','','') : payment(), links: model.links(ui.links.value) });
+                if(options.withoutDeposit)Object.assign(payload,{without_deposit:true,confirmed:true,reason:withoutDepositReason,mode:'CONFIRM'});
                 payload.patient_id = options.patientId || null;
                 Object.assign(payload,medicalPriceInput());
                 payload.cita_doble=Boolean(doubleInput?.checked);
@@ -452,6 +470,7 @@
             if(key!==selectedKey){byId('patient-documents')?.replaceChildren();patientDocuments=null;patientDocumentId=null;patientDocumentDirty=false;clearReplacement();byId('document-kind').value='ADMINISTRATIVE';byId('document-label').value='Documento operativo';}
             if (key !== selectedKey) { await receipt.reset(); if(documentFile)documentFile.value=''; ui.reason.value='';ui.note.value='';ui.method.value='EFECTIVO';ui.operation.value='';ui.origin.value='';ui.price.value='0.00';ui.paid.value='0.00';ui.balance.value='0.00';quote=balance=0;quoteReady=false;pendingDocumentEdits.clear();++documentsVersion;++captureVersion;captureId=null;capturePatient=null;captureDirty=false; ['phone','phone-secondary','channel','medium'].forEach(name=>{ui[name].value='';}); if(doubleInput)doubleInput.checked=false; ['indication-file','indication-date','indication-reference'].forEach(name=>{if(byId(name))byId(name).value='';}); if(byId('indication-attested'))byId('indication-attested').checked=false; if(byId('indication-record-message'))byId('indication-record-message').textContent=''; automaticFree=false; indicationRecordKey=null; if(indicationInput) indicationInput.value=''; if(referredInput) referredInput.checked=false; if(referralOrigin) referralOrigin.value=''; if (discountType) discountType.value=''; if (discountValue) discountValue.value='0'; if (discountReason) discountReason.value=''; if (postoperative) postoperative.checked=false; if(hasWound)hasWound.checked=false; if (exemptionReason) exemptionReason.value=''; selectedKey = key; registrationKey = null; paymentKey = null; ui.amount.value = '0'; ui['payment-panel'].open = false; ui.proof.value = ''; ui.links.value = ''; ui.waived.checked = false; ui.authorized.value = ''; }
             const id = context?.appointment_id;
+            if(byId('edit-economy'))byId('edit-economy').hidden=true;
             if (byId('convert-additional')) byId('convert-additional').hidden=true;
             if (byId('conversion-reason')) byId('conversion-reason').hidden=true;
             conversionKey=null;
@@ -485,16 +504,19 @@
             try {
                 const p = await request(base + '/' + id + '/economy');
                 if (version!==detailsVersion || String(config.context()?.appointment_id) !== String(id)) { return; }
-                economy(p);if(doubleInput)doubleInput.checked=Number(p.duration_slots)===2; if(referredInput)referredInput.checked=Boolean(p.referral_origin);if(referralOrigin)referralOrigin.value=p.referral_origin||''; if(byId('indication-record-panel')) byId('indication-record-panel').hidden=!p.can_record_indication;
+                economy(p);
+                const editEconomy=byId('edit-economy');if(editEconomy){editEconomy.hidden=!p.management?.can_adjust_pricing;editEconomy.disabled=false;}
+                if(byId('economic-guidance'))byId('economic-guidance').textContent=p.management?.can_adjust_pricing?'Cita existente: utiliza Modificar economía de la cita para revisar tarifa, descuento o recargo, indicar el motivo y confirmar el cambio auditado.':'Cita existente: corregir tarifa, descuento o recargo requiere ADMINISTRADOR con autorización económica. Los pagos se registran por separado.';
+                if(doubleInput)doubleInput.checked=Number(p.duration_slots)===2; if(referredInput)referredInput.checked=Boolean(p.referral_origin);if(referralOrigin)referralOrigin.value=p.referral_origin||''; if(byId('indication-record-panel')) byId('indication-record-panel').hidden=!p.can_record_indication;
                 if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
                 if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
                 if (discountReason) discountReason.value=p.discount_reason || '';
-                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; } if(hasWound){hasWound.checked=Boolean(p.has_diabetic_wound);hasWound.disabled=!p.can_edit_notes;}
+                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!(p.can_edit_flags??p.can_edit_notes); } if(hasWound){hasWound.checked=Boolean(p.has_diabetic_wound);hasWound.disabled=!(p.can_edit_flags??p.can_edit_notes);}
                 if (exemptionReason) exemptionReason.value=p.motivo_exoneracion || '';
                 ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
                 ui.reason.disabled = !p.can_edit_notes; ui.note.disabled = !p.can_edit_notes;
                 ui['save-notes'].hidden = !p.can_edit_notes; ui['save-notes'].disabled = !p.can_edit_notes;
-                byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : 'Esta cita está en consulta: no tienes permiso para modificar sus notas.';
+                byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : p.management?.edit_restriction || 'Puedes consultar esta cita; no tienes permiso para modificar sus datos.';
                 ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado);captureClean(['reason','note','has-wound','postoperative','authorized','waived','indication','referred','referral-origin','discount-type','discount-value','discount-reason','exemption-reason','double','rate']);await documents(id);
             } catch (e) { config.notice(e.message, true); }
         }

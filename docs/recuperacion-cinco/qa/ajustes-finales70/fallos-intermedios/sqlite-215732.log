@@ -1,0 +1,350 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+.............................................................   61 / 1240 (  4%)
+................................F............................  122 / 1240 (  9%)
+.............................................................  183 / 1240 ( 14%)
+.............................................................  244 / 1240 ( 19%)
+.............................................................  305 / 1240 ( 24%)
+.............................................................  366 / 1240 ( 29%)
+............................F................................  427 / 1240 ( 34%)
+.................................................F...........  488 / 1240 ( 39%)
+.....FF.........................................F.......F....  549 / 1240 ( 44%)
+......................F....................F.................  610 / 1240 ( 49%)
+.............................................................  671 / 1240 ( 54%)
+.................FFF.........................................  732 / 1240 ( 59%)
+.............................................................  793 / 1240 ( 63%)
+...............................FFFFFFFFFFFF..................  854 / 1240 ( 68%)
+.............................................................  915 / 1240 ( 73%)
+............................FFFFFFFFFFFFFF...................  976 / 1240 ( 78%)
+...F......................................................... 1037 / 1240 ( 83%)
+............................................................. 1098 / 1240 ( 88%)
+............................................................. 1159 / 1240 ( 93%)
+............................................................. 1220 / 1240 ( 98%)
+...................F                                          1240 / 1240 (100%)
+
+Time: 03:47.195, Memory: 230.00 MB
+
+There were 40 failures:
+
+1) Tests\Feature\Baseline\ApplicationAndAuthenticationSmokeTest::test_authenticated_user_can_open_current_main_pages
+Expected response status code [200] but received 403.
+Failed asserting that 200 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Baseline\ApplicationAndAuthenticationSmokeTest.php:122
+
+2) Tests\Feature\Scheduling\AgendaDetailsTest::test_owned_notes_patch_keeps_economics_identity_and_count_with_audited_actor
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaDetailsTest.php:72
+
+3) Tests\Feature\Scheduling\AgendaSafeQuickEditTest::test_roles_need_effective_update_permission_and_hidden_reservations_stay_hidden
+Expected response status code [200] but received 403.
+Failed asserting that 200 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaSafeQuickEditTest.php:83
+
+4) Tests\Feature\Scheduling\AgendaSemaphorizationTest::test_explicit_wound_is_audited_idempotent_and_never_inferred_or_financial with data set #0 ('operational')
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaSemaphorizationTest.php:99
+
+5) Tests\Feature\Scheduling\AgendaSemaphorizationTest::test_explicit_wound_is_audited_idempotent_and_never_inferred_or_financial with data set #1 ('legacy')
+Expected response status code [403] but received 200.
+Failed asserting that 403 is identical to 200.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:113
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaSemaphorizationTest.php:99
+
+6) Tests\Feature\Scheduling\AgendaV2CompatibilityTest::test_sensitive_operational_pages_do_not_load_session_replay_analytics
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2CompatibilityTest.php:54
+
+7) Tests\Feature\Scheduling\AgendaV2PaymentsTest::test_legacy_create_is_forbidden_by_http_and_service_but_shared_reader_remains_available
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2PaymentsTest.php:96
+
+8) Tests\Feature\Scheduling\AgendaV2Round2Test::test_legacy_creation_is_denied_for_every_role_and_followup_remains_available
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2Round2Test.php:116
+
+9) Tests\Feature\Scheduling\AgendaV2Round4Test::test_mode_change_requires_confirmation_specific_role_and_before_care
+Expected response status code [200] but received 403.
+Failed asserting that 200 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2Round4Test.php:66
+
+10) Tests\Feature\Scheduling\AppointmentReaderPrivacyTest::test_legacy_lists_and_dashboard_apply_privacy_without_an_admin_override with data set #0 ('/admissionist/appointment', 'ADMISION')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AppointmentReaderPrivacyTest.php:122
+
+11) Tests\Feature\Scheduling\AppointmentReaderPrivacyTest::test_legacy_lists_and_dashboard_apply_privacy_without_an_admin_override with data set #1 ('/receptionist/appointment', 'RECEPCION')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AppointmentReaderPrivacyTest.php:122
+
+12) Tests\Feature\Scheduling\AppointmentReaderPrivacyTest::test_legacy_lists_and_dashboard_apply_privacy_without_an_admin_override with data set #2 ('/admin/appointment', 'ADMINISTRADOR')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AppointmentReaderPrivacyTest.php:122
+
+13) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #0 ('ADMINISTRADOR', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+14) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #1 ('ADMINISTRADOR', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+15) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #2 ('ADMISION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+16) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #3 ('ADMISION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+17) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #4 ('CAJA', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+18) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #5 ('CAJA', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+19) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #6 ('COMERCIAL', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+20) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #7 ('COMERCIAL', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+21) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #8 ('FACTURACION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+22) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #9 ('FACTURACION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+23) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #10 ('RECEPCION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+24) Tests\Feature\Scheduling\LegacyGuardsMvpFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #11 ('RECEPCION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+25) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #0 ('ADMINISTRADOR', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+26) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #1 ('ADMINISTRADOR', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+27) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #2 ('ADMISION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+28) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #3 ('ADMISION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+29) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #4 ('COMERCIAL', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+30) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #5 ('COMERCIAL', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+31) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #6 ('RECEPCION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+32) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #7 ('RECEPCION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+33) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #8 ('CAJA', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+34) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #9 ('CAJA', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+35) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #10 ('FACTURACION', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+36) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #11 ('FACTURACION', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+37) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #12 ('OTRO_VIGENTE', 'legacy')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+38) Tests\Feature\Scheduling\MvpAllRolesFlowTest::test_existing_and_unknown_mvp_profiles_complete_the_normal_flow_without_financial_bypass with data set #13 ('OTRO_VIGENTE', 'operational')
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\MvpAllRolesFlowTest.php:29
+
+39) Tests\Feature\Scheduling\OperationalDateTest::test_legacy_lists_and_calendar_share_lima_day_at_a_utc_month_boundary
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\OperationalDateTest.php:29
+
+40) Tests\Feature\ShellNavigationTest::test_existing_operational_modules_still_render_inside_the_shared_shell
+Expected response status code [200] but received 403.
+Failed asserting that 200 is identical to 403.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\ShellNavigationTest.php:115
+
+FAILURES!
+Tests: 1240, Assertions: 10479, Failures: 40.

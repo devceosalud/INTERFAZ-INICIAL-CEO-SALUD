@@ -92,7 +92,7 @@
                                                 <th>ID</th>
                                                 <th>NOMBRE</th>
                                                 <th>DNI</th><th>EMAIL</th><th>ACCESO</th>
-                                                <th>ROL</th>
+                                                <th>ROL</th><th>MÉDICO VINCULADO</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -111,6 +111,7 @@
                                                             <span class="badge light badge-success">sin rol</span>
                                                         @endforelse
                                                     </td>
+                                                    <td>{{ $user->doctor?->nombre ?? 'Sin vinculación' }}<br><a href="{{ route('admin.user.doctor-link',$user->id) }}">Vinculación médica e historial</a></td>
                                                     <td>
                                                         <button type="button" class="btn btn-outline-secondary user-access-state"
                                                             data-url="{{ route('admin.user.state',$user->id) }}" data-active="{{ $user->is_active ? '1' : '0' }}"

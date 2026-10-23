@@ -104,7 +104,7 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->postJson(route('scheduling.mvp.admission.feed'),[
             'fecha'=>now('America/Lima')->toDateString()
         ])->assertOk()->assertJsonPath('kpis.reevaluaciones_prependientes',1)
-            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',1)->assertJsonPath('kpis.reevaluaciones_confirmadas_pendientes',0);
         $this->finish($a)->assertUnprocessable();
         $this->indicate($a,'resume')->assertUnprocessable();
 
@@ -222,8 +222,11 @@ class JulioAdmissionReevaluationTest extends TestCase
             'procedure'=>'laboratory','completed'=>true
         ])->assertOk();
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
-            ->assertJsonPath('medical_reevaluation.ready',false)
-            ->assertJsonPath('medical_reevaluation.pre_pending',true);
+            ->assertJsonPath('medical_reevaluation.ready',true)
+            ->assertJsonPath('medical_reevaluation.awaiting_confirmation',true)
+            ->assertJsonPath('medical_reevaluation.pre_pending',false);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertUnprocessable();
         $operator=$this->agendaReader('ADMISION');
         $this->actingAs($operator);
         $this->confirm($a)->assertOk();
@@ -241,7 +244,8 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->actingAs($other);
         $this->indicate($a)->assertForbidden();
         $this->actingAs($u);
-        $u->forceFill(['doctor_id'=>999])->save();
+        $different=$this->createAppointmentCatalog()['doctor'];
+        $u->forceFill(['doctor_id'=>$different->id])->save();
         $this->indicate($a)->assertForbidden();
         $this->assertDatabaseMissing('appointment_events',[
             'appointment_id'=>$a->id,'event_type'=>AppointmentReevaluationService::MEDICAL_INDICATED

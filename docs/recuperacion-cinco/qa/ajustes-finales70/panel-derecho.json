@@ -1,0 +1,333 @@
+{
+  "result": "PASS",
+  "checks": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 928
+      },
+      "price": 120,
+      "previousPaid": 60,
+      "currentBalance": 60,
+      "newAdvancePreview": 10,
+      "resultingBalancePreview": 50,
+      "savedPayment": false,
+      "width": 420,
+      "nameStyle": "normal",
+      "fields": [
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 150,
+          "width": 150
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 1536,
+        "height": 744
+      },
+      "price": 120,
+      "previousPaid": 60,
+      "currentBalance": 60,
+      "newAdvancePreview": 10,
+      "resultingBalancePreview": 50,
+      "savedPayment": false,
+      "width": 360,
+      "nameStyle": "normal",
+      "fields": [
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 650
+      },
+      "price": 120,
+      "previousPaid": 60,
+      "currentBalance": 60,
+      "newAdvancePreview": 10,
+      "resultingBalancePreview": 50,
+      "savedPayment": false,
+      "width": 360,
+      "nameStyle": "normal",
+      "fields": [
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 120,
+          "width": 120
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "price": 120,
+      "previousPaid": 60,
+      "currentBalance": 60,
+      "newAdvancePreview": 10,
+      "resultingBalancePreview": 50,
+      "savedPayment": false,
+      "width": 370,
+      "nameStyle": "normal",
+      "fields": [
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        },
+        {
+          "style": "normal",
+          "scroll": 133,
+          "width": 133
+        },
+        {
+          "style": "normal",
+          "scroll": 0,
+          "width": 0
+        }
+      ],
+      "overflow": false
+    }
+  ]
+}

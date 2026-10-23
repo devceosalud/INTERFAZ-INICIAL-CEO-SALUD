@@ -1,0 +1,123 @@
+{
+  "result": "PASS",
+  "base_pr70": "d255da5b4403e854a1e7275120821a39480b1605",
+  "main": "a57b2d04e8302279be1c775c7e8bc913a170f209",
+  "phpunit": {
+    "sqlite": {
+      "tests": 1241,
+      "assertions": 11485
+    },
+    "mariadb": {
+      "tests": 1268,
+      "assertions": 11726
+    },
+    "targeted": {
+      "tests": 264,
+      "assertions": 2469
+    }
+  },
+  "javascript": 356,
+  "color_checks": 208,
+  "browser_integrated_checks": 22,
+  "browser_final_checks": 10,
+  "density": [
+    {
+      "agenda": "admission",
+      "width": 1920,
+      "height": 928,
+      "visible": 10,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "agenda",
+      "width": 1920,
+      "height": 928,
+      "visible": 8,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "admission",
+      "width": 1536,
+      "height": 744,
+      "visible": 5,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "agenda",
+      "width": 1536,
+      "height": 744,
+      "visible": 5,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "admission",
+      "width": 1366,
+      "height": 668,
+      "visible": 4,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "agenda",
+      "width": 1366,
+      "height": 668,
+      "visible": 4,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "admission",
+      "width": 1280,
+      "height": 650,
+      "visible": 4,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    },
+    {
+      "agenda": "agenda",
+      "width": 1280,
+      "height": 650,
+      "visible": 4,
+      "headerGap": 6,
+      "fontFamily": "poppins, sans-serif"
+    }
+  ],
+  "registration_widths": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 928
+      },
+      "width": 420,
+      "preview_balance": 50
+    },
+    {
+      "viewport": {
+        "width": 1536,
+        "height": 744
+      },
+      "width": 360,
+      "preview_balance": 50
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 650
+      },
+      "width": 360,
+      "preview_balance": 50
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "width": 370,
+      "preview_balance": 50
+    }
+  ]
+}

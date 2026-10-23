@@ -10,6 +10,14 @@
         return Number(m[1]) * 100 + Number((m[2] || '').padEnd(2, '0'));
     }
     function decimal(value) { return (value / 100).toFixed(2); }
+    function paymentProjection(position, amount='0') {
+        const unknown=position.fuente==='UNALLOCATED',historical=position.fuente==='LEGACY_SNAPSHOT';
+        return {paidLabel:historical?'Abonado histórico · no acredita pago':'Total pagado anteriormente',
+            paid:unknown?null:decimal(cents(position.pago_real||'0')),
+            currentBalance:unknown?null:decimal(cents(position.saldo||'0')),
+            advance:decimal(cents(amount||'0')),
+            balance:unknown?null:decimal(Math.max(0,cents(position.saldo||'0')-cents(amount||'0')))};
+    }
     function nonBlank(data) {
         return Object.fromEntries(Object.entries(data).filter(([, value]) => value != null && String(value).trim() !== ''));
     }
@@ -77,5 +85,5 @@
         const payment=String(c.financial_status?.label||c.estado_pagado||'SIN ESTADO FINANCIERO');
         return {agenda,care,payment,description:'Horario: '+agenda+' · Atención: '+care+' · Pago: '+payment};
     }
-    return { cents, decimal, payment, links, nonBlank, bookingReadiness, reservationReadiness, financialLabel, stateSummary };
+    return { cents, decimal, paymentProjection, payment, links, nonBlank, bookingReadiness, reservationReadiness, financialLabel, stateSummary };
 }));

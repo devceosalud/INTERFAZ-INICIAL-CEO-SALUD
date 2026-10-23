@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredAssets = ['FullCalendar', 'AgendaSelection', 'AgendaPatientLookup', 'AgendaPatientDraft',
         'AgendaAppointmentCreate', 'AgendaAppointmentActions', 'AgendaDayGrid', 'AgendaWeekEvent',
         'AgendaWeekBackground', 'AgendaWeekSlots', 'AgendaGuidance', 'AgendaOperationalForm',
-        'AgendaAppointmentIndicators', 'AgendaProfessionalPreferences', 'AgendaManageAppointment', 'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'PatientPhone'];
+        'AgendaAppointmentIndicators', 'AgendaProfessionalPreferences', 'AgendaManageAppointment', 'AgendaOperationalWorkspace', 'AgendaRefresh', 'AgendaPatientNavigation', 'AgendaWithdrawal', 'AgendaRescheduleHistory', 'PatientPhone'];
     if (requiredAssets.some(name => !window[name])) {
         board.querySelectorAll('button').forEach(button => { button.disabled = true; });
         const notice = document.getElementById('agenda-load-state');
@@ -234,7 +234,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if(retry)retry.hidden=result.status!=='error';
             const source=document.getElementById('agenda-quick-price-source');
             if(source){const labels={INSTITUTIONAL:'Precio institucional',INSTITUTIONAL_DEFAULT:'Precio institucional por defecto',PROFESSIONAL:'Precio del profesional',QUIROZ_REFERRAL:'Referido acreditado',CLINICAL_SAME_DAY:'Reevaluación acreditada del mismo día'};if(!ready)source.textContent='';else if(result.price_source)source.textContent=labels[result.price_source]||'Precio vigente';else if(state.selection?.appointment_id)source.textContent='Precio registrado de esta cita';}
-            for(const [id,value] of [['agenda-quick-advance',result.advance],['agenda-quick-balance',result.balance]]){const node=document.getElementById(id);if(node)node.textContent=ready&&value!==undefined?'S/ '+Number(value||0).toFixed(2):'—';}
+            for(const [id,value] of [['agenda-quick-advance',result.advance],['agenda-quick-paid',result.paid],['agenda-quick-current-balance',result.currentBalance],['agenda-quick-balance',result.balance]]){const node=document.getElementById(id);if(node)node.textContent=ready&&value!==undefined?(value===null?'Por conciliar':'S/ '+Number(value||0).toFixed(2)):'—';}
+            const paidLabel=document.getElementById('agenda-quick-paid-label');if(paidLabel)paidLabel.textContent=result.paidLabel||'Total pagado anteriormente';
         },
         quoteData: () => ({ doctor_id: state.selection?.doctor_id, service_id: el.serviceSelect.value,
             patient_id: el.quickPatientId.value || 0, fecha_cita: state.selection?.fecha }),
@@ -266,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
             result.hidden = false;
             const savedAppointment = payload.appointment || {};
             const extendedSaved = Number(savedAppointment.duration_slots) === 2;
-            const savedMessage = pendingSaved
+            const savedMessage = options?.withoutDeposit ? 'Cita confirmada sin adelanto. Pagado S/ 0; saldo completo pendiente.' : pendingSaved
                 ? (options && options.occupiedHour ? copy.reserveSavedHere : copy.reserveSaved)
                 : (kind === 'ADICIONAL' ? copy.additionalSaved : (kind === 'FUERA_HORARIO' ? copy.offHoursSaved : copy.appointmentSaved));
             const savedId = Number(savedAppointment.appointment_id);
@@ -306,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     const manageSelected=document.getElementById('agenda-manage-selected');
     manageSelected.addEventListener('click',()=>manageAppointment.open(state.selection));
+    document.getElementById('agenda-op-edit-economy')?.addEventListener('click',()=>manageAppointment.open(state.selection,'economy'));
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
         initialView: VIEW_TO_FULLCALENDAR.semana,
@@ -638,7 +640,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 state.legend[entry.clave] = entry;
             });
 
-            if(!options.preserveContext)clearSelection(true);
+            // Finish resetting the workspace before the day renderer selects
+            // a deep-linked appointment. A late reset otherwise paints the
+            // creation form over the existing appointment and its permissions.
+            if(!options.preserveContext)await clearSelection(true);
+            if(sequence!==feedSequence || snapshot!==feedUrl())return;
             renderRange();
             renderDoctors();
             renderMiniCalendar();
@@ -756,10 +762,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderMainSurface() {
         board.dataset.telemetryView = state.view;
-        window.AgendaRescheduleHistory.render(document,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),async item=>{
-            if(state.appointmentBusy||!await operationalWorkspace.prepareSelection(null))return;
-            state.revealAppointmentId=String(item.appointment_id);setDate(item.current_date);
-        });
+        window.AgendaRescheduleHistory.render(document,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),openRescheduled,loadOlderReschedules);
         const comparing = isComparing();
         el.comparison.hidden = !comparing;
         el.dayGrid.hidden = comparing || state.view !== 'dia';
@@ -776,6 +779,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         renderCalendar();
+    }
+
+    async function openRescheduled(item){
+        if(state.appointmentBusy||!await operationalWorkspace.prepareSelection(null))return;
+        // Navigate to the current authorized context, never synthesize a selectable historical appointment.
+        if(item.agenda_url){window.location.assign(item.agenda_url);return;}
+        state.revealAppointmentId=String(item.appointment_id);setView('dia');setDate(item.current_date);
+    }
+    async function loadOlderReschedules(cursor){
+        const snapshot=feedUrl();const url=new URL(snapshot);url.pathname=url.pathname.replace(/\/feed$/,'/reschedule-history');url.searchParams.set('history_before',cursor);
+        try{const response=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)throw new Error('No se pudo consultar el historial.');const older=await response.json();
+            if(snapshot!==feedUrl())return;const previous=state.payload.reprogramaciones;const seen=new Set(previous.items.map(i=>i.event_id));state.payload.reprogramaciones={...older,items:[...previous.items,...older.items.filter(i=>!seen.has(i.event_id))]};renderMainSurface();
+        }catch(e){showActionNotice(e.message,true);}
     }
 
     function filteredEvents() {
@@ -835,6 +851,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resizeCalendar();
         window.requestAnimationFrame(() => calendar.updateSize());
+        window.requestAnimationFrame(()=>window.AgendaRescheduleHistory.calendarIndicators(document,el.calendar,state.payload?.reprogramaciones,effectiveProfessionals().map(p=>String(p.id)),()=>{
+            const panel=document.getElementById('agenda-reschedule-history');panel.open=true;panel.scrollIntoView({block:'nearest'});panel.querySelector('summary')?.focus({preventScroll:true});
+        }));
     }
 
     function renderDayGrid() {
@@ -845,6 +864,7 @@ document.addEventListener('DOMContentLoaded', function () {
             gridMinutes: Number(board.dataset.gridMinutes || 20),
             professional: professional,
             events: events,
+            history: state.payload?.reprogramaciones?.items || [],
         });
 
         state.visibleEvents = events;
@@ -897,6 +917,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 node.appendChild(dayEntry(Object.assign({}, row, { context: row.availableContext }), null));
             }
         }
+
+        const history=window.AgendaRescheduleHistory.forRow(state.payload?.reprogramaciones?.items,effectiveProfessionals()[0]?.id,state.date,row.start,row.end);
+        for(const item of history)node.appendChild(window.AgendaRescheduleHistory.marker(document,item,row.availableContext?'available':row.kind,openRescheduled));
 
         const activate = function () {
             const target = node.querySelector('.agenda-day-entry') || node;
@@ -1610,6 +1633,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (pendingStart) {pendingStart.hidden=Boolean(state.selection?.appointment_id && !existingFree) || state.additionalMode || state.offHoursMode;
             pendingStart.disabled=state.selection?.appointment_id?!existingFree||!canCreateAppointments||state.appointmentBusy:!reservation.allowed;}
+        const withoutDeposit=document.getElementById('agenda-without-deposit-create');
+        if(withoutDeposit){withoutDeposit.hidden=Boolean(state.selection?.appointment_id);withoutDeposit.disabled=!reservation.allowed||Boolean(operationalWorkspace.readiness().waived)||Number(operationalWorkspace.readiness().amount||0)>0;}
         const reserveReason = document.getElementById('agenda-reservation-reason');
         reserveReason.hidden = reservation.allowed;
         reserveReason.textContent = reservation.reason;
@@ -1697,7 +1722,8 @@ document.addEventListener('DOMContentLoaded', function () {
         syncModalBooking();
         el.draftSave.textContent = state.selection?.tipo_contexto === 'cita_existente' ? 'Guardar ficha' : 'Guardar reserva';
         el.draftSaveSchedule.hidden = state.selection?.tipo_contexto === 'cita_existente';
-        el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
+        const draftWithoutDeposit=document.getElementById('agenda-draft-without-deposit');if(draftWithoutDeposit)draftWithoutDeposit.hidden=el.draftSaveSchedule.hidden;
+        el.patientModalTitle.textContent = draft.patientId ? (draft.can_write===false?'Consultar paciente':'Editar paciente') : 'Registrar paciente';
         showStoredDraftType(draft.tipo);
         el.draftType.value = draft.tipo;
         el.draftNumber.value = draft.numero;
@@ -1744,8 +1770,12 @@ document.addEventListener('DOMContentLoaded', function () {
             identityNote.hidden = identity.domain !== 'identity';
             identityNote.textContent = identity.domain === 'identity' ? identity.text : '';
         }
-        el.draftSave.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
+        const recordReadOnly=draft.can_write===false;
+        el.patientDraft.querySelectorAll('[id^="agenda-draft-"]').forEach(input=>{if(input.matches('input,select,textarea')&&!input.id.includes('context'))input.disabled=recordReadOnly;});
+        if(recordReadOnly)el.draftMessage.textContent=draft.write_restriction||'Ficha de solo lectura. Puedes agendar sin modificar la ficha desde el registro rápido.';
+        el.draftSave.disabled = recordReadOnly || !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = recordReadOnly || !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
+        if(draftWithoutDeposit)draftWithoutDeposit.disabled=recordReadOnly;
         el.draftSaveSchedule.textContent = 'Registrar pago y cita';
         window.requestAnimationFrame(function () {
             el.draftNombre.focus();
@@ -1781,8 +1811,8 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftHceNote.textContent = preview.message;
         el.draftRuc.hidden = state.draft.tipo !== 'RUC';
         el.draftReniec.hidden = !state.draft.reniecOffered;
-        el.draftSave.disabled = !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || state.draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSave.disabled = state.draft.can_write===false || !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = state.draft.can_write===false || !canWritePatients || !canCreateAppointments || state.draft.tipo === 'SIN DOCUMENTOS';
     }
 
     let closingPatientModal = false;
@@ -1841,7 +1871,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if(sourceKey!==operationalWorkspace.contextKey(state.selection)||String(el.quickPatientId.value)!==String(patientId))return;
-            paintDraft(draftModel.openExisting(payload.patient, scheduleSnapshot()));
+            paintDraft({...draftModel.openExisting(payload.patient, scheduleSnapshot()),can_write:payload.patient.can_write,write_restriction:payload.patient.write_restriction});
         } catch (error) {
             el.lookupResult.className = 'agenda-lookup__result is-conflict';
             el.lookupResult.textContent = 'No se pudo cargar la ficha del paciente.';
@@ -1850,8 +1880,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function savePatient(attachToSchedule) {
-        if (!state.draft || !canWritePatients || state.appointmentBusy) {
+    async function savePatient(attachToSchedule, withoutDeposit = false) {
+        if (!state.draft || state.draft.can_write===false || !canWritePatients || state.appointmentBusy) {
             return;
         }
 
@@ -1878,7 +1908,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (state.selection?.tipo_contexto !== 'cita_existente' || !state.draft.patientId) {
             if (!requireService(true)) { return; }
-            await createAppointment(!attachToSchedule, draftModel.toPayload(state.draft), state.draft.patientId || null);
+            await createAppointment(!attachToSchedule, draftModel.toPayload(state.draft), state.draft.patientId || null, withoutDeposit);
             return;
         }
 
@@ -1969,7 +1999,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function createAppointment(pending = false, patient = null, patientId = null) {
+    async function createAppointment(pending = false, patient = null, patientId = null, withoutDeposit = false) {
         if (state.appointmentBusy) { return; }
         if (!(state.additionalMode ? canAdditional : canCreateAppointments)) {
             showActionNotice(state.additionalMode ? window.AgendaGuidance.copy.permissionAdditional : window.AgendaGuidance.copy.permissionGeneric, true);
@@ -1978,7 +2008,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!requireService(Boolean(state.draft))) { return; }
         await operationalWorkspace.register({
-            pending: Boolean(pending),
+            pending: Boolean(pending), withoutDeposit,
             patient: patient, patientId: patientId || (patient ? null : el.quickPatientId.value),
             serviceId: el.serviceSelect.value, ownerId: el.responsibleSelect.value,
             bookingType: state.offHoursMode ? 'FUERA_HORARIO' : state.additionalMode ? 'ADICIONAL' : 'REGULAR',
@@ -2157,6 +2187,8 @@ document.addEventListener('DOMContentLoaded', function () {
     el.draftSaveSchedule.addEventListener('click', function () {
         savePatient(true);
     });
+    document.getElementById('agenda-draft-without-deposit')?.addEventListener('click',()=>savePatient(true,true));
+    document.getElementById('agenda-without-deposit-create')?.addEventListener('click',()=>{if(state.draft)savePatient(true,true);else createAppointment(false,null,null,true);});
     el.appointmentSubmit.addEventListener('click', () => {
         if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }
         else { createAppointment(false); }

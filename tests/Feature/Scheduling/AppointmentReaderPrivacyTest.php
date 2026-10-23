@@ -119,7 +119,22 @@ class AppointmentReaderPrivacyTest extends TestCase
             }
         }
 
-        $response = $this->actingAs($reader)->get($uri)->assertOk()
+        $this->actingAs($reader);
+        if ($uri!=='/dashboard') {
+            $this->get($uri)->assertRedirect(route('scheduling.mvp.agenda'));
+            $feed=$this->getJson($this->feed())->assertOk();
+            $ids=collect($feed->json('eventos'))->pluck('extendedProps.appointment_id')->filter()->all();
+            foreach([$legacy,$confirmed,$own] as $visible)$this->assertContains($visible->id,$ids);
+            if (\App\Support\Scheduling\AppointmentVisibility::operationalAdministrator($reader)) {
+                // Preserve the pre-existing global administrative reader of Agenda operativa.
+                $this->assertContains($hidden->id,$ids);
+            } else {
+                $this->assertNotContains($hidden->id,$ids);
+                $this->assertStringNotContainsString($hidden->patient->historia_clinica,$feed->getContent());
+            }
+            return;
+        }
+        $response = $this->get($uri)->assertOk()
             ->assertViewHas('appointments', fn ($rows) => $rows->pluck('id')->sort()->values()->all() === collect([$legacy->id, $confirmed->id, $own->id])->sort()->values()->all())
             ->assertViewHas('reevaluaciones', fn ($rows) => $rows->pluck('id')->all() === [$ownReview->id]);
         $response->assertDontSee($hidden->patient->historia_clinica);

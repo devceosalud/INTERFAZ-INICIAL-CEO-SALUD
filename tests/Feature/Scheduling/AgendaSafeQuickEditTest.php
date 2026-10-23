@@ -80,7 +80,8 @@ class AgendaSafeQuickEditTest extends \Tests\Support\AgendaV2TestCase
         $this->actingAs($this->commercial)->getJson($this->url())->assertNotFound();$this->patchJson($this->url(),$this->data())->assertForbidden();
         $this->a->update(['estado_agenda'=>'CONFIRMADA']);$this->getJson($this->url())->assertOk()->assertJsonPath('blockers.0.code','PERMISSION');
         $this->actingAs($this->admission)->patchJson($this->url(),$this->data())->assertForbidden();
-        $this->admission->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));$this->patchJson($this->url(),$this->data())->assertOk();
+        $this->admission->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));$this->patchJson($this->url(),$this->data())->assertForbidden();
+        $this->a->update(['user_id'=>$this->admission->id]);$this->patchJson($this->url(),$this->data())->assertOk();
         $this->admin->forceFill(['is_active'=>false])->save();$this->actingAs($this->admin)->getJson($this->url())->assertUnauthorized();
     }
     public function test_unallocated_bank_reference_or_inconsistent_financial_snapshot_is_not_transferred():void

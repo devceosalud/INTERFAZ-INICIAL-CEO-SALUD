@@ -31,6 +31,7 @@ test('Guardar reserva y Confirmar envían rutas distintas; submit implícito no 
     };
     const calls = [];
     const context = {
+        document:{getElementById:()=>null},
         el,
         state:{draft:{open:true}},
         savePatient:async(flag)=>calls.push(flag),

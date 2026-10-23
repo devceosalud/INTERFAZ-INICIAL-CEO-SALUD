@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Login y acceso por rol: admin",
+    "Julio local ID2 redirige exclusivamente a Admisión",
+    "Login y acceso por rol: julio",
+    "Login y acceso por rol: admision",
+    "Login y acceso por rol: comercial",
+    "Login y acceso por rol: medico2",
+    "Login y acceso por rol: caja",
+    "Login y acceso por rol: restringido",
+    "Segundo médico no firma por Julio",
+    "Reservas privadas permanecen ocultas para otros trabajadores",
+    "Color inicial T: #99f6e4",
+    "Color inicial N: #ffc28a",
+    "Color inicial R: #fecaca",
+    "Color inicial Y: #fff2a6",
+    "A: llegada, consulta normal, finalización y salida completas",
+    "B: recorrido A–H por interfaz, 0/3 a 3/3 y bloqueo de finalización prematura",
+    "C: excepción por interfaz, pendientes conservados y salida",
+    "D: excepción por interfaz, pendientes conservados y salida",
+    "F: precio100, pago60 y saldo40 tras revisión y confirmación ADMINISTRADOR",
+    "G: excepción amarilla sin pagos ni comprobantes nuevos",
+    "E: referencia 10:20 → 14:00 y enlace a cita vigente",
+    "E: segunda reprogramación conserva cita, duración e historial"
+  ],
+  "errors": []
+}

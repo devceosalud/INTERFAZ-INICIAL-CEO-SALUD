@@ -29,6 +29,9 @@ final class SchedulingCapability
 
     public const VERIFY_PAYMENT = 'appointment.payment.verify';
 
+    public const EDIT_PAYMENT = 'appointment.payment.correction.edit';
+    public const EDIT_PRICING = 'appointment.pricing.adjust.edit';
+
     public const OVERRIDE_DOWN_PAYMENT = 'appointment.down_payment.override';
 
     public const REQUEST_ZERO_COST = 'appointment.zero_cost.request';
@@ -60,6 +63,8 @@ final class SchedulingCapability
             self::EXTEND_HOLD,
             self::SUBMIT_PAYMENT,
             self::VERIFY_PAYMENT,
+            self::EDIT_PAYMENT,
+            self::EDIT_PRICING,
             self::OVERRIDE_DOWN_PAYMENT,
             self::REQUEST_ZERO_COST,
             self::APPROVE_ZERO_COST,

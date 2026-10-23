@@ -196,7 +196,8 @@ class OperationalPatientController extends Controller
         $patient = Patient::with('responsibles')->findOrFail($patientId);
         return response()->json([
             'patient' => self::patientPayload($patient) + ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient)],
-            'can_write' => PatientWriteAccess::allows($request->user()),
+            'can_write' => PatientWriteAccess::allowsRecord($request->user(),$patient,$appointment),
+            'write_restriction' => PatientWriteAccess::allowsRecord($request->user(),$patient,$appointment) ? null : PatientWriteAccess::OWNERSHIP_MESSAGE,
             'html' => view('patients.partials.record-fields', [
                 'documentTypes' => self::DOCUMENT_TYPES, 'civilStatuses' => self::CIVIL_STATUSES,
                 'relationships' => self::RELATIONSHIPS, 'phonePrefixes' => PatientPhone::PREFIXES,
@@ -207,12 +208,22 @@ class OperationalPatientController extends Controller
         ]);
     }
 
-    public function show(int $patientId): JsonResponse
+    public function show(Request $request, int $patientId): JsonResponse
     {
+        $request->validate(['appointment_id'=>'sometimes|required|integer|min:1']);
+        $appointment=null;
+        if ($request->has('appointment_id')) {
+            abort_unless($request->user()->is_active && config('scheduling.enabled')
+                && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
+                && $request->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW),403);
+            $appointment=Appointment::visibleToOperationalUser($request->user())->whereKey($request->integer('appointment_id'))
+                ->where('patient_id',$patientId)->firstOr(fn()=>abort(404));
+        }
         // Resolve only after auth/role middleware has run. This avoids exposing a
         // 403/404 difference that could be used to enumerate patient identifiers.
         $patient = Patient::query()->with('responsibles')->findOrFail($patientId, [
             'id',
+            'user_id',
             'historia_clinica',
             'tipo_identificacion',
             'numero_identidad',
@@ -234,8 +245,10 @@ class OperationalPatientController extends Controller
             'estado',
         ]);
 
+        $canWrite=PatientWriteAccess::allowsRecord($request->user(),$patient,$appointment);
         return response()->json([
-            'patient' => self::patientPayload($patient) + ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient)],
+            'patient' => array_replace(self::patientPayload($patient), ['revision' => \App\Services\Patients\PatientRecordRevision::for($patient),
+                'can_write'=>$canWrite,'write_restriction'=>$canWrite?null:PatientWriteAccess::OWNERSHIP_MESSAGE]),
             'encounter' => null,
         ]);
     }
@@ -246,6 +259,8 @@ class OperationalPatientController extends Controller
     public static function patientPayload(Patient $patient): array
     {
         return [
+            'can_write' => PatientWriteAccess::allowsRecord(auth()->user(),$patient),
+            'write_restriction' => PatientWriteAccess::allowsRecord(auth()->user(),$patient) ? null : PatientWriteAccess::OWNERSHIP_MESSAGE,
             'id' => (int) $patient->id,
             'patient_id' => (int) $patient->id,
             'historia_clinica' => $patient->historia_clinica,

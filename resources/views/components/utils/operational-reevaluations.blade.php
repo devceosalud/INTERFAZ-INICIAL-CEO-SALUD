@@ -6,6 +6,8 @@
     <div class="operational-review-tabs" role="tablist" aria-label="Estado de reevaluaciones">
         <button type="button" role="tab" data-review-group="active" aria-selected="true">Listos <span data-review-count="active">0</span></button>
         <button type="button" role="tab" data-review-group="pending" aria-selected="false" tabindex="-1">Pendientes <span data-review-count="pending">0</span></button>
+        <button type="button" role="tab" data-review-group="pre_pending" aria-selected="false" tabindex="-1">Por confirmar <span data-review-count="pre_pending">0</span></button>
+        <button type="button" role="tab" data-review-group="other_procedures" aria-selected="false" tabindex="-1">Otros procedimientos <span data-review-count="other_procedures">0</span></button>
         <button type="button" role="tab" data-review-group="history" aria-selected="false" tabindex="-1">Retirados / inactivos <span data-review-count="history">0</span></button>
     </div>
     <p class="operational-review-update" role="status" aria-live="polite">Consultando reevaluaciones…</p><div data-review-rows role="tabpanel"></div>

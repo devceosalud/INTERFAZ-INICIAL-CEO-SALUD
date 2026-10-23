@@ -33,8 +33,9 @@
 
         <div class="agenda-payment-totals">
             <label class="agenda-field"><span>Precio de consulta</span><input id="agenda-op-price" class="agenda-field__input" value="0.00" readonly></label>
-            <label class="agenda-field"><span>Ya abonado</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
-            <label class="agenda-field"><span>Saldo pendiente</span><input id="agenda-op-balance" class="agenda-field__input" value="0.00" readonly></label>
+            <label class="agenda-field"><span id="agenda-op-paid-label">Total pagado anteriormente</span><input id="agenda-op-paid" class="agenda-field__input" value="0.00" readonly></label>
+            <label class="agenda-field"><span>Saldo pendiente actual</span><input id="agenda-op-current-balance" class="agenda-field__input" value="0.00" readonly></label>
+            <label class="agenda-field"><span>Saldo resultante con el nuevo adelanto</span><input id="agenda-op-balance" class="agenda-field__input" value="0.00" readonly></label>
         </div>
         <section id="agenda-op-advanced" class="agenda-payment-advanced">
             <h3 class="agenda-section-title">Tarifas y descuentos</h3>
@@ -45,12 +46,12 @@
                 <label class="agenda-field"><span>Referencia de descuento · opcional</span><input id="agenda-op-discount-reason" class="agenda-field__input" maxlength="500" @disabled(!$canCreateAppointments)></label>
                 <label class="agenda-field"><span>Precio antes de descuento</span><input id="agenda-op-catalog-price" class="agenda-field__input" readonly value="0.00"></label>
             </div>
-            <p class="agenda-guidance">Las tarifas y descuentos se cotizan al crear la cita. Su modificación posterior requiere autorización económica, independientemente del color.</p>
+            <p id="agenda-op-economic-guidance" class="agenda-guidance">Las tarifas y descuentos se cotizan al crear la cita. Su modificación posterior requiere autorización económica, independientemente del color.</p>
         </section>
         <p id="agenda-op-quote-status" class="agenda-field-error" role="status" hidden></p>
         <button type="button" id="agenda-op-quote-retry" class="agenda-btn" hidden>Reintentar cotización</button>
         <div class="agenda-payment-entry">
-            <label class="agenda-field"><span>Importe de este adelanto (S/)</span><input id="agenda-op-amount" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canSubmitPayment)></label>
+            <label class="agenda-field"><span>Nuevo adelanto en formulario (S/)</span><input id="agenda-op-amount" class="agenda-field__input" type="number" min="0" step="0.01" value="0" @disabled(!$canSubmitPayment)></label>
             <label class="agenda-field"><span>Medio de pago</span><select id="agenda-op-method" class="agenda-field__input" @disabled(!$canSubmitPayment)>@foreach(\App\Services\Billing\VoucherPaymentRecorder::METHODS as $method)<option value="{{ $method }}">{{ $method }}</option>@endforeach</select></label>
             <label class="agenda-field agenda-tip" id="agenda-op-operation-tip"><span>N.º de operación</span><input id="agenda-op-operation" class="agenda-field__input" maxlength="120" disabled></label>
             <label class="agenda-field"><span>Banco / billetera</span><input id="agenda-op-origin" class="agenda-field__input" maxlength="120" placeholder="Yape, Plin, BCP…" @disabled(!$canSubmitPayment)></label>
@@ -72,7 +73,7 @@
             <div id="agenda-op-receipt-review"></div>
         </section>
         </details>
-        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Para confirmar se requiere un pago real positivo o exoneración autorizada.</p>
+        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Confirmar con pago requiere un pago real positivo. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) La opción Guardar y confirmar sin adelanto exige motivo y conserva el saldo pendiente. @endif La exoneración utiliza su autorización independiente.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
         @unless($canSubmitPayment)<p class="agenda-payment-help">No tienes autorización para registrar adelantos. Puedes guardar una reserva sin pago si tu perfil lo permite.</p>@endunless
         <div class="agenda-payment-actions">

@@ -25,7 +25,8 @@ class ApplicationAndAuthenticationSmokeTest extends TestCase
             $this->assertSame('mysql',config('database.default'));
             $this->assertSame('ceosalud_qa_agenda_v2_suite',config('database.connections.mysql.database'));
             $this->assertSame('127.0.0.1',config('database.connections.mysql.host'));
-            $this->assertSame(33324,(int)config('database.connections.mysql.port'));
+            $recovery=getenv('CEO_RECOVERY_LOCAL_QA')==='OWNED_LOOPBACK_33342' && PHP_OS_FAMILY==='Windows';
+            $this->assertSame($recovery?33342:33324,(int)config('database.connections.mysql.port'));
         } else {
             $this->assertSame('sqlite', config('database.default'));
             $this->assertSame(':memory:', config('database.connections.sqlite.database'));
@@ -118,7 +119,7 @@ class ApplicationAndAuthenticationSmokeTest extends TestCase
 
         $this->actingAs($admission)->get('/dashboard')->assertOk();
         $this->actingAs($admission)->get('/admissionist/patient')->assertOk();
-        $this->actingAs($admission)->get('/admissionist/appointment')->assertOk();
+        $this->actingAs($admission)->get('/admissionist/appointment')->assertForbidden(); // No effective Agenda capabilities in this baseline fixture.
 
         $this->actingAs($reception)->get('/dashboard')->assertOk();
         $this->actingAs($reception)->get('/receptionist/sales')->assertOk();

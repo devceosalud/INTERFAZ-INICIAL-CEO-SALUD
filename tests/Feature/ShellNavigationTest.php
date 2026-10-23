@@ -107,7 +107,6 @@ class ShellNavigationTest extends TestCase
             '/dashboard',
             '/admissionist/patient',
             '/admissionist/responsible',
-            '/admissionist/appointment',
             '/admissionist/doctor-schedule',
         ] as $uri) {
             $this->actingAs($user)
@@ -115,5 +114,6 @@ class ShellNavigationTest extends TestCase
                 ->assertOk()
                 ->assertSee('id="erp-shell-navigation"', false);
         }
+        $this->get('/admissionist/appointment')->assertForbidden(); // Retired page cannot bypass Agenda access.
     }
 }

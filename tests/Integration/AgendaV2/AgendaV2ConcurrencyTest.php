@@ -66,6 +66,26 @@ class AgendaV2ConcurrencyTest extends TestCase
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('vouchers',1);
         $this->assertDatabaseCount('appointment_operations',1);$this->assertEquals(30,Payment::sum('monto'));
     }
+    public function test_simultaneous_creation_without_deposit_replays_once_without_payment_or_ticket():void
+    {
+        $r=$this->registration($this->createPatient($this->actor)->id);
+        $r['payload']=array_replace($r['payload'],['mode'=>'CONFIRM','without_deposit'=>true,'confirmed'=>true,
+            'reason'=>'FICTICIO: confirmación sin adelanto concurrente','payment'=>['amount'=>'0']]);
+        $this->assertSame([201,201],$this->race([$r,$r]));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
+        $this->assertSame('CONFIRMADA',Appointment::sole()->estado_agenda);
+        $this->assertSame(1,Appointment::sole()->events()->where('event_type','CONFIRMACION_SIN_ADELANTO')->count());
+    }
+    public function test_simultaneous_distinct_no_deposit_bookings_have_one_winner_and_no_orphan_authorization():void
+    {
+        $a=$this->registration($this->createPatient($this->actor)->id);
+        $b=$this->registration($this->createPatient($this->actor,['numero_identidad'=>'99970888','historia_clinica'=>'QA70-CONCURRENTE'])->id);
+        foreach([&$a,&$b] as &$r)$r['payload']=array_replace($r['payload'],['mode'=>'CONFIRM','without_deposit'=>true,
+            'confirmed'=>true,'reason'=>'FICTICIO: reservar el mismo intervalo sin adelanto','payment'=>['amount'=>'0']]);unset($r);
+        $this->assertSame([201,409],$this->race([$a,$b]));
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);
+        $this->assertSame(1,\App\Models\AppointmentEvent::where('event_type','CONFIRMACION_SIN_ADELANTO')->count());
+    }
     public function test_simultaneous_procedure_updates_reject_stale_version_without_losing_a_completion():void
     {
         $a=$this->lifecycleAppointment($this->actor,$this->catalog,['fecha_cita'=>now('America/Lima')->toDateString()]);

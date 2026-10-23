@@ -26,15 +26,16 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         }
         $this->assertDatabaseCount('appointment_procedure_events',1);
     }
-    public function test_admission_completes_only_requested_procedures_and_commercial_is_read_only(): void
+    public function test_admission_and_commercial_complete_only_requested_procedures_without_general_update(): void
     {
         $this->select()->assertOk();$this->actingAs($this->admission);
         $this->complete()->assertOk();
         $this->detail()->assertOk()->assertJsonPath('procedures.items.0.completed',true)->assertJsonPath('procedures.items.1.completed',false);
         $this->complete('mri')->assertNotFound();
-        $this->actingAs($this->commercial);$this->complete('laboratory')->assertForbidden();
-        $this->change('send',['confirmed'=>true,'reason'=>'Pendiente ficticio'])->assertForbidden();
-        $this->assertDatabaseCount('appointment_procedure_events',2);
+        $this->actingAs($this->commercial);$this->complete('laboratory')->assertOk();
+        $this->change('send',['confirmed'=>true,'reason'=>'Retorno autorizado'])->assertOk();
+        $this->assertFalse($this->commercial->can(C::UPDATE));
+        $this->assertDatabaseCount('appointment_procedure_events',4);
     }
     public function test_all_done_auto_queue_is_orange_in_both_agendas_without_financial_or_clinical_writes(): void
     {
@@ -86,9 +87,9 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
     public function test_request_edit_and_unchecking_recalculate_automatic_queue_and_preserve_audit(): void
     {
         $this->select()->assertOk();$this->complete()->assertOk();$this->complete('laboratory')->assertOk();
-        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
+        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.other_procedures.0.review.status','NOT_READY')->assertJsonCount(0,'groups.pending');
         $this->select(['radiography'])->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','READY');
-        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
+        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.other_procedures.0.review.status','NOT_READY')->assertJsonCount(0,'groups.pending');
         $event=DB::table('appointment_procedure_events')->orderByDesc('id')->first();
         $this->assertStringContainsString('AUTOMATIC',$event->before);
         $this->assertDatabaseCount('appointment_requested_procedures',3);
@@ -117,7 +118,7 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->select(['radiography'])->assertOk();$this->complete()->assertOk();
         $r=$this->queue()->assertOk();
         foreach(['diagnostico','telefono','numero_identidad','precio_programado','payment','voucher','historia_clinica','private_path'] as $secret)$this->assertStringNotContainsString($secret,$r->getContent());
-        $this->actingAs($this->commercial);$this->detail()->assertOk()->assertJsonPath('procedures.can_complete',false);
+        $this->actingAs($this->commercial);$this->detail()->assertOk()->assertJsonPath('procedures.can_complete',true);
         $this->commercial->revokePermissionTo(C::VIEW);$this->queue()->assertForbidden();
         $this->change('selection',['procedures'=>['radiography']],0,null,999999)->assertForbidden();
     }
