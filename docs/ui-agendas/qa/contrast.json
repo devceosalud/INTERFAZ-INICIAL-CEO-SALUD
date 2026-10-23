@@ -1,0 +1,877 @@
+{
+  "result": "PASS",
+  "checks": 145,
+  "minimum": 4.874075128635882,
+  "results": [
+    {
+      "id": "1",
+      "class": "",
+      "text": "09:00",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "1",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 ATENCION NORMAL PACIENTE FICTICIO A",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "1",
+      "class": "",
+      "text": "H.C. DEMO70-A · 99970001",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO A: ATENCION NORMAL. Solo pruebas locales.",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "1",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "1",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "1",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "2",
+      "class": "",
+      "text": "09:20",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "2",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 REEVALUACION EXAMENES PACIENTE FICTICIO B",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "2",
+      "class": "",
+      "text": "H.C. DEMO70-B · 99970002",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO B: REEVALUACION EXAMENES. Solo pruebas locales.",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "2",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "2",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "2",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "3",
+      "class": "",
+      "text": "09:40",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "3",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 REEVALUACION MANUAL PACIENTE FICTICIO C",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "3",
+      "class": "",
+      "text": "H.C. DEMO70-C · 99970003",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO C: REEVALUACION MANUAL. Solo pruebas locales.",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "3",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "En consultorio",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "3",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "3",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Exámenes pendientes",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "4",
+      "class": "",
+      "text": "10:00",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "4",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 RECHAZA REEVALUACION PACIENTE FICTICIO D",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "4",
+      "class": "",
+      "text": "H.C. DEMO70-D · 99970004",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO D: RECHAZA REEVALUACION. Solo pruebas locales.",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "4",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "En consultorio",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "4",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "4",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Exámenes pendientes",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "6",
+      "class": "",
+      "text": "10:40",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "6",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 CORRECCION ECONOMICA PACIENTE FICTICIO F",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "6",
+      "class": "",
+      "text": "H.C. DEMO70-F · 99970006",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO F: CORRECCION ECONOMICA. Solo pruebas locales.",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "6",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "6",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "6",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "7",
+      "class": "",
+      "text": "11:00",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "7",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 SIN ADELANTO PACIENTE FICTICIO G",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "7",
+      "class": "",
+      "text": "H.C. DEMO70-G · 99970007",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO G: SIN ADELANTO. Solo pruebas locales.",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "7",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "7",
+      "class": "admission-booking-indicator",
+      "text": "Reserva pendiente · horario sin confirmar",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "7",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "8",
+      "class": "",
+      "text": "11:20",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "8",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 COLOR TURQUESA PRESENTE PACIENTE FICTICIO T",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "8",
+      "class": "",
+      "text": "H.C. DEMO70-T · 99970008",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO T: COLOR TURQUESA PRESENTE. Solo pruebas locales.",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 9.427464069002301
+    },
+    {
+      "id": "8",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "En espera",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "8",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.087995039931727
+    },
+    {
+      "id": "8",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "9",
+      "class": "",
+      "text": "11:40",
+      "contrast": 7.547668459557063
+    },
+    {
+      "id": "9",
+      "class": "",
+      "text": "22/10",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 COLOR NARANJA LISTO PACIENTE FICTICIO N",
+      "contrast": 7.547668459557063
+    },
+    {
+      "id": "9",
+      "class": "",
+      "text": "H.C. DEMO70-N · 99970009",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO N: COLOR NARANJA LISTO. Solo pruebas locales.",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 7.547668459557063
+    },
+    {
+      "id": "9",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "En consultorio",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "9",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 4.874075128635882
+    },
+    {
+      "id": "9",
+      "class": "admission-tag admission-tag--ready",
+      "text": "Listo para reevaluación",
+      "contrast": 5.950503625510895
+    },
+    {
+      "id": "10",
+      "class": "",
+      "text": "12:00",
+      "contrast": 8.215247180586891
+    },
+    {
+      "id": "10",
+      "class": "",
+      "text": "22/10",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 COLOR ROJO CANCELADA PACIENTE FICTICIO R",
+      "contrast": 8.215247180586891
+    },
+    {
+      "id": "10",
+      "class": "",
+      "text": "H.C. DEMO70-R · 99970010",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO R: COLOR ROJO CANCELADA. Solo pruebas locales.",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 8.215247180586891
+    },
+    {
+      "id": "10",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "admission-tag admission-tag--inactive",
+      "text": "Cancelado",
+      "contrast": 6.851447524381704
+    },
+    {
+      "id": "10",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 5.30517896659765
+    },
+    {
+      "id": "10",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "11",
+      "class": "",
+      "text": "12:20",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "11",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 COLOR AMARILLO AUTORIZADO PACIENTE FICTICIO Y",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "11",
+      "class": "",
+      "text": "H.C. DEMO70-Y · 99970011",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO Y: COLOR AMARILLO AUTORIZADO. Solo pruebas locales.",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "11",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "11",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "11",
+      "class": "agenda-indicator",
+      "text": "CONFIRMADA · SIN ADELANTO",
+      "contrast": 7.886634404608402
+    },
+    {
+      "id": "11",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "12",
+      "class": "",
+      "text": "12:40",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "12",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 RESERVA PRIVADA COMERCIAL PACIENTE FICTICIO P",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "12",
+      "class": "",
+      "text": "H.C. DEMO70-P · 99970012",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO P: RESERVA PRIVADA COMERCIAL. Solo pruebas locales.",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "12",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "12",
+      "class": "admission-booking-indicator",
+      "text": "Reserva pendiente · horario sin confirmar",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "12",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "13",
+      "class": "",
+      "text": "13:00",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "13",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 CITA SEGUNDO MEDICO PACIENTE FICTICIO H",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "13",
+      "class": "",
+      "text": "H.C. DEMO70-H · 99970013",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO H: CITA SEGUNDO MEDICO. Solo pruebas locales.",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "",
+      "text": "DRA SEGUNDA FICTICIA PR70CONSULTA FICTICIA SEGUNDA",
+      "contrast": 10.551183497969047
+    },
+    {
+      "id": "13",
+      "class": "",
+      "text": "CONSULTA FICTICIA SEGUNDA",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "13",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.813661906413718
+    },
+    {
+      "id": "13",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    },
+    {
+      "id": "5",
+      "class": "",
+      "text": "14:00",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "5",
+      "class": "",
+      "text": "22/10",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-patient-name",
+      "text": "DEMO PR70 REPROGRAMACION PACIENTE FICTICIO E",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "5",
+      "class": "",
+      "text": "H.C. DEMO70-E · 99970005",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-reason-summary",
+      "text": "ESCENARIO FICTICIO E: REPROGRAMACION. Solo pruebas locales.",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-reschedule-origin",
+      "text": "REPROGRAMADA · desde 22/10/2026 10:20",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "",
+      "text": "DR JULIO FICTICIO PR70CONSULTA FICTICIA JULIO",
+      "contrast": 10.472497006329185
+    },
+    {
+      "id": "5",
+      "class": "",
+      "text": "CONSULTA FICTICIA JULIO",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-tag admission-tag--pending",
+      "text": "Programado",
+      "contrast": 6.968062214806273
+    },
+    {
+      "id": "5",
+      "class": "admission-booking-indicator",
+      "text": "Horario confirmado",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-economic-state",
+      "text": "Pendiente de pago",
+      "contrast": 6.762848350688992
+    },
+    {
+      "id": "5",
+      "class": "admission-tag admission-tag--neutral",
+      "text": "Sin solicitud",
+      "contrast": 5.307415948691809
+    }
+  ]
+}

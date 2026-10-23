@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
 const {chromium}=require(path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
 const root=path.resolve(__dirname,'../..'),privateDir=path.join(root,'storage/app/qa-colors'),cohort=path.join(root,'storage/app/qa-reschedule-visual');
 const fixture=JSON.parse(fs.readFileSync(path.join(cohort,'colors-fixture.json'))),secret=JSON.parse(fs.readFileSync(path.join(cohort,'colors-secret.json')));
-const output=path.join(root,'docs/recuperacion-cinco/qa',process.env.CEO_FINAL70_COLOR_QA==='1'?'ajustes-finales70/colors':process.env.CEO_OBS70_COLOR_QA==='1'?'observaciones70/colors':'colors');fs.mkdirSync(output,{recursive:true});
+const output=process.env.CEO_CORPORATE_VISUAL_QA==='1'?path.join(root,'docs/ui-agendas/qa/colors'):path.join(root,'docs/recuperacion-cinco/qa',process.env.CEO_FINAL70_COLOR_QA==='1'?'ajustes-finales70/colors':process.env.CEO_OBS70_COLOR_QA==='1'?'observaciones70/colors':'colors');fs.mkdirSync(output,{recursive:true});
 const base='http://127.0.0.1:8108',results=[],errors=[];
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 try{

@@ -1,0 +1,190 @@
+{
+  "result": "PASS",
+  "base_main": "a4e2a9b0f9e517c55be10232321391b1dc970e73",
+  "product_files": [
+    "public/css/scheduling/agenda-corporate.css",
+    "resources/views/scheduling/agenda/index.blade.php",
+    "resources/views/scheduling/admission/index.blade.php",
+    "resources/views/scheduling/agenda/partials/toolbar.blade.php"
+  ],
+  "functional_code_unchanged": true,
+  "sqlite": {
+    "tests": 264,
+    "assertions": 2469
+  },
+  "mariadb": {
+    "tests": 292,
+    "assertions": 2716
+  },
+  "javascript": 356,
+  "colour_checks": 208,
+  "comparison_views": 40,
+  "keyboard_mobile_checks": 5,
+  "contrast_checks": 145,
+  "minimum_text_contrast": 4.874075128635882,
+  "integrated_browser_checks": 22,
+  "final_browser_checks": 10,
+  "creation_without_deposit_checks": 4,
+  "density": [
+    {
+      "width": 1366,
+      "height": 668,
+      "agenda": "agenda",
+      "selected": false,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "width": 1366,
+      "height": 668,
+      "agenda": "agenda",
+      "selected": true,
+      "before": 2,
+      "after": 3
+    },
+    {
+      "width": 1366,
+      "height": 668,
+      "agenda": "admission",
+      "selected": false,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1366,
+      "height": 668,
+      "agenda": "admission",
+      "selected": true,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "width": 1440,
+      "height": 800,
+      "agenda": "agenda",
+      "selected": false,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1440,
+      "height": 800,
+      "agenda": "agenda",
+      "selected": true,
+      "before": 5,
+      "after": 5
+    },
+    {
+      "width": 1440,
+      "height": 800,
+      "agenda": "admission",
+      "selected": false,
+      "before": 6,
+      "after": 6
+    },
+    {
+      "width": 1440,
+      "height": 800,
+      "agenda": "admission",
+      "selected": true,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1536,
+      "height": 744,
+      "agenda": "agenda",
+      "selected": false,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1536,
+      "height": 744,
+      "agenda": "agenda",
+      "selected": true,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1536,
+      "height": 744,
+      "agenda": "admission",
+      "selected": false,
+      "before": 5,
+      "after": 5
+    },
+    {
+      "width": 1536,
+      "height": 744,
+      "agenda": "admission",
+      "selected": true,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "width": 1920,
+      "height": 928,
+      "agenda": "agenda",
+      "selected": false,
+      "before": 6,
+      "after": 6
+    },
+    {
+      "width": 1920,
+      "height": 928,
+      "agenda": "agenda",
+      "selected": true,
+      "before": 7,
+      "after": 7
+    },
+    {
+      "width": 1920,
+      "height": 928,
+      "agenda": "admission",
+      "selected": false,
+      "before": 10,
+      "after": 10
+    },
+    {
+      "width": 1920,
+      "height": 928,
+      "agenda": "admission",
+      "selected": true,
+      "before": 6,
+      "after": 7
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "agenda": "agenda",
+      "selected": false,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "agenda": "agenda",
+      "selected": true,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "agenda": "admission",
+      "selected": false,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "agenda": "admission",
+      "selected": true,
+      "before": 0,
+      "after": 0
+    }
+  ]
+}
