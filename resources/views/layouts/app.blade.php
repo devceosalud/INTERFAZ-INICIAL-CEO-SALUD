@@ -39,6 +39,7 @@
     <!-- Style Css -->
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
     <link href="{{ asset('css/erp-shell.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/doctor-search.css') }}" rel="stylesheet">
 
     <!-- DATATABLES CSS
     <link rel="stylesheet" href="{{ asset('assets/lib/datatable/dataTables.css') }}">
@@ -118,6 +119,7 @@
 
     <script src="{{ asset('js/erp-shell.js') }}"></script>
 
+    <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/doctor-search.js') }}" data-doctor-search-vendor="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <!--SCRIPT LIVEWIRE-->
     @livewireScripts
 </body>
