@@ -2,7 +2,7 @@
 
 ## Punto de partida y alcance
 
-Rama nueva `codex/refinamiento-visual-agendas-20261023`, creada desde main remoto `0ce2b9b54b67db4a681e0330697bce6dab38b881`, merge del PR #70. El contenido coincide con su última candidata `ec508058`; se verificó GitHub y Git remoto, sin reutilizar una base anterior a main. El despliegue productivo es el confirmado por el usuario; no se abrió conexión a Hostinger.
+Rama nueva `codex/refinamiento-visual-agendas-20261023`, creada desde main remoto `0ce2b9b54b67db4a681e0330697bce6dab38b881`, merge del PR #70. El contenido inicial coincidía con su última candidata `ec508058`. Durante la validación avanzó main a `a4e2a9b0f9e517c55be10232321391b1dc970e73`; la rama visual local, todavía sin publicar, se actualizó sobre esa base. Se conservaron los tres commits de main que habilitan reportes existentes para FACTURACION. Esos cambios no pertenecen al refinamiento y no se reimplementaron. La comparación final y las suites se repitieron sobre la nueva base. El despliegue productivo es el confirmado por el usuario; no se abrió conexión a Hostinger.
 
 Se conservan los cinco archivos con cambios ajenos en el checkout original y todos los worktrees anteriores. La demo utiliza la misma BD MariaDB ficticia verificada, con respaldo previo y runtime local aislado. Las dependencias se reutilizan sin actualizarlas.
 

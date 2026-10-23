@@ -1,6 +1,6 @@
 # Evidencias: refinamiento corporativo de las agendas
 
-Base: main `0ce2b9b54b67db4a681e0330697bce6dab38b881`, posterior al merge del PR #70. Todos los usuarios, pacientes, importes y documentos de las capturas son ficticios. Las contraseñas, configuración local y respaldos SQL no se incluyen.
+Base final: main `a4e2a9b0f9e517c55be10232321391b1dc970e73`, posterior al merge del PR #70. Todos los usuarios, pacientes, importes y documentos de las capturas son ficticios. Las contraseñas, configuración local y respaldos SQL no se incluyen.
 
 ## Comparativas al 100%, sin/con selección
 
@@ -35,6 +35,7 @@ Las capturas originales reales se tomaron antes de implementar. El modo reproduc
 | PHPUnit afectadas, SQLite |264 pruebas / 2.469 aserciones · [log](tests/sqlite.log)|
 | PHPUnit afectadas y concurrencia, MariaDB 11.8.9 |292 / 2.716 · [log](tests/mariadb.log)|
 | JavaScript existente |356 · [log](tests/javascript.log)|
+| Compatibilidad de reportes tras actualizar main |Tres pruebas / 66 aserciones · [log](tests/upstream-reports.log)|
 | Recorrido real integrado, siete perfiles |22 comprobaciones · [resultado](functional/acceptance.json)|
 | Reevaluación 3/3 sin confirmar, foco, filtros y autoría |10 comprobaciones reales · [resultado](functional/recorridos.json)|
 | Alta sin adelanto de paciente existente y nuevo |Cuatro comprobaciones, con motivo obligatorio y doble clic · [resultado](functional/observacion4-ui.json)|

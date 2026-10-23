@@ -1,6 +1,6 @@
 {
   "result": "PASS",
-  "base_main": "0ce2b9b54b67db4a681e0330697bce6dab38b881",
+  "base_main": "a4e2a9b0f9e517c55be10232321391b1dc970e73",
   "unchanged_groups": [
     {
       "path": "app",
@@ -47,5 +47,5 @@
   ],
   "api_contract": "Mismo código de servicios, controladores, rutas y JavaScript; fondos y KPI comparados por navegador",
   "schemas": "Sin migraciones ni cambios de esquema de producto",
-  "css_sha256": "cdb45ab0c0cd802bdd0beee25ea997327bab4a4f3c536493f5974b5254430092"
+  "css_sha256": "d2b127773d3adb0942233be048230cdd1dc9ad1ed4dbef7af78e6b985df7fb94"
 }
