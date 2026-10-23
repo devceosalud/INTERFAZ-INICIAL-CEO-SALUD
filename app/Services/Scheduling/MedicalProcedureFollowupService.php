@@ -29,7 +29,7 @@ final class MedicalProcedureFollowupService
         }
     }
     private function query(User $actor){
-        $u=ClinicalAccess::actor($actor);
+        $u=\App\Support\Scheduling\MedicalFollowupAccess::actor($actor);
         return DB::table('medical_procedure_followups as f')->join('appointments as a','a.id','=','f.appointment_id')->join('patients as p','p.id','=','f.patient_id')->join('doctors as d','d.id','=','f.doctor_id')
             ->where('f.doctor_id',$u->doctor_id)->where('a.doctor_id',$u->doctor_id)->whereColumn('f.patient_id','a.patient_id')->whereIn('a.estado_agenda',['LEGADO','CONFIRMADA']);
     }
@@ -60,7 +60,7 @@ final class MedicalProcedureFollowupService
         return $this->payload($f)+['can_update'=>ClinicalAccess::has($actor,ClinicalCapability::PROCEDURES),'events'=>$events->map(fn($e)=>['action'=>$e->action,'at'=>\Carbon\Carbon::parse($e->occurred_at,config('app.timezone'))->toISOString(),'actor'=>User::find($e->actor_user_id)?->name,'snapshot'=>json_decode(Crypt::decryptString($e->snapshot_ciphertext),true)])->all()];
     }
     public function update(User $actor,int $id,array $data): void {
-        ClinicalAccess::actor($actor,ClinicalCapability::PROCEDURES);
+        \App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);
         \Illuminate\Support\Facades\Validator::make($data,['request_key'=>'required|uuid','expected_version'=>'required|integer|min:1','status'=>'required|in:'.implode(',',array_keys(self::STATES)),'planned_review_on'=>'nullable|required_if:status,SCHEDULED|date_format:Y-m-d','notes'=>'nullable|string|max:1000','reason'=>'required|string|min:15|max:1000','confirmed'=>'required|accepted'])->validate();
         $data['expected_version']=(int)$data['expected_version'];
         $original=$this->query($actor)->where('f.id',$id)->select('f.appointment_id')->first();
@@ -72,6 +72,7 @@ final class MedicalProcedureFollowupService
             $op=DB::table('appointment_operations')->where('actor_user_id',$actor->id)->where('request_key',$data['request_key'])->lockForUpdate()->first();
             abort_unless(hash_equals($op->payload_hash,$hash),409,'La clave corresponde a otra operación.');
             [$u,$a]=ClinicalAccess::lock($actor,$original->appointment_id,ClinicalCapability::PROCEDURES);
+            \App\Support\Scheduling\MedicalFollowupAccess::actor($u,ClinicalCapability::PROCEDURES);
             $f=DB::table('medical_procedure_followups')->where('id',$id)->where('doctor_id',$u->doctor_id)->lockForUpdate()->first();
             abort_unless($f,404);abort_unless((int)$f->patient_id===(int)$a->patient_id,409,'La vinculación del paciente cambió. Actualiza antes de continuar.');if($op->appointment_id)return;
             abort_unless((int)$f->version===$data['expected_version'],409,'El seguimiento cambió. Actualiza antes de guardar.');

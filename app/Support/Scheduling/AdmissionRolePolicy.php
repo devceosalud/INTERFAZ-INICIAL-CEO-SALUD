@@ -30,7 +30,7 @@ final class AdmissionRolePolicy
     }
     public static function history(User $u): bool {return $u->hasRole('MEDICO')||self::administrator($u);}
     public static function followups(User $u): bool {
-        try {ClinicalAccess::actor($u);return true;}
+        try {MedicalFollowupAccess::actor($u);return true;}
         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;return false;}
     }
 }

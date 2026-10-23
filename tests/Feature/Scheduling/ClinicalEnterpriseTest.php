@@ -9,10 +9,12 @@ use Spatie\Permission\Models\{Role,Permission};
 
 class ClinicalEnterpriseTest extends \Tests\Support\AgendaV2TestCase
 {
+    private bool $followupOwnerConfigured=false;
     private function physician(?array $catalog=null,bool $administrator=false): User {
         $catalog??=$this->catalog;foreach(ClinicalCapability::all()as $p)Permission::findOrCreate($p,'web');
         Role::findOrCreate('MEDICO','web')->syncPermissions(ClinicalCapability::all());
         $u=$this->createUserWithRole('MEDICO');$u->forceFill(['doctor_id'=>$catalog['doctor']->id,'is_active'=>true])->save();
+        if(!$this->followupOwnerConfigured){config(['medical_followups.authorized_user_id'=>$u->id]);$this->followupOwnerConfigured=true;}
         if($administrator)$u->assignRole('ADMINISTRADOR');return $u->fresh();
     }
     private function care(): void {$this->a->forceFill(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'EN_ATENCION','hora_llegada'=>now(),'hora_atencion'=>now()])->save();}
@@ -35,9 +37,9 @@ class ClinicalEnterpriseTest extends \Tests\Support\AgendaV2TestCase
     }
     public function test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access(): void {
         $this->care();$owner=$this->physician(null,true);$this->actingAs($owner)->select(['mri'])->assertOk();$id=DB::table('medical_procedure_followups')->value('id');
-        $other=$this->physician($this->createAppointmentCatalog());$this->actingAs($other)->getJson('/scheduling-mvp/medical-followups/'.$id)->assertNotFound();
-        $this->patchJson('/scheduling-mvp/medical-followups/'.$id,$this->followup())->assertNotFound();
-        $this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk()->assertJsonCount(0,'rows');
+        $other=$this->physician($this->createAppointmentCatalog());$this->actingAs($other)->getJson('/scheduling-mvp/medical-followups/'.$id)->assertForbidden();
+        $this->patchJson('/scheduling-mvp/medical-followups/'.$id,$this->followup())->assertForbidden();
+        $this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertForbidden();
         foreach([$this->admin,$this->admission,$this->commercial]as $u){$this->actingAs($u)->get('/scheduling-mvp/medical-followups')->assertForbidden();$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertForbidden();$this->getJson('/scheduling-mvp/medical-followups/'.$id)->assertForbidden();$this->patchJson('/scheduling-mvp/medical-followups/'.$id,$this->followup())->assertForbidden();}
         $this->actingAs($owner)->getJson('/scheduling-mvp/medical-followups/'.$id)->assertOk();
     }
