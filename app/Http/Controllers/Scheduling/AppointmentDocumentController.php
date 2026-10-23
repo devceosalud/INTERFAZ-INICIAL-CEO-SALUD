@@ -108,7 +108,11 @@ class AppointmentDocumentController extends Controller
     public function download(Request $r, int $appointmentId, int $documentId)
     {
         $d = $this->appointment($r, $appointmentId)->documents()->whereKey($documentId)->firstOr(fn () => abort(404));
-        abort_unless($this->canReadEvidence($r,$d) && $d->private_path && Storage::disk('local')->exists($d->private_path), 404);
+        abort_unless($this->canReadEvidence($r,$d),404);
+        return $this->privateResponse($r,$d);
+    }
+    private function privateResponse(Request $r,AppointmentDocument $d) {
+        abort_unless($d->private_path && Storage::disk('local')->exists($d->private_path),404);
         abort_unless(preg_match('/\Aappointment-documents\/[a-f0-9-]+\.(?:pdf|png|jpg)\z/i',$d->private_path),404);
         $preview=$r->validate(['preview'=>'sometimes|boolean'])['preview']??false;
         $headers=['Content-Type'=>$d->mime,'X-Content-Type-Options'=>'nosniff','Cache-Control'=>'private, no-store',
@@ -116,6 +120,21 @@ class AppointmentDocumentController extends Controller
         abort_unless(in_array($d->mime,['image/jpeg','image/png','application/pdf'],true),404);
         return $preview ? Storage::disk('local')->response($d->private_path,basename($d->private_path),$headers,'inline')
             : Storage::disk('local')->download($d->private_path,basename($d->private_path),$headers);
+    }
+    private function admissionReadable(Request $r,AppointmentDocument $d): bool {
+        if($r->user()->hasRole('MEDICO'))return !$d->payment_id && (in_array($d->purpose,[Access::PATIENT_PURPOSE,'REEVALUATION_ORDER'],true) || in_array($d->document_kind,['PRESCRIPTION','REPORT'],true));
+        return $this->canReadEvidence($r,$d);
+    }
+    public function admissionIndex(Request $r,int $appointmentId) {
+        $a=\App\Support\Scheduling\AdmissionRolePolicy::documentsAppointment($r->user(),$appointmentId);
+        $items=$a->documents()->with(['actor:id,name','appointment:id,patient_id,fecha_cita'])->get()->filter(fn($d)=>$this->admissionReadable($r,$d))->values()->map(function($d)use($appointmentId){
+            $item=$this->payload($d);$url=route('scheduling.mvp.admission.documents.download',[$appointmentId,$d->id]);$item['can_replace']=false;$item['download_url']=$d->private_path?$url:null;$item['preview_url']=$d->private_path?$url.'?preview=1':null;return $item;
+        });
+        return response()->json(['documents'=>$items,'document_history'=>[],'can_write'=>false,'can_upload_patient'=>false,'can_upload_private'=>false,'can_view_patient'=>true])->header('Cache-Control','private, no-store');
+    }
+    public function admissionDownload(Request $r,int $appointmentId,int $documentId) {
+        $a=\App\Support\Scheduling\AdmissionRolePolicy::documentsAppointment($r->user(),$appointmentId);
+        $d=$a->documents()->whereKey($documentId)->firstOrFail();abort_unless($this->admissionReadable($r,$d),404);return $this->privateResponse($r,$d);
     }
     public function replace(Request $r,int $appointmentId,int $documentId,ReplaceAppointmentDocument $service){
         abort_unless(Access::write($r->user())||Access::patientReplace($r->user()),403);

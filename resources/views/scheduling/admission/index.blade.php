@@ -17,7 +17,8 @@
         data-availability="{{ route('scheduling.mvp.availability') }}" data-agenda="{{ route('scheduling.mvp.agenda') }}">
         <div class="admission-commandbar">
             <header class="admission-heading"><div><p class="admission-eyebrow">ATENCIÓN Y SEGUIMIENTO</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
-                <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create" @if($clinicalOnly) hidden @endif>{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
+                <div class="admission-actions">
+                    <button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create" @if($clinicalOnly) hidden @endif>{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
             <form id="admission-filters" class="admission-filters" autocomplete="off">
                 <div class="admission-filter-primary">
@@ -75,6 +76,7 @@
 </div>
 @endsection
 @section('script_data')
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/patient-alerts.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/procedure-picker.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-indicators.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>

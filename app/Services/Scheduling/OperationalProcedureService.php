@@ -27,8 +27,7 @@ final class OperationalProcedureService
     public function canComplete(User $u): bool { return $this->eligible($u) && $u->hasAnyRole(['ADMINISTRADOR', 'ADMISION','COMERCIAL']); }
     public function canSend(User $u): bool
     {
-        return $this->eligible($u) && ($u->hasAnyRole(['ADMISION','COMERCIAL'])
-            || ($u->hasRole('ADMINISTRADOR') && $u->can(self::SUPERVISE)));
+        return \App\Support\Scheduling\AdmissionRolePolicy::operational($u);
     }
     private function eligible(User $u): bool { return $u->is_active && $u->can(C::MVP_ACCESS) && $u->can(C::VIEW); }
 

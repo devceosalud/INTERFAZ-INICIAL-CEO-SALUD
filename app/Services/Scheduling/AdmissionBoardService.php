@@ -130,6 +130,7 @@ class AdmissionBoardService
     {
         $manual=app(ManualReevaluationService::class);
         return ['manual_reevaluation'=>$manual->state($a)+['can_update'=>$manual->canUpdate($actor)&&$manual->eligible($a,$actor)],
+            'patient_alert'=>app(PatientOperationalAlertService::class)->summary((int)$a->patient_id,$actor,(int)$a->id),
             'reevaluation'=>AppointmentReevaluationService::summary($a), 'id'=>$a->id,'numero'=>$a->numero_cita,'fecha'=>substr($a->fecha_cita,0,10),'hora'=>substr($a->hora_cita,0,5),
             'patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre]))),
             'documento'=>$a->patient?->numero_identidad,'historia'=>$a->patient?->historia_clinica,
@@ -155,7 +156,7 @@ class AdmissionBoardService
             'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
         app(ManualReevaluationService::class)->load(collect([$a]));
-        $previous = Appointment::visibleToOperationalUser($actor)->when($clinicalOnly,fn($q)=>$q->where('doctor_id',$actor->doctor_id)->whereIn('estado_agenda',['LEGADO','CONFIRMADA']))->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
+        $previous = Appointment::visibleToOperationalUser($actor)->when($actor->hasRole('MEDICO'),fn($q)=>$q->where('doctor_id',$actor->doctor_id)->whereIn('estado_agenda',['LEGADO','CONFIRMADA']))->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
         $positions = $this->economics->forAppointments($previous->push($a));
@@ -183,7 +184,7 @@ class AdmissionBoardService
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
         $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
-        return $this->protect([
+        $payload=$this->protect([
             'exoneration_confirmation'=>AdmissionExonerationConfirmation::eligible($a,$actor) && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
                 ? ['url'=>route('scheduling.mvp.admission.confirm-exoneration',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,
             'without_deposit_confirmation'=>ReservationPaymentService::withoutDepositEligible($a,$actor,$positions[$a->id])
@@ -208,6 +209,20 @@ class AdmissionBoardService
 
             'patient_url'=>route('patients.operational.index',['patient_id'=>$a->patient_id,'appointment_id'=>$a->id,'from_agenda'=>1,
                 'doctor_id'=>$a->doctor_id,'agenda_date'=>substr($a->fecha_cita,0,10)])],$clinicalOnly);
+        $policy=\App\Support\Scheduling\AdmissionRolePolicy::class;
+        $historyAllowed=false;
+        if($policy::history($actor)) {try{$policy::documentsAppointment($actor,$id);$historyAllowed=true;}catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if(!in_array($e->getStatusCode(),[403,404]))throw $e;}}
+        $payload['detail_tabs']=['history'=>$historyAllowed,'problem'=>$policy::operational($actor)];
+        $payload['patient_alert_url']=($policy::operational($actor)||$policy::administrator($actor)||$actor->hasRole('MEDICO')&&(int)$actor->doctor_id===(int)$a->doctor_id)?route('scheduling.mvp.admission.patient-alert',$id):null;
+        $payload['patient_documents_url']=$historyAllowed?route('scheduling.mvp.admission.documents.index',$id):null;
+        // Admisión-specific document policy; legacy Agenda document capabilities are unchanged.
+        if(!$historyAllowed||$actor->hasRole('MEDICO')){$payload['documents']=[];$payload['operational_documents']=[];$payload['can_view_operational_documents']=false;}
+        if(!$historyAllowed){$payload['history']=[];$payload['events']=[];}
+        elseif($actor->hasRole('MEDICO')){
+            $payload['history']=$history->map(function($item){unset($item['economy']);return $item;})->values()->all();
+            $payload['events']=$events->filter(fn($e)=>preg_match('/^(ATENCION|PACIENTE|LLEGADA|SALIDA|REEVALUACION)/',$e['type']))->values()->all();
+        }
+        return $payload;
     }
 
     private function protect(array $payload,bool $clinicalOnly): array

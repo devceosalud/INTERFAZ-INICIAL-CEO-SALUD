@@ -183,7 +183,7 @@ class AdmissionBoardTest extends TestCase
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.reservas',0)->assertJsonPath('totals.pagos_reales','50.00');
         $this->postJson(route('scheduling.mvp.agenda.payments',$id),['request_key'=>(string)Str::uuid(),'confirm'=>true])->assertOk();
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.por_llegar',1)->assertJsonPath('totals.pagos_reales','50.00')->assertJsonPath('totals.saldo','50.00');
-        $this->detail($id)->assertOk()->assertJsonCount(1,'documents')->assertJsonPath('appointment.economy.fuente','PAYMENTS')->assertJsonPath('payments.0.method','YAPE')->assertJsonPath('payments.0.amount','50.00');
+        $this->detail($id)->assertOk()->assertJsonCount(0,'documents')->assertJsonPath('detail_tabs.history',false)->assertJsonPath('appointment.economy.fuente','PAYMENTS')->assertJsonPath('payments.0.method','YAPE')->assertJsonPath('payments.0.amount','50.00');
         $this->care(Appointment::findOrFail($id),'EN_ESPERA')->assertOk();
         $this->feed(['fecha'=>$date])->assertOk()->assertJsonPath('kpis.en_espera',1)->assertJsonPath('kpis.por_llegar',0);
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('appointment_documents',1);
@@ -195,6 +195,7 @@ class AdmissionBoardTest extends TestCase
     public function test_selected_detail_revision_changes_for_private_documents_and_revoked_permission_even_when_rows_do_not():void
     {
         $a=$this->appointment();
+        $this->actor->assignRole(\Spatie\Permission\Models\Role::findOrCreate('ADMINISTRADOR','web')); // New Admisión history policy: operational roles cannot read this tab.
         $this->actor->givePermissionTo(Permission::findOrCreate('appointment.documents.view','web'));
         $feed=$this->feed()->assertOk()->json('revision');
         $url=route('scheduling.mvp.admission.detail',$a->id);

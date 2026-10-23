@@ -185,7 +185,11 @@ Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR|FACTURACION'])-
 Route::middleware(['auth','scheduling-mvp',\App\Support\Scheduling\AdmissionAccess::class])->group(function(){
     $admission=\App\Http\Controllers\Scheduling\AdmissionBoardController::class;
     $procedures=\App\Http\Controllers\Scheduling\OperationalProcedureController::class;
-        Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/procedures/{action}', [$procedures, 'update'])
+        Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/patient-alert', [\App\Http\Controllers\Scheduling\PatientOperationalAlertController::class,'show'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.patient-alert');
+    Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/documents', [\App\Http\Controllers\Scheduling\AppointmentDocumentController::class,'admissionIndex'])->whereNumber('appointmentId')->name('scheduling.mvp.admission.documents.index');
+    Route::get('/scheduling-mvp/admission/appointments/{appointmentId}/documents/{documentId}/download', [\App\Http\Controllers\Scheduling\AppointmentDocumentController::class,'admissionDownload'])->whereNumber('appointmentId')->whereNumber('documentId')->name('scheduling.mvp.admission.documents.download');
+    Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/patient-alert', [\App\Http\Controllers\Scheduling\PatientOperationalAlertController::class,'update'])->whereNumber('appointmentId')->middleware('throttle:30,1');
+    Route::post('/scheduling-mvp/admission/appointments/{appointmentId}/procedures/{action}', [$procedures, 'update'])
             ->whereNumber('appointmentId')->whereIn('action', ['selection','completion','send','withdraw'])
             ->middleware('throttle:60,1')->name('scheduling.mvp.admission.procedures');
         Route::get('/scheduling-mvp/admission', [$admission,'index'])->name('scheduling.mvp.admission');
@@ -198,3 +202,4 @@ Route::middleware(['auth','scheduling-mvp',\App\Support\Scheduling\AdmissionAcce
             ->whereIn('action',['indicate','withdraw','resume'])->middleware('throttle:30,1')
             ->name('scheduling.mvp.admission.physician-reevaluation');
 });
+
