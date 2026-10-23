@@ -39,12 +39,12 @@ final class MedicalProcedureFollowupService
             $term='%'.addcslashes(trim($filters['patient']),'%_\\').'%';
             $query->where(fn($q)=>$q->where('p.nombre','like',$term)->orWhere('p.apellido_paterno','like',$term)->orWhere('p.apellido_materno','like',$term)->orWhere('p.historia_clinica','like',$term));
         }
+        if(!empty($filters['procedure']))$query->where('f.procedure_family',$filters['procedure']);
         $counts=(clone $query)->select('f.status',DB::raw('COUNT(*) total'))->groupBy('f.status')->pluck('total','status');
         $families=$this->query($actor)->distinct()->pluck('f.procedure_family')->all();
         if(!empty($filters['status']))$query->where('f.status',$filters['status']);
-        if(!empty($filters['procedure']))$query->where('f.procedure_family',$filters['procedure']);
         $total=(clone $query)->count();$page=$filters['page']??1;
-        $rows=$query->select('f.*','a.fecha_cita','a.hora_cita','p.nombre','p.apellido_paterno','p.apellido_materno','p.historia_clinica','d.nombre as doctor_name')->orderBy('f.requested_at',($filters['order']??'oldest')==='newest'?'desc':'asc')->orderBy('f.id')->skip(($page-1)*25)->take(25)->get();
+        $rows=$query->select('f.*','a.fecha_cita','a.hora_cita','p.nombre','p.apellido_paterno','p.apellido_materno','p.historia_clinica','d.nombre as doctor_name')->orderBy('f.requested_at',($filters['order']??'oldest')==='newest'?'desc':'asc')->orderBy('f.id',($filters['order']??'oldest')==='newest'?'desc':'asc')->skip(($page-1)*25)->take(25)->get();
         return ['can_update'=>ClinicalAccess::has($actor,ClinicalCapability::PROCEDURES),'rows'=>$rows->map(fn($f)=>$this->payload($f))->all(),'total'=>$total,'page'=>$page,'counts'=>collect(self::STATES)->map(fn($l,$key)=>(int)($counts[$key]??0))->all(),'states'=>self::STATES,'procedures'=>array_intersect_key(ProcedureCatalog::FAMILIES,array_flip($families))];
     }
     private function payload(object $f): array {

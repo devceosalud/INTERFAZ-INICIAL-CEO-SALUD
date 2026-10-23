@@ -28,6 +28,9 @@ class ClinicalEnterpriseTest extends \Tests\Support\AgendaV2TestCase
         $this->assertSame($counts,[Appointment::count(),DB::table('payments')->count()]);$this->assertSame($before,$this->a->fresh()->getAttributes());
         $this->assertDatabaseMissing('appointment_requested_procedures',['completed_at'=>now()]);
         $this->get('/scheduling-mvp/medical-followups')->assertOk();$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk()->assertJsonCount(2,'rows')->assertJsonPath('counts.PENDING',2);
+        $this->postJson('/scheduling-mvp/medical-followups/feed',['procedure'=>'mri','status'=>'PENDING'])->assertOk()->assertJsonCount(1,'rows')->assertJsonPath('counts.PENDING',1);
+        $this->postJson('/scheduling-mvp/medical-followups/feed',['procedure'=>'mri','status'=>'DONE'])->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('counts.PENDING',1);
+        $this->postJson('/scheduling-mvp/medical-followups/feed',['order'=>'newest'])->assertOk()->assertJsonPath('rows.0.family','surgery');
         $this->change('selection',['procedures'=>['mri','surgery','radiography']])->assertOk();$this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',2);
     }
     public function test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access(): void {
