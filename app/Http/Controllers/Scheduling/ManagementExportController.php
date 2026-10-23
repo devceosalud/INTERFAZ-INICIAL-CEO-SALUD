@@ -265,7 +265,7 @@ class ManagementExportController extends Controller
     private function authorizeExport(Request $request): void
     {
         $user = $request->user();
-        abort_unless($user && $user->is_active && $user->hasRole('ADMINISTRADOR')
+        abort_unless($user && $user->is_active && $user->hasAnyRole(['ADMINISTRADOR', 'FACTURACION'])
             && $user->can(SchedulingCapability::VIEW_AUDIT), 403);
     }
 
