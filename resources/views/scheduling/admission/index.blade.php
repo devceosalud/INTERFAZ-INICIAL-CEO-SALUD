@@ -47,12 +47,12 @@
             <div class="admission-context-line"><div class="admission-filter-summary"><span id="admission-active-filter" role="status"></span> <button id="admission-clear-category" type="button" class="admission-btn" hidden>Retirar filtro rápido</button></div><details class="admission-scope-info"><summary>Alcance e indicadores</summary><div><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><p class="admission-scope">Reevaluación: <strong data-kpi="reevaluaciones_prependientes">—</strong> por confirmar · <strong data-kpi="reevaluaciones_confirmadas_pendientes">—</strong> confirmadas, pendientes · <strong data-kpi="reevaluaciones">—</strong> listas.</p></div></details><details class="admission-financial-summary" @if($clinicalOnly) hidden @endif><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales del conjunto de fecha, profesional, sede, estado y búsqueda, antes de los filtros rápidos. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
             <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
         </div>
-        <div class="admission-workspace"><aside class="admission-context" aria-label="Resumen de atención"><h2>Resumen de atención</h2>            <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
+        <div class="admission-workspace"><aside class="admission-context" aria-label="Resumen de atención"><button id="admission-summary-toggle" type="button" aria-controls="admission-summary-content" aria-expanded="true"><b aria-hidden="true">‹</b><span>Ocultar resumen</span></button><div id="admission-summary-content"><h2>Resumen de atención</h2>            <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
                 @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
                     <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @elseif($key==='reevaluaciones_pendientes') data-pending-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
                 @endforeach
             </section>
-</aside>
+</div></aside>
             <section class="admission-main" aria-label="Pacientes y reevaluaciones">
                 <details id="admission-reschedule-panel" class="admission-reschedule-panel" hidden>
                     <summary>Reprogramaciones del día <span id="admission-reschedule-count"></span></summary>
@@ -77,7 +77,9 @@
 @endsection
 @section('script_data')
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/patient-alerts.js') }}"></script>
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/clinical-order-fields.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/procedure-picker.js') }}"></script>
+<script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/admission-layout.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/agenda-appointment-indicators.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('js/scheduling/appointment-patient-documents.js') }}" data-patient-document-module="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.min.js') }}" data-patient-document-worker="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/pdfjs/pdf.worker.min.js') }}"></script>
 <script src="{{ \App\Support\Scheduling\AgendaAssets::url('assets/vendor/global/global.min.js') }}"></script>

@@ -1,4 +1,5 @@
 /* Reference lock: approved B / Clinical Enterprise. Scoped to Admisión only. */
+/* PR72 revision: square workstation, collapsible context and a more generous chart. */
 .admission-procedure-dialog .procedure-picker-content{height:clamp(180px,32dvh,320px);min-height:0;max-height:320px}.admission-procedure-dialog .procedure-picker-catalog{min-height:0;height:100%;overflow:auto}.admission-procedure-dialog .procedure-picker-summary{min-height:0}.admission-procedure-dialog .procedure-picker-specific{position:relative;background:#fff;min-width:0}
 @media(max-width:600px){.admission-procedure-dialog .procedure-picker-content{height:auto;max-height:none}.admission-procedure-dialog .procedure-picker-catalog{height:230px}.admission-procedure-dialog .procedure-picker-summary{max-height:100px}}
 .patient-alert-badge{display:inline-flex;align-items:center;border:1px solid #9c3b55;border-radius:4px;background:#f9e1e8;color:#75223b;padding:4px 7px;font:600 11px/1.3 "Segoe UI",Arial;cursor:pointer;max-width:100%}.patient-alert-badge:focus-visible{outline:2px solid #176d78;outline-offset:2px}.patient-alert-hint{position:fixed;z-index:3000;width:min(320px,calc(100vw - 16px));max-height:140px;overflow:auto;background:#203743;color:#fff;border-radius:5px;padding:12px;font:13px/1.5 "Segoe UI",Arial;box-shadow:0 4px 20px #0002;overflow-wrap:anywhere}.patient-alert-dialog{width:min(550px,calc(100vw - 24px));max-height:85dvh;overflow:auto;border:1px solid #c8d9de;border-radius:7px;padding:22px;color:#19343e;font:13px/1.5 "Segoe UI",Arial}.patient-alert-dialog::backdrop{background:#17313d66}.patient-alert-dialog h2{font-size:20px}.patient-alert-form{display:grid;gap:12px;margin:14px 0}.patient-alert-form label{display:grid;gap:6px;font:600 12px "Segoe UI",Arial}.patient-alert-form input:not([type=checkbox]),.patient-alert-form select,.patient-alert-form textarea{width:100%;padding:9px;border:1px solid #bdcfd6;border-radius:5px;font:13px "Segoe UI",Arial;background:white;color:#19343e}.patient-alert-form input[type=checkbox]{width:18px;height:18px;accent-color:#176d78}.patient-alert-form [role=status]{color:#862534}.patient-alert-dialog button{border-radius:5px;padding:8px 12px;border:1px solid #bdcfd6;background:#fff;color:#19343e;cursor:pointer}
@@ -79,3 +80,54 @@
 @media(max-width:1199px) and (min-width:1025px){#admission-board .admission-workspace{grid-template-columns:150px minmax(0,1fr) 310px}#admission-board .admission-table th:nth-child(3),#admission-board .admission-table td:nth-child(3){width:20%}}
 @media(max-width:1024px){#admission-board .admission-workspace,#admission-board:not([data-detail-open=true]) .admission-workspace{display:flex;height:auto;min-height:0;flex-direction:column}#admission-board .admission-context{overflow:visible;padding:7px}#admission-board .admission-context h2{display:none}#admission-board .admission-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}#admission-board .admission-kpi{padding:7px;min-height:55px;font-size:11px}#admission-board .admission-kpi strong{font-size:21px}#admission-board .admission-main{min-height:500px}#admission-board .admission-filter-primary{grid-template-columns:1fr 145px}#admission-board .admission-primary-actions{flex-wrap:wrap}#admission-board .admission-detail{min-height:500px}#admission-board[data-mobile-detail=true] .admission-context{display:none}}
 @media(max-width:600px){#admission-board{padding:0 7px 12px}#admission-board .admission-heading h1{font-size:21px}#admission-board .admission-actions{gap:3px}#admission-board .admission-heading{align-items:flex-start}#admission-board .admission-filter-primary{grid-template-columns:1fr 135px;gap:8px}#admission-board .admission-search,#admission-board .admission-doctor{grid-column:1/-1}#admission-board .admission-primary-actions{grid-column:1/-1}#admission-board .admission-filter-advanced{grid-template-columns:1fr 1fr}#admission-board .admission-context-line{flex-wrap:wrap}#admission-board .admission-table th:nth-child(1){width:53px}#admission-board .admission-table th:nth-child(2){width:auto}#admission-board .admission-table th:nth-child(3),#admission-board .admission-table td:nth-child(3){display:none}#admission-board .admission-table th:nth-child(4){width:33%}#admission-board .admission-table td{padding:9px 6px}#admission-board .admission-patient-name{font-size:13px}#admission-board .admission-signals-cell .admission-tag{font-size:10px;margin:3px 0}#admission-board .admission-financial-summary>summary{text-align:left}#admission-board .admission-reschedule-info .admission-btn{float:none}}
+
+/* The following overrides only presentation; semantic row variables stay intact. */
+#admission-board{--ad-context-width:176px;--ad-detail-width:clamp(370px,28vw,420px)}
+#admission-board .admission-workspace{grid-template-columns:var(--ad-context-width) minmax(0,1fr) var(--ad-detail-width);gap:14px}
+#admission-board:not([data-detail-open=true]) .admission-workspace{grid-template-columns:var(--ad-context-width) minmax(0,1fr)}
+#admission-board[data-summary-collapsed=true]{--ad-context-width:36px}
+#admission-board .admission-context{padding:9px 8px;border-radius:2px}
+#admission-board #admission-summary-toggle{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:29px;background:#fff;border:1px solid var(--ad-line);border-radius:2px;color:#36535e;font:600 11px "Segoe UI",Arial;cursor:pointer;margin:0 0 12px;padding:5px 7px}
+#admission-board #admission-summary-toggle b{font-size:22px;line-height:1}
+#admission-board #admission-summary-toggle:focus-visible{outline:2px solid var(--ad-brand);outline-offset:2px}
+#admission-board[data-summary-collapsed=true] .admission-context{padding:0;overflow:visible}
+#admission-board[data-summary-collapsed=true] #admission-summary-toggle{min-height:200px;height:100%;padding:12px 5px;margin:0;flex-direction:column;justify-content:flex-start;border:0}
+#admission-board[data-summary-collapsed=true] #admission-summary-toggle span{writing-mode:vertical-rl;letter-spacing:.4px}
+#admission-board .admission-main,#admission-board .admission-detail,#admission-board .admission-filters,#admission-board .admission-heading,#admission-board .admission-kpi,#admission-board .admission-notice,#admission-board .admission-btn,#admission-board .admission-list-tabs button,#admission-board .admission-detail section,#admission-board .admission-consultation-reason,#admission-board .admission-tag{border-radius:2px}
+#admission-board .admission-detail section{padding:15px 18px}
+#admission-board .admission-detail-tabs{padding:7px 10px;gap:5px;flex-wrap:wrap;overflow:visible}
+#admission-board .admission-detail-tabs button{padding:8px;font-size:11px;border-radius:2px}
+#admission-board .admission-care-actions{padding:12px 18px;gap:9px}
+#admission-board .admission-patient-state{display:flex;align-items:center;gap:6px;margin:5px 0 3px}
+#admission-board .admission-patient-state .admission-tag{font-size:10px;background:#ffffff9e;padding:2px 6px;font-weight:500}
+#admission-board .admission-signals-cell{text-align:left}
+#admission-board .admission-signals-cell>*{margin:0}
+#admission-board .admission-row-alerts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-start;margin-bottom:7px}
+#admission-board .admission-row-alerts:empty{display:none}
+#admission-board .admission-procedure-signal{display:flex;align-items:flex-start;gap:5px 7px;flex-wrap:wrap}
+#admission-board .admission-progress-label{font-size:11px;font-weight:600;white-space:nowrap}
+#admission-board .admission-procedure-signal .admission-tag{font-size:10px;padding:2px 5px;max-width:100%}
+#admission-board .admission-review-stage{flex-basis:100%;font-size:10px;font-weight:400}
+#admission-board .admission-no-procedures{font-weight:400;color:#36535e}
+#admission-board .admission-request-specification{display:block;font-size:11px;font-weight:500;margin:4px 0}
+.admission-procedure-dialog{width:min(960px,calc(100vw - 24px));border-radius:3px}
+.admission-procedure-dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+.admission-procedure-dialog>header,.admission-procedure-dialog>footer{flex-shrink:0}
+.admission-procedure-dialog .procedure-picker-body{overflow:auto;min-height:0;overscroll-behavior:contain}
+.admission-procedure-dialog .procedure-picker-search{display:grid;gap:5px;padding:14px 24px;font-weight:600}
+.clinical-order-notes[hidden]{display:none!important}
+@media(max-width:600px){.admission-procedure-dialog .procedure-picker-search{padding:12px 14px}}
+.admission-procedure-dialog input:not([type=checkbox]),.admission-procedure-dialog select,.admission-procedure-dialog textarea,.admission-procedure-dialog button,.patient-alert-dialog,.patient-alert-form input,.patient-alert-form textarea,.patient-alert-form select,.patient-alert-badge{border-radius:2px}
+.clinical-order-header{padding:12px 24px;background:#f5f9fa;border-bottom:1px solid #dce5e9}
+.clinical-order-header dl{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 90px 140px;gap:12px;margin:0 0 10px}
+.clinical-order-header dl>div{min-width:0}.clinical-order-header dt{font-size:10px;color:#526b76;font-weight:500}.clinical-order-header dd{margin:3px 0 0;font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.clinical-order-header>label,.clinical-order-notes label{display:grid;gap:5px;font-size:12px;font-weight:600;margin:0}
+.clinical-order-notes{padding:14px 24px;display:grid;gap:5px}.clinical-order-notes small{font-size:11px;color:#526b76}.clinical-order-notes textarea{width:100%;min-height:72px;border:1px solid #bdcfd6;padding:9px;font:13px/1.5 "Segoe UI",Arial;resize:vertical;color:#19343e}
+.admission-procedure-dialog .procedure-picker-option{border-bottom:1px solid #e7eef0;padding:3px 0}.admission-procedure-dialog .clinical-procedure-options{margin:0 3px 8px 28px;padding:8px 10px;border:1px solid #d7e4e8;background:#f4f8f9;min-width:0}
+.admission-procedure-dialog .clinical-procedure-options[hidden]{display:none!important}.admission-procedure-dialog .clinical-procedure-options legend{font-size:10px;color:#526b76;max-width:100%;margin:0;padding:0 4px}
+.admission-procedure-dialog .clinical-option-group{display:flex;gap:3px 11px;align-items:center;flex-wrap:wrap}.admission-procedure-dialog .clinical-option-group strong{font-size:10px;font-weight:600;min-width:75px}
+.admission-procedure-dialog .clinical-procedure-options label{font-size:11px;padding:4px 0;gap:6px}.admission-procedure-dialog .clinical-procedure-options input[type=checkbox]{width:16px;height:16px}
+.admission-procedure-dialog .clinical-procedure-options input[type=number]{width:65px;min-height:30px;padding:4px 6px}
+@media(max-width:1199px) and (min-width:1025px){#admission-board{--ad-context-width:150px;--ad-detail-width:345px}#admission-board[data-summary-collapsed=true]{--ad-context-width:36px}}
+@media(max-width:1024px){#admission-board .admission-workspace,#admission-board:not([data-detail-open=true]) .admission-workspace{display:flex;flex-direction:column;gap:10px}#admission-board #admission-summary-toggle{margin-bottom:6px;justify-content:flex-start}#admission-board[data-summary-collapsed=true] #admission-summary-toggle{min-height:35px;height:auto;flex-direction:row;padding:7px 10px}#admission-board[data-summary-collapsed=true] #admission-summary-toggle span{writing-mode:initial}#admission-board .admission-detail-tabs{overflow:visible;flex-wrap:wrap}}
+@media(max-width:600px){.clinical-order-header,.clinical-order-notes{padding:12px 14px}.clinical-order-header dl{grid-template-columns:1fr 1fr;gap:8px}.admission-procedure-dialog .clinical-procedure-options{margin-left:4px}.admission-procedure-dialog .procedure-picker-content{height:auto}.admission-procedure-dialog .procedure-picker-catalog{height:260px;max-height:40dvh}#admission-board .admission-row-alerts{gap:5px;margin-bottom:5px}#admission-board .admission-procedure-signal{gap:4px}#admission-board .admission-table td{padding:8px 6px}#admission-board .admission-detail section{padding:13px 16px}}
