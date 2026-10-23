@@ -74,6 +74,9 @@ class AdmissionBoardService
             ->concat(collect($timelineHistory['items'])->map(fn($h)=>['type'=>'reschedule','date'=>$h['from_date'],'time'=>$h['from_time']]+$h))
             ->sortBy(fn($r)=>$r['date'].'|'.$r['time'].'|'.($r['type']==='reschedule'?'0':'1').'|'.str_pad((string)($r['event_id']??$r['id']),20,'0',STR_PAD_LEFT))->values();
         $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($timeline->count()/30)));
+        $focusIndex = empty($filters['focus_appointment_id']) ? false : $timeline->search(fn($r)=>
+            $r['type']==='appointment' && (int)$r['id']===(int)$filters['focus_appointment_id']);
+        if ($focusIndex !== false) $page = intdiv($focusIndex,30)+1;
         $pageTimeline=$timeline->slice(($page-1)*30,30)->values();
         $pageRows=$rows->whereIn('id',$pageTimeline->where('type','appointment')->pluck('id'))->values();
         $positions = $this->economics->forAppointments($scopeRows,$pageRows->pluck('id')->all());
@@ -99,6 +102,7 @@ class AdmissionBoardService
         $kpis['reevaluaciones_confirmadas_pendientes']=$kpis['reevaluaciones_pendientes']-$kpis['reevaluaciones_prependientes'];
         return $this->protect(['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
             'scope_total'=>$scopeRows->count(),'timeline_total'=>$timeline->count(),'timeline'=>$pageTimeline->all(),
+            'focus_found'=>$focusIndex!==false,
             'reschedules'=>$history->forRange($query,$actor,$filters,$historyFilter,30),
             'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor)+['reschedule_origin'=>$origins[$a->id]??null,
                 'motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()],$clinicalOnly);
@@ -198,7 +202,7 @@ class AdmissionBoardService
             'can_register_arrival'=>AdmissionCareService::canRegisterArrival($a,$actor),
             'can_decline_operational_reevaluation'=>AppointmentReevaluationService::operatorCanDecline($actor,$a),
             'can_confirm_operational_reevaluation'=>AppointmentReevaluationService::operatorCanConfirm($actor)
-                && AppointmentReevaluationService::prePending($a),
+                && AppointmentReevaluationService::awaitingConfirmation($a),
             'medical_reevaluation'=>AppointmentReevaluationService::summary($a),
             'care_fallback'=>UnlinkedDoctorAdmissionFallback::eligible($a,$actor) && UnlinkedDoctorAdmissionFallback::allowedState($a)!==null,
 
@@ -251,7 +255,7 @@ class AdmissionBoardService
             if(AppointmentReevaluationService::resumed($a)) return $ownPhysician ? ['ATENDIDO'] : [];
             if(AppointmentReevaluationService::indicated($a)){
                 if(!$ownPhysician) return [];
-                if(AppointmentReevaluationService::ready($a)) return ['INICIAR_REEVALUACION'];
+                if(AppointmentReevaluationService::ready($a)) return AppointmentReevaluationService::confirmed($a) ? ['INICIAR_REEVALUACION'] : [];
                 return ['RETIRAR_REEVALUACION'];
             }
             if($ownPhysician) return ['INDICAR_REEVALUACION','ATENDIDO'];

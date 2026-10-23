@@ -93,11 +93,12 @@ class AgendaV2PaymentsTest extends \Tests\Support\AgendaV2TestCase
         foreach([$this->admission,$this->commercial] as $u){
             $u->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
             $this->actingAs($u)->postJson(route('admissionit.appointment.store'),[])->assertForbidden();
-            $this->get(route('admissionit.appointment.index'))->assertOk()->assertDontSee('id="appointmentModalCreate"',false)->assertDontSee('Registrar cita');
+            $this->get(route('admissionit.appointment.index'))->assertRedirect(route('scheduling.mvp.agenda'));
+            $this->get(route('scheduling.mvp.agenda'))->assertOk()->assertDontSee('Seguimiento de citas');
         }
         $this->admin->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
         $this->actingAs($this->admin)->postJson(route('admissionit.appointment.store'),[])->assertForbidden();
-        $this->get(route('admissionit.appointment.index'))->assertOk()->assertDontSee('id="appointmentModalCreate"',false);
+        $this->get(route('admissionit.appointment.index'))->assertRedirect(route('scheduling.mvp.agenda'));
         $this->assertDatabaseCount('payments',0);
     }
 }

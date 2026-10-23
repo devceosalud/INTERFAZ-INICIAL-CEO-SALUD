@@ -640,7 +640,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 state.legend[entry.clave] = entry;
             });
 
-            if(!options.preserveContext)clearSelection(true);
+            // Finish resetting the workspace before the day renderer selects
+            // a deep-linked appointment. A late reset otherwise paints the
+            // creation form over the existing appointment and its permissions.
+            if(!options.preserveContext)await clearSelection(true);
+            if(sequence!==feedSequence || snapshot!==feedUrl())return;
             renderRange();
             renderDoctors();
             renderMiniCalendar();
@@ -1719,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftSave.textContent = state.selection?.tipo_contexto === 'cita_existente' ? 'Guardar ficha' : 'Guardar reserva';
         el.draftSaveSchedule.hidden = state.selection?.tipo_contexto === 'cita_existente';
         const draftWithoutDeposit=document.getElementById('agenda-draft-without-deposit');if(draftWithoutDeposit)draftWithoutDeposit.hidden=el.draftSaveSchedule.hidden;
-        el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
+        el.patientModalTitle.textContent = draft.patientId ? (draft.can_write===false?'Consultar paciente':'Editar paciente') : 'Registrar paciente';
         showStoredDraftType(draft.tipo);
         el.draftType.value = draft.tipo;
         el.draftNumber.value = draft.numero;
@@ -1766,8 +1770,12 @@ document.addEventListener('DOMContentLoaded', function () {
             identityNote.hidden = identity.domain !== 'identity';
             identityNote.textContent = identity.domain === 'identity' ? identity.text : '';
         }
-        el.draftSave.disabled = !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
+        const recordReadOnly=draft.can_write===false;
+        el.patientDraft.querySelectorAll('[id^="agenda-draft-"]').forEach(input=>{if(input.matches('input,select,textarea')&&!input.id.includes('context'))input.disabled=recordReadOnly;});
+        if(recordReadOnly)el.draftMessage.textContent=draft.write_restriction||'Ficha de solo lectura. Puedes agendar sin modificar la ficha desde el registro rápido.';
+        el.draftSave.disabled = recordReadOnly || !canWritePatients || draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = recordReadOnly || !canWritePatients || !canCreateAppointments || draft.tipo === 'SIN DOCUMENTOS';
+        if(draftWithoutDeposit)draftWithoutDeposit.disabled=recordReadOnly;
         el.draftSaveSchedule.textContent = 'Registrar pago y cita';
         window.requestAnimationFrame(function () {
             el.draftNombre.focus();
@@ -1803,8 +1811,8 @@ document.addEventListener('DOMContentLoaded', function () {
         el.draftHceNote.textContent = preview.message;
         el.draftRuc.hidden = state.draft.tipo !== 'RUC';
         el.draftReniec.hidden = !state.draft.reniecOffered;
-        el.draftSave.disabled = !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
-        el.draftSaveSchedule.disabled = !canWritePatients || !canCreateAppointments || state.draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSave.disabled = state.draft.can_write===false || !canWritePatients || state.draft.tipo === 'SIN DOCUMENTOS';
+        el.draftSaveSchedule.disabled = state.draft.can_write===false || !canWritePatients || !canCreateAppointments || state.draft.tipo === 'SIN DOCUMENTOS';
     }
 
     let closingPatientModal = false;
@@ -1863,7 +1871,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if(sourceKey!==operationalWorkspace.contextKey(state.selection)||String(el.quickPatientId.value)!==String(patientId))return;
-            paintDraft(draftModel.openExisting(payload.patient, scheduleSnapshot()));
+            paintDraft({...draftModel.openExisting(payload.patient, scheduleSnapshot()),can_write:payload.patient.can_write,write_restriction:payload.patient.write_restriction});
         } catch (error) {
             el.lookupResult.className = 'agenda-lookup__result is-conflict';
             el.lookupResult.textContent = 'No se pudo cargar la ficha del paciente.';
@@ -1873,7 +1881,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function savePatient(attachToSchedule, withoutDeposit = false) {
-        if (!state.draft || !canWritePatients || state.appointmentBusy) {
+        if (!state.draft || state.draft.can_write===false || !canWritePatients || state.appointmentBusy) {
             return;
         }
 

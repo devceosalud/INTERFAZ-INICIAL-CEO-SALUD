@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "appointments": 13,
+  "original_payments": 2,
+  "total_paid": 120,
+  "vouchers": 2,
+  "F": {
+    "price": 120,
+    "paid": 60,
+    "balance": 60
+  },
+  "C": "Indicación, confirmación, segunda atención y salida: una sola cita y un evento por actuación",
+  "E": "Una cita, una reprogramación previa; el enlace no crea eventos ni ocupación",
+  "economic_previews": "Cuatro tamaños, adelanto10 previsto, saldo50; ningún pago guardado"
+}

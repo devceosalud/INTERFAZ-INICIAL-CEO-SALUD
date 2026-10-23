@@ -1,6 +1,5 @@
 @php
     $adminAppointmentItems = [
-        ['label' => 'Seguimiento de citas', 'route' => 'admin.appointment.index', 'patterns' => ['admin.appointment.*']],
     ];
     if (config('scheduling.enabled')
         && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)

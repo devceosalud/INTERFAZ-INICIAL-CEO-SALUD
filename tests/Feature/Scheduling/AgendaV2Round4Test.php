@@ -63,7 +63,8 @@ class AgendaV2Round4Test extends \Tests\Support\AgendaV2TestCase
     public function test_mode_change_requires_confirmation_specific_role_and_before_care():void {
         $this->grant($this->admin);$this->edit(['attendance_mode'=>'TELECONSULTA'])->assertUnprocessable();
         $this->grant($this->commercial);$this->actingAs($this->commercial);$this->edit(['attendance_mode'=>'TELECONSULTA','confirmed_attendance_change'=>true])->assertForbidden();
-        $this->grant($this->admission);$this->actingAs($this->admission);$this->edit(['attendance_mode'=>'TELECONSULTA','confirmed_attendance_change'=>true])->assertOk();
+        $this->grant($this->admission);$this->actingAs($this->admission);$this->edit(['attendance_mode'=>'TELECONSULTA','confirmed_attendance_change'=>true])->assertForbidden();
+        $this->a->update(['user_id'=>$this->admission->id]);$this->edit(['attendance_mode'=>'TELECONSULTA','confirmed_attendance_change'=>true])->assertOk();
         $this->a->update(['hora_atencion'=>now(),'estado_cita'=>'EN_ATENCION']);$this->edit(['attendance_mode'=>'PRESENCIAL','confirmed_attendance_change'=>true])->assertForbidden();
         $this->assertSame('TELECONSULTA',$this->a->fresh()->attendance_mode);
     }

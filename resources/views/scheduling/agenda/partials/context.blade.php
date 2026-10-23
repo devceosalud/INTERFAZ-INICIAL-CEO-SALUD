@@ -3,6 +3,8 @@
         Seleccione un intervalo para preparar el registro rápido.
     </p>
 
+    <details class="agenda-context-disclosure">
+    <summary>Detalle del intervalo seleccionado</summary>
     <div class="agenda-context__list" id="agenda-context-list" hidden>
         <span class="agenda-status" id="agenda-context-state"></span>
         <strong id="agenda-context-doctor">—</strong>
@@ -16,6 +18,7 @@
         <span id="agenda-context-payment" hidden>—</span>
         <span id="agenda-context-clinical-record" hidden>—</span>
     </div>
+    </details>
 
     <p class="agenda-context__note" id="agenda-context-note" hidden>
         Intervalo disponible; todavía no se ha registrado una cita.

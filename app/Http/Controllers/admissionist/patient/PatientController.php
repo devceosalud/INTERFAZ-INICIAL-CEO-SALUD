@@ -167,7 +167,8 @@ class PatientController extends Controller
             ]);
         }
 
-        $patient = Patient::find($request->id);
+        $patient = Patient::findOrFail($request->id);
+        \App\Support\Patients\PatientWriteAccess::assertRecord($request->user(),$patient);
 
         $patient->update([
             'nombre' => $request->nombre_paciente_edit,
@@ -197,7 +198,8 @@ class PatientController extends Controller
     //PARA DESACTIVAR 
     public function delete(Request $request)
     {
-        $patient = Patient::find($request->id);
+        $patient = Patient::findOrFail($request->id);
+        \App\Support\Patients\PatientWriteAccess::assertRecord($request->user(),$patient);
         $exito = $patient->update([
             'estado' => 'INACTIVO'
         ]);

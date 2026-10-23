@@ -113,7 +113,8 @@ class AgendaV2Round2Test extends \Tests\Support\AgendaV2TestCase
         foreach(['ADMINISTRADOR','ADMISION','COMERCIAL','RECEPCION'] as $role){
             $u=$this->agendaReader($role);$u->givePermissionTo(Permission::findOrCreate(C::CREATE,'web'));
             $this->actingAs($u)->postJson(route('admissionit.appointment.store'),$this->registration())->assertForbidden();
-            $this->get(route('admissionit.appointment.index'))->assertOk()->assertSee('Seguimiento de citas')->assertDontSee('id="appointmentModalCreate"',false);
+            $this->get(route('admissionit.appointment.index'))->assertRedirect(route('scheduling.mvp.agenda'));
+            $this->get(route('scheduling.mvp.agenda'))->assertOk()->assertDontSee('Seguimiento de citas');
         }
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);
     }

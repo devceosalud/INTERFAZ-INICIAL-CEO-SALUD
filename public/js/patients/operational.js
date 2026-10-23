@@ -37,6 +37,12 @@
     var dirty = {};
     var hydrating = false;
     var canWrite = root.dataset.canWrite === '1';
+    var canCreate = canWrite;
+    function recordAccess(allowed) {
+        canWrite=canCreate&&allowed;
+        recordForm.querySelectorAll('input,select,textarea').forEach(function(control){control.disabled=!canWrite;});
+        saveButton.disabled=!canWrite;reniecButton.disabled=!canWrite;
+    }
     var canDeactivate = root.dataset.canDeactivate === '1';
     var deactivating = false;
     var hceSupportedTypes = JSON.parse(root.dataset.hceSupportedTypes || '[]');
@@ -282,6 +288,7 @@
     }
 
     function openNew() {
+        recordAccess(true);
         state = workspace.openNew(snapshotList());
         clearFields();
         status.textContent = 'NUEVO';
@@ -300,6 +307,7 @@
         var previous = snapshotList();
         var patientId = typeof row === 'string' ? row : row.dataset.patientId;
         var url = root.dataset.detailTemplate.replace('__PATIENT__', encodeURIComponent(patientId));
+        if(String(patientId)===root.dataset.initialPatientId&&root.dataset.initialAppointmentId)url+='?appointment_id='+encodeURIComponent(root.dataset.initialAppointmentId);
 
         setNotice('Cargando ficha…', false);
 
@@ -319,6 +327,7 @@
             recordId.value = value(patient.id);
             dirty = {};
             setFields(patient);
+            recordAccess(patient.can_write!==false);
             status.textContent = value(patient.estado) || '—';
             modeNote.textContent = 'Ficha maestra existente';
             saveButton.textContent = 'Guardar cambios';
@@ -326,7 +335,7 @@
             renderReniec();
             setNotice(canWrite
                 ? 'Ficha cargada. Guardar cambios actualiza únicamente datos maestros soportados.'
-                : 'Consulta de ficha existente en modo de solo lectura.', false);
+                : patient.write_restriction || 'Consulta de ficha existente en modo de solo lectura.', false);
             showRecord();
         } catch (error) {
             setNotice('No se pudo cargar la ficha del paciente. Intente nuevamente.', true);

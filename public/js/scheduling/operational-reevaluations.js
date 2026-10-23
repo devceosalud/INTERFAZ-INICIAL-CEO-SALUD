@@ -24,6 +24,7 @@
                 const pending=row.procedures.filter(p=>!p.completed).map(p=>p.label);if(pending.length)card.appendChild(node('p','Pendientes: '+pending.join(', ')));
                 if(['MANUAL','MANUAL_DIRECT'].includes(row.review.origin))card.appendChild(node('small',(row.review.origin==='MANUAL_DIRECT'?'Marca manual directa · ':'Envío por procedimientos · ')+(row.review.authorized_by?.name||'Usuario no disponible')));
                 else if(row.review.status==='READY')card.appendChild(node('small','Ingreso automático: todos los solicitados realizados.'));
+                if(row.awaiting_confirmation&&row.review.status==='READY')card.appendChild(node('p','Exámenes completos · falta confirmación operativa antes de iniciar la segunda atención.'));
                 if(row.origins?.length>1)card.appendChild(node('small','Orígenes activos: '+row.origins.map(o=>({MANUAL_DIRECT:'marca directa',MANUAL_PARTIAL:'autorización parcial',AUTOMATIC:'procedimientos completos'}[o]||o)).join(' + ')));
                 const link=node('a','Consultar reevaluación');link.href=panel.dataset.detailBase+'?appointment_id='+encodeURIComponent(row.id);
                 link.addEventListener('click',event=>{if(doc.getElementById('admission-board')){event.preventDefault();doc.dispatchEvent(new CustomEvent('operational-queue-select',{detail:{id:Number(row.id)}}));}});card.appendChild(link);fragment.appendChild(card);

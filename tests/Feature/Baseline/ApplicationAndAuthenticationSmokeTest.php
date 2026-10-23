@@ -119,7 +119,7 @@ class ApplicationAndAuthenticationSmokeTest extends TestCase
 
         $this->actingAs($admission)->get('/dashboard')->assertOk();
         $this->actingAs($admission)->get('/admissionist/patient')->assertOk();
-        $this->actingAs($admission)->get('/admissionist/appointment')->assertOk();
+        $this->actingAs($admission)->get('/admissionist/appointment')->assertForbidden(); // No effective Agenda capabilities in this baseline fixture.
 
         $this->actingAs($reception)->get('/dashboard')->assertOk();
         $this->actingAs($reception)->get('/receptionist/sales')->assertOk();

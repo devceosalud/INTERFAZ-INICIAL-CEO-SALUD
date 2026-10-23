@@ -93,6 +93,12 @@ final class AppointmentReevaluationService
 
     public static function prePending(Appointment $a): bool
     {
+        return self::awaitingConfirmation($a) && !self::ready($a);
+    }
+
+    /** Confirmation is an audited action, independent of completed exams. */
+    public static function awaitingConfirmation(Appointment $a): bool
+    {
         return $a->estado_cita === 'EN_ATENCION' && self::indicated($a) && !self::confirmed($a);
     }
 
@@ -186,7 +192,7 @@ final class AppointmentReevaluationService
             app(ManualReevaluationService::class)->load(collect([$a]));
             $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
             abort_if($decision==='indicate' && $active,422,'La reevaluación ya está indicada.');
-            abort_if($decision==='resume' && (!self::ready($a) || self::resumed($a)),422,
+            abort_if($decision==='resume' && (!self::confirmed($a) || !self::ready($a) || self::resumed($a)),422,
                 'El retorno debe estar confirmado y listo antes de iniciar la reevaluación.');
             abort_if($decision==='withdraw' && !$active,422,'No hay indicación activa.');
             abort_if($decision==='withdraw' && self::resumed($a),422,'El médico ya retomó la atención.');
@@ -311,8 +317,10 @@ final class AppointmentReevaluationService
     public static function ready(Appointment $a): bool
     {
         if (self::indicated($a)) {
-            return $a->estado_cita==='EN_ATENCION' && self::confirmed($a) && !self::resumed($a)
-                && (self::directReady($a) || OperationalProcedureService::ready($a));
+            return $a->estado_cita==='EN_ATENCION' && !self::resumed($a)
+                && ((self::confirmed($a) && (self::directReady($a) || OperationalProcedureService::ready($a)))
+                    || (OperationalProcedureService::ready($a) && $a->operationalReview->requested_count>0
+                        && $a->operationalReview->completed_count===$a->operationalReview->requested_count));
         }
         return self::directReady($a) || OperationalProcedureService::ready($a);
     }
@@ -325,7 +333,7 @@ final class AppointmentReevaluationService
         if ($ready && OperationalProcedureService::ready($a)) {
             $origins[]=$a->operationalReview->origin === 'MANUAL' ? 'MANUAL_PARTIAL' : 'AUTOMATIC';
         }
-        return ['ready'=>$ready,'declined'=>self::declined($a),'pre_pending'=>self::prePending($a),
+        return ['ready'=>$ready,'awaiting_confirmation'=>self::awaitingConfirmation($a),'declined'=>self::declined($a),'pre_pending'=>self::prePending($a),
             'pending'=>self::pending($a),'confirmed'=>self::confirmed($a),
             'resumed'=>self::resumed($a),'indicated'=>self::indicated($a),'origins'=>$origins];
     }
@@ -406,7 +414,7 @@ final class AppointmentReevaluationService
             unset($review['reason']);
             return ['id'=>$a->id,'patient'=>trim($a->patient?->apellido_paterno.' '.$a->patient?->apellido_materno.' '.$a->patient?->nombre),
                 'doctor'=>$a->doctor?->nombre,'service'=>$a->service?->nombre,'appointment_time'=>substr($a->hora_cita,0,5),
-                'review'=>$review,'origins'=>$summary['origins'],'procedures'=>$procedures['items'],
+                'review'=>$review,'awaiting_confirmation'=>$summary['awaiting_confirmation'],'origins'=>$summary['origins'],'procedures'=>$procedures['items'],
                 'requested_count'=>$procedures['requested_count'],'completed_count'=>$procedures['completed_count'],
                 'pending_count'=>$procedures['pending_count']];
         })->sortBy(fn($row)=>($row['review']['ready_at']??'').'|'.str_pad((string)$row['id'],20,'0',STR_PAD_LEFT))->values()->all();

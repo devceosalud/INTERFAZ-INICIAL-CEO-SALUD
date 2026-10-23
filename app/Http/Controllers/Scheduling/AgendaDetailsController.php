@@ -35,7 +35,13 @@ class AgendaDetailsController extends Controller
         // Empty form controls are not an instruction to erase existing patient data.
         $data = array_filter($data, fn ($value) => $value !== null && $value !== '');
         $patient = DB::transaction(function () use ($patientId, $data, $request, $appointment) {
+            if ($appointment) {
+                \App\Models\Doctor::whereKey($appointment->doctor_id)->lockForUpdate()->firstOrFail();
+                $appointment=Appointment::visibleToAgendaUser($request->user()->id)->whereKey($appointment->id)
+                    ->where('patient_id',$patientId)->lockForUpdate()->firstOr(fn()=>abort(409,'La cita cambió. Actualiza antes de corregir la ficha.'));
+            }
             $patient = Patient::whereKey($patientId)->lockForUpdate()->firstOrFail();
+            PatientWriteAccess::assertRecord($request->user(),$patient,$appointment);
             $patient->update($data);
             if ($data && $appointment) {
                 app(AppointmentHistory::class)->record($appointment, 'CONTACTO_PACIENTE_ACTUALIZADO', $request->user()->id,
@@ -55,7 +61,8 @@ class AgendaDetailsController extends Controller
         $actor=$request->user();
         abort_unless($actor->is_active && $actor->can(Capability::VIEW),403);
         $original=Appointment::visibleToAgendaUser($actor->id)->whereKey($appointmentId)->firstOr(fn()=>abort(404));
-        abort_unless($actor->can(Capability::UPDATE),403);
+        abort_unless(\App\Services\Scheduling\AppointmentManagement::canEditDetails($original,$actor),403,PatientWriteAccess::OWNERSHIP_MESSAGE);
+        if ($request->hasAny(['has_diabetic_wound','is_postoperative'])) abort_unless($actor->can(Capability::UPDATE),403);
         $allowed=['motivo_consulta','observaciones','has_diabetic_wound','is_postoperative','attendance_mode','confirmed_attendance_change','request_key','expected_revision','_token'];
         abort_if(($request->hasAny(['request_key','expected_revision','attendance_mode']) && array_diff(array_keys($request->all()),$allowed)) || $request->has('discount'),422,'Esta operación solo actualiza datos operativos autorizados; no modifica dinero ni horarios.');
         foreach(['motivo_consulta','observaciones'] as $field) if(is_string($request->input($field)))
@@ -80,6 +87,7 @@ class AgendaDetailsController extends Controller
             \App\Models\Doctor::whereKey($original->doctor_id)->lockForUpdate()->firstOrFail();
             $appointment=Appointment::visibleToAgendaUser($actor->id)->whereKey($appointmentId)->lockForUpdate()->firstOr(fn()=>abort(404));
             abort_if((int)$appointment->doctor_id!==(int)$original->doctor_id,409,'La cita cambió de profesional.');
+            abort_unless(\App\Services\Scheduling\AppointmentManagement::canEditDetails($appointment,$actor),403,PatientWriteAccess::OWNERSHIP_MESSAGE);
             if(!$op?->appointment_id) {
                 if(isset($data['expected_revision'])) abort_unless(hash_equals(\App\Services\Scheduling\AppointmentManagement::revision($appointment),$data['expected_revision']),409,'La cita cambió en otra sesión. Actualiza antes de guardar; se conservan tus cambios.');
                 $changes=array_intersect_key($data,array_flip(['motivo_consulta','observaciones','has_diabetic_wound','is_postoperative']));

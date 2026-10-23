@@ -222,8 +222,11 @@ class JulioAdmissionReevaluationTest extends TestCase
             'procedure'=>'laboratory','completed'=>true
         ])->assertOk();
         $this->getJson(route('scheduling.mvp.admission.detail',$a->id))
-            ->assertJsonPath('medical_reevaluation.ready',false)
-            ->assertJsonPath('medical_reevaluation.pre_pending',true);
+            ->assertJsonPath('medical_reevaluation.ready',true)
+            ->assertJsonPath('medical_reevaluation.awaiting_confirmation',true)
+            ->assertJsonPath('medical_reevaluation.pre_pending',false);
+        $this->actingAs($physician);
+        $this->indicate($a,'resume')->assertUnprocessable();
         $operator=$this->agendaReader('ADMISION');
         $this->actingAs($operator);
         $this->confirm($a)->assertOk();

@@ -69,7 +69,10 @@ class AgendaDetailsTest extends TestCase
             ->assertJsonPath('can_edit_notes', true)->assertJsonPath('es_exonerado', false);
         $beforeRevoke=$appointment->fresh()->getAttributes();$events=\Illuminate\Support\Facades\DB::table('appointment_events')->count();
         $owner->revokePermissionTo(C::UPDATE);
-        $this->patchJson($url,['observaciones'=>'Retirado UPDATE, conserva CREATE'])->assertForbidden();
+        $this->patchJson($url,['observaciones'=>'Creador con CREATE conserva la edición acotada'])->assertOk();
+        $owner->revokePermissionTo(C::CREATE);
+        $beforeRevoke=$appointment->fresh()->getAttributes();$events=\Illuminate\Support\Facades\DB::table('appointment_events')->count();
+        $this->patchJson($url,['observaciones'=>'Sin CREATE ni UPDATE'])->assertForbidden();
         $this->getJson(route('scheduling.mvp.agenda.economy',$appointment->id))->assertOk()->assertJsonPath('can_edit_notes',false);
         $this->assertSame($beforeRevoke,$appointment->fresh()->getAttributes());
         $this->assertSame($events,\Illuminate\Support\Facades\DB::table('appointment_events')->count());

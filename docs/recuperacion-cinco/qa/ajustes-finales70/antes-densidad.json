@@ -1,0 +1,93 @@
+[
+  {
+    "agenda": "admission",
+    "width": 1920,
+    "height": 928,
+    "visible": 2,
+    "ids": [
+      "1",
+      "2"
+    ],
+    "listHeight": 217,
+    "listTop": 637,
+    "overflow": false
+  },
+  {
+    "agenda": "agenda",
+    "width": 1920,
+    "height": 928,
+    "visible": 4,
+    "ids": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "listHeight": 333,
+    "listTop": 514,
+    "overflow": false
+  },
+  {
+    "agenda": "admission",
+    "width": 1536,
+    "height": 744,
+    "visible": 0,
+    "ids": [],
+    "listHeight": 150,
+    "listTop": 637,
+    "overflow": false
+  },
+  {
+    "agenda": "agenda",
+    "width": 1536,
+    "height": 744,
+    "visible": 2,
+    "ids": [
+      "1",
+      "2"
+    ],
+    "listHeight": 158,
+    "listTop": 562,
+    "overflow": false
+  },
+  {
+    "agenda": "admission",
+    "width": 1366,
+    "height": 668,
+    "visible": 0,
+    "ids": [],
+    "listHeight": 150,
+    "listTop": 651,
+    "overflow": false
+  },
+  {
+    "agenda": "agenda",
+    "width": 1366,
+    "height": 668,
+    "visible": 0,
+    "ids": [],
+    "listHeight": 158,
+    "listTop": 650,
+    "overflow": false
+  },
+  {
+    "agenda": "admission",
+    "width": 1280,
+    "height": 650,
+    "visible": 0,
+    "ids": [],
+    "listHeight": 150,
+    "listTop": 651,
+    "overflow": false
+  },
+  {
+    "agenda": "agenda",
+    "width": 1280,
+    "height": 650,
+    "visible": 0,
+    "ids": [],
+    "listHeight": 158,
+    "listTop": 650,
+    "overflow": false
+  }
+]

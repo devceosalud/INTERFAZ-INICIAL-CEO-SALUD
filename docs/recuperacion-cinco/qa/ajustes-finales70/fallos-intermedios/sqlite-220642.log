@@ -1,0 +1,43 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+.............................................................   61 / 1240 (  4%)
+.............................................................  122 / 1240 (  9%)
+.............................................................  183 / 1240 ( 14%)
+.............................................................  244 / 1240 ( 19%)
+.............................................................  305 / 1240 ( 24%)
+.............................................................  366 / 1240 ( 29%)
+.............................................................  427 / 1240 ( 34%)
+.............................................................  488 / 1240 ( 39%)
+........................................................F....  549 / 1240 ( 44%)
+.............................................................  610 / 1240 ( 49%)
+.............................................................  671 / 1240 ( 54%)
+...................F.........................................  732 / 1240 ( 59%)
+.............................................................  793 / 1240 ( 63%)
+.............................................................  854 / 1240 ( 68%)
+.............................................................  915 / 1240 ( 73%)
+.............................................................  976 / 1240 ( 78%)
+............................................................. 1037 / 1240 ( 83%)
+............................................................. 1098 / 1240 ( 88%)
+............................................................. 1159 / 1240 ( 93%)
+............................................................. 1220 / 1240 ( 98%)
+....................                                          1240 / 1240 (100%)
+
+Time: 06:25.904, Memory: 230.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\Scheduling\AgendaV2PaymentsTest::test_legacy_create_is_forbidden_by_http_and_service_but_shared_reader_remains_available
+Expected response status code [200] but received 302.
+Failed asserting that 200 is identical to 302.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:123
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\Concerns\AssertsStatusCodes.php:16
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2PaymentsTest.php:101
+
+2) Tests\Feature\Scheduling\AppointmentReaderPrivacyTest::test_legacy_lists_and_dashboard_apply_privacy_without_an_admin_override with data set #2 ('/admin/appointment', 'ADMINISTRADOR')
+Failed asserting that an array does not contain 4.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AppointmentReaderPrivacyTest.php:128
+
+FAILURES!
+Tests: 1240, Assertions: 11463, Failures: 2.

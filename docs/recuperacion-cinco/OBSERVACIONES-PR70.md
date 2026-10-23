@@ -1,5 +1,7 @@
 # Corrección de las cinco observaciones manuales del PR #70
 
+> Continuación: [ajustes finales y densidad del PR #70](AJUSTES-FINALES-PR70.md), conservando esta evidencia histórica.
+
 Continuación de `e80d50e23ce233da63fdc9d03a3e8a9a6de5994c` sobre la misma rama `codex/integracion-cinco-main-20261022`. Main y base del PR verificados: `a57b2d04e8302279be1c775c7e8bc913a170f209`. Se conservan #67, #68, la integración #70, los otros worktrees y los cinco archivos modificados del checkout original. No se hace merge ni despliegue.
 
 ## Reproducción y solución

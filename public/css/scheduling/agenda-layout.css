@@ -362,6 +362,44 @@
 .agenda-manage-dialog .agenda-manage-form-actions>.agenda-btn{width:auto;flex:0 1 auto;display:inline-flex;align-items:center;justify-content:center}.agenda-manage-dialog--profile[open]{display:flex;flex-direction:column;height:min(88dvh,850px);overflow:hidden}.agenda-manage-dialog--profile>.agenda-manage-header,.agenda-manage-dialog--profile>.agenda-manage-identity,.agenda-manage-dialog--profile>.agenda-manage-economy,.agenda-manage-dialog--profile>.agenda-manage-actions,.agenda-manage-dialog--profile>.agenda-manage-status,.agenda-manage-dialog--profile>.agenda-manage-more{flex-shrink:0}.agenda-manage-dialog--profile>.agenda-manage-body{display:flex;flex-direction:column;flex:1;min-height:0}.agenda-manage-dialog--profile .agenda-manage-body>h3,.agenda-manage-dialog--profile .agenda-manage-body>p{flex-shrink:0;margin-block:4px}.agenda-manage-dialog--profile .agenda-patient-form{display:flex;flex-direction:column;flex:1;min-height:0;margin-top:6px}.agenda-manage-dialog--profile .agenda-patient-form>[role=tabpanel]{flex:1;min-height:0;max-height:none}.agenda-manage-dialog--profile .agenda-patient-tabs,.agenda-manage-dialog--profile .agenda-manage-form-actions{flex-shrink:0}.agenda-manage-dialog--profile .agenda-manage-form-actions{padding-top:8px;margin-top:6px}.agenda-manage-dialog--profile .agenda-manage-more{padding-top:4px;margin-top:6px}
 @media(max-width:600px){.agenda-manage-dialog--profile[open]{height:94dvh;max-height:94dvh}.agenda-manage-dialog--profile .agenda-manage-identity{margin-block:8px}.agenda-manage-dialog--profile .agenda-manage-actions{margin-block:10px;gap:5px}.agenda-manage-dialog--profile .agenda-manage-actions .agenda-btn{padding:6px;min-height:38px}.agenda-manage-dialog .agenda-manage-form-actions>.agenda-btn{flex:1 1 42%}}
 
+/* Work list density at ordinary browser zoom; forms retain their full controls. */
+.agenda-board .agenda-doctor-row{grid-template-columns:16px minmax(0,1fr) 24px;grid-template-rows:auto auto;gap:2px 7px}
+.agenda-board .agenda-doctor-check{grid-column:1;grid-row:1;align-self:center}
+.agenda-board .agenda-doctor-row__body{grid-column:2;grid-row:1}
+.agenda-board .agenda-doctor-row__name{white-space:normal;text-overflow:clip;overflow:visible;font-size:13px;line-height:1.3;font-weight:750}
+.agenda-board .agenda-doctor-row__specialty{white-space:normal;font-size:10px;line-height:1.3}
+.agenda-board .agenda-doctor-row__metrics{grid-column:2;grid-row:2;justify-self:start;font-size:11px}
+.agenda-board .agenda-favorite-toggle{grid-column:3;grid-row:1;align-self:start}
+.agenda-board .agenda-doctors>.agenda-pane-head{flex-wrap:wrap;gap:5px}
+.agenda-board .agenda-doctor-list{min-height:130px;max-height:180px}.agenda-board .agenda-day-cell--4>.agenda-patient-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.3}
+.agenda-board .agenda-registration{padding-right:4px;gap:18px}.agenda-board .agenda-quick__body{padding:18px 20px}.agenda-board .agenda-registration .agenda-pane-head{padding:12px 16px}.agenda-board .agenda-quick__patient{gap:10px;padding:12px}.agenda-board .agenda-quick__patient p{padding:7px 9px}.agenda-board .agenda-quick__patient strong,.agenda-board .agenda-fast-context dd{white-space:normal;text-overflow:clip;overflow:visible;overflow-wrap:anywhere;line-height:1.45}.agenda-board .agenda-fast-context{gap:14px 12px;padding:12px;margin:16px 0}.agenda-board .agenda-quick__booking-fields{gap:16px}.agenda-board .agenda-registration .agenda-field__input{min-height:40px}.agenda-board .agenda-registration .agenda-operational-fields>details{margin-block:12px}.agenda-board .agenda-registration .agenda-operational-fields>details[open]{padding:12px}
+.agenda-board .agenda-registration .agenda-payment-totals{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.agenda-board .agenda-context{margin-top:5px}
+.agenda-board .agenda-context__list{gap:3px 8px}
+.agenda-board .agenda-context-disclosure{width:100%;font-size:11px}.agenda-board .agenda-context-disclosure>summary{cursor:pointer;font-weight:650}.agenda-board .agenda-context-disclosure[open]>.agenda-context__list{margin-top:6px}.agenda-board .agenda-context[data-empty=true]>.agenda-context-disclosure{display:none}
+
+@media(min-width:1200px){
+ .agenda-shell-compact .content-body.agenda-page{padding-top:var(--erp-shell-height,52px)!important;box-sizing:border-box}
+ .agenda-shell-compact .content-body.agenda-page .agenda-page__container{height:calc(100dvh - var(--erp-shell-height) - 4px);padding:6px 10px 8px;box-sizing:border-box}
+ .agenda-board .agenda-commandbar{grid-template-columns:180px minmax(0,1fr) auto;min-height:60px;padding:5px 10px;gap:10px;margin-bottom:7px}
+ .agenda-board .agenda-commandbar__filters{grid-column:auto;grid-row:auto;grid-template-columns:minmax(100px,1fr) minmax(100px,1fr) minmax(150px,1.3fr) 130px;gap:7px}
+ .agenda-board .agenda-commandbar__actions{grid-column:auto;grid-row:auto;flex-wrap:nowrap;max-width:none;gap:4px;justify-content:flex-end}
+ .agenda-board .agenda-commandbar h1{font-size:20px}.agenda-board .agenda-commandbar__eyebrow{font-size:9px;margin-bottom:2px}
+ .agenda-board .agenda-commandbar .agenda-field__input,.agenda-board .agenda-filter-button{height:32px;font-size:12px}.agenda-board .agenda-commandbar .agenda-btn{min-height:30px;padding:5px 8px;font-size:11px}
+ .agenda-board .agenda-workspace{grid-template-columns:clamp(260px,20vw,310px) minmax(0,1fr) clamp(360px,23vw,420px);gap:14px}
+ .agenda-board .agenda-center{padding:9px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+ .agenda-board .agenda-center__head{flex-wrap:nowrap;gap:6px;align-items:center;flex:none;padding:2px 0 4px;margin-bottom:3px}.agenda-board .agenda-center__head .agenda-section-title{font-size:15px}.agenda-board .agenda-range{font-size:11px;margin-top:2px}
+ .agenda-board .agenda-kpis{flex-wrap:nowrap;gap:0}.agenda-board .agenda-kpis div{min-width:43px;padding:0 5px}.agenda-board .agenda-kpis dt{font-size:9px}.agenda-board .agenda-kpis dd{font-size:16px}
+ .agenda-board .agenda-context{padding:5px 7px;min-height:28px;flex:none}.agenda-board .agenda-context__empty,.agenda-board .agenda-context__list{font-size:11px}
+ .agenda-board .agenda-calendar-surface{margin-top:5px;min-height:0;flex:1}.agenda-board .agenda-day-grid{min-height:0}
+ .agenda-board .agenda-legend{display:flex;flex-wrap:wrap;padding:5px 0 0;margin-top:5px;gap:4px 12px;flex:none}.agenda-board .agenda-legend__item{min-height:21px;font-size:11px}.agenda-board .agenda-legend__marker{width:14px;height:12px}.agenda-board .agenda-center__foot{font-size:10px;margin:3px 0 0}
+ .agenda-board .agenda-reschedule-history{padding:4px 7px;margin-bottom:4px;flex:none;font-size:11px}
+ .agenda-board .agenda-row-head span{padding:5px}.agenda-board .agenda-day-cell{min-height:31px;padding-top:4px;padding-bottom:4px}
+ .agenda-board .agenda-mini__day{height:31px;line-height:29px;font-size:12px}.agenda-board .agenda-mini__month{font-size:14px;margin:7px}.agenda-board .agenda-mini-legend{font-size:10px;gap:5px}
+ .agenda-board .agenda-doctor-row{min-height:40px;padding:6px}.agenda-board .agenda-pane-head{padding:8px 10px}.agenda-board .agenda-doctor-search{padding:7px}.agenda-board .agenda-doctor-search input{height:31px}.agenda-board .agenda-operations{gap:10px}
+ .agenda-board .agenda-follow-up-notice{font-size:10px;margin:1px 0 5px;line-height:1.3}
+}
+
 @media(min-width:701px){.agenda-patient-form .patients-form-grid--three{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 @media(min-width:701px){.agenda-manage-dialog--profile .agenda-manage-actions{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-block:12px}.agenda-manage-dialog--profile .agenda-manage-actions .agenda-btn{grid-column:auto;padding:8px;font-size:11px}}

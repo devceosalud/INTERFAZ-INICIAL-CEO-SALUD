@@ -71,6 +71,7 @@ class OperationalPatientMutationController extends Controller
                         ->where('patient_id',$patientId)->lockForUpdate()->firstOr(fn()=>abort(409,'La cita cambió de paciente. Actualiza antes de guardar.'));
                 }
                 $patient = Patient::whereKey($patientId)->lockForUpdate()->firstOrFail();
+                \App\Support\Patients\PatientWriteAccess::assertRecord($request->user(),$patient,$appointment);
                 $before = \App\Services\Patients\PatientRecordRevision::for($patient);
                 if ($request->has('expected_revision')) abort_unless(hash_equals($before,$request->input('expected_revision')),409,
                     'La ficha cambió en otra sesión. Se conservan tus cambios; vuelve a consultar antes de guardar.');

@@ -36,8 +36,16 @@ class ParentDeletionCharacterizationTest extends TestCase
         $appointment = $this->createLegacyAppointment();
         $parentId = $appointment->{$parent};
 
-        $this->actingAs($this->createUserWithRole($role))
-            ->postJson($uri, ['id' => $parentId, 'catalog_version' => 0])
+        $response=$this->actingAs($this->createUserWithRole($role))
+            ->postJson($uri, ['id' => $parentId, 'catalog_version' => 0]);
+        if ($table==='patients') {
+            // PR70: the legacy endpoint must respect the same creator boundary.
+            $response->assertForbidden();
+            $this->assertDatabaseHas($table,['id'=>$parentId,'estado'=>'ACTIVO']);
+            $this->assertDatabaseHas('appointments',['id'=>$appointment->id]);
+            return;
+        }
+        $response
             ->assertOk()
             ->assertJsonPath('code', 1);
 

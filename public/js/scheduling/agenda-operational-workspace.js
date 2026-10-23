@@ -174,6 +174,7 @@
             const fields=[ui.reason,ui.note,postoperative,hasWound].filter(Boolean);
             const locks=fields.map(field=>field.disabled);
             const notes=model.nonBlank({motivo_consulta:ui.reason.value,observaciones:ui.note.value,has_diabetic_wound:Boolean(hasWound?.checked),is_postoperative:Boolean(postoperative?.checked)});
+            if(hasWound?.disabled)delete notes.has_diabetic_wound;if(postoperative?.disabled)delete notes.is_postoperative;
             if(lastPosition?.management?.revision){notes.request_key=root.crypto.randomUUID();notes.expected_revision=lastPosition.management.revision;}
             fields.forEach(field=>field.disabled=true);
             setWorking(true); inlineStatus('notes', '');
@@ -339,6 +340,10 @@
                 const data = await request(config.patientTemplate.replace('__PATIENT__', encodeURIComponent(id)));
                 if (version !== captureVersion || captureDirty) { return; }
                 const p = data.patient;
+                const canWrite=p.can_write!==false;
+                ['phone','phone-secondary','channel','medium'].forEach(name=>ui[name].disabled=!canWrite);
+                ui['save-patient'].disabled=!canWrite;
+                if(!canWrite)inlineStatus('patient',p.write_restriction||'Ficha de solo lectura.');
                 capturePatient = p;
                 if (config.patientLoaded) { config.patientLoaded(p); }
                 ui.phone.value = p.telefono || ''; document.getElementById('agenda-patient-phone-summary').textContent = p.telefono || 'Sin celular'; ui['phone-secondary'].value = p.telefono_secundario || '';
@@ -506,12 +511,12 @@
                 if (catalogPrice) catalogPrice.value=p.catalog_price || p.precio;
                 if (discountType) discountType.value=p.discount_type || ''; if (discountValue) discountValue.value=p.discount_value || '0';
                 if (discountReason) discountReason.value=p.discount_reason || '';
-                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!p.can_edit_notes; } if(hasWound){hasWound.checked=Boolean(p.has_diabetic_wound);hasWound.disabled=!p.can_edit_notes;}
+                if (postoperative) { postoperative.checked=Boolean(p.is_postoperative); postoperative.disabled=!(p.can_edit_flags??p.can_edit_notes); } if(hasWound){hasWound.checked=Boolean(p.has_diabetic_wound);hasWound.disabled=!(p.can_edit_flags??p.can_edit_notes);}
                 if (exemptionReason) exemptionReason.value=p.motivo_exoneracion || '';
                 ui.reason.value = p.motivo_consulta || ''; ui.note.value = p.observaciones || '';
                 ui.reason.disabled = !p.can_edit_notes; ui.note.disabled = !p.can_edit_notes;
                 ui['save-notes'].hidden = !p.can_edit_notes; ui['save-notes'].disabled = !p.can_edit_notes;
-                byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : 'Esta cita está en consulta: no tienes permiso para modificar sus notas.';
+                byId('notes-tip').textContent = p.can_edit_notes ? 'Guarda los cambios en esta cita. Los campos vacíos conservan el dato actual.' : p.management?.edit_restriction || 'Puedes consultar esta cita; no tienes permiso para modificar sus datos.';
                 ui.authorized.value = p.autorizado_por || ''; ui.waived.checked = Boolean(p.es_exonerado);captureClean(['reason','note','has-wound','postoperative','authorized','waived','indication','referred','referral-origin','discount-type','discount-value','discount-reason','exemption-reason','double','rate']);await documents(id);
             } catch (e) { config.notice(e.message, true); }
         }

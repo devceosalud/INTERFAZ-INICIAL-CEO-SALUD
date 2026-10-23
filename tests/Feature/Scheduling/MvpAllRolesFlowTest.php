@@ -26,7 +26,7 @@ class MvpAllRolesFlowTest extends TestCase
         $actor=$this->createUserWithRole($role);$b=app(B::class);$b->apply([],$b->plan()['plan_hash'],'QA-FLOW');$this->actingAs($actor->fresh());
         $catalog=$this->createAppointmentCatalog();$catalog['rate']->update(['nombre'=>'TARIFA ESTANDAR','tipo_tarifa'=>'MONTO_FIJO']);
         $this->get('/dashboard')->assertOk();$this->get('/scheduling-mvp/agenda')->assertOk()->assertSee('id="agenda-draft-save"',false);
-        $this->get('/admissionist/appointment')->assertOk();
+        $this->get('/admissionist/appointment')->assertRedirect(route('scheduling.mvp.agenda'));
         $patientId=$this->postJson('/patients',['tipo_identificacion'=>'DNI','numero_identidad'=>'70001313','nombre'=>'QA MVP',
             'apellido_paterno'=>'FICTICIO','apellido_materno'=>'LOCAL','genero'=>'HOMBRE','telefono_prefijo'=>'+51','telefono_numero'=>'999000131'])->assertCreated()->json('patient.patient_id');
         $patient=\App\Models\Patient::findOrFail($patientId);

@@ -73,7 +73,7 @@ final class RescheduleHistory
             'to_date'=>substr($to['fecha_cita'],0,10),'to_time'=>substr($to['hora_cita'],0,5),
             'current_date'=>substr($a->fecha_cita,0,10),'current_time'=>substr($a->hora_cita,0,5),'current_doctor_id'=>(int)$a->doctor_id,
             'agenda_url'=>route('scheduling.mvp.agenda',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'appointment_id'=>$a->id]),
-            'admission_url'=>route('scheduling.mvp.admission',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'site_id'=>$a->site_id??'','appointment_id'=>$a->id]),
+            'admission_url'=>route('scheduling.mvp.admission',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'site_id'=>$a->site_id??'','appointment_id'=>$a->id,'focus'=>1]),
             'actor'=>AgendaCreatorVisibility::allows($actor)?($event->actor?->name??'Usuario histórico'):null,
             'occurred_at'=>$event->occurred_at?->toISOString(),'historical'=>true,'occupies_slot'=>false]
             +($includePatient?['patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre])))]:[]);

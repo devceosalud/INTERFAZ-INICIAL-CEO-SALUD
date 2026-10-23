@@ -38,6 +38,7 @@ class AdmissionBoardController extends Controller
             'only_reevaluations'=>'nullable|boolean',
             'only_pending_reevaluations'=>'nullable|boolean',
             'reevaluation_stage'=>'nullable|in:PRE_PENDING,PENDING',
+            'focus_appointment_id'=>'nullable|integer|min:1',
             'history_before'=>'nullable|integer|min:1','page'=>'nullable|integer|min:1|max:1000','revision'=>'nullable|string|regex:/\A[a-f0-9]{64}\z/']);
         abort_if(Carbon::parse($data['fecha'])->diffInDays(Carbon::parse($data['hasta'] ?? $data['fecha'])) > 30,422,'El rango máximo es de 31 días.');
         // Missing site chooses the actual catalog record; explicit null selects all sites.

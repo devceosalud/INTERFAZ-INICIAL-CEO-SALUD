@@ -101,7 +101,10 @@ class OperationalRegistrationService
                 }
                 if (!empty($data['patient_capture'])) {
                     abort_unless(PatientWriteAccess::allows($actor), 403);
-                    Patient::findOrFail($patientId)->update(array_filter($data['patient_capture'], fn ($value) => $value !== null && $value !== ''));
+                    $patient=Patient::whereKey($patientId)->lockForUpdate()->firstOrFail();
+                    $patient->fill(array_filter($data['patient_capture'], fn ($value) => $value !== null && $value !== ''));
+                    if ($patient->isDirty()) PatientWriteAccess::assertRecord($actor,$patient);
+                    $patient->save();
                 }
                 $create = new CreateAppointmentData($patientId, $data['doctor_id'], $data['service_id'], $data['site_id'] ?? null,
                     $data['fecha_cita'], $data['hora_cita'], $data['duracion_cita'], $owner, $actor->id,

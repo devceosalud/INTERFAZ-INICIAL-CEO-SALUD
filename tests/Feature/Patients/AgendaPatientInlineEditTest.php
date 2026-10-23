@@ -35,10 +35,10 @@ class AgendaPatientInlineEditTest extends \Tests\Support\AgendaV2TestCase
         $data=$this->data();$data['fecha_nacimiento']=now()->subYears(10)->format('Y-m-d');$this->putJson($this->url(),$data)->assertUnprocessable()->assertJsonValidationErrors('registrar_responsable');
         $this->assertSame(0,$this->a->events()->count());
     }
-    public function test_each_existing_writer_role_can_correct_master_but_cannot_reassign_by_this_endpoint():void
+    public function test_creator_and_existing_administrator_can_correct_master_without_allowing_operational_non_creators():void
     {
         $this->a->update(['estado_agenda'=>'CONFIRMADA']);
-        foreach([$this->admin,$this->admission,$this->commercial]as$user){$this->actingAs($user);$this->getJson($this->url().'/editor?appointment_id='.$this->a->id)->assertOk();$data=$this->data();$data['nombre']='Rol '.$user->id;$data['patient_id']=999999;$this->putJson($this->url(),$data)->assertOk();$this->assertSame($this->a->patient_id,$this->a->fresh()->patient_id);}
+        foreach([$this->admin,$this->admission,$this->commercial]as$user){$this->actingAs($user);$allowed=$user->hasRole('ADMINISTRADOR');$this->getJson($this->url().'/editor?appointment_id='.$this->a->id)->assertOk()->assertJsonPath('can_write',$allowed);$data=$this->data();$data['nombre']='Rol '.$user->id;$data['patient_id']=999999;$response=$this->putJson($this->url(),$data);$allowed?$response->assertOk():$response->assertForbidden();$this->assertSame($this->a->patient_id,$this->a->fresh()->patient_id);}
         $this->commercial->forceFill(['is_active'=>false])->save();$this->putJson($this->url(),$this->data())->assertUnauthorized();
     }
     public function test_editor_requires_visible_matching_appointment_and_version_for_writes():void

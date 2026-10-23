@@ -1,5 +1,7 @@
 # Integración de los cinco requerimientos sobre main con PR #68
 
+> Continuación: [ajustes finales y densidad del PR #70](AJUSTES-FINALES-PR70.md), conservando esta evidencia histórica.
+
 Actualización tras las pruebas manuales del PR #70: [OBSERVACIONES-PR70.md](OBSERVACIONES-PR70.md) registra las cinco causas, correcciones, archivos y verificaciones nuevas. Incluye historial cronológico en Admisión, importes claros, acceso directo al editor autorizado, alta y confirmación sin adelanto atómicas y etapas/filtros coherentes. La demo manual aislada utiliza loopback8000/MariaDB33343; los resultados anteriores se conservan como antecedentes.
 
 ## Referencias y alcance
