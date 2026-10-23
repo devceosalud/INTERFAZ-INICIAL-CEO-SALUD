@@ -60,7 +60,7 @@
                             <div class="agenda-center__head">
                                 <div>
                                     <h2 class="agenda-section-title" id="agenda-title">Agenda horaria</h2>
-                                    @if(auth()->user()->hasRole('ADMINISTRADOR'))
+                                    @if(auth()->user()->hasAnyRole('ADMINISTRADOR','FACTURACION'))
                                         @if(auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW_AUDIT))
                                             <a class="ml-2" href="{{ route('scheduling.mvp.agenda.reports.index') }}">Reportes de gerencia (CSV / Excel)</a>
                                         @endif
