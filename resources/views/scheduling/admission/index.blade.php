@@ -5,6 +5,7 @@
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/agenda-indicators.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/appointment-patient-documents.css') }}" rel="stylesheet">
 <link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-board.css') }}" rel="stylesheet">
+<link href="{{ \App\Support\Scheduling\AgendaAssets::url('css/scheduling/admission-clinical.css') }}" rel="stylesheet">
 @endsection
 @section('body')
 <div id="main-wrapper" class="menu-toggle">
@@ -18,11 +19,6 @@
             <header class="admission-heading"><div><p class="admission-eyebrow">ATENCIÓN Y SEGUIMIENTO</p><h1>Agenda de admisión</h1><p>Atención y seguimiento del paciente, en una misma vista.</p></div>
                 <div class="admission-actions"><button type="button" id="admission-refresh" class="admission-btn">Actualizar</button><a class="admission-btn admission-btn--primary" href="{{ route('scheduling.mvp.agenda') }}" id="admission-create" @if($clinicalOnly) hidden @endif>{{ auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::CREATE) ? '+ Agendar cita' : 'Agenda operativa' }}</a></div>
             </header>
-            <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
-                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
-                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @elseif($key==='reevaluaciones_pendientes') data-pending-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
-                @endforeach
-            </section>
             <form id="admission-filters" class="admission-filters" autocomplete="off">
                 <div class="admission-filter-primary">
                     <label class="admission-search">Buscar paciente<input id="admission-search" type="search" name="patient" maxlength="100" placeholder="Nombre, DNI o historia clínica"></label>
@@ -50,7 +46,12 @@
             <div class="admission-context-line"><div class="admission-filter-summary"><span id="admission-active-filter" role="status"></span> <button id="admission-clear-category" type="button" class="admission-btn" hidden>Retirar filtro rápido</button></div><details class="admission-scope-info"><summary>Alcance e indicadores</summary><div><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><p class="admission-scope">Reevaluación: <strong data-kpi="reevaluaciones_prependientes">—</strong> por confirmar · <strong data-kpi="reevaluaciones_confirmadas_pendientes">—</strong> confirmadas, pendientes · <strong data-kpi="reevaluaciones">—</strong> listas.</p></div></details><details class="admission-financial-summary" @if($clinicalOnly) hidden @endif><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales del conjunto de fecha, profesional, sede, estado y búsqueda, antes de los filtros rápidos. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
             <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
         </div>
-        <div class="admission-workspace">
+        <div class="admission-workspace"><aside class="admission-context" aria-label="Resumen de atención"><h2>Resumen de atención</h2>            <section class="admission-kpis" aria-label="Indicadores del conjunto filtrado">
+                @foreach(['total'=>'Citas','por_llegar'=>'Por llegar','en_espera'=>'En espera','en_consultorio'=>'En atención','reevaluaciones_pendientes'=>'Pendientes de reevaluación','reevaluaciones'=>'Listos para reevaluación','atendidos'=>'Atendidos'] as $key=>$label)
+                    <button type="button" class="admission-kpi" @if($key==='reevaluaciones') data-review-only @elseif($key==='reevaluaciones_pendientes') data-pending-review-only @else data-group="{{ $key==='total'?'':$key }}" @endif><span>{{ $label }}</span><strong data-kpi="{{ $key }}">—</strong></button>
+                @endforeach
+            </section>
+</aside>
             <section class="admission-main" aria-label="Pacientes y reevaluaciones">
                 <details id="admission-reschedule-panel" class="admission-reschedule-panel" hidden>
                     <summary>Reprogramaciones del día <span id="admission-reschedule-count"></span></summary>
@@ -61,7 +62,7 @@
                 </details>
                 <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button @if($clinicalOnly) hidden @endif id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button><div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
-                    <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención</th><th>Procedimientos / alertas</th></tr></thead><tbody id="admission-rows"></tbody></table></div>
+                    <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención y alertas</th></tr></thead><tbody id="admission-rows"></tbody></table></div>
                     <div class="admission-pagination"><button type="button" id="admission-prev" class="admission-btn">Anterior</button><span id="admission-page"></span><button type="button" id="admission-next" class="admission-btn">Siguiente</button></div>
                 </div>
                 <div id="admission-queue-panel" role="tabpanel" aria-labelledby="admission-queue-tab" hidden>@unless($clinicalOnly)<x-utils.operational-reevaluations :compact="true" />@endunless</div>

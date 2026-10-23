@@ -1,0 +1,65 @@
+/* Reference lock: approved B / Clinical Enterprise. Scoped to Admisión only. */
+.admission-viewport .content-body.admission-page{padding-top:10px}
+#admission-board{--ad-ink:#19343e;--ad-muted:#526b76;--ad-line:#dce5e9;--ad-brand:#176d78;font-family:"Segoe UI",Arial,sans-serif;max-width:none;padding:0 12px 12px;font-size:13px}
+#admission-board .admission-heading{margin:0 0 10px;min-height:43px}
+#admission-board .admission-heading h1{font-size:23px;font-weight:650;letter-spacing:-.45px;margin:0}
+#admission-board .admission-heading p:not(.admission-eyebrow){display:none}
+#admission-board .admission-eyebrow{font-size:10px;letter-spacing:1px}
+#admission-board .admission-filters{padding:9px 12px;border-radius:6px}
+#admission-board .admission-filter-primary{grid-template-columns:minmax(180px,1.2fr) 145px minmax(200px,1fr) auto}
+#admission-board .admission-more-filters>summary{position:static;text-align:right;padding:5px 0 0}
+#admission-board .admission-more-filters:not([open]){height:24px}
+#admission-board .admission-context-line{margin:5px 0;font-size:11px;min-height:25px}
+#admission-board .admission-filter-summary{margin:0;font-size:12px}
+#admission-board .admission-workspace{grid-template-columns:176px minmax(0,1fr) 340px;gap:12px;min-height:380px;align-items:stretch}
+#admission-board:not([data-detail-open=true]) .admission-workspace{grid-template-columns:176px minmax(0,1fr)}
+#admission-board:not([data-detail-open=true]) .admission-detail{display:none}
+#admission-board .admission-context{min-width:0;overflow:auto;background:#f6f9fa;border:1px solid var(--ad-line);border-radius:6px;padding:14px 10px}
+#admission-board .admission-context h2{font-size:12px;font-weight:650;margin:0 4px 14px}
+#admission-board .admission-kpis{display:flex;flex-direction:column;padding:0;margin:0;border:0;border-radius:0;background:transparent;gap:4px}
+#admission-board .admission-kpi{border:1px solid transparent;border-radius:5px;padding:11px 10px;min-height:58px;font-size:12px;color:var(--ad-muted);gap:8px}
+#admission-board .admission-kpi span{max-width:115px;line-height:1.35}
+#admission-board .admission-kpi strong{font-size:24px;font-weight:650}
+#admission-board .admission-kpi.is-active{border-color:#c2dce0;background:#e6f1f3;box-shadow:inset 3px 0 var(--ad-brand)}
+#admission-board .admission-main,#admission-board .admission-detail{border-radius:6px}
+#admission-board .admission-list-tabs{padding:6px 10px;flex-wrap:wrap;gap:5px;min-height:45px;background:#fff}
+#admission-board .admission-list-caption{padding:0;border:0;flex-basis:100%;font-size:10px}
+#admission-board .admission-list-caption>span:last-child{display:none}
+#admission-board .admission-table{font-size:12px;border:0;table-layout:fixed}
+#admission-board .admission-table th{font-size:10px;text-transform:uppercase;letter-spacing:.45px;background:#f5f8fa;border:0;border-bottom:1px solid var(--ad-line);padding:10px}
+#admission-board .admission-table th:nth-child(1){width:66px}
+#admission-board .admission-table th:nth-child(2){width:38%}
+#admission-board .admission-table th:nth-child(3){width:23%}
+#admission-board .admission-table th:nth-child(4){width:auto;text-align:right}
+#admission-board .admission-table td{padding:10px;border-left:0;border-right:0;border-bottom:1px solid #ffffffa6;background:var(--ad-status-background,#fff)!important;vertical-align:middle;line-height:1.4}
+#admission-board .admission-table td:first-child{border-left:3px solid var(--ad-status-color,#dce5e9)}
+#admission-board .admission-table tr.is-selected>td{box-shadow:inset 0 2px #176d78,inset 0 -2px #176d78}
+#admission-board .admission-table tr:hover>td{background-image:linear-gradient(#ffffff1c,#ffffff1c)!important}
+#admission-board .admission-table tr:focus-visible{outline:2px solid #176d78;outline-offset:-2px}
+#admission-board .admission-patient-name{font-size:14px;font-weight:600;line-height:1.4}
+#admission-board .admission-table td:first-child strong{font-size:15px;font-weight:650}
+#admission-board .admission-table small{font-size:11px;line-height:1.4;color:#36535e}
+#admission-board .admission-row-state{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:4px}
+#admission-board .admission-signals-cell{text-align:right}
+#admission-board .admission-signals-cell>*{margin:3px 0 3px 5px;vertical-align:middle}
+#admission-board .admission-signals-cell>span:not([class]){display:block;font-size:11px;font-weight:600}
+#admission-board .admission-tag{border-radius:4px;padding:3px 7px;font-size:11px;font-weight:600;line-height:1.35;background:#ffffffb3;color:#234751;border:1px solid #36535e24}
+#admission-board .admission-tag--ready{background:#fff0df;color:#78380d;border-color:#ac601e55}
+#admission-board .admission-tag--pending{background:#fff9e6;color:#715115}
+#admission-board .admission-tag--inactive{background:#ffe8eb;color:#862534}
+#admission-board .admission-detail h3{font-size:18px;font-weight:600}
+#admission-board .admission-detail h4{font-size:11px;font-weight:650;letter-spacing:.5px}
+#admission-board .admission-detail section{padding:13px 14px}
+#admission-board .admission-detail-tabs{overflow-x:auto;justify-content:flex-start;gap:3px;padding:7px}
+#admission-board .admission-detail-tabs button{white-space:nowrap;font-size:11px;padding:8px 7px}
+#admission-board .admission-procedure-items{grid-template-columns:1fr;gap:6px}
+#admission-board .admission-procedure-items li{border:0;border-bottom:1px solid var(--ad-line);border-radius:0;padding:6px 0}
+#admission-board .admission-care-actions{padding:10px 14px;gap:8px}
+#admission-board #admission-back-list{display:inline-flex;font-size:11px}
+#admission-board .admission-btn{border-radius:5px;font-weight:600}
+#admission-board .admission-reschedule-row>td{background:#fecaca!important}
+#admission-board .admission-reschedule-info .admission-btn{float:right}
+@media(min-width:1600px){#admission-board .admission-workspace{grid-template-columns:186px minmax(0,1fr) 370px}}
+@media(max-width:1199px) and (min-width:1025px){#admission-board .admission-workspace{grid-template-columns:150px minmax(0,1fr) 310px}#admission-board .admission-table th:nth-child(3),#admission-board .admission-table td:nth-child(3){width:20%}}
+@media(max-width:1024px){#admission-board .admission-workspace,#admission-board:not([data-detail-open=true]) .admission-workspace{display:flex;height:auto;min-height:0;flex-direction:column}#admission-board .admission-context{overflow:visible;padding:7px}#admission-board .admission-context h2{display:none}#admission-board .admission-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}#admission-board .admission-kpi{padding:7px;min-height:55px;font-size:11px}#admission-board .admission-kpi strong{font-size:21px}#admission-board .admission-main{min-height:500px}#admission-board .admission-filter-primary{grid-template-columns:1fr 145px}#admission-board .admission-primary-actions{flex-wrap:wrap}#admission-board .admission-detail{min-height:500px}#admission-board[data-mobile-detail=true] .admission-context{display:none}}
+@media(max-width:600px){#admission-board{padding:0 7px 12px}#admission-board .admission-heading h1{font-size:21px}#admission-board .admission-actions{gap:3px}#admission-board .admission-heading{align-items:flex-start}#admission-board .admission-filter-primary{grid-template-columns:1fr 135px;gap:8px}#admission-board .admission-search,#admission-board .admission-doctor{grid-column:1/-1}#admission-board .admission-primary-actions{grid-column:1/-1}#admission-board .admission-filter-advanced{grid-template-columns:1fr 1fr}#admission-board .admission-context-line{flex-wrap:wrap}#admission-board .admission-table th:nth-child(1){width:53px}#admission-board .admission-table th:nth-child(2){width:auto}#admission-board .admission-table th:nth-child(3),#admission-board .admission-table td:nth-child(3){display:none}#admission-board .admission-table th:nth-child(4){width:33%}#admission-board .admission-table td{padding:9px 6px}#admission-board .admission-patient-name{font-size:13px}#admission-board .admission-signals-cell .admission-tag{font-size:10px;margin:3px 0}#admission-board .admission-financial-summary>summary{text-align:left}#admission-board .admission-reschedule-info .admission-btn{float:none}}
