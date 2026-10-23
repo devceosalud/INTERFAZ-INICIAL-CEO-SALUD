@@ -1,5 +1,7 @@
 # Validación local de Clinical Enterprise
 
+**La validación vigente del refinamiento está en [refinement/README.md](refinement/README.md).** Los resultados siguientes corresponden a la candidata original80bde251; se conservan como evidencia histórica. La matriz cromática compartida se actualizó deliberadamente para EXONERADA amarilla.
+
 ## Resultado
 
 Ejecuciones finales sobre PHP 8.3.35, SQLite y MariaDB 11.8.9. Exclusivamente bases descartables y pacientes ficticios DEMO70; Chrome real automatizado mediante Playwright. Ninguna conexión a Hostinger, producción o servicios de envío/facturación externa.

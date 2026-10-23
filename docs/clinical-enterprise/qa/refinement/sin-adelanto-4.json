@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Motivo obligatorio paciente existente",
+    "Creación atómica paciente existente precio120 pagado0 saldo120",
+    "Motivo obligatorio paciente nuevo",
+    "Creación atómica nuevo paciente y primera cita precio120 pagado0 saldo120"
+  ],
+  "ids": [
+    21,
+    22
+  ],
+  "errors": []
+}

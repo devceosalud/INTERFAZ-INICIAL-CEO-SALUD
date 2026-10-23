@@ -1,0 +1,62 @@
+[
+  {
+    "script": "corporate-regression",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "d75dfafb08b968ae57fd9f15cb3c3a5d67831b19cfe54e687d100eb360404169",
+      "vouchers_hash": "b5fa6211ac63768346ea36bca85c1181b5a6495a4d6c0ccbb03a1fcdcac2b75b"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "d75dfafb08b968ae57fd9f15cb3c3a5d67831b19cfe54e687d100eb360404169",
+      "vouchers_hash": "82ce88b3cf74ac3913b51bdda028b568390408a9b58b7f40918b72a03a10373e"
+    }
+  },
+  {
+    "script": "corporate-final-journey",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e97fde72e6a3cfa3137178a2c08decadddf5ea4a787e089b8c0a44b1dd9f42ab",
+      "vouchers_hash": "dba7af3786f9c36c1702db66033e8dec3ede9aab2254ab57f09118a3f51adeae"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e97fde72e6a3cfa3137178a2c08decadddf5ea4a787e089b8c0a44b1dd9f42ab",
+      "vouchers_hash": "dba7af3786f9c36c1702db66033e8dec3ede9aab2254ab57f09118a3f51adeae"
+    }
+  },
+  {
+    "script": "corporate-without-deposit",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f9759933e299646942c1416ad0fa8890ab9c9552ca9b195fed58850613a42cad",
+      "vouchers_hash": "dbf0aea78800ee790da9653f06badc1895f912d1a34fd805a5f11c05058b8864"
+    },
+    "after": {
+      "appointments": 22,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f9759933e299646942c1416ad0fa8890ab9c9552ca9b195fed58850613a42cad",
+      "vouchers_hash": "dbf0aea78800ee790da9653f06badc1895f912d1a34fd805a5f11c05058b8864"
+    }
+  }
+]
