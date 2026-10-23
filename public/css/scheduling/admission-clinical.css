@@ -42,7 +42,15 @@
 #admission-board .admission-table tr.is-selected>td{box-shadow:inset 0 2px #176d78,inset 0 -2px #176d78}
 #admission-board .admission-table tr:hover>td{background-image:none!important}
 #admission-board .admission-table tr:focus-visible{outline:2px solid #176d78;outline-offset:-2px}
+#admission-board .admission-table tr.admission-focus-target{outline:3px solid #176c76;outline-offset:-3px}
 #admission-board .admission-patient-name{font-size:14px;font-weight:600;line-height:1.4}
+#admission-board .admission-table td{padding-top:7px;padding-bottom:7px}
+#admission-board .admission-row-state{margin-top:4px;gap:2px 6px}
+#admission-board .admission-provider-cell .admission-row-state{display:grid;gap:1px}
+#admission-board .admission-reason-summary{-webkit-line-clamp:1}
+#admission-board .admission-patient-meta{flex-wrap:nowrap;gap:8px}
+#admission-board .admission-signals-cell>.admission-tag:first-child{margin-top:0}
+.admission-procedure-dialog .procedure-picker-catalog fieldset{min-width:0}.admission-procedure-dialog .procedure-picker-catalog label span{min-width:0;overflow-wrap:anywhere}
 #admission-board .admission-mobile-provider{display:none}
 @media(max-width:600px){#admission-board .admission-mobile-provider{display:block;margin-top:5px}}
 #admission-board .admission-table td:first-child strong{font-size:15px;font-weight:650}

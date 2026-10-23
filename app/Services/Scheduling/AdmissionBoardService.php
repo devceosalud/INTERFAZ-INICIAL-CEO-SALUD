@@ -214,7 +214,7 @@ class AdmissionBoardService
         if($policy::history($actor)) {try{$policy::documentsAppointment($actor,$id);$historyAllowed=true;}catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if(!in_array($e->getStatusCode(),[403,404]))throw $e;}}
         $payload['detail_tabs']=['history'=>$historyAllowed,'problem'=>$policy::operational($actor)];
         $payload['patient_alert_url']=($policy::operational($actor)||$policy::administrator($actor)||$actor->hasRole('MEDICO')&&(int)$actor->doctor_id===(int)$a->doctor_id)?route('scheduling.mvp.admission.patient-alert',$id):null;
-        $payload['patient_documents_url']=$historyAllowed?route('scheduling.mvp.admission.documents.index',$id):null;
+        $payload['patient_documents_url']=$historyAllowed?($actor->hasRole('MEDICO')?route('scheduling.mvp.admission.documents.index',$id):route('scheduling.mvp.documents.index',$id)):null;
         // Admisión-specific document policy; legacy Agenda document capabilities are unchanged.
         if(!$historyAllowed||$actor->hasRole('MEDICO')){$payload['documents']=[];$payload['operational_documents']=[];$payload['can_view_operational_documents']=false;}
         if(!$historyAllowed){$payload['history']=[];$payload['events']=[];}
@@ -232,7 +232,7 @@ class AdmissionBoardService
         $redact=function(array $row):array{
             foreach(['economy','estado_pagado','payment_methods','pricing_rule','documento','responsable','agenda_url'] as $key)$row[$key]=null;
             $row['presentation']['badges']=array_values(array_filter($row['presentation']['badges']??[],
-                fn($b)=>in_array($b['clave'],['PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','SALIDA_REGISTRADA','TELECONSULTA'],true)));
+                fn($b)=>in_array($b['clave'],['PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA'],true)));
             return $row;
         };
         if(isset($payload['rows'])){

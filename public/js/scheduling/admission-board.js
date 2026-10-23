@@ -45,7 +45,7 @@
         const updateDirty=()=>{detailDirty=Boolean(observationDraft||selectionDraft||documentDraft);};
         const clearDraft=()=>{observationDraft='';selectionDraft=null;customProcedureDraft=null;selectionDraftVersion=null;observationRequest=null;detailDirty=false;documentDraft=false;patientDocuments=null;};
         let page=1,total=0,selected=null,busy=false,confirming=false,detail=null,filtersSnapshot='',revision='',loading=false,pendingLoad=null,historyBefore=null,historyFilter='';
-        let focusTarget=null,highlightId=null,highlightUntil=0;
+        let focusTarget=null,highlightId=null,highlightUntil=0,revealDetail=true;
         const node=(tag,text,className)=>{const n=doc.createElement(tag);if(text!==undefined&&text!==null)n.textContent=String(text);if(className)n.className=className;return n;};
         const append=(parent,...children)=>{children.forEach(child=>parent.appendChild(child));return parent;};
         const link=(label,url,primary=false)=>{const a=node('a',label,'admission-btn'+(primary?' admission-btn--primary':''));a.href=url;return a;};
@@ -58,7 +58,7 @@
             let signature;
             if(options.method&&['POST','PATCH'].includes(options.method)&&options.body){const body=JSON.parse(options.body);if(body.request_key){delete body.request_key;signature=JSON.stringify([url,body]);if(!replayKeys.has(signature))replayKeys.set(signature,crypto.randomUUID());options={...options,body:JSON.stringify({...body,request_key:replayKeys.get(signature)})};}}
             const value=await readResponse(await fetch(url,{credentials:'same-origin',...options,headers:{Accept:'application/json','X-CSRF-TOKEN':doc.querySelector('meta[name="csrf-token"]')?.content||'',...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}}));if(signature)replayKeys.delete(signature);return value;}
-        function clearDetail(){board.dataset.detailOpen='false';selected=null;detail=null;clearDraft();detailRequest.cancel();$('detail').replaceChildren(node('p','Selecciona una cita para consultar su información y acciones autorizadas.','admission-empty'));}
+        function clearDetail(){board.dataset.detailOpen='false';board.dataset.mobileDetail='false';selected=null;detail=null;clearDraft();detailRequest.cancel();$('detail').replaceChildren(node('p','Selecciona una cita para consultar su información y acciones autorizadas.','admission-empty'));}
         function description(label,value){const box=node('div');append(box,node('dt',label),node('dd',value??'—'));return box;}
         function section(title){const box=node('section');box.appendChild(node('h4',title));return box;}
         function progressive(section){const box=node('details',null,'admission-history-disclosure'),heading=section.querySelector('h4');box.appendChild(node('summary',heading?.textContent||'Historial'));heading?.remove();box.appendChild(section);return box;}
@@ -366,7 +366,7 @@
                     const hour=node('td');append(hour,node('strong',entry.from_time),node('small',entry.from_date.slice(5).split('-').reverse().join('/')));const info=node('td');info.colSpan=3;info.className='admission-reschedule-info';append(info,node('strong','REPROGRAMADA · '+(entry.patient||'Cita visible')),node('p','Horario anterior: '+entry.from_date+' '+entry.from_time+' → '+entry.to_date+' '+entry.to_time),node('small','Cita vigente: '+entry.current_date+' '+entry.current_time+' · Referencia histórica, no ocupa horario.'),link('Ver cita reprogramada',entry.admission_url));append(tr,hour,info);body.appendChild(tr);continue;}
                 const row=byAppointment.get(entry.id);if(!row)continue;const tr=node('tr');tr.dataset.appointmentId=row.id;if(row.id===selected)tr.className='is-selected';tr.tabIndex=0;tr.setAttribute('aria-selected',String(row.id===selected));tr.setAttribute('aria-label','Cita de '+row.patient+' a las '+row.hora);
                 if(row.id===highlightId&&Date.now()<highlightUntil)tr.classList.add('admission-focus-target');
-                const activate=event=>{if(!rowActivation(event))return;if(event.type==='keydown')event.preventDefault();if(selected===row.id){board.dataset.detailOpen='true';board.dataset.mobileDetail='true';return;}select(row.id);};tr.addEventListener('click',activate);tr.addEventListener('keydown',activate);
+                const activate=event=>{if(!rowActivation(event))return;revealDetail=true;if(event.type==='keydown')event.preventDefault();if(selected===row.id){board.dataset.detailOpen='true';board.dataset.mobileDetail='true';return;}select(row.id);};tr.addEventListener('click',activate);tr.addEventListener('keydown',activate);
                 const tones={PROGRAMADO:'#c5a13e',LISTO_REEVALUACION:'#ce7a30',PRESENTE:'#32948c',PAGO_REAL:'#bd9c39',DESACTIVADA:'#bd5963',REEMBOLSO_SOLICITADO:'#bd5963',SALIDA_REGISTRADA:'#6f9c97',ATENDIDO:'#74dccb'};
                 tr.title=row.presentation?.fringe?.description||'';
                 tr.style.setProperty('--ad-status-color',tones[row.presentation?.fringe?.key]||row.presentation?.fringe?.color||'#dce8e9');
@@ -379,8 +379,8 @@
                 const patient=cell();presentationName(patient,row.patient,{...row.presentation,badges:[]});
                 const meta=node('div',null,'admission-patient-meta'),reason=node('small',row.motivo_resumen||'Motivo: no registrado','admission-reason-summary');reason.title=row.motivo_resumen||'Motivo: no registrado';append(meta,node('small','H.C. '+(row.historia||'—')+' · '+(row.documento||'—')),reason);patient.appendChild(meta);
                 if(row.reschedule_origin){const h=row.reschedule_origin;patient.appendChild(node('small','REPROGRAMADA · desde '+h.from_date.split('-').reverse().join('/')+' '+h.from_time,'admission-reschedule-origin'));}
-                const provider=cell(row.doctor,row.servicio);provider.className='admission-provider-cell';const mobileProvider=node('small',row.doctor+' · '+row.servicio,'admission-mobile-provider');patient.appendChild(mobileProvider);const status=node('div',null,'admission-row-state');patient.appendChild(status);append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.estado_cita==='ATENDIDO'?'attended':row.grupo==='desactivadas'?'inactive':['PROGRAMADO','CONFIRMADO'].includes(row.estado_cita)?'pending':'neutral'));const booking=bookingIndicator(doc,row.estado_agenda);if(booking)status.appendChild(booking);if(row.economy?.financial_status)status.appendChild(node('small',row.economy.financial_status.label,'admission-economic-state'));
-                const procedures=cell();procedures.className='admission-signals-cell';window.AgendaAppointmentIndicators.append(doc,procedures,(row.presentation?.badges||[]).filter(b=>['CONFIRMADA_SIN_ADELANTO','TELECONSULTA','ADICIONAL','FUERA_HORARIO','HERIDA','POSTOPERATORIO','CONCILIAR_PAGO'].includes(b.clave)),{limit:3});const progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'},ready=row.reevaluation?.ready??progress.status==='READY';
+                const provider=cell(row.doctor,row.servicio);provider.className='admission-provider-cell';const mobileProvider=node('small',row.doctor+' · '+row.servicio+' · '+bookingLabel(row.estado_agenda)+(row.economy?.financial_status?' · '+row.economy.financial_status.label:''),'admission-mobile-provider');patient.appendChild(mobileProvider);const status=node('div',null,'admission-row-state');provider.appendChild(status);append(status,tag(careLabels[row.estado_cita]||row.estado_cita,row.estado_cita==='ATENDIDO'?'attended':row.grupo==='desactivadas'?'inactive':['PROGRAMADO','CONFIRMADO'].includes(row.estado_cita)?'pending':'neutral'));const booking=bookingIndicator(doc,row.estado_agenda);if(booking)status.appendChild(booking);if(row.economy?.financial_status)status.appendChild(node('small',row.economy.financial_status.label,'admission-economic-state'));
+                const procedures=cell();procedures.className='admission-signals-cell';const careTag=status.querySelector('.admission-tag');if(careTag)procedures.appendChild(careTag);window.AgendaAppointmentIndicators.append(doc,procedures,(row.presentation?.badges||[]).filter(b=>['CONFIRMADA_SIN_ADELANTO','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA','ADICIONAL','FUERA_HORARIO','HERIDA','POSTOPERATORIO','CONCILIAR_PAGO'].includes(b.clave)),{limit:3});const progress=row.procedure_progress||{requested:0,completed:0,status:'NOT_READY'},ready=row.reevaluation?.ready??progress.status==='READY';
                 if(progress.requested)procedures.appendChild(node('span',progress.completed+' de '+progress.requested+' realizados'));
                 const review=row.reevaluation||{};
                 const title=review.declined?'Reevaluación no realizada (rechazada)':review.resumed?'Reevaluación en consultorio':ready?'Listo para reevaluación':
@@ -413,7 +413,7 @@
                 if(!answer?.isConfirmed)return;clearDraft();
             }
             if(id!==selected){clearDraft();activeDetailTab=selected===null&&doc.defaultView?.location.hash==='#history'&&String(id)===new URLSearchParams(doc.defaultView.location.search).get('appointment_id')?'history':'care';}
-            selected=id;board.dataset.detailOpen='true';board.dataset.mobileDetail='true';
+            selected=id;board.dataset.detailOpen=String(revealDetail);board.dataset.mobileDetail=String(revealDetail);
             if(!background){detail=null;$('detail').replaceChildren(node('p','Consultando cita…','admission-empty'));}
             board.querySelectorAll('tr[data-appointment-id]').forEach(tr=>{const active=Number(tr.dataset.appointmentId)===id;tr.classList.toggle('is-selected',active);tr.setAttribute('aria-selected',String(active));});
             const url=board.dataset.base+'/'+id+(background&&detail?.revision?'?revision='+encodeURIComponent(detail.revision):'');
@@ -594,11 +594,11 @@
         $('reevaluation-stage').addEventListener('change',()=>{const stage=$('reevaluation-stage').value;clearQuick();$('reevaluation-stage').value=stage;$('only-pending-reviews').checked=Boolean(stage);refreshPickers();page=1;load();});
         $('availability-panel').addEventListener('toggle',()=>{if($('availability-panel').open)availability(data());resizeWorkspace();});
         $('more-filters').addEventListener('toggle',resizeWorkspace);board.querySelector('.admission-financial-summary').addEventListener('toggle',resizeWorkspace);
-        $('back-list').addEventListener('click',()=>{board.dataset.detailOpen='false';board.dataset.mobileDetail='false';$('patients-tab').focus();resizeWorkspace();});
+        $('back-list').addEventListener('click',()=>{revealDetail=false;board.dataset.detailOpen='false';board.dataset.mobileDetail='false';$('patients-tab').focus();resizeWorkspace();});
         function listTab(key){for(const name of ['patients','queue']){const active=name===key;$(''+name+'-tab').setAttribute('aria-selected',String(active));$(''+name+'-tab').tabIndex=active?0:-1;$(''+name+'-panel').hidden=!active;}resizeWorkspace();}
         for(const key of ['patients','queue']){$(key+'-tab').addEventListener('click',()=>listTab(key));$(key+'-tab').addEventListener('keydown',event=>{const next=tabKey(event,['patients','queue'],key);if(next){listTab(next);$(next+'-tab').focus();}});}
         doc.addEventListener('patient-alert-updated',()=>{if(!busy&&!detailDirty)load(selected);});
-        doc.addEventListener('operational-queue-select',event=>select(event.detail.id));
+        doc.addEventListener('operational-queue-select',event=>{revealDetail=true;select(event.detail.id);});
         doc.addEventListener('operational-queue-updated',event=>{$('queue-count').textContent=(event.detail?.pre_pending??0)+' por confirmar · '+(event.detail?.pending??0)+' pendientes · '+(event.detail?.active??0)+' listos';});
         window.addEventListener('resize',resizeWorkspace);if(window.ResizeObserver)new ResizeObserver(resizeWorkspace).observe(board.querySelector('.admission-commandbar'));resizeWorkspace();
         const poll=polling({run:()=>load(selected,true),enabled:()=>!doc.hidden&&!busy&&!editing(),alive:()=>board.isConnected});
