@@ -112,7 +112,7 @@ Route::middleware([
             ->name('scheduling.mvp.availability');
 
         // Reportes sensibles: lectura exclusivamente gerencial y con permisos efectivos.
-        Route::middleware(['role:ADMINISTRADOR', 'permission:'.SchedulingCapability::VIEW_AUDIT, 'throttle:10,1'])
+        Route::middleware(['role:ADMINISTRADOR|FACTURACION', 'permission:'.SchedulingCapability::VIEW_AUDIT, 'throttle:10,1'])
             ->group(function () {
                 $reports = \App\Http\Controllers\Scheduling\ManagementExportController::class;
                 Route::get('/scheduling-mvp/agenda/reportes', [$reports, 'index'])
@@ -177,7 +177,7 @@ Route::middleware([
 
 Route::middleware(['scheduling-mvp', 'auth', 'throttle:60,1'])->post('/ui-telemetry/click-events', [AgendaHeatmapController::class, 'store'])
     ->name('ui.telemetry.click-events');
-Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR'])->group(function () {
+Route::middleware(['scheduling-mvp', 'auth', 'role:ADMINISTRADOR|FACTURACION'])->group(function () {
     Route::get('/scheduling-mvp/agenda/heatmap', [AgendaHeatmapController::class, 'index'])->name('scheduling.mvp.agenda.heatmap');
     Route::get('/scheduling-mvp/agenda/heatmap/data', [AgendaHeatmapController::class, 'data'])->name('scheduling.mvp.agenda.heatmap.data');
 });
