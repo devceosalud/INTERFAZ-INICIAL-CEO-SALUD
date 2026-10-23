@@ -18,6 +18,8 @@
         return {start(immediate=false){stopped=false;if(immediate&&timer!==null){clear(timer);timer=null;}arm(immediate?0:interval);},stop};
     }
     function money(value){return 'S/ '+Number(value||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+    // Admisión-only presentation override. The shared operational palette stays intact.
+    function admissionBackground(presentation){const color=presentation?.fringe?.color||presentation?.fondo||'#ffffff';return color.toLowerCase()==='#99f6e4'?'#74dccb':color;}
     function bookingLabel(state){return state==='CONFIRMADA'?'Horario confirmado':state==='PENDIENTE_CONFIRMACION'?'Reserva pendiente · horario sin confirmar':state==='LEGADO'?'Agenda heredada':String(state||'Sin clasificación');}
     function bookingIndicator(doc,state){
         if(state==='LEGADO')return null;
@@ -393,7 +395,7 @@
                 tr.style.setProperty('--ad-status-color',tones[row.presentation?.fringe?.key]||row.presentation?.fringe?.color||'#dce8e9');
                 // The server owns the full-row palette; do not mistake the
                 // accent/border colour for the background of an appointment.
-                tr.style.setProperty('--ad-status-background',row.presentation?.fringe?.color||row.presentation?.fondo||'#ffffff');
+                tr.style.setProperty('--ad-status-background',admissionBackground(row.presentation));
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 const date=cell();append(date,node('strong',row.hora),node('small',row.fecha.slice(5).split('-').reverse().join('/')));
                 if(row.reevaluation?.ready) tr.classList.add('is-ready-for-reevaluation');
@@ -634,5 +636,5 @@
         load(Number.isSafeInteger(initialId)&&initialId>0?initialId:null).then(()=>{if(initialId>0&&!selected)select(initialId);});
         poll.start();
     }
-    return {rowActivation,latest,polling,bookingLabel,bookingIndicator,time,money,readResponse,start};
+    return {admissionBackground,rowActivation,latest,polling,bookingLabel,bookingIndicator,time,money,readResponse,start};
 }));
