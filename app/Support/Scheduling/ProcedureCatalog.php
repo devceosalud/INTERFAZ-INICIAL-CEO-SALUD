@@ -21,6 +21,10 @@ final class ProcedureCatalog
             if (!isset($item['label'],$item['family'])||!is_string($item['label'])||mb_strlen($item['label'])>500||!isset(self::FAMILIES[$item['family']])) continue;
             $result[$key]=['label'=>$item['label'],'family'=>$item['family'],'category'=>self::FAMILIES[$item['family']],'followup'=>self::requiresFollowup($item['family'],$key)];
         }
+        foreach (ClinicalOrderSpecification::entries() as $key=>$item) {
+            $result[$key]=['label'=>$item['label'],'family'=>$item['family'],'category'=>$item['group'],'specification'=>$item,'followup'=>self::requiresFollowup($item['family'],$key)];
+        }
+        foreach (['mri'=>'Resonancia magnética','surgery'=>'Cirugías','prp'=>'Procedimientos / infiltraciones','wound_care'=>'Pie diabético · Curación y dispositivos'] as $key=>$group) $result[$key]['category']=$group;
         return $result;
     }
     public static function labels(): array {return array_map(fn($item)=>$item['label'],self::entries());}
