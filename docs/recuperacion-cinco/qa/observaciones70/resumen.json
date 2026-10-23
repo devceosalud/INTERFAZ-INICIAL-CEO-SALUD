@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "base_sha": "e80d50e23ce233da63fdc9d03a3e8a9a6de5994c",
+  "sqlite": {
+    "tests": 1230,
+    "assertions": 11304
+  },
+  "mariadb": {
+    "tests": 1257,
+    "assertions": 11545
+  },
+  "javascript": 355,
+  "color_checks": 208,
+  "clinical_browser_checks": 22,
+  "final_browser_checks": 5,
+  "schema_changes": false,
+  "new_roles_or_permissions": false,
+  "production_access": false
+}

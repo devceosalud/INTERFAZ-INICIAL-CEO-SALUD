@@ -1,5 +1,7 @@
 # Integración de los cinco requerimientos sobre main con PR #68
 
+Actualización tras las pruebas manuales del PR #70: [OBSERVACIONES-PR70.md](OBSERVACIONES-PR70.md) registra las cinco causas, correcciones, archivos y verificaciones nuevas. Incluye historial cronológico en Admisión, importes claros, acceso directo al editor autorizado, alta y confirmación sin adelanto atómicas y etapas/filtros coherentes. La demo manual aislada utiliza loopback8000/MariaDB33343; los resultados anteriores se conservan como antecedentes.
+
 ## Referencias y alcance
 
 Main remoto verificado al iniciar: `a57b2d04e8302279be1c775c7e8bc913a170f209` (merge #68), después de `033c3fd60ba7620dd32d82d96f8e21c64fdea759`. Rama de integración nueva: `codex/integracion-cinco-main-20261022`, creada directamente desde ese main. El PR #69, `f201e35f3e6f985de00058bed833321ce8a894bd`, permanece como respaldo; no se fusionó ni se aplicó su commit completo. `f29019a1` es referencia histórica, no base del flujo clínico vigente.

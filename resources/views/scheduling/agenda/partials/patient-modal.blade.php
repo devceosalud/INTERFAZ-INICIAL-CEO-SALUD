@@ -219,6 +219,9 @@
                 <button type="button" class="agenda-btn agenda-btn--primary" id="agenda-draft-save-schedule" @disabled(!$canWritePatients || !$canCreateAppointments)>
                     Registrar pago y cita
                 </button>
+            @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user()))
+                <button type="button" id="agenda-draft-without-deposit" class="agenda-btn" @disabled(!$canWritePatients || !$canCreateAppointments)>Guardar y confirmar sin adelanto</button>
+                @endif
             </footer>
         </form>
     </section>

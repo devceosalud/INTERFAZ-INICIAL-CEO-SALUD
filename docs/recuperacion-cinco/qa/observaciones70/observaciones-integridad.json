@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "scope": "ceosalud_demo_pr70",
+  "checks": [
+    "Dos pagos originales ficticios de60, total120; dos tickets",
+    "Creaciones14/15 confirmadas, sin pago ni voucher, saldo120",
+    "Una autorización sin adelanto por cita, sin duplicados",
+    "F con descuento autorizado:100/60/40",
+    "E conserva una cita y un evento de reprogramación",
+    "Nuevo paciente ficticio creado una sola vez"
+  ]
+}

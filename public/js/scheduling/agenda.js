@@ -234,7 +234,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if(retry)retry.hidden=result.status!=='error';
             const source=document.getElementById('agenda-quick-price-source');
             if(source){const labels={INSTITUTIONAL:'Precio institucional',INSTITUTIONAL_DEFAULT:'Precio institucional por defecto',PROFESSIONAL:'Precio del profesional',QUIROZ_REFERRAL:'Referido acreditado',CLINICAL_SAME_DAY:'Reevaluación acreditada del mismo día'};if(!ready)source.textContent='';else if(result.price_source)source.textContent=labels[result.price_source]||'Precio vigente';else if(state.selection?.appointment_id)source.textContent='Precio registrado de esta cita';}
-            for(const [id,value] of [['agenda-quick-advance',result.advance],['agenda-quick-balance',result.balance]]){const node=document.getElementById(id);if(node)node.textContent=ready&&value!==undefined?'S/ '+Number(value||0).toFixed(2):'—';}
+            for(const [id,value] of [['agenda-quick-advance',result.advance],['agenda-quick-paid',result.paid],['agenda-quick-current-balance',result.currentBalance],['agenda-quick-balance',result.balance]]){const node=document.getElementById(id);if(node)node.textContent=ready&&value!==undefined?(value===null?'Por conciliar':'S/ '+Number(value||0).toFixed(2)):'—';}
+            const paidLabel=document.getElementById('agenda-quick-paid-label');if(paidLabel)paidLabel.textContent=result.paidLabel||'Total pagado anteriormente';
         },
         quoteData: () => ({ doctor_id: state.selection?.doctor_id, service_id: el.serviceSelect.value,
             patient_id: el.quickPatientId.value || 0, fecha_cita: state.selection?.fecha }),
@@ -266,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
             result.hidden = false;
             const savedAppointment = payload.appointment || {};
             const extendedSaved = Number(savedAppointment.duration_slots) === 2;
-            const savedMessage = pendingSaved
+            const savedMessage = options?.withoutDeposit ? 'Cita confirmada sin adelanto. Pagado S/ 0; saldo completo pendiente.' : pendingSaved
                 ? (options && options.occupiedHour ? copy.reserveSavedHere : copy.reserveSaved)
                 : (kind === 'ADICIONAL' ? copy.additionalSaved : (kind === 'FUERA_HORARIO' ? copy.offHoursSaved : copy.appointmentSaved));
             const savedId = Number(savedAppointment.appointment_id);
@@ -306,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     const manageSelected=document.getElementById('agenda-manage-selected');
     manageSelected.addEventListener('click',()=>manageAppointment.open(state.selection));
+    document.getElementById('agenda-op-edit-economy')?.addEventListener('click',()=>manageAppointment.open(state.selection,'economy'));
 
     const calendar = new FullCalendar.Calendar(el.calendar, {
         initialView: VIEW_TO_FULLCALENDAR.semana,
@@ -1627,6 +1629,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (pendingStart) {pendingStart.hidden=Boolean(state.selection?.appointment_id && !existingFree) || state.additionalMode || state.offHoursMode;
             pendingStart.disabled=state.selection?.appointment_id?!existingFree||!canCreateAppointments||state.appointmentBusy:!reservation.allowed;}
+        const withoutDeposit=document.getElementById('agenda-without-deposit-create');
+        if(withoutDeposit){withoutDeposit.hidden=Boolean(state.selection?.appointment_id);withoutDeposit.disabled=!reservation.allowed||Boolean(operationalWorkspace.readiness().waived)||Number(operationalWorkspace.readiness().amount||0)>0;}
         const reserveReason = document.getElementById('agenda-reservation-reason');
         reserveReason.hidden = reservation.allowed;
         reserveReason.textContent = reservation.reason;
@@ -1714,6 +1718,7 @@ document.addEventListener('DOMContentLoaded', function () {
         syncModalBooking();
         el.draftSave.textContent = state.selection?.tipo_contexto === 'cita_existente' ? 'Guardar ficha' : 'Guardar reserva';
         el.draftSaveSchedule.hidden = state.selection?.tipo_contexto === 'cita_existente';
+        const draftWithoutDeposit=document.getElementById('agenda-draft-without-deposit');if(draftWithoutDeposit)draftWithoutDeposit.hidden=el.draftSaveSchedule.hidden;
         el.patientModalTitle.textContent = draft.patientId ? 'Editar paciente' : 'Registrar paciente';
         showStoredDraftType(draft.tipo);
         el.draftType.value = draft.tipo;
@@ -1867,7 +1872,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function savePatient(attachToSchedule) {
+    async function savePatient(attachToSchedule, withoutDeposit = false) {
         if (!state.draft || !canWritePatients || state.appointmentBusy) {
             return;
         }
@@ -1895,7 +1900,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (state.selection?.tipo_contexto !== 'cita_existente' || !state.draft.patientId) {
             if (!requireService(true)) { return; }
-            await createAppointment(!attachToSchedule, draftModel.toPayload(state.draft), state.draft.patientId || null);
+            await createAppointment(!attachToSchedule, draftModel.toPayload(state.draft), state.draft.patientId || null, withoutDeposit);
             return;
         }
 
@@ -1986,7 +1991,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function createAppointment(pending = false, patient = null, patientId = null) {
+    async function createAppointment(pending = false, patient = null, patientId = null, withoutDeposit = false) {
         if (state.appointmentBusy) { return; }
         if (!(state.additionalMode ? canAdditional : canCreateAppointments)) {
             showActionNotice(state.additionalMode ? window.AgendaGuidance.copy.permissionAdditional : window.AgendaGuidance.copy.permissionGeneric, true);
@@ -1995,7 +2000,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!requireService(Boolean(state.draft))) { return; }
         await operationalWorkspace.register({
-            pending: Boolean(pending),
+            pending: Boolean(pending), withoutDeposit,
             patient: patient, patientId: patientId || (patient ? null : el.quickPatientId.value),
             serviceId: el.serviceSelect.value, ownerId: el.responsibleSelect.value,
             bookingType: state.offHoursMode ? 'FUERA_HORARIO' : state.additionalMode ? 'ADICIONAL' : 'REGULAR',
@@ -2174,6 +2179,8 @@ document.addEventListener('DOMContentLoaded', function () {
     el.draftSaveSchedule.addEventListener('click', function () {
         savePatient(true);
     });
+    document.getElementById('agenda-draft-without-deposit')?.addEventListener('click',()=>savePatient(true,true));
+    document.getElementById('agenda-without-deposit-create')?.addEventListener('click',()=>{if(state.draft)savePatient(true,true);else createAppointment(false,null,null,true);});
     el.appointmentSubmit.addEventListener('click', () => {
         if (state.selection?.appointment_id) { operationalWorkspace.confirmReservation(); }
         else { createAppointment(false); }

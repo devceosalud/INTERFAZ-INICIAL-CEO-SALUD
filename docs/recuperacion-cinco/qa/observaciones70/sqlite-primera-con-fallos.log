@@ -1,0 +1,49 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+.............................................................   61 / 1229 (  4%)
+.............................................................  122 / 1229 (  9%)
+.............................................................  183 / 1229 ( 14%)
+.............................................................  244 / 1229 ( 19%)
+.............................................................  305 / 1229 ( 24%)
+.............................................................  366 / 1229 ( 29%)
+.............................................................  427 / 1229 ( 34%)
+.............................................................  488 / 1229 ( 39%)
+.............................................................  549 / 1229 ( 44%)
+.......................F.....................................  610 / 1229 ( 49%)
+.............................................................  671 / 1229 ( 54%)
+.............................................................  732 / 1229 ( 59%)
+.............................................................  793 / 1229 ( 64%)
+.............................................................  854 / 1229 ( 69%)
+.............................................................  915 / 1229 ( 74%)
+.............F...............................................  976 / 1229 ( 79%)
+............................................................. 1037 / 1229 ( 84%)
+............................................................. 1098 / 1229 ( 89%)
+............................................................. 1159 / 1229 ( 94%)
+............................................................. 1220 / 1229 ( 99%)
+.........                                                     1229 / 1229 (100%)
+
+Time: 10:39.450, Memory: 228.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\Scheduling\AgendaV2Round2Test::test_visual_and_reevaluation_filters_keep_search_kpis_and_economic_totals_on_the_same_set
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'100.00'
++'200.00'
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\AssertableJsonString.php:243
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:664
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\AgendaV2Round2Test.php:129
+
+2) Tests\Feature\Scheduling\ManualReevaluationTest::test_reevaluations_tab_uses_same_filters_totals_and_pagination_without_private_rows
+Failed asserting that 32 is identical to 31.
+
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\AssertableJsonString.php:243
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:664
+C:\Users\USUARIO\Desktop\ERPSISTEMAS\SISTEMAS\INTERFAZ-INICIAL-CEO-SALUD\.worktrees\integracion-cinco-main-20261022\tests\Feature\Scheduling\ManualReevaluationTest.php:184
+
+FAILURES!
+Tests: 1229, Assertions: 11257, Failures: 2.

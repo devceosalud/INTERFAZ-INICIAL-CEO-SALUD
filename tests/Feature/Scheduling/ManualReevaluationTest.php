@@ -181,7 +181,7 @@ class ManualReevaluationTest extends TestCase
         }
         $this->appointment();$tomorrow=$this->appointment(['fecha_cita'=>now()->addDay()->toDateString()]);
         app(AppointmentHistory::class)->record($tomorrow,Manual::MARKED,$this->actor->id);
-        $this->feed(['tab'=>'reevaluaciones'])->assertOk()->assertJsonPath('total',31)->assertJsonPath('kpis.total',31)->assertJsonPath('totals.precio','3100.00')->assertJsonCount(30,'rows');
+        $this->feed(['tab'=>'reevaluaciones'])->assertOk()->assertJsonPath('total',31)->assertJsonPath('kpis.total',32)->assertJsonPath('totals.precio','3200.00')->assertJsonCount(30,'rows');
         $this->feed(['tab'=>'reevaluaciones','page'=>2])->assertOk()->assertJsonPath('total',31)->assertJsonCount(1,'rows');
         foreach([['patient'=>'%'],['estado'=>'EN_ESPERA'],['grupo'=>'por_llegar']] as $filter)
             $this->feed($filter+['tab'=>'reevaluaciones'])->assertOk()->assertJsonPath('total',0);

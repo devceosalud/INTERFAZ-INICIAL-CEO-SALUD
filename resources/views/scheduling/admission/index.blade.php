@@ -32,6 +32,7 @@
                 </div>
                 <div class="admission-filter-secondary">
                     <label class="admission-review-filter"><input type="checkbox" name="only_pending_reevaluations" value="1" id="admission-only-pending-reviews"> Pendientes de reevaluación</label>
+                    <label>Etapa pendiente<select id="admission-reevaluation-stage" name="reevaluation_stage"><option value="">Todas las pendientes</option><option value="PRE_PENDING">Por confirmar</option><option value="PENDING">Confirmadas, pendientes</option></select></label>
                     <label class="admission-review-filter"><input type="checkbox" name="only_reevaluations" value="1" id="admission-only-reviews"> Solo listos para reevaluación</label>
                     <div class="admission-filter-actions"><button type="button" id="admission-today" class="admission-btn admission-btn--quiet" data-today="{{ $today }}">Hoy</button><button type="button" id="admission-reset" class="admission-btn admission-btn--quiet">Restablecer</button></div>
                 </div>
@@ -46,7 +47,9 @@
                     </div>
                 </details>
             </form>
-            <div class="admission-context-line"><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><details class="admission-financial-summary" @if($clinicalOnly) hidden @endif><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales de todos los resultados filtrados. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
+            <div class="admission-filter-summary"><span id="admission-active-filter" role="status"></span> <button id="admission-clear-category" type="button" class="admission-btn" hidden>Retirar filtro rápido</button></div>
+            <p class="admission-scope">Reevaluación: <strong data-kpi="reevaluaciones_prependientes">—</strong> por confirmar · <strong data-kpi="reevaluaciones_confirmadas_pendientes">—</strong> confirmadas, pendientes · <strong data-kpi="reevaluaciones">—</strong> listas.</p>
+            <div class="admission-context-line"><p class="admission-scope" id="admission-scope">Indicadores y totales del conjunto filtrado.</p><details class="admission-financial-summary" @if($clinicalOnly) hidden @endif><summary>Resumen económico <strong id="admission-paid-total">—</strong> abonado · <strong id="admission-balance-total">—</strong> saldo</summary><dl class="admission-totals" id="admission-totals"></dl><p class="admission-footnote">Totales del conjunto de fecha, profesional, sede, estado y búsqueda, antes de los filtros rápidos. Pagos acreditados y snapshots históricos se distinguen; los importes sin atribución se excluyen hasta conciliación. TICKET es un documento interno.</p></details></div>
             <p id="admission-notice" class="admission-notice" role="status" aria-live="polite"></p>
         </div>
         <div class="admission-workspace">
@@ -58,7 +61,7 @@
                     <button id="admission-reschedule-previous" type="button" class="admission-btn" hidden>Referencias anteriores</button>
                     <button id="admission-reschedule-latest" type="button" class="admission-btn" hidden>Referencias recientes</button>
                 </details>
-                <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button @if($clinicalOnly) hidden @endif id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy <span id="admission-queue-count"></span></button></div>
+                <div class="admission-list-tabs" role="tablist" aria-label="Listados de admisión"><button id="admission-patients-tab" role="tab" aria-selected="true" aria-controls="admission-patients-panel" type="button">Pacientes <span id="admission-count"></span></button><button @if($clinicalOnly) hidden @endif id="admission-queue-tab" role="tab" aria-selected="false" aria-controls="admission-queue-panel" type="button" tabindex="-1">Reevaluaciones de hoy · todas las etapas <span id="admission-queue-count"></span></button></div>
                 <div id="admission-patients-panel" role="tabpanel" aria-labelledby="admission-patients-tab" class="admission-table-card">
                     <div class="admission-list-caption"><span id="admission-reservations"></span><span>Selecciona un paciente para gestionar su atención</span></div>
                     <div class="admission-table-scroll"><table class="admission-table"><thead><tr><th>Hora</th><th>Paciente / motivo</th><th>Profesional / servicio</th><th>Atención</th><th>Procedimientos</th></tr></thead><tbody id="admission-rows"></tbody></table></div>

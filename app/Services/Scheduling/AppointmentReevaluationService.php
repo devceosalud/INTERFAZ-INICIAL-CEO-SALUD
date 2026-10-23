@@ -393,8 +393,9 @@ final class AppointmentReevaluationService
             if(OperationalProcedureService::ready($a)) $activeTimes[]=$review['ready_at'];
             sort($activeTimes);
             $status=$summary['ready']?'READY':($summary['pre_pending']?'PRE_PENDING':($summary['resumed']?'RESUMED':($summary['declined']?'DECLINED':$review['status'])));
+            if($summary['pending'])$status='PENDING';
             if(!$summary['ready'] && $status==='READY')$status='NOT_READY';
-            if(!$summary['ready'] && !$procedures['requested_count'] && $direct['version']) {
+            if(!$summary['ready'] && !$summary['pre_pending'] && !$summary['pending'] && !$summary['resumed'] && !$summary['declined'] && !$procedures['requested_count'] && $direct['version']) {
                 $status=$direct['marked']?'INACTIVE':'WITHDRAWN';
             }
             $review['status']=$status;

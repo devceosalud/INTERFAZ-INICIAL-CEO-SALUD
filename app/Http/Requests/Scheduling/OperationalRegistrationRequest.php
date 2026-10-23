@@ -29,6 +29,8 @@ class OperationalRegistrationRequest extends FormRequest
         return \App\Services\Scheduling\AppointmentPaymentProofs::rules() + \App\Support\Scheduling\AppointmentPriceInput::rules() + [
             'attendance_mode'=>'sometimes|in:PRESENCIAL,TELECONSULTA',
             'request_key' => 'required|uuid', 'mode' => 'required|in:RESERVE,CONFIRM',
+            'without_deposit'=>'sometimes|boolean', 'confirmed'=>'required_if:without_deposit,1,true|boolean',
+            'reason'=>'required_if:without_deposit,1,true|nullable|string|min:5|max:500',
             'booking_type' => 'required|in:REGULAR,ADICIONAL,FUERA_HORARIO',
             'patient_id' => ['nullable', 'integer', 'required_without:patient', Rule::exists('patients', 'id')->where('estado', 'ACTIVO')],
             'patient' => 'nullable|array', 'patient_capture' => 'nullable|array:telefono,telefono_secundario,channel_id,interaction_medium_id',

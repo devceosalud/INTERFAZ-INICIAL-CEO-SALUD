@@ -87,9 +87,9 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
     public function test_request_edit_and_unchecking_recalculate_automatic_queue_and_preserve_audit(): void
     {
         $this->select()->assertOk();$this->complete()->assertOk();$this->complete('laboratory')->assertOk();
-        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
+        $this->complete('laboratory',false)->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.other_procedures.0.review.status','NOT_READY')->assertJsonCount(0,'groups.pending');
         $this->select(['radiography'])->assertOk();$this->queue()->assertOk()->assertJsonPath('rows.0.review.status','READY');
-        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.pending.0.review.status','NOT_READY');
+        $this->select(['radiography','mri'])->assertOk();$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonPath('groups.other_procedures.0.review.status','NOT_READY')->assertJsonCount(0,'groups.pending');
         $event=DB::table('appointment_procedure_events')->orderByDesc('id')->first();
         $this->assertStringContainsString('AUTOMATIC',$event->before);
         $this->assertDatabaseCount('appointment_requested_procedures',3);

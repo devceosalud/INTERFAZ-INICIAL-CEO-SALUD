@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 /** Read-only annotations. Never fed into occupancy, capacity or FullCalendar events. */
 final class RescheduleHistory
 {
-    public function forRange(AgendaQuery $range,User $actor,array $filters=[],?callable $filterAppointments=null,int $limit=200): array
+    public function forRange(AgendaQuery $range,User $actor,array $filters=[],?callable $filterAppointments=null,int $limit=200,bool $includePatient=false,int $maxBatches=10): array
     {
         $empty=['has_more'=>false,'next_cursor'=>null,'items'=>[]];
         if(!$range->doctorIds() || !$actor->fresh()?->is_active)return $empty;
@@ -30,7 +30,7 @@ final class RescheduleHistory
         $accepted=collect();$cursor=$filters['history_before']??null;$batches=0;
         // Apply computed admission filters before pagination; older matching references are never skipped.
         do{
-            $batch=(clone $query)->when($cursor,fn($q)=>$q->where('id','<',$cursor))->with(['appointment.operationalReview','actor:id,name'])->orderByDesc('id')->limit(201)->get();
+            $batch=(clone $query)->when($cursor,fn($q)=>$q->where('id','<',$cursor))->with(['appointment.operationalReview','appointment.patient:id,nombre,apellido_paterno,apellido_materno','actor:id,name'])->orderByDesc('id')->limit(201)->get();
             $batches++;
             if($batch->isEmpty())break;
             $appointments=$batch->pluck('appointment')->filter()->unique('id');
@@ -40,12 +40,12 @@ final class RescheduleHistory
                 if($accepted->count()>$limit)break;
             }
             $cursor=$batch->last()->id;
-        }while($accepted->count()<=$limit && $batch->count()===201 && $batches<10);
+        }while($accepted->count()<=$limit && $batch->count()===201 && $batches<$maxBatches);
         $visible=$accepted->take($limit);
         // Bounded work even when computed filters reject many references. Continue via the cursor.
-        $scanLimited=$accepted->count()<=$limit && $batch->count()===201 && $batches===10;
+        $scanLimited=$accepted->count()<=$limit && $batch->count()===201 && $batches===$maxBatches;
         return ['has_more'=>$accepted->count()>$limit||$scanLimited,'next_cursor'=>$accepted->count()>$limit?(int)$visible->last()->id:($scanLimited?(int)$cursor:null),
-            'items'=>$visible->map(fn($event)=>$this->item($event,$actor))->values()->all()];
+            'items'=>$visible->map(fn($event)=>$this->item($event,$actor,$includePatient))->values()->all()];
     }
 
     public function latestForAppointments(Collection $appointments,User $actor): array
@@ -61,7 +61,7 @@ final class RescheduleHistory
         return $e->appointment && isset($e->metadata['from']['fecha_cita'],$e->metadata['from']['hora_cita'],$e->metadata['to']['fecha_cita'],$e->metadata['to']['hora_cita']);
     }
 
-    private function item(AppointmentEvent $event,User $actor): array
+    private function item(AppointmentEvent $event,User $actor,bool $includePatient=false): array
     {
         $from=$event->metadata['from'];$to=$event->metadata['to'];$a=$event->appointment;
         $time=substr($from['hora_cita'],0,5);$duration=(int)($from['duracion_cita']??0);
@@ -75,6 +75,7 @@ final class RescheduleHistory
             'agenda_url'=>route('scheduling.mvp.agenda',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'appointment_id'=>$a->id]),
             'admission_url'=>route('scheduling.mvp.admission',['fecha'=>substr($a->fecha_cita,0,10),'doctor_id'=>$a->doctor_id,'site_id'=>$a->site_id??'','appointment_id'=>$a->id]),
             'actor'=>AgendaCreatorVisibility::allows($actor)?($event->actor?->name??'Usuario histórico'):null,
-            'occurred_at'=>$event->occurred_at?->toISOString(),'historical'=>true,'occupies_slot'=>false];
+            'occurred_at'=>$event->occurred_at?->toISOString(),'historical'=>true,'occupies_slot'=>false]
+            +($includePatient?['patient'=>trim(implode(' ',array_filter([$a->patient?->apellido_paterno,$a->patient?->apellido_materno,$a->patient?->nombre])))]:[]);
     }
 }

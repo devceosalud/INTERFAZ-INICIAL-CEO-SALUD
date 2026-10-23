@@ -88,7 +88,8 @@
                 <label class="agenda-field"><span class="agenda-field__label">N.º de indicación médica acreditada</span><input id="agenda-op-indication" type="number" min="1" class="agenda-field__input" disabled></label>
                 <small>Solo admite indicación válida del mismo servicio. Mismo día: regla gratuita; días 1–15: reconsulta; desde el día 16: consulta normal.</small>
             </div>
-        <dl class="agenda-quick__context agenda-quote-summary" aria-live="polite"><div><dt>Precio vigente</dt><dd id="agenda-quick-price">—</dd></div><div><dt>Adelanto ingresado</dt><dd id="agenda-quick-advance">—</dd></div><div><dt>Saldo previsto</dt><dd id="agenda-quick-balance">—</dd></div></dl>
+        <dl class="agenda-quick__context agenda-quote-summary" aria-live="polite"><div><dt>Precio vigente</dt><dd id="agenda-quick-price">—</dd></div><div><dt>Nuevo adelanto en formulario</dt><dd id="agenda-quick-advance">—</dd></div><div><dt id="agenda-quick-paid-label">Total pagado anteriormente</dt><dd id="agenda-quick-paid">—</dd></div><div><dt>Saldo pendiente actual</dt><dd id="agenda-quick-current-balance">—</dd></div><div><dt>Saldo resultante con el nuevo adelanto</dt><dd id="agenda-quick-balance">—</dd></div></dl>
+        <button type="button" id="agenda-op-edit-economy" class="agenda-btn agenda-btn--primary" hidden>Modificar economía de la cita</button>
         <p id="agenda-quick-price-source" class="agenda-guidance"></p>
         <p id="agenda-quick-quote-status" class="agenda-field-error" role="status" hidden></p>
         <button type="button" id="agenda-quick-quote-retry" class="agenda-btn" hidden>Reintentar precio</button>
@@ -115,7 +116,7 @@
             Seleccione profesional, fecha, intervalo disponible, paciente y servicio.
         </p>
 
-        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. La exoneración requiere autorización expresa.</p>
+        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. La exoneración requiere autorización expresa. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) También puedes Guardar y confirmar sin adelanto: exige motivo y conserva todo el saldo pendiente. @endif</p>
         <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <button type="button" class="agenda-btn" id="agenda-see-destination" hidden>Ver nueva fecha</button>
         <p id="agenda-disabled-reason" class="agenda-guidance" hidden></p>
@@ -126,6 +127,9 @@
             Registrar pago y cita
         </button></span>
 
+        @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user()))
+        <button type="button" id="agenda-without-deposit-create" class="agenda-btn" disabled>Guardar y confirmar sin adelanto</button>
+        @endif
         </div>
         <div class="agenda-secondary-actions"><span class="agenda-tip" id="agenda-payment-tip"><button id="agenda-open-payment" class="agenda-btn" type="button" disabled @unless($canSubmitPayment) aria-describedby="agenda-payment-permission" @endunless>Registrar adelanto</button></span>
         <button type="button" class="agenda-btn agenda-complete-registration" id="agenda-complete-registration" disabled hidden>Completar ficha</button></div>

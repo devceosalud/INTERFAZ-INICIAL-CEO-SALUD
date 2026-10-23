@@ -10,10 +10,12 @@ final class OperationalProcedureController extends Controller
 {
     public function queue(Request $r, OperationalProcedureService $service)
     {
-        $groups=['active'=>[], 'pending'=>[], 'history'=>[]];
+        $groups=['active'=>[], 'pre_pending'=>[], 'pending'=>[], 'other_procedures'=>[], 'history'=>[]];
         foreach($service->queue($r->user()) as $row){
             $group=$row['review']['status']==='READY' ? 'active'
-                : ($row['review']['status']==='NOT_READY' && $row['requested_count']>0 ? 'pending' : 'history');
+                : ($row['review']['status']==='PRE_PENDING' ? 'pre_pending'
+                    : ($row['review']['status']==='PENDING' ? 'pending'
+                        : ($row['review']['status']==='NOT_READY' && $row['requested_count']>0 ? 'other_procedures' : 'history')));
             $groups[$group][]=$row;
         }
         return response()->json(['rows'=>$groups['active'],'groups'=>$groups])->header('Cache-Control', 'private, no-store');

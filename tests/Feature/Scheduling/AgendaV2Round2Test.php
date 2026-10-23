@@ -42,7 +42,7 @@ class AgendaV2Round2Test extends \Tests\Support\AgendaV2TestCase
         DB::table('appointment_operational_reviews')->where('appointment_id',$this->a->id)->update(['status'=>'READY','origin'=>'AUTOMATIC','ready_at'=>now()]);
         $this->detail()->assertOk()->assertJsonPath('appointment.presentation.operational_reevaluation_ready',false)
             ->assertJsonPath('procedures.review.status','NOT_READY');
-        $this->queue()->assertOk()->assertJsonCount(0,'groups.active')->assertJsonCount(1,'groups.pending');
+        $this->queue()->assertOk()->assertJsonCount(0,'groups.active')->assertJsonCount(1,'groups.other_procedures')->assertJsonCount(0,'groups.pending');
     }
 
     public function test_unchecking_automatic_completion_removes_readiness_but_keeps_history_and_manual_decisions_are_explicit(): void
@@ -51,7 +51,7 @@ class AgendaV2Round2Test extends \Tests\Support\AgendaV2TestCase
         $this->detail()->assertJsonPath('procedures.review.origin','AUTOMATIC')->assertJsonPath('appointment.presentation.operational_reevaluation_ready',true);
         $this->complete('laboratory',false)->assertOk();
         $this->detail()->assertJsonPath('appointment.presentation.operational_reevaluation_ready',false);
-        $this->queue()->assertJsonCount(0,'groups.active')->assertJsonCount(1,'groups.pending');
+        $this->queue()->assertJsonCount(0,'groups.active')->assertJsonCount(1,'groups.other_procedures')->assertJsonCount(0,'groups.pending');
         $this->actingAs($this->admission);$this->change('send',['confirmed'=>true,'reason'=>'Autorización parcial ficticia'])->assertOk();
         $this->complete('laboratory')->assertOk();$this->complete('laboratory',false)->assertOk();
         $this->detail()->assertJsonPath('procedures.review.origin','MANUAL')->assertJsonPath('procedures.review.authorized_by.id',$this->admission->id)
@@ -118,7 +118,7 @@ class AgendaV2Round2Test extends \Tests\Support\AgendaV2TestCase
         $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);
     }
 
-    public function test_visual_and_reevaluation_filters_keep_search_kpis_and_economic_totals_on_the_same_set(): void
+    public function test_visual_and_reevaluation_filters_preserve_scope_kpis_totals_and_search(): void
     {
         $this->a->update(['motivo_consulta'=>'Motivo ficticio resumido']);$this->select()->assertOk();$this->complete()->assertOk();
         $second=$this->lifecycleAppointment($this->admin,$this->catalog,['fecha_cita'=>now('America/Lima')->toDateString(),'hora_cita'=>'10:00']);
@@ -126,7 +126,7 @@ class AgendaV2Round2Test extends \Tests\Support\AgendaV2TestCase
         $base=['fecha'=>now('America/Lima')->toDateString(),'doctor_id'=>$this->catalog['doctor']->id,'specialty_id'=>$this->catalog['specialty']->id];
         foreach([['visual'=>'LISTO_REEVALUACION'],['only_reevaluations'=>true]] as $filter){
             $this->postJson(route('scheduling.mvp.admission.feed'),$base+$filter)->assertOk()->assertJsonPath('total',1)
-                ->assertJsonPath('kpis.reevaluaciones',1)->assertJsonPath('totals.precio','100.00')->assertJsonPath('rows.0.id',$second->id);
+                ->assertJsonPath('kpis.reevaluaciones',1)->assertJsonPath('kpis.total',2)->assertJsonPath('totals.precio','200.00')->assertJsonPath('rows.0.id',$second->id);
         }
         $this->postJson(route('scheduling.mvp.admission.feed'),$base+['patient'=>$this->a->patient->numero_identidad])->assertOk()
             ->assertJsonPath('total',1)->assertJsonPath('rows.0.motivo_resumen','Motivo ficticio resumido');

@@ -62,15 +62,27 @@ class AdmissionBoardService
             })
             ->with('operationalReview')->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
-        $rows=$this->filterRows($rows,$filters);
-        $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($rows->count()/30)));
-        $positions = $this->economics->forAppointments($rows,$rows->slice(($page-1)*30,30)->pluck('id')->all());
+        // Quick categories select the list, not the population represented by the KPIs.
+        $scopeRows=$rows;
+        app(ManualReevaluationService::class)->load($scopeRows);
+        $rows=$this->filterRows($scopeRows,$filters);
+        $history=app(RescheduleHistory::class);
+        $historyFilter=fn($a)=>$this->filterRows($clinicalOnly?$a->filter(fn($item)=>(int)$item->doctor_id===(int)$actor->doctor_id && in_array($item->estado_agenda,['LEGADO','CONFIRMADA'],true)):$a,$filters);
+        $timelineHistory=$history->forRange($query,$actor,array_diff_key($filters,['history_before'=>true]),$historyFilter,2000,true,35);
+        if($timelineHistory['has_more'])throw ValidationException::withMessages(['fecha'=>'Reduce el rango para mostrar todas las referencias históricas en orden cronológico.']);
+        $timeline=$rows->map(fn($a)=>['type'=>'appointment','id'=>$a->id,'date'=>substr($a->fecha_cita,0,10),'time'=>substr($a->hora_cita,0,5)])
+            ->concat(collect($timelineHistory['items'])->map(fn($h)=>['type'=>'reschedule','date'=>$h['from_date'],'time'=>$h['from_time']]+$h))
+            ->sortBy(fn($r)=>$r['date'].'|'.$r['time'].'|'.($r['type']==='reschedule'?'0':'1').'|'.str_pad((string)($r['event_id']??$r['id']),20,'0',STR_PAD_LEFT))->values();
+        $page = min(max(1,(int)($filters['page'] ?? 1)),max(1,(int)ceil($timeline->count()/30)));
+        $pageTimeline=$timeline->slice(($page-1)*30,30)->values();
+        $pageRows=$rows->whereIn('id',$pageTimeline->where('type','appointment')->pluck('id'))->values();
+        $positions = $this->economics->forAppointments($scopeRows,$pageRows->pluck('id')->all());
         $kpis = array_fill_keys(array_keys(AdmissionStatus::LABELS),0) + ['reservas'=>0,'otros'=>0,'reevaluaciones'=>0,'reevaluaciones_pendientes'=>0,'reevaluaciones_prependientes'=>0];
         $totals = ['precio'=>0,'pagos_reales'=>0,'pagado_historico'=>0,'credito'=>0,'saldo'=>0,'requieren_revision'=>0];
-        foreach ($rows as $a) {
+        foreach ($scopeRows as $a) {
             $kpis['total']++; $kpis[AdmissionStatus::group($a)]++;
             if(AppointmentReevaluationService::ready($a)) $kpis['reevaluaciones']++;
-            if(AppointmentReevaluationService::pending($a)) $kpis['reevaluaciones_pendientes']++;
+            if(AppointmentReevaluationService::pending($a)||AppointmentReevaluationService::prePending($a)) $kpis['reevaluaciones_pendientes']++;
             if(AppointmentReevaluationService::prePending($a)) $kpis['reevaluaciones_prependientes']++;
             $p = $positions[$a->id]; $totals['precio'] += $p['price_cents'];
             if ($p['authority'] === 'UNALLOCATED') { $totals['requieren_revision']++; continue; }
@@ -79,14 +91,15 @@ class AdmissionBoardService
         }
         foreach (['precio','pagos_reales','pagado_historico','credito','saldo'] as $key) $totals[$key] = Money::decimal($totals[$key]);
         // Only the visible page needs identity and label relations; totals use minimal rows.
-        $pageRows=$rows->slice(($page-1)*30,30);
         $pageRows->load(['operationalReview','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre',
             'responsibleUser:id,name','user:id,name','site:id,nombre']);
         $reasons=Appointment::whereIn('id',$pageRows->pluck('id'))->pluck('motivo_consulta','id');
-        $history=app(RescheduleHistory::class);$origins=$history->latestForAppointments($pageRows,$actor);
+        $origins=$history->latestForAppointments($pageRows,$actor);
+        $kpis['reevaluaciones_confirmadas_pendientes']=$kpis['reevaluaciones_pendientes']-$kpis['reevaluaciones_prependientes'];
         return $this->protect(['kpis'=>$kpis,'totals'=>$totals,'total'=>$rows->count(),'page'=>$page,'per_page'=>30,'can_update_care'=>$actor->can(C::UPDATE),
-            'reschedules'=>$history->forRange($query,$actor,$filters,fn($a)=>$this->filterRows($clinicalOnly?$a->filter(fn($item)=>(int)$item->doctor_id===(int)$actor->doctor_id && in_array($item->estado_agenda,['LEGADO','CONFIRMADA'],true)):$a,$filters),30),
+            'scope_total'=>$scopeRows->count(),'timeline_total'=>$timeline->count(),'timeline'=>$pageTimeline->all(),
+            'reschedules'=>$history->forRange($query,$actor,$filters,$historyFilter,30),
             'rows'=>$pageRows->map(fn ($a) => $this->row($a,$positions[$a->id],$actor)+['reschedule_origin'=>$origins[$a->id]??null,
                 'motivo_resumen'=>mb_strimwidth(\App\Support\Scheduling\OperationalText::trim((string)($reasons[$a->id]??'')),0,160,'…')])->values()->all()],$clinicalOnly);
     }
@@ -94,7 +107,9 @@ class AdmissionBoardService
     private function filterRows(Collection $rows,array $filters): Collection
     {
         app(ManualReevaluationService::class)->load($rows);
-        if(!empty($filters['only_pending_reevaluations']))$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::pending($a))->values();
+        if(!empty($filters['only_pending_reevaluations']))$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::pending($a)||AppointmentReevaluationService::prePending($a))->values();
+        if(($filters['reevaluation_stage']??'')==='PRE_PENDING')$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::prePending($a))->values();
+        if(($filters['reevaluation_stage']??'')==='PENDING')$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::pending($a))->values();
         if(!empty($filters['grupo']))$rows=$rows->filter(fn($a)=>AdmissionStatus::group($a)===$filters['grupo'])->values();
         if(!empty($filters['only_reevaluations'])||($filters['tab']??'citas')==='reevaluaciones')$rows=$rows->filter(fn($a)=>AppointmentReevaluationService::ready($a))->values();
         if(!empty($filters['visual'])){

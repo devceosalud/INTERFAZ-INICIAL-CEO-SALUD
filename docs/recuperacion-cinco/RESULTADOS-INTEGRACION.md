@@ -1,5 +1,7 @@
 # Resultados de integración
 
+Los resultados posteriores a las cinco observaciones manuales del PR #70 están en [OBSERVACIONES-PR70.md](OBSERVACIONES-PR70.md) y `qa/observaciones70/`. Los resultados siguientes corresponden a la primera candidata integrada y se conservan como antecedente.
+
 Base: main `a57b2d04e8302279be1c775c7e8bc913a170f209`, merge del #68. Referencia preservada: PR #69, `f201e35f3e6f985de00058bed833321ce8a894bd`. No merge, force push, despliegue ni ejecución productiva.
 
 ## Candidata integrada

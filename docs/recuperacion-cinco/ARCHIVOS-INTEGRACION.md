@@ -1,5 +1,7 @@
 # Archivos de la integración y justificación
 
+La lista concreta de archivos y motivos de las cinco correcciones manuales posteriores está en [OBSERVACIONES-PR70.md](OBSERVACIONES-PR70.md#archivos-de-esta-corrección).
+
 Respecto de main `a57b2d04`. Los scripts temporales de investigación y los datos/credenciales locales de QA no se publican.
 
 | Archivo | Justificación |

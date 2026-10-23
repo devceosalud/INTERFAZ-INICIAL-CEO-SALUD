@@ -104,7 +104,7 @@ class JulioAdmissionReevaluationTest extends TestCase
         $this->postJson(route('scheduling.mvp.admission.feed'),[
             'fecha'=>now('America/Lima')->toDateString()
         ])->assertOk()->assertJsonPath('kpis.reevaluaciones_prependientes',1)
-            ->assertJsonPath('kpis.reevaluaciones_pendientes',0);
+            ->assertJsonPath('kpis.reevaluaciones_pendientes',1)->assertJsonPath('kpis.reevaluaciones_confirmadas_pendientes',0);
         $this->finish($a)->assertUnprocessable();
         $this->indicate($a,'resume')->assertUnprocessable();
 

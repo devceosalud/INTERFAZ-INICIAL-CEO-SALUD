@@ -27,6 +27,13 @@ class OperationalRegistrationService
     {
         abort_unless($actor->can(Capability::CREATE) && $actor->can(Capability::VIEW), 403,
             'No tienes permiso para registrar citas (appointment.create y appointment.view).');
+        $withoutDeposit=(bool)($data['without_deposit']??false);
+        if($withoutDeposit){
+            app(ReservationPaymentService::class)->authorizeWithoutDeposit($actor,$data+['confirm'=>true],true);
+            abort_unless(($data['mode']??null)==='CONFIRM' && ($data['booking_type']??null)==='REGULAR'
+                && empty($data['es_exonerado']) && empty($data['autorizado_por']),422,
+                'Confirmar sin adelanto requiere una cita regular sin pago ni exoneración.');
+        }
         // Current authorization precedes replaying a completed UUID as well as new writes.
         if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         if(($data['booking_type']??null)==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
@@ -130,7 +137,14 @@ class OperationalRegistrationService
                 }
                 $a->update(['total_pagado' => Money::decimal($amount), 'saldo_pendiente' => $waived ? 0 : Money::decimal(Money::cents($a->precio_programado) - $amount),
                     'estado_pagado' => !$amount ? 'PENDIENTE' : ($amount === Money::cents($a->precio_programado) ? 'PAGADO' : 'PARCIAL')]);
-                if ($amount > 0 || $data['mode'] === 'CONFIRM') {
+                if (!empty($data['without_deposit'])) {
+                    // Both writes share this transaction and the existing operation ledger.
+                    // A failure rolls back the patient, reservation and authorization together.
+                    $a=app(ReservationPaymentService::class)->submit($a->id,$actor,[
+                        'request_key'=>(string)\Ramsey\Uuid\Uuid::uuid5(\Ramsey\Uuid\Uuid::NAMESPACE_URL,'ceo:registration-without-deposit:'.$actor->id.':'.$data['request_key']),
+                        'without_deposit'=>true,'confirm'=>true,'confirmed'=>true,'reason'=>trim($data['reason']),
+                        'expected_revision'=>AppointmentManagement::revision($a->fresh()),'payment'=>['amount'=>'0']]);
+                } elseif ($amount > 0 || $data['mode'] === 'CONFIRM') {
                     if (!$waived && !AppointmentEconomicPosition::allowsConfirmation(app(AppointmentEconomicPosition::class)->forAppointment($a))) {
                         throw ValidationException::withMessages(['payment.amount' => 'Para confirmar se requiere un pago real positivo. Puedes guardar una reserva privada.']);
                     }

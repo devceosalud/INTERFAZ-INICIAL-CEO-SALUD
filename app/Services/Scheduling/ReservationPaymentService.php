@@ -130,11 +130,11 @@ class ReservationPaymentService
             && !\App\Models\VoucherItem::whereIn('item_type',['cita',Appointment::class])->where('item_id',$a->id)->exists();
     }
 
-    private function authorizeWithoutDeposit(User $actor,array $data): void
+    public function authorizeWithoutDeposit(User $actor,array $data,bool $creating=false): void
     {
         abort_unless(self::withoutDepositActor($actor),403,'Solo ADMISION puede confirmar sin adelanto.');
         \Illuminate\Support\Facades\Validator::make($data,[
-            'request_key'=>'required|uuid','expected_revision'=>'required|string|size:64',
+            'request_key'=>'required|uuid','expected_revision'=>($creating?'sometimes':'required').'|string|size:64',
             'confirmed'=>'required|accepted','reason'=>'required|string|min:5|max:500',
         ])->validate();
         abort_unless(($data['confirm']??false)===true && Money::cents($data['payment']['amount']??0)===0
