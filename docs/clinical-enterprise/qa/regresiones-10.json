@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Reprogramación: fecha vigente, scroll dentro del listado, foco real, borde temporal y una sola cita",
+    "Focus móvil conserva lista visible; tocar la fila abre su detalle",
+    "3/3 sin confirmar: naranja, listo exclusivo, KPI coherente y confirmación conservada sin recargar",
+    "Seguridad clínica: listo no falsifica confirmación ni retorno; confirmar→segunda atención→finalizar→salida",
+    "Menú sin Seguimiento; rutas antiguas redirigen a Agenda operativa con permisos",
+    "Comercial no creador: ficha y notas solo lectura; escritura directa403",
+    "Admisión creadora puede corregir notas y ficha con auditoría",
+    "Comercial creador puede editar sus notas sin permisos generales ni edición económica",
+    "Economía conserva acceso administrativo y bloquea Comercial/Médico",
+    "Escritorio y móvil sin desborde; paleta completa y estructura operativa conservadas"
+  ],
+  "errors": []
+}

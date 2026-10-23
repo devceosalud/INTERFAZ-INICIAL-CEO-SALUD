@@ -1,0 +1,8 @@
+{
+    "appointments": 21,
+    "payments": 2,
+    "amount": "120.00",
+    "vouchers": 2,
+    "payments_hash": "5293795b400de429916e1b10a8ae2e0018e2b362b3e51d7e33164769053808c9",
+    "vouchers_hash": "63639cc40f02ea95abc8a0f96fbb646233c68c8c964104206ea262cb0e5ee603"
+}

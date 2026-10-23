@@ -1,0 +1,101 @@
+{
+  "metrics": [
+    {
+      "width": 1366,
+      "height": 636,
+      "role": "julio",
+      "rowHeight": 86.96875,
+      "listWidth": 802,
+      "detailWidth": 340
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "role": "julio",
+      "rowHeight": 86.96875,
+      "listWidth": 802,
+      "detailWidth": 340
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "role": "julio",
+      "rowHeight": 86.96875,
+      "listWidth": 876,
+      "detailWidth": 340
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "role": "julio",
+      "rowHeight": 86.96875,
+      "listWidth": 972,
+      "detailWidth": 340
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "role": "julio",
+      "rowHeight": 86.96875,
+      "listWidth": 1316,
+      "detailWidth": 370
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "role": "julio",
+      "rowHeight": 182.046875,
+      "listWidth": 376,
+      "detailWidth": 0
+    },
+    {
+      "width": 1366,
+      "height": 636,
+      "role": "comercial",
+      "rowHeight": 86.96875,
+      "listWidth": 802,
+      "detailWidth": 340
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "role": "comercial",
+      "rowHeight": 86.96875,
+      "listWidth": 802,
+      "detailWidth": 340
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "role": "comercial",
+      "rowHeight": 86.96875,
+      "listWidth": 876,
+      "detailWidth": 340
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "role": "comercial",
+      "rowHeight": 86.96875,
+      "listWidth": 972,
+      "detailWidth": 340
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "role": "comercial",
+      "rowHeight": 86.96875,
+      "listWidth": 1316,
+      "detailWidth": 370
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "role": "comercial",
+      "rowHeight": 182.046875,
+      "listWidth": 376,
+      "detailWidth": 0
+    }
+  ],
+  "errors": []
+}

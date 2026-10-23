@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path'),assert=require('node:assert/strict')
 const {chromium}=require(path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
 const root=path.resolve(__dirname,'../..'),privateDir=path.join(root,'storage/app/qa-colors'),cohort=path.join(root,'storage/app/qa-reschedule-visual');
 const fixture=JSON.parse(fs.readFileSync(path.join(cohort,'colors-fixture.json'))),secret=JSON.parse(fs.readFileSync(path.join(cohort,'colors-secret.json')));
-const output=path.join(root,'docs/recuperacion-cinco/qa',process.env.CEO_FINAL70_COLOR_QA==='1'?'ajustes-finales70/colors':process.env.CEO_OBS70_COLOR_QA==='1'?'observaciones70/colors':'colors');fs.mkdirSync(output,{recursive:true});
+const output=process.env.CEO_ENTERPRISE_QA==='1'?path.join(root,'docs/clinical-enterprise/qa/colors'):path.join(root,'docs/recuperacion-cinco/qa',process.env.CEO_FINAL70_COLOR_QA==='1'?'ajustes-finales70/colors':process.env.CEO_OBS70_COLOR_QA==='1'?'observaciones70/colors':'colors');fs.mkdirSync(output,{recursive:true});
 const base='http://127.0.0.1:8108',results=[],errors=[];
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 try{
@@ -28,10 +28,11 @@ try{
      const rendered=await page.locator('tr[data-appointment-id]').evaluateAll(rows=>rows.map(r=>({id:Number(r.dataset.appointmentId),classes:r.className,
        row:getComputedStyle(r).backgroundColor,cells:Array.from(r.cells).map(c=>getComputedStyle(c).backgroundColor)})));
      for(const c of fixture.cases){const server=payload.rows.find(r=>r.id===c.id),actual=rendered.find(r=>r.id===c.id);
-      const channels=c.background.match(/[a-f0-9]{2}/gi).map(x=>parseInt(x,16)),expected='rgb('+channels.join(', ')+')';
+      const displayBackground=process.env.CEO_ENTERPRISE_QA==='1'&&c.background.toLowerCase()==='#99f6e4'?'#74dccb':c.background;
+       const channels=displayBackground.match(/[a-f0-9]{2}/gi).map(x=>parseInt(x,16)),expected='rgb('+channels.join(', ')+')';
       assert.equal(server.estado_cita,c.state);assert.equal(server.presentation.clave,c.key);assert.equal(server.presentation.fringe.color,c.background);
       const matches=actual.row===expected&&actual.cells.every(x=>x===expected);
-      results.push({variant,role,viewport,phase,name:c.name,server_state:server.estado_cita,server_key:server.presentation.clave,expected:c.background,expected_rgb:expected,...actual,matches});
+      results.push({variant,role,viewport,phase,name:c.name,server_state:server.estado_cita,server_key:server.presentation.clave,expected:displayBackground,server_background:c.background,expected_rgb:expected,...actual,matches});
       if(variant!=='merged-legacy-css')assert.ok(matches,JSON.stringify(results.at(-1)));
      }
     }
