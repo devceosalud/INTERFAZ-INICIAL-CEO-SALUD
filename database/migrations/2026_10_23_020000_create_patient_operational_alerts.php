@@ -9,7 +9,7 @@ return new class extends Migration {
             $t->string('category',40);$t->date('incident_on');$t->text('reason_ciphertext');$t->foreignId('created_by_user_id')->constrained('users')->restrictOnDelete();$t->foreignId('updated_by_user_id')->constrained('users')->restrictOnDelete();$t->timestamps();
         });
         Schema::create('patient_operational_alert_events',function(Blueprint $t){
-            $t->id();$t->foreignId('alert_id')->constrained('patient_operational_alerts')->restrictOnDelete();$t->foreignId('appointment_id')->constrained('appointments')->restrictOnDelete();$t->foreignId('actor_user_id')->constrained('users')->restrictOnDelete();$t->uuid('request_key');$t->string('action',16);$t->text('snapshot_ciphertext');$t->dateTime('occurred_at');$t->unique(['actor_user_id','request_key'],'poa_events_actor_request_unique');
+            $t->id();$t->foreignId('alert_id')->constrained('patient_operational_alerts')->restrictOnDelete();$t->foreignId('appointment_id')->constrained('appointments')->restrictOnDelete();$t->foreignId('actor_user_id')->constrained('users')->restrictOnDelete();$t->uuid('request_key');$t->string('action',16);$t->mediumText('snapshot_ciphertext');$t->dateTime('occurred_at');$t->unique(['actor_user_id','request_key'],'poa_events_actor_request_unique');
         });
     }
     public function down(): void {

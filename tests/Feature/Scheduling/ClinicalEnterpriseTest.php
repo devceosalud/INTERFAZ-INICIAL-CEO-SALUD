@@ -134,4 +134,14 @@ class ClinicalEnterpriseTest extends \Tests\Support\AgendaV2TestCase
         $this->getJson('/scheduling-mvp/medical-followups/'.$id)->assertOk()->assertJsonPath('can_update',false);
         $this->patchJson('/scheduling-mvp/medical-followups/'.$id,$this->followup())->assertForbidden();$this->assertDatabaseCount('medical_procedure_followup_events',1);
     }
+    public function test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation(): void {
+        $this->care();$u=$this->physician();$this->actingAs($u);
+        $label='DEMO '.str_repeat('🦴',490);$notes=str_repeat('🦴',1000);$reason='Evidencia ficticia verificada: '.str_repeat('🦴',960);
+        $this->change('selection',['procedures'=>[],'custom_procedures'=>[['id'=>(string)Str::uuid(),'label'=>$label,'family'=>'mri']]])->assertOk();
+        $id=DB::table('medical_procedure_followups')->value('id');
+        foreach([1,2]as $version)$this->patchJson('/scheduling-mvp/medical-followups/'.$id,$this->followup(['expected_version'=>$version,'notes'=>$notes,'reason'=>$reason]))->assertOk();
+        $cipher=DB::table('medical_procedure_followup_events')->orderByDesc('id')->value('snapshot_ciphertext');
+        $this->assertGreaterThan(65535,strlen($cipher));$event=json_decode(Crypt::decryptString($cipher),true);
+        $this->assertSame($notes,Crypt::decryptString($event['before']['notes_ciphertext']));$this->assertSame($notes,Crypt::decryptString($event['after']['notes_ciphertext']));$this->assertSame($reason,$event['reason']);
+    }
 }

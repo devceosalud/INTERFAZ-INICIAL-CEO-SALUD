@@ -10,7 +10,7 @@ return new class extends Migration {
             $t->string('procedure_family',32);$t->string('procedure_label',500);$t->dateTime('requested_at');$t->boolean('source_active')->default(true);$t->string('status',24)->default('PENDING');$t->unsignedInteger('version')->default(1);$t->date('planned_review_on')->nullable();$t->text('notes_ciphertext')->nullable();$t->foreignId('updated_by_user_id')->constrained('users')->restrictOnDelete();$t->timestamps();$t->index(['doctor_id','status','requested_at'],'mpf_doctor_queue');
         });
         Schema::create('medical_procedure_followup_events',function(Blueprint $t){
-            $t->id();$t->foreignId('followup_id')->constrained('medical_procedure_followups')->restrictOnDelete();$t->foreignId('actor_user_id')->constrained('users')->restrictOnDelete();$t->uuid('request_key');$t->string('action',24);$t->text('snapshot_ciphertext');$t->dateTime('occurred_at');$t->unique(['followup_id','actor_user_id','request_key'],'mpfe_operation_unique');
+            $t->id();$t->foreignId('followup_id')->constrained('medical_procedure_followups')->restrictOnDelete();$t->foreignId('actor_user_id')->constrained('users')->restrictOnDelete();$t->uuid('request_key');$t->string('action',24);$t->mediumText('snapshot_ciphertext');$t->dateTime('occurred_at');$t->unique(['followup_id','actor_user_id','request_key'],'mpfe_operation_unique');
         });
     }
     public function down(): void {

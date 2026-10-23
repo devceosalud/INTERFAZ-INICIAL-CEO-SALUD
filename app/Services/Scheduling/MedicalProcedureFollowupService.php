@@ -57,7 +57,7 @@ final class MedicalProcedureFollowupService
         $f=$this->query($actor)->where('f.id',$id)->select('f.*','a.fecha_cita','p.nombre','p.apellido_paterno','p.apellido_materno','p.historia_clinica','d.nombre as doctor_name')->first();
         abort_unless($f,404);
         $events=DB::table('medical_procedure_followup_events')->where('followup_id',$id)->orderByDesc('id')->limit(50)->get();
-        return $this->payload($f)+['can_update'=>ClinicalAccess::has($actor,ClinicalCapability::PROCEDURES),'events'=>$events->map(fn($e)=>['action'=>$e->action,'at'=>$e->occurred_at,'actor'=>User::find($e->actor_user_id)?->name,'snapshot'=>json_decode(Crypt::decryptString($e->snapshot_ciphertext),true)])->all()];
+        return $this->payload($f)+['can_update'=>ClinicalAccess::has($actor,ClinicalCapability::PROCEDURES),'events'=>$events->map(fn($e)=>['action'=>$e->action,'at'=>\Carbon\Carbon::parse($e->occurred_at,config('app.timezone'))->toISOString(),'actor'=>User::find($e->actor_user_id)?->name,'snapshot'=>json_decode(Crypt::decryptString($e->snapshot_ciphertext),true)])->all()];
     }
     public function update(User $actor,int $id,array $data): void {
         ClinicalAccess::actor($actor,ClinicalCapability::PROCEDURES);
