@@ -16,11 +16,11 @@ final class OperationalProcedureService
         'radiography' => 'Radiografía', 'ultrasound' => 'Ecografía',
         'laboratory' => 'Laboratorio', 'wound_care' => 'Curación',
         'mri' => 'Resonancia magnética', 'prp' => 'PRP',
-        'hyaluronic_acid' => 'Ácido hialurónico',
+        'hyaluronic_acid' => 'Ácido hialurónico', 'surgery' => 'Cirugía',
     ];
 
     public function canSelect(User $u): bool {
-        if($this->eligible($u) && $u->hasRole('ADMINISTRADOR'))return true;
+        if(!$u->hasRole('MEDICO') && $this->eligible($u) && $u->hasRole('ADMINISTRADOR'))return true;
         try{\App\Support\Scheduling\ClinicalAccess::actor($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);return true;}
         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;return false;}
     }
@@ -72,13 +72,15 @@ final class OperationalProcedureService
             'version' => $review?->version ?? 0,
             'requested_count' => $items->count(), 'completed_count' => $done,
             'pending_count' => $items->count()-$done,
-            'catalog' => $this->canSelect($u) ? self::CATALOG : [],
-            'can_select' => $this->canSelect($u), 'can_complete' => $this->canComplete($u),
+            'catalog' => $this->canSelect($u) ? \App\Support\Scheduling\ProcedureCatalog::labels() : [],
+            'catalog_entries' => $this->canSelect($u) ? \App\Support\Scheduling\ProcedureCatalog::entries() : [],
+            'families' => \App\Support\Scheduling\ProcedureCatalog::FAMILIES,
+            'can_select' => $this->canSelect($u) && (!$u->hasRole('MEDICO') || ((int)$u->doctor_id===(int)$a->doctor_id && $a->estado_cita==='EN_ATENCION' && !$a->hora_atendido && !$a->hora_salida)), 'can_complete' => $this->canComplete($u),
             'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty()
                 && (!AppointmentReevaluationService::indicated($a) || AppointmentReevaluationService::confirmed($a)),
             'can_withdraw' => $this->canSend($u) && $status === 'READY',
             'items' => $items->map(fn ($p) => ['key' => $p->procedure_key,
-                'label' => $p->custom_label ?? self::CATALOG[$p->procedure_key] ?? 'Procedimiento histórico', 'custom' => $p->custom_label !== null,
+                'label' => $p->label_snapshot ?? $p->custom_label ?? \App\Support\Scheduling\ProcedureCatalog::labels()[$p->procedure_key] ?? 'Procedimiento histórico', 'custom' => $p->custom_label !== null, 'family' => $p->procedure_family ?? (\App\Support\Scheduling\ProcedureCatalog::entries()[$p->procedure_key]['family'] ?? 'other'),
                 'requested_by' => $people[$p->requested_by_user_id] ?? 'Usuario no disponible',
                 'completed_by' => $p->verified_by_user_id ? ($people[$p->verified_by_user_id] ?? 'Usuario no disponible') : null, 'completed' => $p->completed_at !== null,
                 'requested_at' => $p->requested_at, 'completed_at' => $p->completed_at])->all(),
@@ -97,7 +99,7 @@ final class OperationalProcedureService
             'send', 'withdraw' => $this->canSend($u), default => false,
         }, 403);
         $original=Appointment::visibleToAgendaUser($u->id)->whereKey($id)->firstOr(fn () => abort(404));
-        $clinical=$action==='selection' && !$this->eligible($u);
+        $clinical=$action==='selection' && ($u->hasRole('MEDICO') || !$this->eligible($u));
         if($clinical){\App\Support\Scheduling\ClinicalAccess::appointment($u,$original);abort_unless($original->estado_cita==='EN_ATENCION' && !$original->hora_atendido && !$original->hora_salida,422);}
         AppointmentReevaluationService::transaction(function () use ($id, $u, $action, $data,$clinical) {
             $hash = hash('sha256', json_encode(['OPERATIONAL_PROCEDURES', $id, $action, $data]));
@@ -117,18 +119,21 @@ final class OperationalProcedureService
             $before = $this->snapshot($id);
             if ($action === 'selection') {
                 $keys = $data['procedures'];
-                abort_if(array_diff($keys, array_keys(self::CATALOG)), 422, 'Procedimiento desconocido.');
+                abort_if(array_diff($keys, array_keys(\App\Support\Scheduling\ProcedureCatalog::labels())), 422, 'Procedimiento desconocido.');
                 $existing = DB::table('appointment_requested_procedures')->where('appointment_id', $id)->get()->keyBy('procedure_key');
                 // Existing clients editing the seven preset choices must not silently withdraw custom requests.
                 $custom = array_key_exists('custom_procedures',$data) ? $data['custom_procedures']
                     : $existing->filter(fn($p)=>$p->selected && $p->custom_label !== null)->map(fn($p)=>['id'=>substr($p->procedure_key,2),'label'=>$p->custom_label])->values()->all();
-                $labels=[];
+                $labels=[];$families=[];
                 foreach($custom as $item) {
                     $label=\App\Support\Scheduling\OperationalText::trim($item['label']);
                     \Illuminate\Support\Facades\Validator::make(['label'=>$label],['label'=>'required|string|max:500'],['label.required'=>'Escribe el procedimiento solicitado por el médico.'])->validate();
                     $key='c:'.$item['id'];
                     abort_if(isset($existing[$key]) && $existing[$key]->custom_label!==$label,409,'El nombre de una solicitud confirmada se conserva. Retírala y registra una nueva si necesitas corregirla.');
-                    $labels[$key]=$label;$keys[]=$key;
+                    $family=$item['family'] ?? ($existing[$key]->procedure_family ?? 'other');
+                    abort_unless(isset(\App\Support\Scheduling\ProcedureCatalog::FAMILIES[$family]),422,'Familia no autorizada.');
+                    abort_if(isset($existing[$key]) && $existing[$key]->procedure_family!==null && $existing[$key]->procedure_family!==$family,409,'La familia de una solicitud confirmada se conserva.');
+                    $labels[$key]=$label;$families[$key]=$family;$keys[]=$key;
                 }
                 foreach ($existing as $key => $p) {
                     $selected = in_array($key, $keys, true);
@@ -140,7 +145,7 @@ final class OperationalProcedureService
                 }
                 foreach (array_diff($keys, $existing->keys()->all()) as $key) {
                     DB::table('appointment_requested_procedures')->insert(['appointment_id' => $id, 'procedure_key' => $key,
-                        'custom_label' => $labels[$key] ?? null, 'selected' => true, 'requested_by_user_id' => $u->id, 'requested_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                        'custom_label' => $labels[$key] ?? null, 'label_snapshot'=>$labels[$key] ?? \App\Support\Scheduling\ProcedureCatalog::labels()[$key], 'procedure_family'=>$families[$key] ?? \App\Support\Scheduling\ProcedureCatalog::entries()[$key]['family'], 'selected' => true, 'requested_by_user_id' => $u->id, 'requested_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
                 }
             } elseif ($action === 'completion') {
                 $p = DB::table('appointment_requested_procedures')->where('appointment_id', $id)

@@ -29,9 +29,9 @@ final class OperationalProcedureController extends Controller
         }, 403);
         $rules = ['request_key' => 'required|uuid', 'expected_version' => 'required|integer|min:0'];
         $rules += match ($action) {
-            'selection' => ['procedures' => 'present|array|max:7', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(OperationalProcedureService::CATALOG))],
-                'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label',
-                'custom_procedures.*.id'=>'required|uuid|distinct', 'custom_procedures.*.label'=>'required|string|max:500'],
+            'selection' => ['procedures' => 'present|array|max:100', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::labels()))],
+                'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label,family',
+                'custom_procedures.*.id'=>'required|uuid|distinct', 'custom_procedures.*.label'=>'required|string|max:500', 'custom_procedures.*.family'=>['sometimes','string',Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::FAMILIES))]],
             'completion' => ['procedure' => 'required|string|max:40', 'completed' => 'required|boolean'],
             default => ['confirmed' => 'required|accepted', 'reason' => 'nullable|string|max:500'],
         };

@@ -171,8 +171,8 @@
                 procedureRequest=null;if(action==='selection'){selectionDraft=null;customProcedureDraft=null;selectionDraftVersion=null;}updateDirty();busy=false;
                 await select(id);
                 await load(id);
-                notice('Procedimientos y reevaluación actualizados.');
-            }catch(error){busy=false;notice(error.message);}
+                notice('Procedimientos y reevaluación actualizados.');return true;
+            }catch(error){busy=false;notice(error.message);return false;}
         }
         async function reviewDecision(action) {
             if(busy||loading||confirming||!detail||!window.Swal)return;
@@ -249,31 +249,8 @@
             if(data.can_withdraw){const withdraw=node('button','Retirar envío por procedimientos','admission-btn');withdraw.type='button';withdraw.addEventListener('click',()=>reviewDecision('withdraw'));decisions.appendChild(withdraw);}
             area.appendChild(decisions);
             if(data.can_select){
-                const editor=node('details',null,'admission-procedure-editor');editor.open=!requested||selectionDraft!==null;
-                editor.appendChild(node('summary','Editar solicitud de procedimientos'));
-                const picker=node('fieldset',null,'admission-procedure-picker');picker.appendChild(node('legend',board.dataset.clinicalOnly==='1'?'Solicitud del médico responsable':'Solicitud del administrador'));
-                const confirmed=new Set(data.items.map(p=>p.key)),selected=new Set(selectionDraft||confirmed);
-                const draftStatus=node('small',selectionDraft?'Selección sin guardar.':'Marcar casillas no guarda. Confirma expresamente.');
-                for(const[key,label]of Object.entries(data.catalog)){
-                    const line=node('label',null,'admission-task-check'),box=node('input');box.type='checkbox';box.checked=selected.has(key);box.dataset.procedureSelection=key;
-                    box.addEventListener('change',()=>{if(box.checked)selected.add(key);else selected.delete(key);selectionDraftVersion??=data.version;selectionDraft=new Set(selected);updateDirty();draftStatus.textContent='Selección sin guardar.';});
-                    append(line,box,node('span',label));picker.appendChild(line);
-                }
-                for(const p of data.items.filter(p=>p.custom)){
-                    const line=node('label',null,'admission-task-check'),box=node('input');box.type='checkbox';box.checked=selected.has(p.key);box.dataset.procedureSelection=p.key;
-                    box.addEventListener('change',()=>{if(box.checked)selected.add(p.key);else selected.delete(p.key);selectionDraftVersion??=data.version;selectionDraft=new Set(selected);updateDirty();});append(line,box,node('span',p.label));picker.appendChild(line);
-                }
-                const other=node('input');other.type='checkbox';other.checked=Boolean(customProcedureDraft?.enabled);other.setAttribute('aria-label','Otro procedimiento');
-                const text=node('input');text.type='text';text.maxLength=500;text.value=customProcedureDraft?.label||'';text.hidden=!other.checked;text.placeholder='Procedimiento solicitado por el médico';text.setAttribute('aria-label','Nombre del otro procedimiento');
-                const editOther=()=>{text.hidden=!other.checked;customProcedureDraft={id:customProcedureDraft?.id||crypto.randomUUID(),enabled:other.checked,label:text.value};selectionDraftVersion??=data.version;selectionDraft=new Set(selected);updateDirty();};
-                other.addEventListener('change',()=>{editOther();if(other.checked)text.focus();});text.addEventListener('input',editOther);
-                append(picker,append(node('label',null,'admission-task-check'),other,node('span','Otro procedimiento')),text);
-                const confirm=node('button','Confirmar selección','admission-btn admission-btn--primary');confirm.type='button';confirm.addEventListener('click',()=>{
-                    const customs=data.items.filter(p=>p.custom&&selected.has(p.key)).map(p=>({id:p.key.slice(2),label:p.label}));
-                    if(other.checked){const label=text.value.replace(/^[\s\u200B\uFEFF]+|[\s\u200B\uFEFF]+$/g,'');if(!label){draftStatus.textContent='Escribe el procedimiento solicitado por el médico.';text.focus();return;}customs.push({id:customProcedureDraft.id,label});}
-                    procedureChange('selection',{procedures:Array.from(selected).filter(key=>!key.startsWith('c:')),custom_procedures:customs});
-                });
-                append(picker,confirm,draftStatus);editor.appendChild(picker);area.appendChild(editor);
+                const button=node('button','Seleccionar procedimientos','admission-btn admission-btn--primary');button.type='button';
+                button.addEventListener('click',()=>window.ProcedurePicker.open({doc,data,trigger:button,save:async(values,version)=>{selectionDraftVersion=version;return await procedureChange('selection',values);}}));area.appendChild(button);
             }
             if(unified.history?.length){
                 const audit=node('details',null,'admission-reevaluation-audit'),title=node('summary','Historial de reevaluación'),entries=node('div');
@@ -544,7 +521,7 @@
             try{await availabilityRequest.run(async signal=>Promise.all(options.map(async option=>{const u=new URL(board.dataset.availability,location.origin);u.searchParams.set('doctor_id',option.value);u.searchParams.set('fecha',filters.fecha);if(filters.site_id)u.searchParams.set('site_id',filters.site_id);try{return {option,result:await request(u.href,{signal})};}catch(error){if(error.name==='AbortError')throw error;return {option,error:true};}})),results=>{for(const entry of results){const card=node('article');card.appendChild(node('h3',entry.option.textContent));if(entry.error)card.appendChild(node('p','No se pudo consultar el horario.'));else{const slots=entry.result.slots||[],free=slots.filter(s=>s.estado==='DISPONIBLE');append(card,node('p',slots.length?free.length+' intervalos libres / '+slots.length+' intervalos del horario':'Sin horario configurado'),node('p',free.length?'Primer intervalo libre: '+free[0].inicio:'Sin intervalos libres'),link('Abrir Agenda',agendaUrl(entry.option.value,filters.fecha)));}$('availability').appendChild(card);}});}catch(error){$('availability-note').textContent='No se pudo consultar disponibilidad. Usa Agenda para verificar horarios.';}
         }
 
-        const editing=()=>confirming||detailDirty||Boolean($('detail').querySelector?.('.admission-reevaluation-audit[open]'))||Boolean($('detail').contains(doc.activeElement)&&doc.activeElement?.matches('input,textarea,select,[contenteditable="true"]'));
+        const editing=()=>Boolean(doc.querySelector('.admission-procedure-dialog[open]'))||confirming||detailDirty||Boolean($('detail').querySelector?.('.admission-reevaluation-audit[open]'))||Boolean($('detail').contains(doc.activeElement)&&doc.activeElement?.matches('input,textarea,select,[contenteditable="true"]'));
         function renderReschedules(payload){
             const panel=$('reschedule-panel');if(!panel)return;const items=payload?.items||[];panel.hidden=!items.length&&!payload?.has_more&&!historyBefore;
             $('reschedule-count').textContent='('+items.length+(payload?.has_more?'+':'')+')';const list=$('reschedule-list');list.replaceChildren();
