@@ -14,6 +14,7 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
     {
         $migration=require database_path('migrations/2026_10_16_020000_create_appointment_operational_procedures.php');
         $followups=require database_path('migrations/2026_10_23_030000_create_medical_procedure_followups.php');
+        $order=require database_path('migrations/2026_10_23_040000_preserve_clinical_order_details.php');$order->down();
         $followups->down(); // Empty extension depends on the legacy request table (MariaDB FK).
         $migration->down();
         app(AdmissionTaskService::class)->create($this->a->id,$this->admin,'Observación libre histórica ficticia',(string)Str::uuid());
@@ -22,7 +23,7 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
         $migration->up();
         Schema::table('appointment_requested_procedures',fn(\Illuminate\Database\Schema\Blueprint $t)=>$t->string('custom_label',500)->nullable());
         (require database_path('migrations/2026_10_23_010000_add_procedure_request_identity.php'))->up();
-        $followups->up();
+        $followups->up();$order->up();
         foreach($tables as $t)$this->assertSame($before[$t],DB::table($t)->orderBy('id')->get()->toJson(),$t);
         $this->assertDatabaseCount('appointment_operational_reviews',0);$this->assertDatabaseCount('appointment_requested_procedures',0);
         $this->select()->assertOk();
