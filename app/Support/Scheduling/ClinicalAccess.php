@@ -59,7 +59,7 @@ final class ClinicalAccess
 
     public static function activeCare(Appointment $a): void
     {
-        abort_unless(($a->attendance_mode??'PRESENCIAL')==='PRESENCIAL' && !$a->hora_atendido && !$a->hora_salida,422,
-            'La acción requiere una cita presencial activa, sin finalización ni salida.');
+        abort_unless(in_array($a->attendance_mode??'PRESENCIAL',['PRESENCIAL','TELECONSULTA'],true) && !$a->hora_atendido && !$a->hora_salida,422,
+            'La acción requiere una cita activa, sin finalización ni salida.');
     }
 }

@@ -1,6 +1,14 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {latest,bookingLabel,time,readResponse}=require('../../public/js/scheduling/admission-board.js');
+const {journeySteps}=require('../../public/js/scheduling/admission-board.js');
+test('remote care timeline has clinical start and finish without suggesting physical steps',()=>{
+    const steps=journeySteps('TELECONSULTA');assert.deepEqual(Object.keys(steps),['inicio','fin']);
+    for(const key of ['llegada','llamado','salida'])assert.equal(steps[key],undefined);
+});
+test('onsite and historical default timelines keep their physical arrival and departure steps',()=>{
+    for(const mode of ['PRESENCIAL',null,undefined])assert.deepEqual(Object.keys(journeySteps(mode)),['llegada','llamado','inicio','fin','salida']);
+});
 test('pending booking is never labelled confirmed because payment or care changed',()=>{
     assert.match(bookingLabel('PENDIENTE_CONFIRMACION'),/sin confirmar/);
     assert.equal(bookingLabel('CONFIRMADA'),'Horario confirmado');

@@ -119,7 +119,7 @@ final class AppointmentReevaluationService
     public static function operatorCanDecline(User $actor, Appointment $a): bool
     {
         return self::operatorCanConfirm($actor)
-            && ($a->attendance_mode ?? 'PRESENCIAL') === 'PRESENCIAL'
+            && in_array($a->attendance_mode ?? 'PRESENCIAL',['PRESENCIAL','TELECONSULTA'],true)
             && $a->estado_cita === 'EN_ATENCION'
             && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)
             && $a->hora_atencion && !$a->hora_atendido && !$a->hora_salida

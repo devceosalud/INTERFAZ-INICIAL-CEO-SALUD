@@ -130,7 +130,10 @@ class AdmissionCareService
             abort_if((int)$a->doctor_id !== (int)$original->doctor_id || $a->estado_cita !== $data['expected_state'],409,'La cita cambió. Actualiza antes de continuar.');
             abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
             if($clinical && !$verified)abort_unless(UnlinkedDoctorAdmissionFallback::eligible($a,$actor),403);
-            if($data['state']==='EN_ATENCION')abort_unless($a->hora_llegada && !$a->hora_atencion,422,'Registra la llegada antes de iniciar atención.');
+            if($clinical && $verified)\App\Support\Scheduling\ClinicalAccess::activeCare($a);
+            if($data['state']==='EN_ATENCION')abort_unless(
+                (($a->attendance_mode??'PRESENCIAL')==='TELECONSULTA' || $a->hora_llegada) && !$a->hora_atencion,
+                422,'La atención presencial requiere llegada registrada y la cita no debe haberse iniciado.');
             if($data['state']==='ATENDIDO'){
                 $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
                 app(ManualReevaluationService::class)->load(collect([$a]));
