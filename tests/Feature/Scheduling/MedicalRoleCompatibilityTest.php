@@ -125,4 +125,26 @@ class MedicalRoleCompatibilityTest extends \Tests\Support\AgendaV2TestCase
         $this->putJson(route('admin.user.update',$u->id),['role'=>Role::findByName('ADMINISTRADOR')->id])->assertUnprocessable();
         $this->assertTrue($u->fresh()->hasAllRoles(['MEDICO 2','ADMINISTRADOR']));
     }
+    public function test_medico_two_lands_in_admission_after_login_and_from_saved_dashboard(): void {
+        $u=$this->doctor();
+        auth()->logout();
+        $this->post(route('admin.login.store'),[
+            'email'=>$u->email,'password'=>'FicticioSoloQA!'
+        ])->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get('/')->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('admin.dashboard.index'))->assertRedirect(route('scheduling.mvp.admission'));
+        $this->get(route('scheduling.mvp.admission'))->assertOk();
+        // The medical role still cannot obtain operational Dashboard data via JSON.
+        $this->getJson(route('admin.dashboard.index'))->assertForbidden();
+    }
+
+    public function test_medico_two_with_incompatible_basico_role_does_not_bypass_clinical_guard(): void {
+        $u=$this->doctor();
+        Role::findOrCreate('BASICO','web');
+        $u->assignRole('BASICO');
+        $this->get(route('scheduling.mvp.admission'))->assertForbidden();
+        $this->get(route('admin.dashboard.index'))->assertForbidden();
+        $this->assertFalse(\App\Support\Scheduling\MedicalLanding::admissionFor($u));
+    }
+
 }

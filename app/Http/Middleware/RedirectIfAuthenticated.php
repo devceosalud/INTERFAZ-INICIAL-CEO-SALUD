@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Providers\RouteServiceProvider;
+use App\Support\Scheduling\MedicalLanding;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,10 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                $user=Auth::guard($guard)->user();
+                return MedicalLanding::admissionFor($user)
+                    ? redirect()->route('scheduling.mvp.admission')
+                    : redirect(RouteServiceProvider::HOME);
             }
         }
 
