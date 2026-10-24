@@ -1,0 +1,183 @@
+[
+  {
+    "script": "corporate-regression",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "ce10980af2b535b4cbb6858ad51dd733dd1aaef961dfe0cd5e5f56f366061c61",
+      "vouchers_hash": "ac08e2af277f5f2ab100d09472e673c1a0f6633667211a18f455b18124aebd0d"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "ce10980af2b535b4cbb6858ad51dd733dd1aaef961dfe0cd5e5f56f366061c61",
+      "vouchers_hash": "6cda849eb48c5a7672756f05112ab95bbf9e0da6ec5c85a0b26e0f20b7cad5c5"
+    },
+    "authorized_difference": "Existing TICKET updated by the tested Administrator price correction120->100; no new payments or voucher rows."
+  },
+  {
+    "script": "corporate-final-journey",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "9c2016d18928790626beafc19a107638b84f9004e2dfc159d950aa28e6a76230",
+      "vouchers_hash": "4b88b278330d5efee6404ee093745e29ed3d16cdb79275b68c3dc34e7065c843"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "9c2016d18928790626beafc19a107638b84f9004e2dfc159d950aa28e6a76230",
+      "vouchers_hash": "4b88b278330d5efee6404ee093745e29ed3d16cdb79275b68c3dc34e7065c843"
+    }
+  },
+  {
+    "script": "corporate-without-deposit",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "627f53891d2678eb3d53449f5c38d8263c55472c7f565233e958818faa95aaff",
+      "vouchers_hash": "cea0a946e20b63e00ec496d35dabbf811cc56aceda2191c9099ed0ff665f1c6f"
+    },
+    "after": {
+      "appointments": 25,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "627f53891d2678eb3d53449f5c38d8263c55472c7f565233e958818faa95aaff",
+      "vouchers_hash": "cea0a946e20b63e00ec496d35dabbf811cc56aceda2191c9099ed0ff665f1c6f"
+    }
+  },
+  {
+    "script": "clinical-enterprise-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "87e300c67b7e444a1456d403fe09f319871cc487a9504d495b25445ef04ed61e",
+      "vouchers_hash": "f25a304292d2fbce0797f371079a94a9f6251dd00969722148780225ace02fd9"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "87e300c67b7e444a1456d403fe09f319871cc487a9504d495b25445ef04ed61e",
+      "vouchers_hash": "f25a304292d2fbce0797f371079a94a9f6251dd00969722148780225ace02fd9"
+    }
+  },
+  {
+    "script": "clinical-enterprise-followup-filters",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "b7d6fbf741c2e1c7dda29f8cbd47b39d766ec052ae1fceb81cedfdd6c7d6412d",
+      "vouchers_hash": "e2fd6c2b75b1500dd2eab526a7f41504d68443dbe7eb32648ecc9cea884c6738"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "b7d6fbf741c2e1c7dda29f8cbd47b39d766ec052ae1fceb81cedfdd6c7d6412d",
+      "vouchers_hash": "e2fd6c2b75b1500dd2eab526a7f41504d68443dbe7eb32648ecc9cea884c6738"
+    }
+  },
+  {
+    "script": "clinical-enterprise-refinement-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "4b3c5c6218fae15f57fc3c5028358853204416971084f1d76e1362b979c38241",
+      "vouchers_hash": "dcc45e4c5f505c12bd273ea35578f54536eb0d938f7078c8b523b55cde5c5828"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "4b3c5c6218fae15f57fc3c5028358853204416971084f1d76e1362b979c38241",
+      "vouchers_hash": "dcc45e4c5f505c12bd273ea35578f54536eb0d938f7078c8b523b55cde5c5828"
+    }
+  },
+  {
+    "script": "clinical-enterprise-popup-responsive",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "4b3c5c6218fae15f57fc3c5028358853204416971084f1d76e1362b979c38241",
+      "vouchers_hash": "dcc45e4c5f505c12bd273ea35578f54536eb0d938f7078c8b523b55cde5c5828"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "4b3c5c6218fae15f57fc3c5028358853204416971084f1d76e1362b979c38241",
+      "vouchers_hash": "dcc45e4c5f505c12bd273ea35578f54536eb0d938f7078c8b523b55cde5c5828"
+    }
+  },
+  {
+    "script": "clinical-enterprise-round-two-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f0c6c6de8e758f43f0e3b9ccce1a550d6a62954856c10fb0da88c6071f5263ac",
+      "vouchers_hash": "a5c736b49a8e3a3aa86b070d9199491b979a428b57f65c4f3204b490428c8754"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f0c6c6de8e758f43f0e3b9ccce1a550d6a62954856c10fb0da88c6071f5263ac",
+      "vouchers_hash": "a5c736b49a8e3a3aa86b070d9199491b979a428b57f65c4f3204b490428c8754"
+    }
+  },
+  {
+    "script": "clinical-enterprise-doctor-controls",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f0c6c6de8e758f43f0e3b9ccce1a550d6a62954856c10fb0da88c6071f5263ac",
+      "vouchers_hash": "a5c736b49a8e3a3aa86b070d9199491b979a428b57f65c4f3204b490428c8754"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "f0c6c6de8e758f43f0e3b9ccce1a550d6a62954856c10fb0da88c6071f5263ac",
+      "vouchers_hash": "a5c736b49a8e3a3aa86b070d9199491b979a428b57f65c4f3204b490428c8754"
+    }
+  }
+]

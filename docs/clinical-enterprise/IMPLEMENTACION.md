@@ -1,5 +1,7 @@
 # Clinical Enterprise, procedimientos, alertas y seguimiento médico
 
+> Revisión vigente de seis tareas sobre el mismo Draft PR72: [catálogo personal y seguimiento manual/general](CATALOGO-Y-SEGUIMIENTO-PR72.md), [pruebas y capturas actuales](qa/round2/README.md), [preparación productiva de cinco migraciones](PREPARACION-PRODUCTIVA-PR72.md). La matriz de esta revisión amplía la solicitud existente, preserva sus restricciones y limita el seguimiento automático/manual a Quiroz verificado. Los resultados anteriores se mantienen como evidencia histórica.
+
 ## Base y alcance
 
 Rama independiente `codex/clinical-enterprise-integral-20261023`, creada desde `main` remoto `a4e2a9b0f9e517c55be10232321391b1dc970e73`. El PR #71 permanece en Draft, sin merge y sin modificaciones. No se utilizó su rama como base ni se sustituyeron archivos actuales por versiones antiguas. La situación productiva conocida procede del usuario; no se consultó Hostinger ni se verificó producción por SSH.

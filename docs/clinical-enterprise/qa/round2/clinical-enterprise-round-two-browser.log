@@ -1,0 +1,8 @@
+OK A/C/D: add with Enter, aliases, persistence, repeated confirmation, unique surgery/MRI followups and priority labels
+OK B: reuse in another patient with independent requests and a single private reference
+OK E/F: manual curación and general followup, repeated sends without duplicate records or fictitious requests
+OK Grouped procedures, manual/automatic provenance, filters and audited state update without completing exams
+OK Role and URL/API checks: no manual followup or module access for other profiles
+OK G: priority and original structured characteristics visible in the authorized quick agendas
+OK H: 200 real fictitious catalog doctors, integrated visible options, progressive search, keyboard selection and Escape
+OK Responsive desktop1366/1440/1536/1920 and mobile390, preserving full semantic backgrounds

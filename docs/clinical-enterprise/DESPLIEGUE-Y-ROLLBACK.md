@@ -1,5 +1,7 @@
 # Esquema y publicación futura — no ejecutada
 
+> La revisión integral posterior agrega una quinta migración. La lista vigente completa, índices, compatibilidad y pasos de publicación/rollback están en [PREPARACION-PRODUCTIVA-PR72.md](PREPARACION-PRODUCTIVA-PR72.md). El texto siguiente conserva el contexto de la candidata de cuatro migraciones; no utilizarlo como lista actual de ejecución.
+
 ## Cambios de esquema
 
 Cuatro migraciones nuevas y aditivas; probadas únicamente en bases descartables:

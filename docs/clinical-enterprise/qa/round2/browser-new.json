@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "steps": [
+    "A/C/D: add with Enter, aliases, persistence, repeated confirmation, unique surgery/MRI followups and priority labels",
+    "B: reuse in another patient with independent requests and a single private reference",
+    "E/F: manual curación and general followup, repeated sends without duplicate records or fictitious requests",
+    "Grouped procedures, manual/automatic provenance, filters and audited state update without completing exams",
+    "Role and URL/API checks: no manual followup or module access for other profiles",
+    "G: priority and original structured characteristics visible in the authorized quick agendas",
+    "H: 200 real fictitious catalog doctors, integrated visible options, progressive search, keyboard selection and Escape",
+    "Responsive desktop1366/1440/1536/1920 and mobile390, preserving full semantic backgrounds"
+  ],
+  "errors": [],
+  "date": "2026-10-23",
+  "personal_id": "02c2385c-e4b1-4e9d-a314-993c77e58f8a"
+}

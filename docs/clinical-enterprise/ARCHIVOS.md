@@ -1,6 +1,8 @@
 # Archivos modificados
 
-Comparación contra `main` `a4e2a9b0f9e517c55be10232321391b1dc970e73`. La composición de Agenda operativa permanece igual. Las excepciones expresamente solicitadas en el refinamiento son el indicador amarillo EXONERADA compartido y la mejora global del selector de médico; no cambian sus vistas ni CSS propios. Las modificaciones compartidas de procedimientos se limitan a identidad, seguimiento y permisos solicitados; su representación en Operativa permanece igual.
+Comparación contra `main` `a4e2a9b0f9e517c55be10232321391b1dc970e73`. La composición de Agenda operativa permanece igual. Las excepciones expresamente solicitadas son EXONERADA amarilla, búsqueda de médicos y chips visibles de procedimientos/características estructuradas. Estos chips y su ayuda accesible cambian intencionalmente el contenido visible de Operativa, conservando fondos, agenda, disponibilidad, pagos y acciones. No se sustituyen sus vistas ni CSS de layout.
+
+La revisión de seis tareas está detallada en [CATALOGO-Y-SEGUIMIENTO-PR72.md](CATALOGO-Y-SEGUIMIENTO-PR72.md); [lista exacta de archivos de la revisión](qa/round2/archivos.txt), [QA vigente](qa/round2/README.md) y [cinco migraciones / publicación futura](PREPARACION-PRODUCTIVA-PR72.md). Las listas siguientes conservan los componentes del conjunto anterior del PR.
 
 ## Autorización y backend
 
