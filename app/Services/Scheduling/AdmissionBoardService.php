@@ -255,13 +255,6 @@ class AdmissionBoardService
         return $payload;
     }
 
-    public function careActions(Appointment $a, User $actor): array
-    {
-        if($a->estado_cita==='ATENDIDO')return AdmissionCareService::canRegisterDeparture($a,$actor)
-            ? ['SALIDA_REGISTRADA'] : [];
-        return $this->ongoingCareActions($a,$actor);
-    }
-
     private function ongoingCareActions(Appointment $a, User $actor): array
     {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
@@ -292,5 +285,12 @@ class AdmissionBoardService
             'LLAMANDO'=>$linked&&!$ownPhysician?[]:['EN_ATENCION'],
             default=>[],
         };
+    }
+
+    public function careActions(Appointment $a, User $actor): array
+    {
+        if($a->estado_cita==='ATENDIDO')return AdmissionCareService::canRegisterDeparture($a,$actor)
+            ? ['SALIDA_REGISTRADA'] : [];
+        return $this->ongoingCareActions($a,$actor);
     }
 }
