@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\authenticator\auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\Scheduling\MedicalLanding;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,13 +33,13 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('ceosalud_auth_version',(int)Auth::user()->auth_version);
 
-        // Solo la cuenta heredada de GERENTE JULIO QUIROZ (#2): conserva
-        // ADMINISTRADOR + MEDICO, pero inicia directamente en Admisión.
+        // Preserve the established Julio redirect and add verified medical-only users.
+        // Administrative and operational accounts keep their existing landing.
         $user=Auth::user();
         if((int)$user->id===2 && $user->hasAllRoles(['ADMINISTRADOR','MEDICO'])
             && config('scheduling.enabled')
             && $user->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
-            && $user->can(\App\Support\Scheduling\SchedulingCapability::VIEW)){
+            && $user->can(\App\Support\Scheduling\SchedulingCapability::VIEW) || MedicalLanding::admissionFor($user)){
             return redirect()->route('scheduling.mvp.admission');
         }
 
