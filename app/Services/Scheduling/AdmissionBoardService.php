@@ -257,6 +257,8 @@ class AdmissionBoardService
 
     public function careActions(Appointment $a, User $actor): array
     {
+        if($a->estado_cita==='ATENDIDO')return AdmissionCareService::canRegisterDeparture($a,$actor)
+            ? ['SALIDA_REGISTRADA'] : [];
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
         if (!$actor->can(C::UPDATE) && !$ownPhysician) return AdmissionCareService::canRegisterArrival($a,$actor)
@@ -279,12 +281,11 @@ class AdmissionBoardService
             return ['ATENDIDO'];
         }
         if($ownPhysician && in_array($a->estado_cita,['EN_ESPERA','LLAMANDO'],true))return $a->hora_llegada?['EN_ATENCION']:[];
-        if($a->estado_cita==='ATENDIDO' && !$actor->hasAnyRole(['ADMISION','ADMINISTRADOR']))return [];
         return match ($a->estado_cita) {
             'PROGRAMADO','CONFIRMADO','PACIENTE_LLEGO'=>['EN_ESPERA'],
             'EN_ESPERA'=>$linked&&!$ownPhysician?['LLAMANDO']:['LLAMANDO','EN_ATENCION'],
             'LLAMANDO'=>$linked&&!$ownPhysician?[]:['EN_ATENCION'],
-            'ATENDIDO'=>$a->hora_salida ? [] : ['SALIDA_REGISTRADA'], default=>[],
+            default=>[],
         };
     }
 }

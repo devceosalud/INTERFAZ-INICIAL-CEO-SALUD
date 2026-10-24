@@ -26,11 +26,11 @@ class AgendaV2Round3Test extends TestCase {
  $this->assertSame($before,$this->a->fresh()->getAttributes());
  }
  public function test_exit_without_reason_remains_audited_and_idempotent_without_financial_changes():void {
- $this->a->update(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'ATENDIDO']);$this->admin->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
+ $this->a->forceFill(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'ATENDIDO','hora_atendido'=>now()])->save();
  $body=['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()];$url=route('scheduling.mvp.admission.care',$this->a->id);
- $this->actingAs($this->admin)->postJson($url,$body)->assertOk();$first=$this->a->fresh()->hora_salida;
+ $this->actingAs($this->commercial)->postJson($url,$body)->assertOk();$first=$this->a->fresh()->hora_salida;
  $this->postJson($url,$body)->assertOk();$this->assertTrue($first->equalTo($this->a->fresh()->hora_salida));
- $this->assertDatabaseHas('appointment_events',['appointment_id'=>$this->a->id,'event_type'=>'ADMISION_SALIDA_REGISTRADA','actor_user_id'=>$this->admin->id,'motivo'=>null]);
+ $this->assertDatabaseHas('appointment_events',['appointment_id'=>$this->a->id,'event_type'=>'ADMISION_SALIDA_REGISTRADA','actor_user_id'=>$this->commercial->id,'motivo'=>null]);
  $this->assertDatabaseCount('appointment_events',1);$this->assertDatabaseCount('payments',0);$this->assertSame('ATENDIDO',$this->a->fresh()->estado_cita);
  }
  public function test_commercial_upload_admin_download_and_private_history_without_general_edit():void {
