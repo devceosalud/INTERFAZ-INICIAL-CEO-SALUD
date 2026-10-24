@@ -16,7 +16,7 @@ final class MedicalFollowupAccess
             true)
             && (int) $fresh->auth_version === (int) $actor->auth_version
             && (int) $fresh->doctor_id === (int) $actor->doctor_id, 403,
-            'El seguimiento de pacientes está habilitado exclusivamente para la cuenta médica verificada del Dr. Quiroz.');
+            'El seguimiento de pacientes está habilitado únicamente para cuentas médicas autorizadas.');
 
         return $fresh;
     }
