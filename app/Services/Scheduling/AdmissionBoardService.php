@@ -259,6 +259,11 @@ class AdmissionBoardService
     {
         if($a->estado_cita==='ATENDIDO')return AdmissionCareService::canRegisterDeparture($a,$actor)
             ? ['SALIDA_REGISTRADA'] : [];
+        return $this->ongoingCareActions($a,$actor);
+    }
+
+    private function ongoingCareActions(Appointment $a, User $actor): array
+    {
         if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
         if (!$actor->can(C::UPDATE) && !$ownPhysician) return AdmissionCareService::canRegisterArrival($a,$actor)
