@@ -11,7 +11,7 @@ final class AdmissionAccess
     public static function operational(User $actor): bool
     {
         $u=$actor->fresh();
-        if($u && $u->hasRole(ClinicalCapability::ROLE) && !$u->hasAnyRole(MvpOperationalAccess::LEGACY_ROLES))return false;
+        if($u && ClinicalCapability::isMedical($u) && !$u->hasRole('ADMINISTRADOR','web'))return false;
         return $u && $u->is_active && ClinicalAccess::has($u,SchedulingCapability::MVP_ACCESS)
             && ClinicalAccess::has($u,SchedulingCapability::VIEW);
     }

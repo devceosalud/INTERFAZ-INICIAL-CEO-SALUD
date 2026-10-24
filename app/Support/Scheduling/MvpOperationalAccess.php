@@ -9,12 +9,12 @@ final class MvpOperationalAccess
     public const LEGACY_ROLES = ['ADMINISTRADOR', 'ADMISION', 'COMERCIAL', 'RECEPCION'];
     public static function reads(?User $user): bool
     {
-        return $user !== null && ($user->hasAnyRole(self::LEGACY_ROLES)
+        return $user !== null && !(ClinicalCapability::isMedical($user) && !$user->hasRole('ADMINISTRADOR','web')) && ($user->hasAnyRole(self::LEGACY_ROLES)
             || ($user->can(SchedulingCapability::MVP_ACCESS) && $user->can(SchedulingCapability::VIEW)));
     }
     public static function writesPatients(?User $user): bool
     {
-        return $user !== null && ($user->hasAnyRole(self::LEGACY_ROLES)
+        return $user !== null && !(ClinicalCapability::isMedical($user) && !$user->hasRole('ADMINISTRADOR','web')) && ($user->hasAnyRole(self::LEGACY_ROLES)
             || ($user->can(SchedulingCapability::MVP_ACCESS) && $user->can(SchedulingCapability::VIEW)
                 && $user->can(SchedulingCapability::CREATE) && $user->can(SchedulingCapability::UPDATE)));
     }

@@ -12,7 +12,7 @@ final class MedicalProcedureFollowupService
         if(DB::transactionLevel()<1)throw new \LogicException('The request and its followup must commit atomically.');
         $requests=DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->get()->keyBy('id');
         $existing=DB::table('medical_procedure_followups')->where('appointment_id',$a->id)->lockForUpdate()->get()->keyBy('requested_procedure_id');
-        $clinical=$actor->hasRole('MEDICO');$automatic=false;
+        $clinical=\App\Support\Scheduling\ClinicalCapability::isMedical($actor);$automatic=false;
         if($clinical){ClinicalAccess::actor($actor,ClinicalCapability::PROCEDURES);ClinicalAccess::appointment($actor,$a);}
         if($clinical){try{\App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);$automatic=true;}catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;}}
         foreach($requests as $p){

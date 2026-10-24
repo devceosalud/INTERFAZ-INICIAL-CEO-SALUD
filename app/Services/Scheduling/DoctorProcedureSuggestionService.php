@@ -18,7 +18,7 @@ final class DoctorProcedureSuggestionService
 
     public function list(User $actor,?string $search=null): array
     {
-        if(!$actor->hasRole('MEDICO'))return [];
+        if(!\App\Support\Scheduling\ClinicalCapability::isMedical($actor))return [];
         $u=ClinicalAccess::actor($actor,ClinicalCapability::PROCEDURES);
         $query=DB::table('doctor_procedure_suggestions')->where('user_id',$u->id)->where('doctor_id',$u->doctor_id)->orderByDesc('updated_at');
         $rows=$search===null?$query->limit(200)->get():$query->cursor();$result=[];$term=$search===null?null:self::normalize($search);
@@ -29,7 +29,7 @@ final class DoctorProcedureSuggestionService
     /** Called only inside the existing selection transaction, after clinical identity locks. */
     public function canonicalize(array $items,User $actor,Appointment $a,$existing): array
     {
-        if(!$actor->hasRole('MEDICO')) {foreach($items as $item)abort_if(!empty($item['reusable_id']),403);return $items;}
+        if(!\App\Support\Scheduling\ClinicalCapability::isMedical($actor)) {foreach($items as $item)abort_if(!empty($item['reusable_id']),403);return $items;}
         $u=ClinicalAccess::actor($actor,ClinicalCapability::PROCEDURES);ClinicalAccess::appointment($u,$a);$a->loadMissing('patient');$seen=[];$result=[];
         foreach($items as $item){
             $label=trim($item['label']);$normal=self::normalize($label);$family=$item['family']??'other';

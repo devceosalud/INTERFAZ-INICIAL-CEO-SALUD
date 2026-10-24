@@ -19,6 +19,9 @@
     @enderror
 
     <p class="text-muted small mb-3">Los nombres explican qué permite cada opción. Activar o quitar una casilla modifica los accesos del rol al guardar.</p>
+    @if (isset($role) && \App\Support\Scheduling\ClinicalCapability::isRole($role->name))
+        <p class="alert alert-info">Perfil médico: admite las seis capacidades clínicas y los permisos «Ingresar a la Agenda» y «Ver citas de Agenda». El médico trabaja en Admisión sobre sus propias citas. Caja, edición administrativa y Seguimiento de pacientes conservan sus autorizaciones independientes. Use MEDICO para nuevos profesionales; MEDICO 2 se conserva por compatibilidad.</p>
+    @endif
     @foreach ($permissions as $permission)
         <div class="mb-3">
             <label class="d-flex align-items-start gap-2" title="{{ $permission->name }}">
