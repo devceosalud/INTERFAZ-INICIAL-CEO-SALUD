@@ -128,15 +128,15 @@
                                                 {!! Form::radio('role', $role->id, $user->hasRole($role->id), ['class' => 'mr-1']) !!}
                                                 {{ $role->name }}
                                             </label>
-                                            @if ($role->name === 'MEDICO' && $user->hasRole('ADMINISTRADOR'))
+                                            @if (\App\Support\Scheduling\ClinicalCapability::isRole($role->name) && $user->hasRole('ADMINISTRADOR'))
                                                 <p id="medical-role-additive-note" class="alert alert-info text-dark mt-2" role="note">
-                                                    Agregar MEDICO conserva ADMINISTRADOR y sus permisos existentes.
+                                                    Asignar un rol médico conserva ADMINISTRADOR y sus permisos existentes.
                                                     El acceso médico solo funcionará tras vincular y verificar su identidad en Vinculación médica.
                                                     Otro administrador debe aprobar el cambio; se invalidarán las sesiones de esta cuenta.
                                                 </p>
-                                            @elseif ($role->name === 'MEDICO' && $user->roles->contains(fn($current) => $current->name !== 'MEDICO'))
+                                            @elseif (\App\Support\Scheduling\ClinicalCapability::isRole($role->name) && $user->roles->contains(fn($current) => !in_array($current->name,array_merge(\App\Support\Scheduling\ClinicalCapability::ROLES,['ADMINISTRADOR']),true)))
                                                 <p id="medical-role-incompatible-warning" class="alert alert-warning text-dark mt-2" role="note">
-                                                    Esta cuenta tiene roles distintos de ADMINISTRADOR o MEDICO:
+                                                    Esta cuenta tiene roles distintos de ADMINISTRADOR o de los perfiles médicos compatibles:
                                                     <strong>{{ $user->roles->pluck('name')->implode(', ') }}</strong>.
                                                     No se quitarán esos roles automáticamente para agregar MEDICO. Verifica los accesos antes de continuar.
                                                 </p>
@@ -144,9 +144,9 @@
                                         </div>
                                     @endforeach
 
-                                    @if ($user->hasRole('MEDICO') && $user->hasRole('ADMINISTRADOR'))
+                                    @if (\App\Support\Scheduling\ClinicalCapability::isMedical($user) && $user->hasRole('ADMINISTRADOR'))
                                         <p class="alert alert-warning text-dark mt-2" role="note">
-                                            Esta cuenta posee MEDICO y ADMINISTRADOR. Elegir un rol distinto de MEDICO
+                                            Esta cuenta posee un rol médico y ADMINISTRADOR. Elegir un rol no médico
                                             sustituirá los roles actuales y puede retirar el acceso clínico.
                                         </p>
                                         <label class="d-block mt-2">
@@ -162,7 +162,7 @@
         <h2>{{ $target->name }} · Cuenta #{{ $target->id }}</h2>
         <p>{{ $target->email }} · DNI: {{ $target->dni ?? 'sin DNI heredado' }} · {{ $target->is_active?'Activa':'Desactivada' }}</p>
         <p>Vínculo actual: <strong>{{ $target->doctor?->nombre ?? 'Sin vinculación' }}</strong></p>
-        <p>El rol MEDICO y sus permisos se asignan por separado desde los editores existentes. La modificación invalida solo las sesiones de esta cuenta.</p>
+        <p>El rol MEDICO (o MEDICO 2 por compatibilidad) y sus permisos se asignan desde los editores existentes. La modificación invalida solo las sesiones de esta cuenta.</p>
         @if($target->id===auth()->id())
             <p role="alert">Otro administrador debe gestionar tu vinculación. No puedes modificarla tú mismo.</p>
         @else

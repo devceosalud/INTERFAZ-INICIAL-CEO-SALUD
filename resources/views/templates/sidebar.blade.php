@@ -17,14 +17,14 @@
                 ],
             ])
 
-            @if (config('scheduling.enabled') && (\App\Support\Scheduling\AdmissionAccess::operational(auth()->user()) || (auth()->user()->hasRole('MEDICO') && auth()->user()->can(\App\Support\Scheduling\ClinicalCapability::VIEW))))
+            @if (config('scheduling.enabled') && (\App\Support\Scheduling\AdmissionAccess::operational(auth()->user()) || (\App\Support\Scheduling\ClinicalCapability::isMedical(auth()->user()) && auth()->user()->can(\App\Support\Scheduling\ClinicalCapability::VIEW))))
                 @include('templates.nav.module', ['key'=>'operational-admission', 'label'=>'Admisión',
                     'activePatterns'=>['scheduling.mvp.admission*'], 'items'=>[
                         ['label'=>'Agenda de admisión', 'route'=>'scheduling.mvp.admission', 'patterns'=>['scheduling.mvp.admission*']],
                     ]])
             @endif
 
-            @if (!auth()->user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)
+            @if (!\App\Support\Scheduling\ClinicalCapability::isMedical(auth()->user()) && !auth()->user()->hasAnyRole(\App\Support\Scheduling\MvpOperationalAccess::LEGACY_ROLES)
                 && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::MVP_ACCESS)
                 && auth()->user()->can(\App\Support\Scheduling\SchedulingCapability::VIEW))
                 @include('templates.nav.mvp')

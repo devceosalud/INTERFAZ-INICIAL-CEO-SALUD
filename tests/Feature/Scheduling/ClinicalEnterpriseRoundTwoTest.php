@@ -11,7 +11,7 @@ class ClinicalEnterpriseRoundTwoTest extends \Tests\Support\AgendaV2TestCase
 {
     private function physician(): User {
         foreach(ClinicalCapability::all()as $p)Permission::findOrCreate($p,'web');Role::findOrCreate('MEDICO','web')->syncPermissions(ClinicalCapability::all());
-        $u=$this->createUserWithRole('MEDICO');$u->forceFill(['doctor_id'=>$this->catalog['doctor']->id,'is_active'=>true])->save();config(['medical_followups.authorized_user_id'=>$u->id]);
+        $u=$this->createUserWithRole('MEDICO');$u->forceFill(['doctor_id'=>$this->catalog['doctor']->id,'is_active'=>true])->save();config(['medical_followups.authorized_user_ids'=>[$u->id]]);
         $this->a->update(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'EN_ATENCION','hora_llegada'=>now(),'hora_atencion'=>now()]);$this->actingAs($u);return $u;
     }
     private function custom(string $label='Radiografía de clavícula izquierda',string $family='radiography',?string $id=null): array {return ['id'=>$id??(string)Str::uuid(),'label'=>$label,'family'=>$family];}

@@ -14,7 +14,7 @@ class ClinicalEnterpriseTest extends \Tests\Support\AgendaV2TestCase
         $catalog??=$this->catalog;foreach(ClinicalCapability::all()as $p)Permission::findOrCreate($p,'web');
         Role::findOrCreate('MEDICO','web')->syncPermissions(ClinicalCapability::all());
         $u=$this->createUserWithRole('MEDICO');$u->forceFill(['doctor_id'=>$catalog['doctor']->id,'is_active'=>true])->save();
-        if(!$this->followupOwnerConfigured){config(['medical_followups.authorized_user_id'=>$u->id]);$this->followupOwnerConfigured=true;}
+        if(!$this->followupOwnerConfigured){config(['medical_followups.authorized_user_ids'=>[$u->id]]);$this->followupOwnerConfigured=true;}
         if($administrator)$u->assignRole('ADMINISTRADOR');return $u->fresh();
     }
     private function care(): void {$this->a->forceFill(['estado_agenda'=>'CONFIRMADA','estado_cita'=>'EN_ATENCION','hora_llegada'=>now(),'hora_atencion'=>now()])->save();}

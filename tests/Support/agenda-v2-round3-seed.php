@@ -14,6 +14,7 @@ public function benchmark($f,int $count=6){
  $ids=[];for($i=6;$i<6+$count;$i++){
  $p=$this->createPatient($actor,['nombre'=>'PACIENTE BENCHMARK SALIDA FICTICIO','apellido_paterno'=>'QA','apellido_materno'=>'LOCAL','numero_identidad'=>(string)(79600000+\App\Models\Patient::count()),'historia_clinica'=>'R3-PERF-'.\Illuminate\Support\Str::uuid()]);
  $a=$this->lifecycleAppointment($actor,$catalog,['fecha_cita'=>$f['date'],'hora_cita'=>sprintf('%02d:%02d',9+intdiv($i-6,2),($i%2)*30),'estado_agenda'=>'CONFIRMADA','tipo_agendamiento'=>'REGULAR','estado_cita'=>'ATENDIDO','site_id'=>$f['site_id'],'motivo_consulta'=>'Caso ficticio repetible para medir salida fisica.'],$p);
+ $a->forceFill(['hora_atendido'=>now()->subMinutes(10)])->save();
  $ids['exit'.$i]=$a->id;
  }return $ids;
 }
@@ -30,13 +31,14 @@ public function append($f,$existing){
  'tipo_agendamiento'=>$key==='legacy'?null:'REGULAR','estado_cita'=>str_starts_with($key,'exit')?'ATENDIDO':'PROGRAMADO',
  'motivo_consulta'=>'Documento y atención exclusivamente ficticios para ronda tres.',
  'is_postoperative'=>$key==='postoperative','has_diabetic_wound'=>$key==='wound'], $patient);
+  if(str_starts_with($key,'exit'))$a->forceFill(['hora_atendido'=>now()->subMinutes(10)])->save();
  $appointments[$key]=$a->id;
  }
  return $f+['round3'=>$appointments];
 }};
 $data=\Illuminate\Support\Facades\DB::transaction(fn()=>$builder->append($f,$existing));
 if(in_array('--profile',$argv,true)){
- $ids=\Illuminate\Support\Facades\DB::transaction(fn()=>$builder->benchmark($data,1));$actor=\App\Models\User::findOrFail($data['users']['admin']['id']);$queries=[];
+ $ids=\Illuminate\Support\Facades\DB::transaction(fn()=>$builder->benchmark($data,1));$actor=\App\Models\User::findOrFail($data['users']['commercial']['id']);$queries=[];
  \Illuminate\Support\Facades\DB::listen(function($q)use(&$queries){$queries[]=['sql_template'=>$q->sql,'milliseconds'=>$q->time];});
  $started=microtime(true);app(\App\Services\Scheduling\AdmissionCareService::class)->transition($ids['exit6'],$actor,['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)\Illuminate\Support\Str::uuid()]);
  file_put_contents($out.'/sql-departure-profile.json',json_encode(['fictitious_only'=>true,'service_ms'=>round((microtime(true)-$started)*1000,2),'query_count'=>count($queries),'sql_ms'=>array_sum(array_column($queries,'milliseconds')),'remaining_transaction_level'=>\Illuminate\Support\Facades\DB::transactionLevel(),'queries'=>$queries],JSON_PRETTY_PRINT));echo "Profiled one fictional departure; no parameters were logged.\n";exit;

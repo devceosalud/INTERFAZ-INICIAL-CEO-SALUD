@@ -19,7 +19,7 @@ final class ClinicalAccess
     {
         $fresh=User::find($actor->id);
         abort_unless($fresh && $fresh->is_active
-            && $fresh->roles()->where('name',ClinicalCapability::ROLE)->where('guard_name','web')->exists()
+            && ClinicalCapability::isMedical($fresh)
             && self::has($fresh,ClinicalCapability::VIEW) && self::has($fresh,$capability)
             && $fresh->doctor_id && Doctor::whereKey($fresh->doctor_id)->where('estado','ACTIVO')->exists(),403,
             'Se requiere una cuenta médica activa, vinculada y autorizada.');
@@ -27,11 +27,11 @@ final class ClinicalAccess
         // perform clinical actions. Its pre-existing ADMINISTRADOR role can be retained,
         // but it does not grant medical access to any administrator by itself.
         $isAdministrator=$fresh->roles()->where('name','ADMINISTRADOR')->where('guard_name','web')->exists();
-        abort_if($fresh->roles()->whereNotIn('name',[ClinicalCapability::ROLE,'ADMINISTRADOR'])->exists()
-            || $fresh->roles()->where('name',ClinicalCapability::ROLE)->whereHas('permissions',
-                fn($q)=>$q->whereNotIn('name',ClinicalCapability::all()))->exists()
-            || (!$isAdministrator && $fresh->permissions()->whereNotIn('name',ClinicalCapability::all())->exists()),403,
-            'Revisa los roles y permisos de esta cuenta: solo MEDICO o MEDICO + ADMINISTRADOR verificados pueden acceder a la atención clínica.');
+        abort_if($fresh->roles()->whereNotIn('name',array_merge(ClinicalCapability::ROLES,['ADMINISTRADOR']))->exists()
+            || $fresh->roles()->whereIn('name',ClinicalCapability::ROLES)->whereHas('permissions',
+                fn($q)=>$q->whereNotIn('name',ClinicalCapability::rolePermissions()))->exists()
+            || (!$isAdministrator && $fresh->permissions()->whereNotIn('name',ClinicalCapability::rolePermissions())->exists()),403,
+            'Revisa los roles y permisos: se requiere MEDICO o MEDICO 2, con capacidades clínicas y acceso de lectura; ADMINISTRADOR por sí solo no concede acceso médico.');
         return $fresh;
     }
 
@@ -45,7 +45,7 @@ final class ClinicalAccess
     public static function lock(User $actor,int $id,string $capability): array
     {
         abort_unless(DB::transactionLevel()>0,500);
-        Role::where('name',ClinicalCapability::ROLE)->where('guard_name','web')->lockForUpdate()->firstOr(fn()=>abort(403));
+        abort_if(Role::whereIn('name',ClinicalCapability::ROLES)->where('guard_name','web')->orderBy('id')->lockForUpdate()->get()->isEmpty(),403);
         $fresh=User::whereKey($actor->id)->lockForUpdate()->firstOr(fn()=>abort(403));
         abort_unless($fresh->is_active && (int)$fresh->auth_version===(int)$actor->auth_version
             && (int)$fresh->doctor_id===(int)$actor->doctor_id && $fresh->doctor_id,403,'El acceso médico cambió. Vuelve a ingresar.');
@@ -59,7 +59,7 @@ final class ClinicalAccess
 
     public static function activeCare(Appointment $a): void
     {
-        abort_unless(($a->attendance_mode??'PRESENCIAL')==='PRESENCIAL' && !$a->hora_atendido && !$a->hora_salida,422,
-            'La acción requiere una cita presencial activa, sin finalización ni salida.');
+        abort_unless(in_array($a->attendance_mode??'PRESENCIAL',['PRESENCIAL','TELECONSULTA'],true) && !$a->hora_atendido && !$a->hora_salida,422,
+            'La acción requiere una cita activa, sin finalización ni salida.');
     }
 }

@@ -85,18 +85,18 @@ class UserController extends Controller
             $actor=$access->lockAdministrator($r->user(),[$user->id]);$target=User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             $before=$target->roles()->pluck('roles.id')->map(fn($id)=>(int)$id)->sort()->values()->all();
             $selectedRole=Role::findOrFail($d['role']);
-            $isMedical=$selectedRole->name==='MEDICO';
+            $isMedical=\App\Support\Scheduling\ClinicalCapability::isRole($selectedRole->name);
             $isAdministrator=$target->hasRole('ADMINISTRADOR','web');
-            if(!$isMedical && $isAdministrator && $target->hasRole('MEDICO','web')){
+            if(!$isMedical && $isAdministrator && \App\Support\Scheduling\ClinicalCapability::isMedical($target)){
                 abort_unless($r->boolean('confirm_remove_medico'),422,
                     'Confirma expresamente la retirada de MEDICO de esta cuenta administrativa.');
             }
             if($isMedical){
                 abort_if($target->id===$actor->id,403,'Otro administrador debe validar tu acceso médico.');
-                $clinical=\App\Support\Scheduling\ClinicalCapability::all();
+                $clinical=\App\Support\Scheduling\ClinicalCapability::rolePermissions();
                 // Explicitly support the legacy administrator's same account. Never silently
                 // replace staff roles or strip direct permissions to make MEDICO fit.
-                abort_if($target->roles()->whereNotIn('name',['ADMINISTRADOR','MEDICO'])->exists(),422,
+                abort_if($target->roles()->whereNotIn('name',array_merge(\App\Support\Scheduling\ClinicalCapability::ROLES,['ADMINISTRADOR']))->exists(),422,
                     'Esta cuenta posee otros roles. No se sustituyen silenciosamente al agregar MEDICO.');
                 abort_if($selectedRole->permissions()->whereNotIn('name',$clinical)->exists()
                     || (!$isAdministrator && $target->permissions()->whereNotIn('name',$clinical)->exists()),422,
@@ -108,9 +108,8 @@ class UserController extends Controller
             else $target->syncRoles($selectedRole);
             $after=$target->roles()->pluck('roles.id')->map(fn($id)=>(int)$id)->sort()->values()->all();
             // Revoke only the changed medical account's sessions, not those of other workers.
-            $medicalRoleId=Role::where('name','MEDICO')->where('guard_name','web')->value('id');
-            if($before!==$after && $medicalRoleId
-                && (in_array((int)$medicalRoleId,$before,true) || in_array((int)$medicalRoleId,$after,true))){
+            $medicalRoleIds=Role::whereIn('name',\App\Support\Scheduling\ClinicalCapability::ROLES)->where('guard_name','web')->pluck('id')->map(fn($id)=>(int)$id)->all();
+            if($before!==$after && (array_intersect($medicalRoleIds,$before) || array_intersect($medicalRoleIds,$after))){
                 $access->rotateAccess($target);$target->save();
             }
             \Illuminate\Support\Facades\Log::notice('authorization.user_role_updated',['actor_user_id'=>$actor->id,

@@ -98,9 +98,9 @@ class ClinicalEnterpriseRefinementTest extends \Tests\Support\AgendaV2TestCase
     {
         foreach(ClinicalCapability::all()as $p)Permission::findOrCreate($p,'web');Role::findOrCreate('MEDICO','web')->syncPermissions(ClinicalCapability::all());
         $u=$this->createUserWithRole('MEDICO');$u->forceFill(['doctor_id'=>$this->catalog['doctor']->id,'is_active'=>true])->save();
-        $this->assertSame(2,(int)config('medical_followups.authorized_user_id'));$this->assertNotSame(2,$u->id);
+        $this->assertSame([2,1,7],array_map('intval',(array)config('medical_followups.authorized_user_ids')));$this->assertNotSame(2,$u->id);
         $this->actingAs($u)->get('/scheduling-mvp/medical-followups')->assertForbidden();$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertForbidden();$this->getJson('/scheduling-mvp/medical-followups/999')->assertForbidden();$this->patchJson('/scheduling-mvp/medical-followups/999',[])->assertForbidden();
-        config(['medical_followups.authorized_user_id'=>$u->id]);$this->get('/scheduling-mvp/medical-followups')->assertOk();$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk();
+        config(['medical_followups.authorized_user_ids'=>[$u->id]]);$this->get('/scheduling-mvp/medical-followups')->assertOk();$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk();
         $this->actingAs($this->admin)->get('/scheduling-mvp/medical-followups')->assertForbidden();
     }
 

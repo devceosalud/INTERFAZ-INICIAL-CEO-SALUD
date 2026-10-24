@@ -9,7 +9,7 @@ const css = fs.readFileSync(path.join(root, 'public/css/scheduling/admission-boa
 
 test('admission rows receive server-computed fill distinct from accent border', () => {
     assert.match(js, /tr\.style\.setProperty\('--ad-status-color',/);
-    assert.match(js, /setProperty\('--ad-status-background',admissionBackground\(row\.presentation\)\)/); // Intentional Admisión-only turquoise normalization, behavior covered separately.
+    assert.match(js, /setProperty\('--ad-status-background',admissionBackground\(row\.presentation,row\)\)/); // Approved remote-care turquoise; priorities and non-mutation tested in admission-board.test.js.
 });
 
 test('appointment cells, selected rows and hover preserve the computed fill', () => {
