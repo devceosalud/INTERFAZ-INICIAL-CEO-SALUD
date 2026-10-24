@@ -45,4 +45,17 @@ class ClinicalEnterpriseConcurrencyTest extends \Tests\TestCase
         $update=['actor'=>$this->doctor->id,'method'=>'PATCH','path'=>'/scheduling-mvp/medical-followups/'.$id,'payload'=>['request_key'=>(string)Str::uuid(),'expected_version'=>1,'status'=>'COORDINATING','reason'=>'Coordinación ficticia verificada concurrentemente.','confirmed'=>true]];
         $statuses=$this->race([$withdraw,$update]);$this->assertContains($statuses,[[200,200],[200,409]]);$this->assertDatabaseHas('medical_procedure_followups',['id'=>$id,'source_active'=>false]);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('medical_procedure_followups',2);
     }
+    public function test_parallel_personal_requests_share_one_private_reference_and_keep_independent_orders(): void {
+        $b=$this->lifecycleAppointment($this->operator,$this->createAppointmentCatalog(),['doctor_id'=>$this->doctor->doctor_id,'estado_agenda'=>'CONFIRMADA','estado_cita'=>'EN_ATENCION','hora_llegada'=>now(),'hora_atencion'=>now()]);
+        $r=$this->selection();$r['payload']['procedures']=[];$r['payload']['custom_procedures']=[['id'=>(string)Str::uuid(),'label'=>'Radiografía ficticia de clavícula izquierda','family'=>'radiography']];
+        $s=$r;$s['path']='/scheduling-mvp/admission/appointments/'.$b->id.'/procedures/selection';$s['payload']['request_key']=(string)Str::uuid();$s['payload']['custom_procedures'][0]['id']=(string)Str::uuid();$s['payload']['custom_procedures'][0]['label']='RADIOGRAFIA  FICTICIA DE CLAVICULA IZQUIERDA';
+        $this->assertSame([200,200],$this->race([$r,$s]));$this->assertDatabaseCount('doctor_procedure_suggestions',1);$this->assertDatabaseCount('appointment_requested_procedures',2);$this->assertSame(1,DB::table('appointment_requested_procedures')->distinct()->count('reusable_procedure_id'));$this->assertDatabaseCount('payments',0);
+    }
+    private function generalReferral(): array {return ['actor'=>$this->doctor->id,'path'=>'/scheduling-mvp/admission/appointments/'.$this->a->id.'/medical-followups','payload'=>['request_key'=>(string)Str::uuid(),'expected_patient_id'=>$this->a->patient_id,'expected_procedure_version'=>0,'expected_followup_versions'=>['general'=>0],'procedures'=>[],'general'=>true,'reason'=>'Seguimiento general ficticio, sin procedimiento ni cobro.','confirmed'=>true]];}
+    public function test_parallel_manual_replay_has_only_one_general_followup_and_event():void {
+        $r=$this->generalReferral();$this->assertSame([200,200],$this->race([$r,$r]));$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('medical_procedure_followup_events',1);$this->assertDatabaseCount('appointment_requested_procedures',0);$this->assertDatabaseCount('payments',0);
+    }
+    public function test_parallel_manual_referrals_with_stale_versions_conflict_without_duplicates():void {
+        $this->assertSame([200,409],$this->race([$this->generalReferral(),$this->generalReferral()]));$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('medical_procedure_followup_events',1);
+    }
 }

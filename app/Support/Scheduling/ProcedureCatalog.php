@@ -6,13 +6,13 @@ final class ProcedureCatalog
 {
     public const FAMILIES = [
         'radiography'=>'Radiografías', 'mri'=>'Resonancia magnética', 'laboratory'=>'Laboratorio',
-        'wound_care'=>'Curaciones', 'surgery'=>'Cirugías', 'other'=>'Otros procedimientos',
+        'wound_care'=>'Curaciones y pie diabético', 'surgery'=>'Cirugía / Operación', 'ultrasound'=>'Ecografías', 'infiltration'=>'Infiltraciones y procedimientos', 'other'=>'Otros procedimientos',
     ];
     public static function entries(): array
     {
         $result=[];
         foreach (\App\Services\Scheduling\OperationalProcedureService::CATALOG as $key=>$label) {
-            $family=array_key_exists($key,self::FAMILIES)?$key:'other';
+            $family=array_key_exists($key,self::FAMILIES)?$key:(in_array($key,['prp','hyaluronic_acid'],true)?'infiltration':'other');
             $result[$key]=['label'=>$label,'family'=>$family,'category'=>self::FAMILIES[$family],'followup'=>self::requiresFollowup($family,$key)];
         }
         // Deployment-reviewed approved extensions only. No user-editable catalog/prices here.

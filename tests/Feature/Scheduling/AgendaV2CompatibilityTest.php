@@ -24,6 +24,7 @@ class AgendaV2CompatibilityTest extends \Tests\Support\AgendaV2TestCase
         Schema::table('appointment_requested_procedures',fn(\Illuminate\Database\Schema\Blueprint $t)=>$t->string('custom_label',500)->nullable());
         (require database_path('migrations/2026_10_23_010000_add_procedure_request_identity.php'))->up();
         $followups->up();$order->up();
+        (require database_path('migrations/2026_10_23_050000_enable_personal_procedures_and_manual_followups.php'))->up(); // Restore the additive dependencies after exercising the legacy table.
         foreach($tables as $t)$this->assertSame($before[$t],DB::table($t)->orderBy('id')->get()->toJson(),$t);
         $this->assertDatabaseCount('appointment_operational_reviews',0);$this->assertDatabaseCount('appointment_requested_procedures',0);
         $this->select()->assertOk();

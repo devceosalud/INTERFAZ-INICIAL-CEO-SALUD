@@ -3,11 +3,18 @@ namespace App\Http\Controllers\Scheduling;
 
 use App\Http\Controllers\Controller;
 use App\Services\Scheduling\OperationalProcedureService;
+use App\Services\Scheduling\DoctorProcedureSuggestionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 final class OperationalProcedureController extends Controller
 {
+    public function personalSearch(Request $r,DoctorProcedureSuggestionService $suggestions)
+    {
+        \App\Support\Scheduling\ClinicalAccess::actor($r->user(),\App\Support\Scheduling\ClinicalCapability::PROCEDURES);
+        $data=$r->validate(['query'=>'required|string|min:2|max:120']);
+        return response()->json(['items'=>$suggestions->list($r->user(),$data['query'])])->header('Cache-Control','private, no-store');
+    }
     public function queue(Request $r, OperationalProcedureService $service)
     {
         $groups=['active'=>[], 'pre_pending'=>[], 'pending'=>[], 'other_procedures'=>[], 'history'=>[]];
@@ -34,7 +41,7 @@ final class OperationalProcedureController extends Controller
                 'procedure_details'=>'sometimes|array|max:130', 'procedure_details.*'=>'array:sides,with_load,projections,finger', 'procedure_details.*.sides'=>'sometimes|array|max:3', 'procedure_details.*.sides.*'=>['string','distinct',Rule::in(['D','I','B'])],
                 'procedure_details.*.with_load'=>'sometimes|boolean', 'procedure_details.*.projections'=>'sometimes|array|max:3', 'procedure_details.*.projections.*'=>['string','distinct',Rule::in(['AP','LAT','OBLIQUE'])], 'procedure_details.*.finger'=>'nullable|integer|min:1|max:5',
                 'procedures' => 'present|array|max:100', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::labels()))],
-                'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label,family',
+                'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label,family,reusable_id', 'custom_procedures.*.reusable_id'=>'nullable|uuid',
                 'custom_procedures.*.id'=>'required|uuid|distinct', 'custom_procedures.*.label'=>'required|string|max:500', 'custom_procedures.*.family'=>['sometimes','string',Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::FAMILIES))]],
             'completion' => ['procedure' => 'required|string|max:40', 'completed' => 'required|boolean'],
             default => ['confirmed' => 'required|accepted', 'reason' => 'nullable|string|max:500'],

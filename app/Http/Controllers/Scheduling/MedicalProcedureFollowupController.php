@@ -6,9 +6,10 @@ use App\Support\Scheduling\{ClinicalAccess,ProcedureCatalog};
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 final class MedicalProcedureFollowupController extends Controller {
+    public function refer(Request $r,int $appointmentId,Followups $service){\App\Support\Scheduling\MedicalFollowupAccess::actor($r->user(),\App\Support\Scheduling\ClinicalCapability::PROCEDURES);$service->refer($r->user(),$appointmentId,$r->all());return response()->json(['message'=>'Seguimiento registrado con auditoría, sin nueva cita ni cobro.'])->header('Cache-Control','private, no-store');}
     public function index(Request $r){\App\Support\Scheduling\MedicalFollowupAccess::actor($r->user());return response()->view('scheduling.followups.index')->header('Cache-Control','private, no-store')->header('Referrer-Policy','no-referrer');}
     public function feed(Request $r,Followups $service){
-        \App\Support\Scheduling\MedicalFollowupAccess::actor($r->user());$filters=$r->validate(['patient'=>'nullable|string|max:100','status'=>['nullable',Rule::in(array_keys(Followups::STATES))],'procedure'=>['nullable',Rule::in(array_keys(ProcedureCatalog::FAMILIES))],'order'=>'nullable|in:oldest,newest','page'=>'nullable|integer|min:1|max:10000']);
+        \App\Support\Scheduling\MedicalFollowupAccess::actor($r->user());$filters=$r->validate(['patient'=>'nullable|string|max:100','status'=>['nullable',Rule::in(array_keys(Followups::STATES))],'procedure'=>['nullable',Rule::in(array_keys(ProcedureCatalog::FAMILIES))],'origin'=>'nullable|in:manual,automatic,general','date_from'=>'nullable|date_format:Y-m-d','date_to'=>'nullable|date_format:Y-m-d|after_or_equal:date_from','older_than'=>'nullable|in:7,30,90','order'=>'nullable|in:oldest,newest','page'=>'nullable|integer|min:1|max:10000']);
         return response()->json($service->feed($r->user(),$filters))->header('Cache-Control','private, no-store')->header('Referrer-Policy','no-referrer');
     }
     public function show(Request $r,int $followupId,Followups $service){return response()->json($service->detail($r->user(),$followupId))->header('Cache-Control','private, no-store');}

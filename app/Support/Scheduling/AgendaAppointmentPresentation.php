@@ -42,6 +42,7 @@ final class AgendaAppointmentPresentation
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
+        if($appointment->relationLoaded('activeProcedureRequests'))foreach($appointment->activeProcedureRequests as $request){$family=$request->procedure_family??(ProcedureCatalog::entries()[$request->procedure_key]['family']??'other');if(in_array($family,['surgery','mri'],true))$badges[]=$family==='surgery'?'CIRUGIA':'RESONANCIA';}
         if ($exempt) $badges[] = 'EXONERADA';
         if ($withoutDeposit) $badges[] = 'CONFIRMADA_SIN_ADELANTO';
         if (\App\Services\Scheduling\AppointmentReevaluationService::pending($appointment)) $badges[] = 'PENDIENTE_REEVALUACION';
@@ -58,7 +59,7 @@ final class AgendaAppointmentPresentation
         if ($appointment->has_diabetic_wound) $badges[] = 'HERIDA';
         if ($uncertain) $badges[] = 'CONCILIAR_PAGO';
 
-        $chips = array_map(fn ($condition) => AgendaLegend::of($condition), $badges);
+        $chips = array_map(fn ($condition) => AgendaLegend::of($condition), array_values(array_unique($badges)));
         if ($appointment->relationLoaded('operationalReview') && $appointment->operationalReview?->requested_count > 0) {
             $review=$appointment->operationalReview;
             $chips[]=['clave'=>'PROCEDIMIENTOS','etiqueta'=>'Procedimientos: '.$review->completed_count.'/'.$review->requested_count.' realizados',

@@ -60,7 +60,7 @@ class AdmissionBoardService
                     });
                 });
             })
-            ->with('operationalReview')->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
+            ->with(['operationalReview','activeProcedureRequests'])->orderBy('fecha_cita')->orderBy('hora_cita')->orderBy('id')->limit(2001)->get();
         if ($rows->count() > 2000) throw ValidationException::withMessages(['fecha'=>'Reduce el rango o filtra un médico: el panel admite hasta 2000 citas por consulta.']);
         // Quick categories select the list, not the population represented by the KPIs.
         $scopeRows=$rows;
@@ -156,6 +156,7 @@ class AdmissionBoardService
             'patient.channel:id,nombre','patient.interactionMedium:id,nombre',
             'doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','user:id,name','responsibleUser:id,name'])->whereKey($id)->firstOr(fn () => abort(404));
         app(ManualReevaluationService::class)->load(collect([$a]));
+        $a->load('activeProcedureRequests');
         $previous = Appointment::visibleToOperationalUser($actor)->when($actor->hasRole('MEDICO'),fn($q)=>$q->where('doctor_id',$actor->doctor_id)->whereIn('estado_agenda',['LEGADO','CONFIRMADA']))->select(self::COLUMNS)->where('patient_id',$a->patient_id)->where('id','<>',$a->id)
             ->with(['doctor:id,nombre,specialty_id','doctor.specialty:id,nombre','service:id,nombre','site:id,nombre','patient:id,nombre,apellido_paterno,apellido_materno,historia_clinica,numero_identidad',
                 'responsibleUser:id,name','user:id,name'])->orderByDesc('fecha_cita')->orderByDesc('hora_cita')->limit(20)->get();
@@ -184,13 +185,14 @@ class AdmissionBoardService
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
         $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
+        $medicalFollowup=app(MedicalProcedureFollowupService::class)->referralContext($actor,$a);
         $payload=$this->protect([
             'exoneration_confirmation'=>AdmissionExonerationConfirmation::eligible($a,$actor) && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
                 ? ['url'=>route('scheduling.mvp.admission.confirm-exoneration',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,
             'without_deposit_confirmation'=>ReservationPaymentService::withoutDepositEligible($a,$actor,$positions[$a->id])
                 && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
                 ? ['url'=>route('scheduling.mvp.admission.confirm-without-deposit',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,
-            'reevaluation'=>app(AppointmentReevaluationService::class)->detail($a,$actor,$procedures),'procedures'=>$procedures,'care_reversal'=>app(AdmissionCareService::class)->reversalOffer($a,$actor),
+            'reevaluation'=>app(AppointmentReevaluationService::class)->detail($a,$actor,$procedures),'procedures'=>$procedures,'medical_followup'=>$medicalFollowup,'care_reversal'=>app(AdmissionCareService::class)->reversalOffer($a,$actor),
             'appointment'=>$this->row($a,$positions[$a->id],$actor)+['motivo_consulta'=>$a->motivo_consulta],'contact'=>[
             'telefono'=>$a->patient?->telefono,'telefono_secundario'=>$a->patient?->telefono_secundario,
             'canal'=>$a->patient?->channel?->nombre,'medio'=>$a->patient?->interactionMedium?->nombre],
@@ -232,7 +234,7 @@ class AdmissionBoardService
         $redact=function(array $row):array{
             foreach(['economy','estado_pagado','payment_methods','pricing_rule','documento','responsable','agenda_url'] as $key)$row[$key]=null;
             $row['presentation']['badges']=array_values(array_filter($row['presentation']['badges']??[],
-                fn($b)=>in_array($b['clave'],['PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA'],true)));
+                fn($b)=>in_array($b['clave'],['CIRUGIA','RESONANCIA','PIE_DIABETICO','HERIDA','POSTOPERATORIO','ADICIONAL','FUERA_HORARIO','PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA'],true)));
             return $row;
         };
         if(isset($payload['rows'])){
