@@ -1,4 +1,9 @@
 /* Only doctor/professional controls: reuse bundled bootstrap-select without restyling other fields. */
+/* The theme can measure a zero-height menu while a modal/calendar is loading.
+   Keep the search and ordinary (non-virtual) options together in one scrollable menu. */
+.ceo-doctor-search>.dropdown-menu{height:auto!important;max-height:min(380px,calc(100dvh - 90px))!important;overflow:hidden!important;padding-bottom:5px!important}
+.ceo-doctor-search>.dropdown-menu>div.inner{height:auto!important;min-height:32px;max-height:min(280px,calc(100dvh - 170px))!important;overflow-y:auto!important}
+.ceo-doctor-search>.dropdown-menu ul.inner{position:static!important;display:block!important;float:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important}
 /* Agenda rules give native selects full width: keep the single submitted control
    visually hidden under its accessible bootstrap-select button, without disabling it. */
 body .ceo-doctor-search.bootstrap-select>select{position:absolute!important;left:50%!important;top:0!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;opacity:0!important;border:0!important;pointer-events:none!important;overflow:hidden!important}
