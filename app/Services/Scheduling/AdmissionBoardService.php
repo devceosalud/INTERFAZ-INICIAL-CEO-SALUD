@@ -257,8 +257,16 @@ class AdmissionBoardService
 
     public function careActions(Appointment $a, User $actor): array
     {
-        if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') return [];
         $ownPhysician=AppointmentReevaluationService::physicianCanAct($actor,$a);
+        if (($a->attendance_mode ?? 'PRESENCIAL')==='TELECONSULTA') {
+            // Remote care uses the same clinical episode, never physical arrival,
+            // calling, operational contingency or departure actions.
+            if (!$ownPhysician || !in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)
+                || $a->hora_atendido || $a->hora_salida) return [];
+            if (in_array($a->estado_cita,['PROGRAMADO','CONFIRMADO'],true) && !$a->hora_atencion)
+                return \App\Support\Scheduling\ClinicalAccess::has($actor,\App\Support\Scheduling\ClinicalCapability::START) ? ['EN_ATENCION'] : [];
+            if ($a->estado_cita!=='EN_ATENCION' || !$a->hora_atencion) return [];
+        }
         if (!$actor->can(C::UPDATE) && !$ownPhysician) return AdmissionCareService::canRegisterArrival($a,$actor)
             ? ['EN_ESPERA'] : [];
         if (!in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)) return [];
