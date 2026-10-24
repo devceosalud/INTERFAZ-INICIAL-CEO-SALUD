@@ -119,4 +119,10 @@ class MedicalRoleCompatibilityTest extends \Tests\Support\AgendaV2TestCase
         $target=$target->fresh();$this->assertSame(['MEDICO 2'],$target->getRoleNames()->all());$this->assertSame($this->catalog['doctor']->id,$target->doctor_id);$this->assertGreaterThan($before,$target->auth_version);
         $this->assertDatabaseHas('user_account_events',['target_user_id'=>13,'event_type'=>'ROLES_ASSIGNED']);
     }
+    public function test_medico_two_administrator_removal_still_needs_explicit_confirmation_in_existing_editor():void {
+        $u=$this->doctor();$u->assignRole('ADMINISTRADOR');$this->actingAs($this->admin);
+        $this->get(route('admin.user.edit',$u->id))->assertOk()->assertSee('confirm_remove_medico',false);
+        $this->putJson(route('admin.user.update',$u->id),['role'=>Role::findByName('ADMINISTRADOR')->id])->assertUnprocessable();
+        $this->assertTrue($u->fresh()->hasAllRoles(['MEDICO 2','ADMINISTRADOR']));
+    }
 }
