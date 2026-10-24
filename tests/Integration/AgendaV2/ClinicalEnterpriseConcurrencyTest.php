@@ -51,11 +51,13 @@ class ClinicalEnterpriseConcurrencyTest extends \Tests\TestCase
         $s=$r;$s['path']='/scheduling-mvp/admission/appointments/'.$b->id.'/procedures/selection';$s['payload']['request_key']=(string)Str::uuid();$s['payload']['custom_procedures'][0]['id']=(string)Str::uuid();$s['payload']['custom_procedures'][0]['label']='RADIOGRAFIA  FICTICIA DE CLAVICULA IZQUIERDA';
         $this->assertSame([200,200],$this->race([$r,$s]));$this->assertDatabaseCount('doctor_procedure_suggestions',1);$this->assertDatabaseCount('appointment_requested_procedures',2);$this->assertSame(1,DB::table('appointment_requested_procedures')->distinct()->count('reusable_procedure_id'));$this->assertDatabaseCount('payments',0);
     }
-    private function generalReferral(): array {return ['actor'=>$this->doctor->id,'path'=>'/scheduling-mvp/admission/appointments/'.$this->a->id.'/medical-followups','payload'=>['request_key'=>(string)Str::uuid(),'expected_patient_id'=>$this->a->patient_id,'expected_procedure_version'=>0,'expected_followup_versions'=>['general'=>0],'procedures'=>[],'general'=>true,'reason'=>'Seguimiento general ficticio, sin procedimiento ni cobro.','confirmed'=>true]];}
-    public function test_parallel_manual_replay_has_only_one_general_followup_and_event():void {
-        $r=$this->generalReferral();$this->assertSame([200,200],$this->race([$r,$r]));$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('medical_procedure_followup_events',1);$this->assertDatabaseCount('appointment_requested_procedures',0);$this->assertDatabaseCount('payments',0);
+    private function directReferral(): array {return ['actor'=>$this->doctor->id,'path'=>'/scheduling-mvp/admission/appointments/'.$this->a->id.'/medical-followups','payload'=>['request_key'=>(string)Str::uuid(),'expected_patient_id'=>$this->a->patient_id,'expected_procedure_version'=>1]];}
+    private function prepareDirectRequest():void {$r=$this->selection();$r['payload']['procedures']=['radiography','wound_care'];$this->actingAs($this->doctor)->postJson($r['path'],$r['payload'])->assertOk();}
+    public function test_parallel_manual_replay_has_only_one_followup_per_actual_request_and_event():void {
+        $this->prepareDirectRequest();$r=$this->directReferral();$this->assertSame([200,200],$this->race([$r,$r]));$this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',2);$this->assertDatabaseCount('appointment_requested_procedures',2);$this->assertDatabaseCount('payments',0);
     }
     public function test_parallel_manual_referrals_with_stale_versions_conflict_without_duplicates():void {
-        $this->assertSame([200,409],$this->race([$this->generalReferral(),$this->generalReferral()]));$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('medical_procedure_followup_events',1);
+        $this->prepareDirectRequest();$this->assertSame([200,409],$this->race([$this->directReferral(),$this->directReferral()]));$this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',2);
     }
+
 }

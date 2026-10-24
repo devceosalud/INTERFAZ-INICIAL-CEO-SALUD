@@ -1,0 +1,155 @@
+diff --git a/app/Http/Controllers/Scheduling/MedicalProcedureFollowupController.php b/app/Http/Controllers/Scheduling/MedicalProcedureFollowupController.php
+index 306ea4b5..f06edc8b 100644
+--- a/app/Http/Controllers/Scheduling/MedicalProcedureFollowupController.php
++++ b/app/Http/Controllers/Scheduling/MedicalProcedureFollowupController.php
+@@ -6,7 +6,7 @@
+ use Illuminate\Http\Request;
+ use Illuminate\Validation\Rule;
+ final class MedicalProcedureFollowupController extends Controller {
+-    public function refer(Request $r,int $appointmentId,Followups $service){\App\Support\Scheduling\MedicalFollowupAccess::actor($r->user(),\App\Support\Scheduling\ClinicalCapability::PROCEDURES);$service->refer($r->user(),$appointmentId,$r->all());return response()->json(['message'=>'Seguimiento registrado con auditoría, sin nueva cita ni cobro.'])->header('Cache-Control','private, no-store');}
++    public function refer(Request $r,int $appointmentId,Followups $service){\App\Support\Scheduling\MedicalFollowupAccess::actor($r->user(),\App\Support\Scheduling\ClinicalCapability::PROCEDURES);$service->refer($r->user(),$appointmentId,$r->all());return response()->json(['message'=>'Procedimientos pendientes enviados a seguimiento.','redirect_url'=>route('scheduling.mvp.medical-followups')])->header('Cache-Control','private, no-store');}
+     public function index(Request $r){\App\Support\Scheduling\MedicalFollowupAccess::actor($r->user());return response()->view('scheduling.followups.index')->header('Cache-Control','private, no-store')->header('Referrer-Policy','no-referrer');}
+     public function feed(Request $r,Followups $service){
+         \App\Support\Scheduling\MedicalFollowupAccess::actor($r->user());$filters=$r->validate(['patient'=>'nullable|string|max:100','status'=>['nullable',Rule::in(array_keys(Followups::STATES))],'procedure'=>['nullable',Rule::in(array_keys(ProcedureCatalog::FAMILIES))],'origin'=>'nullable|in:manual,automatic,general','date_from'=>'nullable|date_format:Y-m-d','date_to'=>'nullable|date_format:Y-m-d|after_or_equal:date_from','older_than'=>'nullable|in:7,30,90','order'=>'nullable|in:oldest,newest','page'=>'nullable|integer|min:1|max:10000']);
+diff --git a/app/Services/Scheduling/AdmissionBoardService.php b/app/Services/Scheduling/AdmissionBoardService.php
+index 193b181c..8e380546 100644
+--- a/app/Services/Scheduling/AdmissionBoardService.php
++++ b/app/Services/Scheduling/AdmissionBoardService.php
+@@ -185,7 +185,7 @@ public function detail(int $id, User $actor): array
+             : collect();
+         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
+         $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
+-        $medicalFollowup=app(MedicalProcedureFollowupService::class)->referralContext($actor,$a);
++        $medicalFollowup=app(MedicalProcedureFollowupService::class)->referralContext($actor,$a,$procedures);
+         $payload=$this->protect([
+             'exoneration_confirmation'=>AdmissionExonerationConfirmation::eligible($a,$actor) && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
+                 ? ['url'=>route('scheduling.mvp.admission.confirm-exoneration',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,
+diff --git a/app/Services/Scheduling/MedicalProcedureFollowupService.php b/app/Services/Scheduling/MedicalProcedureFollowupService.php
+index ad67435b..c417512c 100644
+--- a/app/Services/Scheduling/MedicalProcedureFollowupService.php
++++ b/app/Services/Scheduling/MedicalProcedureFollowupService.php
+@@ -29,45 +29,57 @@ public function synchronize(Appointment $a,User $actor,string $requestKey): void
+             }
+         }
+     }
+-    public function referralContext(User $actor,Appointment $a): ?array
++    public function referralContext(User $actor,Appointment $a,?array $procedureSnapshot=null): ?array
+     {
+         try {\App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);ClinicalAccess::appointment($actor,$a);}
+         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()===403)return null;throw $e;}
+         if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true))return null;
+-        $requests=DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->get();
+-        $followups=DB::table('medical_procedure_followups')->where('appointment_id',$a->id)->where('doctor_id',$actor->doctor_id)->get();
+-        $versions=[];foreach($requests as $p)$versions[$p->procedure_key]=(int)($followups->firstWhere('requested_procedure_id',$p->id)?->version??0);
+-        $versions['general']=(int)($followups->firstWhere('general_key','GENERAL')?->version??0);
+-        return ['url'=>route('scheduling.mvp.medical-followups.refer',$a->id),'patient_id'=>(int)$a->patient_id,'expected_procedure_version'=>(int)(DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->value('version')??0),'expected_followup_versions'=>$versions,
+-            'items'=>$requests->map(fn($p)=>['key'=>$p->procedure_key,'label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key]??'Procedimiento histórico','family'=>$p->procedure_family??'other','existing'=>$versions[$p->procedure_key]>0])->all(),'can_general'=>$requests->isEmpty()];
++        $requests=$this->pendingRequests($a);
++        // Keep the offer within the exact procedure snapshot rendered in this detail.
++        // If selection changes concurrently, its snapshot version makes the POST fail closed.
++        if($procedureSnapshot!==null)$requests=$requests->whereIn('procedure_key',array_column($procedureSnapshot['items'],'key'))->values();
++        if($requests->isEmpty())return null;
++        return ['url'=>route('scheduling.mvp.medical-followups.refer',$a->id),'patient_id'=>(int)$a->patient_id,
++            'expected_procedure_version'=>(int)($procedureSnapshot['version']??DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->value('version')??0),
++            'items'=>$requests->map(fn($p)=>['key'=>$p->procedure_key,'label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key]??'Procedimiento histórico','family'=>$p->procedure_family??'other'])->all()];
++    }
++
++    /** Same persisted selected requests used by the procedure detail; drafts never enter this query. */
++    private function pendingRequests(Appointment $a,bool $lock=false)
++    {
++        $q=DB::table('appointment_requested_procedures as p')->where('p.appointment_id',$a->id)->where('p.selected',true)
++            ->whereNotExists(fn($f)=>$f->selectRaw('1')->from('medical_procedure_followups as f')->whereColumn('f.requested_procedure_id','p.id'))
++            ->select('p.*')->orderBy('p.id');
++        return ($lock?$q->lockForUpdate():$q)->get();
+     }
+ 
+     public function refer(User $actor,int $appointmentId,array $data): void
+     {
+         \App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);
+-        $data['reason']=trim($data['reason']??'');
+-        \Illuminate\Support\Facades\Validator::make($data,['request_key'=>'required|uuid','expected_patient_id'=>'required|integer|min:1','expected_procedure_version'=>'required|integer|min:0','expected_followup_versions'=>'required|array','expected_followup_versions.*'=>'integer|min:0','procedures'=>'present|array|max:130','procedures.*'=>'required|string|distinct|max:40','general'=>'required|boolean','reason'=>'required|string|min:15|max:1000','planned_review_on'=>'nullable|date_format:Y-m-d','confirmed'=>'required|accepted'])->validate();
+-        abort_if(array_diff(array_keys($data),['request_key','expected_patient_id','expected_procedure_version','expected_followup_versions','procedures','general','reason','planned_review_on','confirmed','_token']),422,'Campos no permitidos para el envío.');
+-        $data=array_intersect_key($data,array_flip(['request_key','expected_patient_id','expected_procedure_version','expected_followup_versions','procedures','general','reason','planned_review_on','confirmed']));
+-        $data['planned_review_on']=$data['planned_review_on']??null;$data['general']=(bool)$data['general'];$data['confirmed']=true;$data['expected_patient_id']=(int)$data['expected_patient_id'];$data['expected_procedure_version']=(int)$data['expected_procedure_version'];$data['expected_followup_versions']=array_map('intval',$data['expected_followup_versions']);sort($data['procedures']);ksort($data['expected_followup_versions']);ksort($data);
++        \Illuminate\Support\Facades\Validator::make($data,['request_key'=>'required|uuid','expected_patient_id'=>'required|integer|min:1','expected_procedure_version'=>'required|integer|min:0'])->validate();
++        abort_if(array_diff(array_keys($data),['request_key','expected_patient_id','expected_procedure_version','_token']),422,'El envío directo no admite selección, motivo, fecha ni otros campos.');
++        $data=['request_key'=>$data['request_key'],'expected_patient_id'=>(int)$data['expected_patient_id'],'expected_procedure_version'=>(int)$data['expected_procedure_version']];
+         AppointmentReevaluationService::transaction(function()use($actor,$appointmentId,$data){
+-            $hash=hash('sha256',json_encode(['MANUAL_MEDICAL_FOLLOWUP',$appointmentId,$data]));
++            $hash=hash('sha256',json_encode(['DIRECT_MEDICAL_FOLLOWUP',$appointmentId,$data]));
+             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
+             $op=DB::table('appointment_operations')->where('actor_user_id',$actor->id)->where('request_key',$data['request_key'])->lockForUpdate()->first();abort_unless(hash_equals($op->payload_hash,$hash),409,'La clave corresponde a otra operación.');
+             [$u,$a]=ClinicalAccess::lock($actor,$appointmentId,ClinicalCapability::PROCEDURES);\App\Support\Scheduling\MedicalFollowupAccess::actor($u,ClinicalCapability::PROCEDURES);
+-            abort_unless((int)$a->patient_id===(int)$data['expected_patient_id'],409,'El paciente asociado cambió. Reabre la cita.');
+-            abort_if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true),422,'La cita no admite un envío clínico a seguimiento.');if($op->appointment_id)return;
+-            $review=DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->lockForUpdate()->first();abort_unless((int)($review?->version??0)===(int)$data['expected_procedure_version'],409,'La solicitud de procedimientos cambió. Reabre el envío.');
+-            $requests=DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->orderBy('id')->lockForUpdate()->get()->keyBy('procedure_key');
+-            if($data['general']){abort_unless($requests->isEmpty()&&count($data['procedures'])===0,422,'El seguimiento general se utiliza cuando no hay procedimientos solicitados.');$targets=['general'=>null];}
+-            else {abort_unless(count($data['procedures'])>0&&!array_diff($data['procedures'],$requests->keys()->all()),422,'Selecciona procedimientos vigentes de esta cita.');$targets=$requests->only($data['procedures'])->all();}
+-            foreach($targets as $key=>$p){
+-                $q=DB::table('medical_procedure_followups')->where('appointment_id',$a->id)->where('doctor_id',$u->doctor_id);$f=($p?$q->where('requested_procedure_id',$p->id):$q->where('general_key','GENERAL'))->lockForUpdate()->first();
+-                abort_unless(array_key_exists($key,$data['expected_followup_versions'])&&(int)$data['expected_followup_versions'][$key]===(int)($f?->version??0),409,'El seguimiento cambió. Actualiza antes de confirmar.');
+-                $changes=['manual_reason_ciphertext'=>Crypt::encryptString($data['reason']),'updated_by_user_id'=>$u->id,'updated_at'=>now()];
+-                if($f){abort_unless((int)$f->patient_id===(int)$a->patient_id,409,'La identidad del seguimiento cambió.');$changes+=['origin'=>$f->origin==='AUTOMATIC'?'MIXED':$f->origin,'version'=>$f->version+1];if(!empty($data['planned_review_on']))$changes['planned_review_on']=$data['planned_review_on'];DB::table('medical_procedure_followups')->where('id',$f->id)->update($changes);$id=$f->id;}
+-                else {$id=DB::table('medical_procedure_followups')->insertGetId($changes+['requested_procedure_id'=>$p?->id,'appointment_id'=>$a->id,'patient_id'=>$a->patient_id,'doctor_id'=>$u->doctor_id,'procedure_family'=>$p?->procedure_family??'other','procedure_label'=>$p?->label_snapshot??$p?->custom_label??($p?ProcedureCatalog::labels()[$p->procedure_key]:'Seguimiento general'),'requested_at'=>$p?->requested_at??now(),'source_active'=>true,'origin'=>'MANUAL','general_key'=>$p?null:'GENERAL','status'=>'PENDING','version'=>1,'planned_review_on'=>$data['planned_review_on']??null,'created_at'=>now()]);}
+-                $this->event($id,$u,$data['request_key'],$f?'MANUAL_REFERRED':'MANUAL_CREATED',$f?(array)$f:null,$data['reason']);
++            abort_unless((int)$a->patient_id===$data['expected_patient_id'],409,'El paciente asociado cambió. Reabre la cita.');
++            abort_if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true),422,'La cita no admite un envío clínico a seguimiento.');
++            // A completed UUID acknowledges the original operation; it never creates another record.
++            if($op->appointment_id)return;
++            $review=DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->lockForUpdate()->first();
++            abort_unless((int)($review?->version??0)===$data['expected_procedure_version'],409,'La solicitud de procedimientos cambió. Actualiza la cita antes de enviar.');
++            abort_unless(DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->exists(),422,'La cita no tiene procedimientos activos confirmados.');
++            $requests=$this->pendingRequests($a,true);
++            abort_if($requests->isEmpty(),409,'Todos los procedimientos activos ya tienen seguimiento. Actualiza la cita.');
++            foreach($requests as $p){
++                $family=$p->procedure_family??(ProcedureCatalog::entries()[$p->procedure_key]['family']??'other');
++                $id=DB::table('medical_procedure_followups')->insertGetId(['requested_procedure_id'=>$p->id,'appointment_id'=>$a->id,'patient_id'=>$a->patient_id,'doctor_id'=>$u->doctor_id,
++                    'procedure_family'=>$family,'procedure_label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key],
++                    'requested_at'=>$p->requested_at,'source_active'=>true,'origin'=>'MANUAL','manual_reason_ciphertext'=>null,'general_key'=>null,
++                    'status'=>'PENDING','version'=>1,'planned_review_on'=>null,'updated_by_user_id'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
++                $this->event($id,$u,$data['request_key'],'MANUAL_CREATED',null,null);
+             }
+             DB::table('appointment_operations')->where('id',$op->id)->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
+         },3);
+diff --git a/public/js/scheduling/admission-board.js b/public/js/scheduling/admission-board.js
+index 4b338408..4062a371 100644
+--- a/public/js/scheduling/admission-board.js
++++ b/public/js/scheduling/admission-board.js
+@@ -439,7 +439,7 @@
+             append(head,patientName,tag(careLabels[a.estado_cita]||a.estado_cita,a.estado_cita==='ATENDIDO'?'attended':a.grupo==='desactivadas'?'inactive':'neutral'),node('small',a.fecha+' · '+a.hora+' · H.C. '+(a.historia||'—')+' · '+(a.documento||'—')),node('small',a.doctor+' · '+a.servicio));
+             const reason=node('div',null,'admission-consultation-reason');append(reason,node('strong','MOTIVO DE CONSULTA'),node('p',a.motivo_consulta?.trim()||'No registrado'));head.appendChild(reason);root.appendChild(head);
+             const actions=node('div',null,'admission-care-actions');
+-            if(payload.medical_followup){const send=node('button','Enviar a seguimiento','admission-btn');send.type='button';send.dataset.sendMedicalFollowup='true';send.addEventListener('click',()=>window.MedicalFollowupReferral.open({doc,data:payload.medical_followup,trigger:send,save:async values=>{busy=true;try{await request(payload.medical_followup.url,{method:'POST',body:JSON.stringify(values)});notice('Seguimiento registrado. No se creó cita ni cobro.');}finally{busy=false;}},onSaved:async()=>{await load(a.id);$('detail').querySelector('[data-send-medical-followup]')?.focus();}}));actions.appendChild(send);}
++            if(payload.medical_followup?.items?.length){const send=node('button','Enviar a seguimiento','admission-btn');send.type='button';send.dataset.sendMedicalFollowup='true';send.addEventListener('click',()=>window.MedicalFollowupReferral.open({doc,data:payload.medical_followup,trigger:send,save:async values=>{busy=true;try{return await request(payload.medical_followup.url,{method:'POST',body:JSON.stringify(values)});}finally{busy=false;}},onSaved:async result=>{await load(a.id);const destination=new URL(result.redirect_url,window.location.origin);if(destination.origin!==window.location.origin||destination.pathname!=='/scheduling-mvp/medical-followups')throw new Error('No se recibió un destino de seguimiento válido.');window.location.assign(destination.href);},onError:error=>notice(error.message)}));actions.appendChild(send);}
+             if(payload.without_deposit_confirmation){const button=node('button','Confirmar sin adelanto','admission-btn');button.type='button';button.dataset.confirmWithoutDeposit='true';button.addEventListener('click',confirmWithoutDeposit);actions.appendChild(button);}
+             if(payload.exoneration_confirmation){const button=node('button','Confirmar exoneración autorizada sin cobro','admission-btn');button.type='button';button.addEventListener('click',confirmExoneration);actions.appendChild(button);}
+             for(const state of payload.care_actions){const button=node('button',actionLabels[state],'admission-btn'+(['EN_ATENCION','EN_ESPERA','INICIAR_REEVALUACION'].includes(state)?' admission-btn--primary':''));button.type='button';button.addEventListener('click',()=>state==='INDICAR_REEVALUACION'?physicianReevaluation('indicate'):state==='RETIRAR_REEVALUACION'?physicianReevaluation('withdraw'):state==='INICIAR_REEVALUACION'?physicianReevaluation('resume'):transition(state));actions.appendChild(button);}
+diff --git a/public/js/scheduling/medical-followup-referral.js b/public/js/scheduling/medical-followup-referral.js
+index 50aae58f..0d71cca2 100644
+--- a/public/js/scheduling/medical-followup-referral.js
++++ b/public/js/scheduling/medical-followup-referral.js
+@@ -1,9 +1,14 @@
+-(function(root){'use strict';root.MedicalFollowupReferral={open({doc=document,data,save,trigger,onSaved}){
+-    if(doc.querySelector('.medical-referral-dialog[open]'))return;const node=(tag,text)=>{const n=doc.createElement(tag);if(text!==undefined)n.textContent=text;return n;},dialog=node('dialog'),form=node('form');dialog.className='medical-referral-dialog';dialog.setAttribute('aria-labelledby','medical-referral-title');const title=node('h2','Enviar a seguimiento');title.id='medical-referral-title';dialog.append(title,node('p','Seguimiento personal del médico. No registra realización, reserva, cita ni cobro.'));
+-    const choices=node('fieldset');choices.append(node('legend',data.can_general?'Seguimiento general':'Procedimientos de esta cita'));for(const item of data.items){const label=node('label'),check=node('input');check.type='checkbox';check.value=item.key;check.name='procedures';label.append(check,node('span',item.label+(item.existing?' · ya tiene seguimiento':'')));choices.append(label);}if(data.can_general)choices.append(node('p','Sin procedimientos solicitados: se registrará seguimiento general, sin fabricar una orden.'));form.append(choices);
+-    const field=(text,tag)=>{const label=node('label',text),input=node(tag);input.setAttribute('aria-label',text);label.append(input);form.append(label);return input;};const reason=field('Motivo del seguimiento · obligatorio','textarea');reason.required=true;reason.minLength=15;reason.maxLength=1000;reason.rows=3;const date=field('Fecha prevista de revisión · opcional','input');date.type='date';const status=node('p');status.setAttribute('role','alert');const cancel=node('button','Cancelar'),confirm=node('button','Confirmar envío');cancel.type='button';confirm.type='submit';confirm.className='primary';form.append(status,cancel,confirm);dialog.append(form);doc.body.append(dialog);let dirty=false,saving=false;const requests=new Map();
+-    const close=()=>{if(saving)return;if(dirty&&!root.confirm('¿Descartar el envío sin guardar?'))return;dialog.close();};form.addEventListener('input',()=>dirty=true);cancel.addEventListener('click',close);dialog.addEventListener('cancel',e=>{e.preventDefault();close();});const unload=e=>{if(dirty){e.preventDefault();e.returnValue='';}};root.addEventListener('beforeunload',unload);dialog.addEventListener('close',()=>{root.removeEventListener('beforeunload',unload);dialog.remove();trigger?.focus();},{once:true});
+-    form.addEventListener('submit',async e=>{e.preventDefault();if(saving)return;const procedures=[...form.querySelectorAll('[name=procedures]:checked')].map(n=>n.value);if(!data.can_general&&!procedures.length){status.textContent='Selecciona al menos un procedimiento.';return;}if(reason.value.trim().length<15){status.textContent='Registra un motivo de al menos15 caracteres.';reason.focus();return;}if(!root.confirm('¿Confirmar el envío? Los seguimientos existentes se conservan y no se duplican.'))return;
+-        const payload={expected_patient_id:data.patient_id,expected_procedure_version:data.expected_procedure_version,expected_followup_versions:data.expected_followup_versions,procedures,general:data.can_general,reason:reason.value.trim(),planned_review_on:date.value||null,confirmed:true},signature=JSON.stringify(payload);if(!requests.has(signature))requests.set(signature,crypto.randomUUID());payload.request_key=requests.get(signature);saving=true;form.querySelectorAll('input,textarea,button').forEach(n=>n.disabled=true);
+-        try{await save(payload);dirty=false;dialog.close();await onSaved?.();}catch(error){status.textContent=error.message||'No se pudo guardar. Si la versión cambió, cancela y vuelve a abrir.';}finally{saving=false;form.querySelectorAll('input,textarea,button').forEach(n=>n.disabled=false);}});dialog.showModal();(form.querySelector('input[type=checkbox]')||reason).focus();return dialog;
+-}};}(window));
++(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MedicalFollowupReferral=api;}(typeof window!=='undefined'?window:globalThis,function(){
++    'use strict';const requests=new Map(),pending=new Set();
++    async function open({data,save,trigger,onSaved,onError}){
++        if(!data?.items?.length)return false;
++        const payload={expected_patient_id:data.patient_id,expected_procedure_version:data.expected_procedure_version};
++        const signature=JSON.stringify([data.url,payload]);if(pending.has(signature))return false;
++        if(!requests.has(signature))requests.set(signature,globalThis.crypto.randomUUID());payload.request_key=requests.get(signature);
++        pending.add(signature);if(trigger){trigger.disabled=true;trigger.setAttribute('aria-busy','true');}
++        try{const result=await save(payload);await onSaved?.(result);requests.delete(signature);return true;}
++        catch(error){onError?.(error);return false;}
++        finally{pending.delete(signature);if(trigger){trigger.disabled=false;trigger.removeAttribute('aria-busy');}}
++    }
++    return {open};
++}));

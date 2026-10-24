@@ -1,0 +1,202 @@
+[
+  {
+    "script": "corporate-regression",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "d88710011090214dced91fb332d103e421653c316fe4db99a9dacc5610c1445f",
+      "vouchers_hash": "760f5203cb8ac524d2840ee668641e51d1c5fa6df28d32ca0b09dabe5c3bf66a"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "d88710011090214dced91fb332d103e421653c316fe4db99a9dacc5610c1445f",
+      "vouchers_hash": "0d27a125b01b4bdc5180d84bf6e658e598385c4e67dbf278fbdce51666aa8a3d"
+    }
+  },
+  {
+    "script": "corporate-final-journey",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "3fb535d35aba331c9c0205cbf97631ea6137c9ce5f426b715bc17a514a1e6a13",
+      "vouchers_hash": "71715ef06b6584589454f0c4a9a5341650ee56814b0000b34ad7ecf441e92ad7"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "3fb535d35aba331c9c0205cbf97631ea6137c9ce5f426b715bc17a514a1e6a13",
+      "vouchers_hash": "71715ef06b6584589454f0c4a9a5341650ee56814b0000b34ad7ecf441e92ad7"
+    }
+  },
+  {
+    "script": "corporate-without-deposit",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "0bb9c4ab738caca9218250f9839f8847df3675d3a58cf22ba38f849f4c4f439b",
+      "vouchers_hash": "27d74b2037137cc4941b044cc5eaf6297772611831cfb2755982ca54691ba210"
+    },
+    "after": {
+      "appointments": 25,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "0bb9c4ab738caca9218250f9839f8847df3675d3a58cf22ba38f849f4c4f439b",
+      "vouchers_hash": "27d74b2037137cc4941b044cc5eaf6297772611831cfb2755982ca54691ba210"
+    }
+  },
+  {
+    "script": "clinical-enterprise-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "a601c4955c95ce928367e331080197b3c89abffb795a0ccb13b49f665f38e6c8",
+      "vouchers_hash": "d37f7844a3bbe0d28fcc6cffee21e52308c94b400478410963145b428a7576de"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "a601c4955c95ce928367e331080197b3c89abffb795a0ccb13b49f665f38e6c8",
+      "vouchers_hash": "d37f7844a3bbe0d28fcc6cffee21e52308c94b400478410963145b428a7576de"
+    }
+  },
+  {
+    "script": "clinical-enterprise-followup-filters",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "667382049d9f0a8f49e34959f35e9d0b5f2d8ef36f51f93b93193b6add725212",
+      "vouchers_hash": "0aa40da044452dd45423bb9e9fdb71a12d8c89a9492795939b219c0da93781bf"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "667382049d9f0a8f49e34959f35e9d0b5f2d8ef36f51f93b93193b6add725212",
+      "vouchers_hash": "0aa40da044452dd45423bb9e9fdb71a12d8c89a9492795939b219c0da93781bf"
+    }
+  },
+  {
+    "script": "clinical-enterprise-refinement-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "96fee2c7b9af1b387e836876b388c5c3244f11b49927de87a9186b3d2b2691b4",
+      "vouchers_hash": "2306382da6efd2a0fce4ef4dd2e8ac294664afd5fa8a81632185ec08dd2b44e4"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "96fee2c7b9af1b387e836876b388c5c3244f11b49927de87a9186b3d2b2691b4",
+      "vouchers_hash": "2306382da6efd2a0fce4ef4dd2e8ac294664afd5fa8a81632185ec08dd2b44e4"
+    }
+  },
+  {
+    "script": "clinical-enterprise-popup-responsive",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "96fee2c7b9af1b387e836876b388c5c3244f11b49927de87a9186b3d2b2691b4",
+      "vouchers_hash": "2306382da6efd2a0fce4ef4dd2e8ac294664afd5fa8a81632185ec08dd2b44e4"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "96fee2c7b9af1b387e836876b388c5c3244f11b49927de87a9186b3d2b2691b4",
+      "vouchers_hash": "2306382da6efd2a0fce4ef4dd2e8ac294664afd5fa8a81632185ec08dd2b44e4"
+    }
+  },
+  {
+    "script": "clinical-enterprise-round-two-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e7034a35a38c80d531f4bf949bb0dc0c14911348aec0ab66e12e2a2ebfbf71ab",
+      "vouchers_hash": "740c88f2aa267ea038ea9138ff58c480afe638629d72e2233266220a26224c88"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e7034a35a38c80d531f4bf949bb0dc0c14911348aec0ab66e12e2a2ebfbf71ab",
+      "vouchers_hash": "740c88f2aa267ea038ea9138ff58c480afe638629d72e2233266220a26224c88"
+    }
+  },
+  {
+    "script": "clinical-enterprise-doctor-controls",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e7034a35a38c80d531f4bf949bb0dc0c14911348aec0ab66e12e2a2ebfbf71ab",
+      "vouchers_hash": "740c88f2aa267ea038ea9138ff58c480afe638629d72e2233266220a26224c88"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "e7034a35a38c80d531f4bf949bb0dc0c14911348aec0ab66e12e2a2ebfbf71ab",
+      "vouchers_hash": "740c88f2aa267ea038ea9138ff58c480afe638629d72e2233266220a26224c88"
+    }
+  },
+  {
+    "script": "clinical-enterprise-direct-followup",
+    "exit_code": 0,
+    "before": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "489a716e2a8b8e09024401387b070155c955ab72e2f2d53ceea7427c0397bd63",
+      "vouchers_hash": "7be151e6a259fbc56cca7c3385a74ba9d0e42ef3bb434d9bdbeaf2c27f16cefc"
+    },
+    "after": {
+      "appointments": 23,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "489a716e2a8b8e09024401387b070155c955ab72e2f2d53ceea7427c0397bd63",
+      "vouchers_hash": "7be151e6a259fbc56cca7c3385a74ba9d0e42ef3bb434d9bdbeaf2c27f16cefc"
+    }
+  }
+]

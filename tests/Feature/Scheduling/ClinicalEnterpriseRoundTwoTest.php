@@ -16,8 +16,8 @@ class ClinicalEnterpriseRoundTwoTest extends \Tests\Support\AgendaV2TestCase
     }
     private function custom(string $label='Radiografía de clavícula izquierda',string $family='radiography',?string $id=null): array {return ['id'=>$id??(string)Str::uuid(),'label'=>$label,'family'=>$family];}
     private function refer(array $extra=[],?string $key=null,?int $id=null) {
-        $id=$id??$this->a->id;$context=$this->getJson(route('scheduling.mvp.admission.detail',$id))->assertOk()->json('medical_followup');
-        return $this->postJson(route('scheduling.mvp.medical-followups.refer',$id),$extra+['request_key'=>$key??(string)Str::uuid(),'expected_patient_id'=>$context['patient_id'],'expected_procedure_version'=>$context['expected_procedure_version'],'expected_followup_versions'=>$context['expected_followup_versions'],'procedures'=>array_column($context['items'],'key'),'general'=>$context['can_general'],'reason'=>'Seguimiento ficticio indicado para observar la evolución.','planned_review_on'=>null,'confirmed'=>true]);
+        $id=$id??$this->a->id;$appointment=Appointment::findOrFail($id);
+        return $this->postJson(route('scheduling.mvp.medical-followups.refer',$id),$extra+['request_key'=>$key??(string)Str::uuid(),'expected_patient_id'=>$appointment->patient_id,'expected_procedure_version'=>(int)(DB::table('appointment_operational_reviews')->where('appointment_id',$id)->value('version')??0)]);
     }
     public function test_new_personal_procedure_is_reusable_with_independent_requests_and_no_money():void {
         $u=$this->physician();$item=$this->custom();$this->change('selection',['procedures'=>[],'custom_procedures'=>[$item]])->assertOk();
@@ -55,29 +55,36 @@ class ClinicalEnterpriseRoundTwoTest extends \Tests\Support\AgendaV2TestCase
     }
     public function test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records():void {
         $this->physician();$this->select(['wound_care','mri'])->assertOk();$this->assertDatabaseCount('medical_procedure_followups',1);$key=(string)Str::uuid();
-        $context=$this->detail()->json('medical_followup');$body=['request_key'=>$key,'expected_patient_id'=>$context['patient_id'],'expected_procedure_version'=>$context['expected_procedure_version'],'expected_followup_versions'=>$context['expected_followup_versions'],'procedures'=>['wound_care','mri'],'general'=>false,'reason'=>'Seguimiento ficticio de curación y revisión posterior.','confirmed'=>true];
-        $this->refer($body)->assertOk();$this->postJson(route('scheduling.mvp.medical-followups.refer',$this->a->id),$body)->assertOk();
-        $this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',3);$this->assertSame(0,DB::table('appointment_requested_procedures')->whereNotNull('completed_at')->count());
-        $this->assertSame('MIXED',DB::table('medical_procedure_followups')->where('procedure_family','mri')->value('origin'));$this->assertSame('MANUAL',DB::table('medical_procedure_followups')->where('procedure_family','wound_care')->value('origin'));
-        $this->refer(['procedures'=>['wound_care']])->assertOk();$this->assertDatabaseCount('medical_procedure_followups',2);$this->assertStringNotContainsString($body['reason'],DB::table('medical_procedure_followups')->get()->toJson());
+        $body=['request_key'=>$key,'expected_patient_id'=>$this->a->patient_id,'expected_procedure_version'=>1];
+        $automatic=(array)DB::table('medical_procedure_followups')->first();
+        $this->refer($body)->assertOk()->assertJsonPath('redirect_url',route('scheduling.mvp.medical-followups'));$this->postJson(route('scheduling.mvp.medical-followups.refer',$this->a->id),$body)->assertOk();
+        $this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',2);$this->assertSame(0,DB::table('appointment_requested_procedures')->whereNotNull('completed_at')->count());
+        $this->assertSame($automatic,(array)DB::table('medical_procedure_followups')->where('id',$automatic['id'])->first());
+        $this->assertDatabaseHas('medical_procedure_followups',['procedure_family'=>'wound_care','origin'=>'MANUAL','manual_reason_ciphertext'=>null]);
+        $this->refer()->assertConflict();$this->assertDatabaseCount('medical_procedure_followups',2);$this->detail()->assertJsonPath('medical_followup',null);
     }
     public function test_general_followup_survives_care_closure_without_a_fictitious_procedure():void {
-        $this->physician();$this->refer(['reason'=>'   '])->assertUnprocessable();$this->refer()->assertOk();$this->refer()->assertOk();$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('appointment_requested_procedures',0);$this->assertDatabaseCount('appointment_operational_reviews',0);
-        $f=DB::table('medical_procedure_followups')->first();$this->assertNull($f->requested_procedure_id);$this->assertSame('GENERAL',$f->general_key);
-        $this->a->forceFill(['estado_cita'=>'ATENDIDO','hora_atendido'=>now(),'hora_salida'=>now()])->save();$this->postJson('/scheduling-mvp/medical-followups/feed',['origin'=>'general'])->assertOk()->assertJsonCount(1,'rows')->assertJsonPath('rows.0.general',true);
-        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);
+        $u=$this->physician();$this->refer()->assertUnprocessable();$this->detail()->assertJsonPath('medical_followup',null);
+        // Historical general entry from the previous revision: it remains readable/editable,
+        // although this button/endpoint can no longer create a new general followup.
+        $reason=Crypt::encryptString('Motivo histórico ficticio que debe conservarse.');
+        DB::table('medical_procedure_followups')->insert(['appointment_id'=>$this->a->id,'patient_id'=>$this->a->patient_id,'doctor_id'=>$u->doctor_id,'requested_procedure_id'=>null,'procedure_family'=>'other','procedure_label'=>'Seguimiento general','requested_at'=>now(),'source_active'=>true,'origin'=>'MANUAL','general_key'=>'GENERAL','status'=>'PENDING','version'=>1,'manual_reason_ciphertext'=>$reason,'updated_by_user_id'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
+        $this->a->forceFill(['estado_cita'=>'ATENDIDO','hora_atendido'=>now(),'hora_salida'=>now()])->save();$this->postJson('/scheduling-mvp/medical-followups/feed',['origin'=>'general'])->assertOk()->assertJsonCount(1,'rows')->assertJsonPath('rows.0.general',true)->assertJsonPath('rows.0.manual_reason','Motivo histórico ficticio que debe conservarse.');
+        $f=DB::table('medical_procedure_followups')->first();$this->assertSame($reason,$f->manual_reason_ciphertext);$this->assertNull($f->requested_procedure_id);$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('appointment_requested_procedures',0);
     }
     public function test_manual_referral_rejects_stale_source_patient_and_followup_versions():void {
-        $this->physician();$this->select(['wound_care'])->assertOk();$this->refer(['expected_procedure_version'=>0])->assertConflict();$this->refer(['expected_patient_id'=>$this->a->patient_id+1])->assertConflict();$this->refer()->assertOk();$this->refer(['expected_followup_versions'=>['wound_care'=>0]])->assertConflict();$this->assertDatabaseCount('medical_procedure_followups',1);
-        $this->refer(['general'=>true,'procedures'=>[]])->assertUnprocessable();$this->assertDatabaseCount('appointment_requested_procedures',1);
+        $this->physician();$this->select(['wound_care'])->assertOk();$this->refer(['expected_procedure_version'=>0])->assertConflict();$this->refer(['expected_patient_id'=>$this->a->patient_id+1])->assertConflict();
+        $this->refer(['procedures'=>['wound_care']])->assertUnprocessable();$this->refer(['general'=>true])->assertUnprocessable();$this->refer(['reason'=>'No se acepta un motivo fabricado para el botón.'])->assertUnprocessable();
+        $this->refer()->assertOk();$this->refer()->assertConflict();$this->assertDatabaseCount('medical_procedure_followups',1);$this->assertDatabaseCount('appointment_requested_procedures',1);
     }
+
     public function test_manual_entry_and_followup_filters_preserve_the_personal_access_gate():void {
-        $owner=$this->physician();$this->select(['surgery','mri','wound_care'])->assertOk();$this->refer(['procedures'=>['wound_care']])->assertOk();
+        $owner=$this->physician();$this->select(['surgery','mri','wound_care'])->assertOk();$this->refer()->assertOk();
         $this->postJson('/scheduling-mvp/medical-followups/feed',['origin'=>'manual'])->assertOk()->assertJsonCount(1,'rows')->assertJsonPath('rows.0.family','wound_care');
         $this->postJson('/scheduling-mvp/medical-followups/feed',['procedure'=>'surgery'])->assertOk()->assertJsonCount(1,'rows');
         $this->postJson('/scheduling-mvp/medical-followups/feed',['older_than'=>7])->assertOk()->assertJsonCount(0,'rows');
         foreach([$this->admin,$this->admission,$this->commercial]as $u)$this->actingAs($u)->postJson(route('scheduling.mvp.medical-followups.refer',$this->a->id),[])->assertForbidden();
-        $this->actingAs($owner);$b=$this->lifecycleAppointment($this->admin,$this->createAppointmentCatalog(),['estado_agenda'=>'CONFIRMADA']);$this->postJson(route('scheduling.mvp.medical-followups.refer',$b->id),['request_key'=>(string)Str::uuid(),'expected_patient_id'=>$b->patient_id,'expected_procedure_version'=>0,'expected_followup_versions'=>['general'=>0],'procedures'=>[],'general'=>true,'reason'=>'Motivo ficticio que no autoriza una cita ajena.','confirmed'=>true])->assertForbidden();
+        $this->actingAs($owner);$b=$this->lifecycleAppointment($this->admin,$this->createAppointmentCatalog(),['estado_agenda'=>'CONFIRMADA']);$this->postJson(route('scheduling.mvp.medical-followups.refer',$b->id),['request_key'=>(string)Str::uuid(),'expected_patient_id'=>$b->patient_id,'expected_procedure_version'=>0,])->assertForbidden();
     }
     public function test_second_additive_migration_refuses_destructive_rollback():void {
         $this->expectException(\RuntimeException::class);(require database_path('migrations/2026_10_23_050000_enable_personal_procedures_and_manual_followups.php'))->down();
@@ -88,7 +95,32 @@ class ClinicalEnterpriseRoundTwoTest extends \Tests\Support\AgendaV2TestCase
         $this->assertCount(200,app(\App\Services\Scheduling\DoctorProcedureSuggestionService::class)->list($u));$this->postJson(route('scheduling.mvp.procedures.personal-search'),['query'=>'clavi'])->assertOk()->assertJsonCount(1,'items')->assertJsonPath('items.0.id',$item['id']);
     }
     public function test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight():void {
-        $this->travelTo(\Carbon\Carbon::parse('2026-10-24 03:30:00','UTC'));$this->physician();$this->a->update(['fecha_cita'=>'2026-10-23']);$this->refer()->assertOk();DB::table('medical_procedure_followups')->update(['requested_at'=>'2026-10-23 22:00:00']);$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk()->assertJsonPath('rows.0.elapsed_days',0);
+        $this->travelTo(\Carbon\Carbon::parse('2026-10-24 03:30:00','UTC'));$this->physician();$this->a->update(['fecha_cita'=>'2026-10-23']);$this->select(['wound_care'])->assertOk();$this->refer()->assertOk();DB::table('medical_procedure_followups')->update(['requested_at'=>'2026-10-23 22:00:00']);$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk()->assertJsonPath('rows.0.elapsed_days',0);
         $this->travelTo(\Carbon\Carbon::parse('2026-10-24 06:00:00','UTC'));$this->postJson('/scheduling-mvp/medical-followups/feed',[])->assertOk()->assertJsonPath('rows.0.elapsed_days',1);
     }
+    public function test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes():void {
+        $this->physician();$before=$this->a->fresh()->getAttributes();$this->detail()->assertJsonPath('medical_followup',null);$this->refer()->assertUnprocessable();
+        $this->assertDatabaseCount('appointment_operations',0);$this->assertDatabaseCount('medical_procedure_followups',0);$this->assertDatabaseCount('medical_procedure_followup_events',0);$this->assertSame($before,$this->a->fresh()->getAttributes());
+        $this->select(['radiography'])->assertOk();$this->select([])->assertOk();$this->detail()->assertJsonPath('medical_followup',null);$this->refer()->assertUnprocessable();
+    }
+    public function test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins():void {
+        $this->physician();$this->select(['surgery','mri'])->assertOk();$this->detail()->assertJsonPath('medical_followup',null);$this->refer()->assertConflict();
+        $automatic=DB::table('medical_procedure_followups')->orderBy('id')->get()->toJson();$this->select(['surgery','mri','radiography','wound_care'])->assertOk();
+        $context=$this->detail()->json('medical_followup');$this->assertSame(['radiography','wound_care'],array_column($context['items'],'key'));$before=$this->a->fresh()->getAttributes();$this->refer()->assertOk();$this->detail()->assertJsonPath('medical_followup',null);
+        $this->assertSame($automatic,DB::table('medical_procedure_followups')->where('origin','AUTOMATIC')->orderBy('id')->get()->toJson());
+        $this->select(['surgery','mri','radiography','wound_care','laboratory'])->assertOk();$this->detail()->assertJsonCount(1,'medical_followup.items')->assertJsonPath('medical_followup.items.0.key','laboratory');$this->refer()->assertOk();
+        $this->assertDatabaseCount('medical_procedure_followups',5);$this->assertSame(3,DB::table('medical_procedure_followups')->where('origin','MANUAL')->whereNull('manual_reason_ciphertext')->count());$this->assertSame($before,$this->a->fresh()->getAttributes());$this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);$this->assertDatabaseCount('vouchers',0);$this->assertSame(0,DB::table('appointment_requested_procedures')->whereNotNull('completed_at')->count());
+    }
+    public function test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail():void {
+        $u=$this->physician();$this->select(['radiography','wound_care'])->assertOk();$service=app(\App\Services\Scheduling\MedicalProcedureFollowupService::class);
+        $this->assertNull($service->referralContext($u,$this->a,['items'=>[],'version'=>0]));
+        $offer=$service->referralContext($u,$this->a,['items'=>[['key'=>'radiography']],'version'=>0]);$this->assertSame(['radiography'],array_column($offer['items'],'key'));$this->assertSame(0,$offer['expected_procedure_version']);
+        $this->refer(['expected_procedure_version'=>$offer['expected_procedure_version']])->assertConflict();$this->assertDatabaseCount('medical_procedure_followups',0);
+        $detail=$this->detail()->json();$this->assertSame($detail['procedures']['version'],$detail['medical_followup']['expected_procedure_version']);$this->assertSame(array_column($detail['procedures']['items'],'key'),array_column($detail['medical_followup']['items'],'key'));
+    }
+    public function test_direct_referral_preserves_legacy_manual_reason_and_audit():void {
+        $this->physician();$this->select(['radiography'])->assertOk();$this->refer()->assertOk();$id=DB::table('medical_procedure_followups')->value('id');$cipher=Crypt::encryptString('Motivo histórico DEMO70, sin sustituciones.');DB::table('medical_procedure_followups')->where('id',$id)->update(['manual_reason_ciphertext'=>$cipher]);$old=DB::table('medical_procedure_followups')->where('id',$id)->first();$audit=DB::table('medical_procedure_followup_events')->get()->toJson();
+        $this->select(['radiography','wound_care'])->assertOk();$this->refer()->assertOk();$this->assertEquals($old,DB::table('medical_procedure_followups')->where('id',$id)->first());$this->assertSame($audit,DB::table('medical_procedure_followup_events')->where('followup_id',$id)->get()->toJson());
+    }
+
 }

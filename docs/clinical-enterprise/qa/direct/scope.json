@@ -1,0 +1,14 @@
+{
+  "base": "162de591b81ffe4c838f32de0d16bbb4386b421b",
+  "automatic_synchronize_unchanged": true,
+  "followup_read_update_unchanged": true,
+  "new_migrations": 0,
+  "css_blade_routes_permissions_unchanged": true,
+  "product_files": [
+    "app/Http/Controllers/Scheduling/MedicalProcedureFollowupController.php",
+    "app/Services/Scheduling/AdmissionBoardService.php",
+    "app/Services/Scheduling/MedicalProcedureFollowupService.php",
+    "public/js/scheduling/admission-board.js",
+    "public/js/scheduling/medical-followup-referral.js"
+  ]
+}

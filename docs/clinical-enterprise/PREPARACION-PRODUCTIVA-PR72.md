@@ -1,5 +1,13 @@
 # Preflight, esquema, respaldo y rollback — revisión integral PR72
 
+## Última corrección del envío directo
+
+El botón solo envía solicitudes activas sin seguimiento, con un clic y sin popup. Motivo/fecha iniciales quedan null; los históricos permanecen. **No añade migración ni modifica las cinco siguientes.** Antes de publicar, contrastar la tabla `migrations` real y ejecutar únicamente las pendientes: no asumir que la demo determina qué se aplicó en producción. Invalidar assets versionados para evitar un cliente antiguo que intente enviar los campos retirados (respuesta422 controlada).
+
+APP_KEY: comprobar su presencia/configuración sin mostrar el valor; validar lectura de un cifrado existente mediante un ensayo autorizado que informe solo éxito/fallo, sin imprimir contenido clínico. No ejecutar key:generate ni rotar la clave durante esta publicación. Conservar respaldo cifrado de configuración y documentos.
+
+Smoke adicional: cero procedimientos→sin botón/API422; radiografía+curación→un clic/redirección; automático cirugía/RM→sin botón; agregar laboratorio→solo nuevo; doble clic/reintento→sin duplicado; motivos históricos intactos y pagos/reevaluación/salida sin cambios. El rollback de código debe mantener esquema, nuevos eventos/filas y motivos previos; preferir corrección hacia delante si el artefacto previo restaura el antiguo envío general.
+
 **Documento de preparación. No se accedió a Hostinger, producción ni pacientes reales. No se publicó ni se hizo merge.** Main contrastado en GitHub: `a4e2a9b0f9e517c55be10232321391b1dc970e73`. La revisión y autorización productiva siguen pendientes.
 
 ## Cinco migraciones, en orden

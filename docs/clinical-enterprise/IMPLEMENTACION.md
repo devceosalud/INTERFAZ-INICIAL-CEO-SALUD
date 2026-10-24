@@ -1,5 +1,7 @@
 # Clinical Enterprise, procedimientos, alertas y seguimiento médico
 
+> Regla vigente del botón: [envío directo de procedimientos pendientes](ENVIO-DIRECTO-PR72.md). Sustituye el popup de envío de la revisión anterior; no elimina seguimientos generales ni motivos históricos y no afecta la solicitud de procedimientos.
+
 > Revisión vigente de seis tareas sobre el mismo Draft PR72: [catálogo personal y seguimiento manual/general](CATALOGO-Y-SEGUIMIENTO-PR72.md), [pruebas y capturas actuales](qa/round2/README.md), [preparación productiva de cinco migraciones](PREPARACION-PRODUCTIVA-PR72.md). La matriz de esta revisión amplía la solicitud existente, preserva sus restricciones y limita el seguimiento automático/manual a Quiroz verificado. Los resultados anteriores se mantienen como evidencia histórica.
 
 ## Base y alcance

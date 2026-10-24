@@ -185,7 +185,7 @@ class AdmissionBoardService
             : collect();
         $followUp = app(AdmissionTaskService::class)->listForAppointment($a, $actor);
         $procedures = app(OperationalProcedureService::class)->detail($a, $actor);
-        $medicalFollowup=app(MedicalProcedureFollowupService::class)->referralContext($actor,$a);
+        $medicalFollowup=app(MedicalProcedureFollowupService::class)->referralContext($actor,$a,$procedures);
         $payload=$this->protect([
             'exoneration_confirmation'=>AdmissionExonerationConfirmation::eligible($a,$actor) && Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->exists()
                 ? ['url'=>route('scheduling.mvp.admission.confirm-exoneration',$id),'revision'=>AppointmentManagement::revision($a->fresh())] : null,

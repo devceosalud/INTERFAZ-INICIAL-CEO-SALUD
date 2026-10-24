@@ -29,45 +29,57 @@ final class MedicalProcedureFollowupService
             }
         }
     }
-    public function referralContext(User $actor,Appointment $a): ?array
+    public function referralContext(User $actor,Appointment $a,?array $procedureSnapshot=null): ?array
     {
         try {\App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);ClinicalAccess::appointment($actor,$a);}
         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()===403)return null;throw $e;}
         if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true))return null;
-        $requests=DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->get();
-        $followups=DB::table('medical_procedure_followups')->where('appointment_id',$a->id)->where('doctor_id',$actor->doctor_id)->get();
-        $versions=[];foreach($requests as $p)$versions[$p->procedure_key]=(int)($followups->firstWhere('requested_procedure_id',$p->id)?->version??0);
-        $versions['general']=(int)($followups->firstWhere('general_key','GENERAL')?->version??0);
-        return ['url'=>route('scheduling.mvp.medical-followups.refer',$a->id),'patient_id'=>(int)$a->patient_id,'expected_procedure_version'=>(int)(DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->value('version')??0),'expected_followup_versions'=>$versions,
-            'items'=>$requests->map(fn($p)=>['key'=>$p->procedure_key,'label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key]??'Procedimiento histórico','family'=>$p->procedure_family??'other','existing'=>$versions[$p->procedure_key]>0])->all(),'can_general'=>$requests->isEmpty()];
+        $requests=$this->pendingRequests($a);
+        // Keep the offer within the exact procedure snapshot rendered in this detail.
+        // If selection changes concurrently, its snapshot version makes the POST fail closed.
+        if($procedureSnapshot!==null)$requests=$requests->whereIn('procedure_key',array_column($procedureSnapshot['items'],'key'))->values();
+        if($requests->isEmpty())return null;
+        return ['url'=>route('scheduling.mvp.medical-followups.refer',$a->id),'patient_id'=>(int)$a->patient_id,
+            'expected_procedure_version'=>(int)($procedureSnapshot['version']??DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->value('version')??0),
+            'items'=>$requests->map(fn($p)=>['key'=>$p->procedure_key,'label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key]??'Procedimiento histórico','family'=>$p->procedure_family??'other'])->all()];
+    }
+
+    /** Same persisted selected requests used by the procedure detail; drafts never enter this query. */
+    private function pendingRequests(Appointment $a,bool $lock=false)
+    {
+        $q=DB::table('appointment_requested_procedures as p')->where('p.appointment_id',$a->id)->where('p.selected',true)
+            ->whereNotExists(fn($f)=>$f->selectRaw('1')->from('medical_procedure_followups as f')->whereColumn('f.requested_procedure_id','p.id'))
+            ->select('p.*')->orderBy('p.id');
+        return ($lock?$q->lockForUpdate():$q)->get();
     }
 
     public function refer(User $actor,int $appointmentId,array $data): void
     {
         \App\Support\Scheduling\MedicalFollowupAccess::actor($actor,ClinicalCapability::PROCEDURES);
-        $data['reason']=trim($data['reason']??'');
-        \Illuminate\Support\Facades\Validator::make($data,['request_key'=>'required|uuid','expected_patient_id'=>'required|integer|min:1','expected_procedure_version'=>'required|integer|min:0','expected_followup_versions'=>'required|array','expected_followup_versions.*'=>'integer|min:0','procedures'=>'present|array|max:130','procedures.*'=>'required|string|distinct|max:40','general'=>'required|boolean','reason'=>'required|string|min:15|max:1000','planned_review_on'=>'nullable|date_format:Y-m-d','confirmed'=>'required|accepted'])->validate();
-        abort_if(array_diff(array_keys($data),['request_key','expected_patient_id','expected_procedure_version','expected_followup_versions','procedures','general','reason','planned_review_on','confirmed','_token']),422,'Campos no permitidos para el envío.');
-        $data=array_intersect_key($data,array_flip(['request_key','expected_patient_id','expected_procedure_version','expected_followup_versions','procedures','general','reason','planned_review_on','confirmed']));
-        $data['planned_review_on']=$data['planned_review_on']??null;$data['general']=(bool)$data['general'];$data['confirmed']=true;$data['expected_patient_id']=(int)$data['expected_patient_id'];$data['expected_procedure_version']=(int)$data['expected_procedure_version'];$data['expected_followup_versions']=array_map('intval',$data['expected_followup_versions']);sort($data['procedures']);ksort($data['expected_followup_versions']);ksort($data);
+        \Illuminate\Support\Facades\Validator::make($data,['request_key'=>'required|uuid','expected_patient_id'=>'required|integer|min:1','expected_procedure_version'=>'required|integer|min:0'])->validate();
+        abort_if(array_diff(array_keys($data),['request_key','expected_patient_id','expected_procedure_version','_token']),422,'El envío directo no admite selección, motivo, fecha ni otros campos.');
+        $data=['request_key'=>$data['request_key'],'expected_patient_id'=>(int)$data['expected_patient_id'],'expected_procedure_version'=>(int)$data['expected_procedure_version']];
         AppointmentReevaluationService::transaction(function()use($actor,$appointmentId,$data){
-            $hash=hash('sha256',json_encode(['MANUAL_MEDICAL_FOLLOWUP',$appointmentId,$data]));
+            $hash=hash('sha256',json_encode(['DIRECT_MEDICAL_FOLLOWUP',$appointmentId,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
             $op=DB::table('appointment_operations')->where('actor_user_id',$actor->id)->where('request_key',$data['request_key'])->lockForUpdate()->first();abort_unless(hash_equals($op->payload_hash,$hash),409,'La clave corresponde a otra operación.');
             [$u,$a]=ClinicalAccess::lock($actor,$appointmentId,ClinicalCapability::PROCEDURES);\App\Support\Scheduling\MedicalFollowupAccess::actor($u,ClinicalCapability::PROCEDURES);
-            abort_unless((int)$a->patient_id===(int)$data['expected_patient_id'],409,'El paciente asociado cambió. Reabre la cita.');
-            abort_if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true),422,'La cita no admite un envío clínico a seguimiento.');if($op->appointment_id)return;
-            $review=DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->lockForUpdate()->first();abort_unless((int)($review?->version??0)===(int)$data['expected_procedure_version'],409,'La solicitud de procedimientos cambió. Reabre el envío.');
-            $requests=DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->orderBy('id')->lockForUpdate()->get()->keyBy('procedure_key');
-            if($data['general']){abort_unless($requests->isEmpty()&&count($data['procedures'])===0,422,'El seguimiento general se utiliza cuando no hay procedimientos solicitados.');$targets=['general'=>null];}
-            else {abort_unless(count($data['procedures'])>0&&!array_diff($data['procedures'],$requests->keys()->all()),422,'Selecciona procedimientos vigentes de esta cita.');$targets=$requests->only($data['procedures'])->all();}
-            foreach($targets as $key=>$p){
-                $q=DB::table('medical_procedure_followups')->where('appointment_id',$a->id)->where('doctor_id',$u->doctor_id);$f=($p?$q->where('requested_procedure_id',$p->id):$q->where('general_key','GENERAL'))->lockForUpdate()->first();
-                abort_unless(array_key_exists($key,$data['expected_followup_versions'])&&(int)$data['expected_followup_versions'][$key]===(int)($f?->version??0),409,'El seguimiento cambió. Actualiza antes de confirmar.');
-                $changes=['manual_reason_ciphertext'=>Crypt::encryptString($data['reason']),'updated_by_user_id'=>$u->id,'updated_at'=>now()];
-                if($f){abort_unless((int)$f->patient_id===(int)$a->patient_id,409,'La identidad del seguimiento cambió.');$changes+=['origin'=>$f->origin==='AUTOMATIC'?'MIXED':$f->origin,'version'=>$f->version+1];if(!empty($data['planned_review_on']))$changes['planned_review_on']=$data['planned_review_on'];DB::table('medical_procedure_followups')->where('id',$f->id)->update($changes);$id=$f->id;}
-                else {$id=DB::table('medical_procedure_followups')->insertGetId($changes+['requested_procedure_id'=>$p?->id,'appointment_id'=>$a->id,'patient_id'=>$a->patient_id,'doctor_id'=>$u->doctor_id,'procedure_family'=>$p?->procedure_family??'other','procedure_label'=>$p?->label_snapshot??$p?->custom_label??($p?ProcedureCatalog::labels()[$p->procedure_key]:'Seguimiento general'),'requested_at'=>$p?->requested_at??now(),'source_active'=>true,'origin'=>'MANUAL','general_key'=>$p?null:'GENERAL','status'=>'PENDING','version'=>1,'planned_review_on'=>$data['planned_review_on']??null,'created_at'=>now()]);}
-                $this->event($id,$u,$data['request_key'],$f?'MANUAL_REFERRED':'MANUAL_CREATED',$f?(array)$f:null,$data['reason']);
+            abort_unless((int)$a->patient_id===$data['expected_patient_id'],409,'El paciente asociado cambió. Reabre la cita.');
+            abort_if(in_array($a->estado_cita,['CANCELADO','RETIRO','NO_ASISTIO'],true),422,'La cita no admite un envío clínico a seguimiento.');
+            // A completed UUID acknowledges the original operation; it never creates another record.
+            if($op->appointment_id)return;
+            $review=DB::table('appointment_operational_reviews')->where('appointment_id',$a->id)->lockForUpdate()->first();
+            abort_unless((int)($review?->version??0)===$data['expected_procedure_version'],409,'La solicitud de procedimientos cambió. Actualiza la cita antes de enviar.');
+            abort_unless(DB::table('appointment_requested_procedures')->where('appointment_id',$a->id)->where('selected',true)->exists(),422,'La cita no tiene procedimientos activos confirmados.');
+            $requests=$this->pendingRequests($a,true);
+            abort_if($requests->isEmpty(),409,'Todos los procedimientos activos ya tienen seguimiento. Actualiza la cita.');
+            foreach($requests as $p){
+                $family=$p->procedure_family??(ProcedureCatalog::entries()[$p->procedure_key]['family']??'other');
+                $id=DB::table('medical_procedure_followups')->insertGetId(['requested_procedure_id'=>$p->id,'appointment_id'=>$a->id,'patient_id'=>$a->patient_id,'doctor_id'=>$u->doctor_id,
+                    'procedure_family'=>$family,'procedure_label'=>$p->label_snapshot??$p->custom_label??ProcedureCatalog::labels()[$p->procedure_key],
+                    'requested_at'=>$p->requested_at,'source_active'=>true,'origin'=>'MANUAL','manual_reason_ciphertext'=>null,'general_key'=>null,
+                    'status'=>'PENDING','version'=>1,'planned_review_on'=>null,'updated_by_user_id'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
+                $this->event($id,$u,$data['request_key'],'MANUAL_CREATED',null,null);
             }
             DB::table('appointment_operations')->where('id',$op->id)->update(['appointment_id'=>$a->id,'updated_at'=>now()]);
         },3);
