@@ -1,0 +1,597 @@
+{
+  "latest-target-sqlite": {
+    "totals": {
+      "tests": "8",
+      "assertions": "154",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "latest-target-maria": {
+    "totals": {
+      "tests": "8",
+      "assertions": "154",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "latest-full-sqlite": {
+    "totals": {
+      "tests": "1294",
+      "assertions": "11897",
+      "failures": "18",
+      "errors": "2",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": [
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRefinementTest",
+        "test": "test_personal_followup_gate_is_enforced_on_page_feed_detail_and_write",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that 0 is identical to 2."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_active_surgery_and_mri_flags_are_structured_unique_and_do_not_recolor_or_complete_care",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_general_followup_survives_care_closure_without_a_fictitious_procedure",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_rejects_stale_source_patient_and_followup_versions",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_entry_and_followup_filters_preserve_the_personal_access_gate",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail",
+        "kind": "error",
+        "summary": [
+          "ErrorException: Trying to access array offset on null"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_referral_preserves_legacy_manual_reason_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_medical_selection_creates_one_followup_per_explicit_family_without_care_or_money_changes",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [403] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_source_withdrawal_and_reselection_keep_one_longitudinal_record_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that a row in the table [medical_procedure_followups] matches the attributes {"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_updates_require_evidence_version_idempotency_and_survive_original_care_close",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_does_not_expose_the_original_patient_after_appointment_patient_reassignment",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [404] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_populated_alert_and_followup_migrations_refuse_destructive_rollback",
+        "kind": "error",
+        "summary": [
+          "Illuminate\\Database\\QueryException: SQLSTATE[HY000]: General error: 1 no such table: medical_procedure_followups (SQL: select count(*) as aggregate from \"medical_procedure_followups\")"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_explicit_approved_option_can_require_followup_without_enabling_its_whole_family_and_label_is_snapshotted",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_clinical_read_capability_does_not_implicitly_grant_followup_update_capability",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      }
+    ]
+  },
+  "latest-full-maria": {
+    "totals": {
+      "tests": "1330",
+      "assertions": "12223",
+      "failures": "18",
+      "errors": "2",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": [
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRefinementTest",
+        "test": "test_personal_followup_gate_is_enforced_on_page_feed_detail_and_write",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that 0 is identical to 2."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_active_surgery_and_mri_flags_are_structured_unique_and_do_not_recolor_or_complete_care",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_general_followup_survives_care_closure_without_a_fictitious_procedure",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_rejects_stale_source_patient_and_followup_versions",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_entry_and_followup_filters_preserve_the_personal_access_gate",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail",
+        "kind": "error",
+        "summary": [
+          "ErrorException: Trying to access array offset on null"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_referral_preserves_legacy_manual_reason_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_medical_selection_creates_one_followup_per_explicit_family_without_care_or_money_changes",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [403] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_source_withdrawal_and_reselection_keep_one_longitudinal_record_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that a row in the table [medical_procedure_followups] matches the attributes {"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_updates_require_evidence_version_idempotency_and_survive_original_care_close",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_does_not_expose_the_original_patient_after_appointment_patient_reassignment",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [404] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_populated_alert_and_followup_migrations_refuse_destructive_rollback",
+        "kind": "error",
+        "summary": [
+          "Illuminate\\Database\\QueryException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ceosalud_qa_agenda_v2_suite.medical_procedure_followups' doesn't exist (SQL: select count(*) as aggregate from `medical_procedure_followups`)"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_explicit_approved_option_can_require_followup_without_enabling_its_whole_family_and_label_is_snapshotted",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_clinical_read_capability_does_not_implicitly_grant_followup_update_capability",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      }
+    ]
+  },
+  "main-baseline": {
+    "totals": {
+      "tests": "42",
+      "assertions": "228",
+      "failures": "18",
+      "errors": "2",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": [
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRefinementTest",
+        "test": "test_personal_followup_gate_is_enforced_on_page_feed_detail_and_write",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that 0 is identical to 2."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_active_surgery_and_mri_flags_are_structured_unique_and_do_not_recolor_or_complete_care",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_general_followup_survives_care_closure_without_a_fictitious_procedure",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_referral_rejects_stale_source_patient_and_followup_versions",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_manual_entry_and_followup_filters_preserve_the_personal_access_gate",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [422] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [409] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail",
+        "kind": "error",
+        "summary": [
+          "ErrorException: Trying to access array offset on null"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseRoundTwoTest",
+        "test": "test_direct_referral_preserves_legacy_manual_reason_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_medical_selection_creates_one_followup_per_explicit_family_without_care_or_money_changes",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 2. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [403] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_source_withdrawal_and_reselection_keep_one_longitudinal_record_and_audit",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that a row in the table [medical_procedure_followups] matches the attributes {"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_updates_require_evidence_version_idempotency_and_survive_original_care_close",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_followup_does_not_expose_the_original_patient_after_appointment_patient_reassignment",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [404] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_populated_alert_and_followup_migrations_refuse_destructive_rollback",
+        "kind": "error",
+        "summary": [
+          "Illuminate\\Database\\QueryException: SQLSTATE[HY000]: General error: 1 no such table: medical_procedure_followups (SQL: select count(*) as aggregate from \"medical_procedure_followups\")"
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_explicit_approved_option_can_require_followup_without_enabling_its_whole_family_and_label_is_snapshotted",
+        "kind": "failure",
+        "summary": [
+          "Failed asserting that table [medical_procedure_followups] matches expected entries count of 1. Entries found: 0."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_clinical_read_capability_does_not_implicitly_grant_followup_update_capability",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 403."
+        ]
+      },
+      {
+        "class": "Tests\\Feature\\Scheduling\\ClinicalEnterpriseTest",
+        "test": "test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation",
+        "kind": "failure",
+        "summary": [
+          "Expected response status code [200] but received 405."
+        ]
+      }
+    ]
+  },
+  "baseline_comparison": "Exact same 18 failed tests and 2 errors on unmodified main and candidate, SQLite and MariaDB",
+  "javascript": {
+    "tests": 374,
+    "passed": 374,
+    "failed": 0
+  },
+  "environment": {
+    "php": "8.3.35",
+    "mariadb": "11.8.9",
+    "main": "ea1f63401c3b1d20c7005591f4298c4ae744d839",
+    "production_access": false
+  },
+  "integrity": {
+    "result": "PASS",
+    "unchanged_tables": {
+      "payments": true,
+      "vouchers": true,
+      "voucher_items": true,
+      "services": true,
+      "appointment_documents": true
+    },
+    "appointments": 33,
+    "manual_scenarios": "5 unchanged",
+    "remote_cases": "A/B ATENDIDO; arrival/call/departure null",
+    "followup_authorized_user_ids": [
+      2,
+      1,
+      7
+    ]
+  },
+  "chromium": {
+    "result": "PASS",
+    "url": "http://127.0.0.1:8000",
+    "base": "ea1f63401c3b1d20c7005591f4298c4ae744d839",
+    "checks": [
+      "5 authenticated roles",
+      "manual remote start available, no physical actions",
+      "1366x768 and 390x844 no horizontal overflow",
+      "normal and reevaluation QA cases retained ATENDIDO with physical timestamps null",
+      "four existing automatic/manual followups preserved",
+      "other doctor/admin/admission/commercial clinical start 403",
+      "guide available; manual cases unchanged",
+      "no console errors"
+    ],
+    "errors": []
+  },
+  "chromium_full_flow": [
+    "Baseline reproduced: exact remote appointment, no care actions",
+    "A: remote start, official/custom procedures, diagnosis, automatic/manual followups, finish; no physical timestamps",
+    "B: indication, operational confirmation, 1/2, 2/2 orange, actual second medical attention, finish",
+    "C: other doctor and operational/administrative accounts cannot start Julio care",
+    "D: onsite still requires arrival, then doctor care and separate physical exit"
+  ],
+  "remote_turquoise": {
+    "result": "PASS",
+    "appointment_id": 31,
+    "mode": "TELECONSULTA",
+    "state": "EN_ATENCION",
+    "background": "#74dccb",
+    "physical_timestamps": "null",
+    "present_badge": false
+  }
+}
