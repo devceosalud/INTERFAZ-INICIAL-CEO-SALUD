@@ -19,7 +19,13 @@
     }
     function money(value){return 'S/ '+Number(value||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
     // Admisión-only presentation override. The shared operational palette stays intact.
-    function admissionBackground(presentation){const color=presentation?.fringe?.color||presentation?.fondo||'#ffffff';return color.toLowerCase()==='#99f6e4'?'#74dccb':color;}
+    function admissionBackground(presentation,appointment){
+        const priority=presentation?.fringe?.key||presentation?.clave;
+        if(appointment?.attendance_mode==='TELECONSULTA'&&appointment.estado_cita==='EN_ATENCION'
+            && !presentation?.operational_reevaluation_ready
+            && !['DESACTIVADA','REEMBOLSO_SOLICITADO','LISTO_REEVALUACION','SALIDA_REGISTRADA'].includes(priority))return '#74dccb';
+        const color=presentation?.fringe?.color||presentation?.fondo||'#ffffff';return color.toLowerCase()==='#99f6e4'?'#74dccb':color;
+    }
     function bookingLabel(state){return state==='CONFIRMADA'?'Horario confirmado':state==='PENDIENTE_CONFIRMACION'?'Reserva pendiente · horario sin confirmar':state==='LEGADO'?'Agenda heredada':String(state||'Sin clasificación');}
     function bookingIndicator(doc,state){
         if(state==='LEGADO')return null;
@@ -371,9 +377,13 @@
                 const tones={PROGRAMADO:'#c5a13e',LISTO_REEVALUACION:'#ce7a30',PRESENTE:'#32948c',PAGO_REAL:'#bd9c39',DESACTIVADA:'#bd5963',REEMBOLSO_SOLICITADO:'#bd5963',SALIDA_REGISTRADA:'#6f9c97',ATENDIDO:'#74dccb'};
                 tr.title=row.presentation?.fringe?.description||'';
                 tr.style.setProperty('--ad-status-color',tones[row.presentation?.fringe?.key]||row.presentation?.fringe?.color||'#dce8e9');
-                // The server owns the full-row palette; do not mistake the
-                // accent/border colour for the background of an appointment.
-                tr.style.setProperty('--ad-status-background',admissionBackground(row.presentation));
+                // Preserve the server palette and the approved Admisión-only
+                // turquoise adaptations; keep accent and full-row fill distinct.
+                tr.style.setProperty('--ad-status-background',admissionBackground(row.presentation,row));
+                if(row.attendance_mode==='TELECONSULTA'&&row.estado_cita==='EN_ATENCION'&&admissionBackground(row.presentation,row)==='#74dccb'){
+                    tr.style.setProperty('--ad-status-color','#32948c');
+                    tr.title='Teleconsulta en atención remota. El estado económico se indica por separado; no registra presencia física.';
+                }
                 const cell=(text,small)=>{const td=node('td',text);if(small)td.appendChild(node('small',small));tr.appendChild(td);return td;};
                 const date=cell();append(date,node('strong',row.hora),node('small',row.fecha.slice(5).split('-').reverse().join('/')));
                 if(row.reevaluation?.ready) tr.classList.add('is-ready-for-reevaluation');

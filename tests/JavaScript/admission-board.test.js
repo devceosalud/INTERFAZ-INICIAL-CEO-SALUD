@@ -2,6 +2,24 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {latest,bookingLabel,time,readResponse}=require('../../public/js/scheduling/admission-board.js');
 const {journeySteps}=require('../../public/js/scheduling/admission-board.js');
+const {admissionBackground}=require('../../public/js/scheduling/admission-board.js');
+test('active remote care uses the approved admission turquoise without manufacturing physical presence',()=>{
+    const presentation={fringe:{key:'SIN_PAGO_REAL',color:'#ffffff'},present:false,badges:[{clave:'TELECONSULTA'}]};
+    const appointment={attendance_mode:'TELECONSULTA',estado_cita:'EN_ATENCION',hora_llegada:null};
+    const before=JSON.stringify({presentation,appointment});assert.equal(admissionBackground(presentation,appointment),'#74dccb');
+    assert.equal(JSON.stringify({presentation,appointment}),before);
+});
+test('remote turquoise preserves higher red orange and departed presentation priorities',()=>{
+    const remote={attendance_mode:'TELECONSULTA',estado_cita:'EN_ATENCION'};
+    for(const [key,color]of [['DESACTIVADA','#fecaca'],['REEMBOLSO_SOLICITADO','#fecaca'],['LISTO_REEVALUACION','#fed7aa'],['SALIDA_REGISTRADA','#99f6e4']])
+        assert.equal(admissionBackground({fringe:{key,color}},remote),color==='#99f6e4'?'#74dccb':color);
+    assert.equal(admissionBackground({fringe:{key:'SIN_PAGO_REAL',color:'#ffffff'},operational_reevaluation_ready:true},remote),'#ffffff');
+});
+test('remote background override does not recolor bookings finished care or onsite appointments',()=>{
+    const p={fringe:{key:'PROGRAMADO',color:'#fdf1d9'}};
+    for(const state of ['PROGRAMADO','CONFIRMADO','ATENDIDO','CANCELADO'])assert.equal(admissionBackground(p,{attendance_mode:'TELECONSULTA',estado_cita:state}),'#fdf1d9');
+    assert.equal(admissionBackground(p,{attendance_mode:'PRESENCIAL',estado_cita:'EN_ATENCION'}),'#fdf1d9');
+});
 test('remote care timeline has clinical start and finish without suggesting physical steps',()=>{
     const steps=journeySteps('TELECONSULTA');assert.deepEqual(Object.keys(steps),['inicio','fin']);
     for(const key of ['llegada','llamado','salida'])assert.equal(steps[key],undefined);
