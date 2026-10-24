@@ -19,13 +19,14 @@ class AdmissionDepartureTest extends TestCase
     {
         parent::setUp(); config(['scheduling.enabled'=>true]);
         $this->actor=$this->agendaReader('ADMISION');
-        $this->actor->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
         $this->catalog=$this->createAppointmentCatalog();$this->actingAs($this->actor);
     }
     private function appointment(array $attributes=[]): Appointment
     {
-        return $this->lifecycleAppointment($this->actor,$this->catalog,array_replace([
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,array_replace([
             'estado_cita'=>'ATENDIDO','fecha_cita'=>$this->catalog['schedule']->fecha_cita],$attributes));
+        $a->forceFill(['hora_atendido'=>now()->subMinutes(10)])->save();
+        return $a;
     }
     private function depart(Appointment $a,array $changes=[])
     {
@@ -65,8 +66,8 @@ class AdmissionDepartureTest extends TestCase
     }
     public function test_revoked_permissions_and_private_reservations_have_no_admin_bypass(): void
     {
-        $a=$this->appointment();$this->actor->revokePermissionTo(C::UPDATE);$this->depart($a)->assertForbidden();
-        $this->actor->givePermissionTo(C::UPDATE);$this->actor->revokePermissionTo(C::VIEW);$this->depart($a)->assertForbidden();
+        $a=$this->appointment();$this->actor->revokePermissionTo(C::MVP_ACCESS);$this->depart($a)->assertForbidden();
+        $this->actor->givePermissionTo(C::MVP_ACCESS);$this->actor->revokePermissionTo(C::VIEW);$this->depart($a)->assertForbidden();
         $other=$this->agendaReader('COMERCIAL');$hidden=$this->lifecycleAppointment($other,$this->catalog,['estado_agenda'=>'PENDIENTE_CONFIRMACION','estado_cita'=>'ATENDIDO','responsible_user_id'=>$other->id]);
         $admin=$this->agendaReader('ADMINISTRADOR');$admin->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));
         $this->actingAs($admin);$this->depart($hidden)->assertNotFound();$this->depart($this->appointment(),['request_key'=>'not-a-uuid'])->assertUnprocessable();

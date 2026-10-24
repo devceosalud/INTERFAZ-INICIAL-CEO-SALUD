@@ -59,5 +59,19 @@ class ClinicalEnterpriseConcurrencyTest extends \Tests\TestCase
     public function test_parallel_manual_referrals_with_stale_versions_conflict_without_duplicates():void {
         $this->prepareDirectRequest();$this->assertSame([200,409],$this->race([$this->directReferral(),$this->directReferral()]));$this->assertDatabaseCount('medical_procedure_followups',2);$this->assertDatabaseCount('medical_procedure_followup_events',2);
     }
+    private function remoteStart():array {
+        $this->a->forceFill(['attendance_mode'=>'TELECONSULTA','estado_cita'=>'PROGRAMADO','hora_llegada'=>null,'hora_atencion'=>null])->save();
+        return ['actor'=>$this->doctor->id,'path'=>'/scheduling-mvp/admission/appointments/'.$this->a->id.'/care','payload'=>['state'=>'EN_ATENCION','expected_state'=>'PROGRAMADO','request_key'=>(string)Str::uuid()]];
+    }
+    public function test_parallel_remote_start_replay_records_one_clinical_action_without_arrival():void {
+        $r=$this->remoteStart();$this->assertSame([200,200],$this->race([$r,$r]));
+        $this->assertSame(1,DB::table('appointment_events')->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());
+        $a=$this->a->fresh();$this->assertSame('EN_ATENCION',$a->estado_cita);$this->assertNotNull($a->hora_atencion);$this->assertNull($a->hora_llegada);$this->assertNull($a->hora_salida);
+        $this->assertDatabaseCount('appointments',1);$this->assertDatabaseCount('payments',0);
+    }
+    public function test_parallel_distinct_remote_starts_reject_the_stale_request():void {
+        $r=$this->remoteStart();$s=$r;$s['payload']['request_key']=(string)Str::uuid();$this->assertSame([200,409],$this->race([$r,$s]));
+        $this->assertSame(1,DB::table('appointment_events')->where('event_type','ADMISION_ESTADO_ACTUALIZADO')->count());$this->assertNull($this->a->fresh()->hora_llegada);
+    }
 
 }

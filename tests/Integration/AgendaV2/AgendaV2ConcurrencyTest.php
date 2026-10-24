@@ -164,11 +164,43 @@ class AgendaV2ConcurrencyTest extends TestCase
     }
     public function test_simultaneous_departure_without_reason_has_one_audit_and_timestamp():void
     {
+        $this->actor->revokePermissionTo(C::UPDATE);
         $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO']);
+        $a->forceFill(['hora_atendido'=>now()])->save();
         $r=['path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/care',
             'payload'=>['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()]];
         $this->assertSame([200,200],$this->race([$r,$r]));$this->assertNotNull($a->fresh()->hora_salida);
         $this->assertSame(1,\App\Models\AppointmentEvent::where('event_type','ADMISION_SALIDA_REGISTRADA')->count());
+        $this->assertSame('ATENDIDO',$a->fresh()->estado_cita);$this->assertDatabaseCount('payments',0);
+    }
+
+    public function test_commercial_departure_replay_without_general_edit_is_serialized():void
+    {
+        $this->actor=$this->agendaReader('COMERCIAL');
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO']);
+        $a->forceFill(['hora_atendido'=>now()])->save();
+        $r=['path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/care',
+            'payload'=>['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()]];
+        $this->assertSame([200,200],$this->race([$r,$r]));
+        $this->assertFalse($this->actor->can(C::UPDATE));
+        $this->assertDatabaseCount('appointment_operations',1);
+        $this->assertSame(1,$a->events()->where('event_type','ADMISION_SALIDA_REGISTRADA')->count());
+        $this->assertNotNull($a->fresh()->hora_salida);$this->assertSame('ATENDIDO',$a->fresh()->estado_cita);
+    }
+
+    public function test_different_operators_racing_departure_have_one_winner_and_no_duplicate_exit():void
+    {
+        $this->actor->revokePermissionTo(C::UPDATE);$commercial=$this->agendaReader('COMERCIAL');
+        $a=$this->lifecycleAppointment($this->actor,$this->catalog,['estado_cita'=>'ATENDIDO']);
+        $a->forceFill(['hora_atendido'=>now()])->save();
+        $r=['path'=>'/scheduling-mvp/admission/appointments/'.$a->id.'/care',
+            'payload'=>['state'=>'SALIDA_REGISTRADA','expected_state'=>'ATENDIDO','request_key'=>(string)Str::uuid()]];
+        $second=$r;$second['actor']=$commercial->id;$second['payload']['request_key']=(string)Str::uuid();
+        $this->assertSame([200,409],$this->race([$r,$second]));
+        $this->assertDatabaseCount('appointment_operations',1);
+        $event=$a->events()->where('event_type','ADMISION_SALIDA_REGISTRADA')->sole();
+        $this->assertContains((int)$event->actor_user_id,[$this->actor->id,$commercial->id]);
+        $this->assertSame((int)$event->actor_user_id,(int)$a->fresh()->updated_by_user_id);
         $this->assertSame('ATENDIDO',$a->fresh()->estado_cita);$this->assertDatabaseCount('payments',0);
     }
 

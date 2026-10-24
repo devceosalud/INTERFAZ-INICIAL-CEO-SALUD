@@ -1,0 +1,294 @@
+{
+  "roles-final-target": {
+    "totals": {
+      "tests": "14",
+      "assertions": "126",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "roles-final-target-maria": {
+    "totals": {
+      "tests": "14",
+      "assertions": "126",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "roles-races2": {
+    "totals": {
+      "tests": "2",
+      "assertions": "20",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "roles-full-sqlite": {
+    "totals": {
+      "tests": "1299",
+      "assertions": "11865",
+      "failures": "18",
+      "errors": "2",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": [
+      {
+        "test": "test_personal_followup_gate_is_enforced_on_page_feed_detail_and_write",
+        "kind": "failure"
+      },
+      {
+        "test": "test_active_surgery_and_mri_flags_are_structured_unique_and_do_not_recolor_or_complete_care",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records",
+        "kind": "failure"
+      },
+      {
+        "test": "test_general_followup_survives_care_closure_without_a_fictitious_procedure",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_referral_rejects_stale_source_patient_and_followup_versions",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_entry_and_followup_filters_preserve_the_personal_access_gate",
+        "kind": "failure"
+      },
+      {
+        "test": "test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight",
+        "kind": "failure"
+      },
+      {
+        "test": "test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes",
+        "kind": "failure"
+      },
+      {
+        "test": "test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins",
+        "kind": "failure"
+      },
+      {
+        "test": "test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail",
+        "kind": "error"
+      },
+      {
+        "test": "test_direct_referral_preserves_legacy_manual_reason_and_audit",
+        "kind": "failure"
+      },
+      {
+        "test": "test_medical_selection_creates_one_followup_per_explicit_family_without_care_or_money_changes",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access",
+        "kind": "failure"
+      },
+      {
+        "test": "test_source_withdrawal_and_reselection_keep_one_longitudinal_record_and_audit",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_updates_require_evidence_version_idempotency_and_survive_original_care_close",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_does_not_expose_the_original_patient_after_appointment_patient_reassignment",
+        "kind": "failure"
+      },
+      {
+        "test": "test_populated_alert_and_followup_migrations_refuse_destructive_rollback",
+        "kind": "error"
+      },
+      {
+        "test": "test_explicit_approved_option_can_require_followup_without_enabling_its_whole_family_and_label_is_snapshotted",
+        "kind": "failure"
+      },
+      {
+        "test": "test_clinical_read_capability_does_not_implicitly_grant_followup_update_capability",
+        "kind": "failure"
+      },
+      {
+        "test": "test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation",
+        "kind": "failure"
+      }
+    ]
+  },
+  "roles-full-maria": {
+    "totals": {
+      "tests": "1333",
+      "assertions": "12172",
+      "failures": "18",
+      "errors": "2",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": [
+      {
+        "test": "test_personal_followup_gate_is_enforced_on_page_feed_detail_and_write",
+        "kind": "failure"
+      },
+      {
+        "test": "test_active_surgery_and_mri_flags_are_structured_unique_and_do_not_recolor_or_complete_care",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records",
+        "kind": "failure"
+      },
+      {
+        "test": "test_general_followup_survives_care_closure_without_a_fictitious_procedure",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_referral_rejects_stale_source_patient_and_followup_versions",
+        "kind": "failure"
+      },
+      {
+        "test": "test_manual_entry_and_followup_filters_preserve_the_personal_access_gate",
+        "kind": "failure"
+      },
+      {
+        "test": "test_elapsed_days_follow_lima_midnight_instead_of_utc_midnight",
+        "kind": "failure"
+      },
+      {
+        "test": "test_no_confirmed_procedures_means_no_button_and_no_endpoint_writes",
+        "kind": "failure"
+      },
+      {
+        "test": "test_direct_button_tracks_only_new_active_requests_and_preserves_automatic_origins",
+        "kind": "failure"
+      },
+      {
+        "test": "test_referral_offer_uses_the_same_procedure_snapshot_as_the_displayed_detail",
+        "kind": "error"
+      },
+      {
+        "test": "test_direct_referral_preserves_legacy_manual_reason_and_audit",
+        "kind": "failure"
+      },
+      {
+        "test": "test_medical_selection_creates_one_followup_per_explicit_family_without_care_or_money_changes",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_clinical_ownership_direct_urls_and_administrators_have_no_automatic_access",
+        "kind": "failure"
+      },
+      {
+        "test": "test_source_withdrawal_and_reselection_keep_one_longitudinal_record_and_audit",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_updates_require_evidence_version_idempotency_and_survive_original_care_close",
+        "kind": "failure"
+      },
+      {
+        "test": "test_followup_does_not_expose_the_original_patient_after_appointment_patient_reassignment",
+        "kind": "failure"
+      },
+      {
+        "test": "test_populated_alert_and_followup_migrations_refuse_destructive_rollback",
+        "kind": "error"
+      },
+      {
+        "test": "test_explicit_approved_option_can_require_followup_without_enabling_its_whole_family_and_label_is_snapshotted",
+        "kind": "failure"
+      },
+      {
+        "test": "test_clinical_read_capability_does_not_implicitly_grant_followup_update_capability",
+        "kind": "failure"
+      },
+      {
+        "test": "test_maximum_unicode_inputs_retain_encrypted_before_and_after_without_audit_truncation",
+        "kind": "failure"
+      }
+    ]
+  },
+  "combined-sqlite": {
+    "totals": {
+      "tests": "16",
+      "assertions": "308",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "combined-mariadb": {
+    "totals": {
+      "tests": "16",
+      "assertions": "308",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "unsuccessful_tests": []
+  },
+  "baseline_failure_comparison": "Exactly the same 18 failures and 2 errors as unmodified main ea1f6340; no new unsuccessful tests",
+  "javascript": {
+    "tests": 369,
+    "passed": 369,
+    "failed": 0
+  },
+  "combined": {
+    "tree": "6d6cabd5327e049f29edcb74e226151c98a86e06",
+    "base": "ea1f63401c3b1d20c7005591f4298c4ae744d839",
+    "medical_role_commit": "76396838de26a9d2e41e9320bf460dcb56508a5d",
+    "teleconsultation_commit": "74c2746ef5ea788400ee26515d91424ada25f8ad",
+    "conflicts": false,
+    "method": "merge-tree simulation and PHP class bootstrap; no branch HEAD changed"
+  },
+  "final_combination_tree": "161a09ef896316ee9dad6d78ec86645c86ca694e",
+  "browser": {
+    "results": {
+      "result": "PASS",
+      "checks": [
+        "ID13 actual browser journey preserved: two procedures, diagnosis, indication, confirmation, second attention and ATENDIDO",
+        "Julio ID2 own start and automatic MRI followup retained",
+        "Laptop/mobile no console errors or horizontal overflow"
+      ],
+      "errors": [],
+      "synthetic_user": 13,
+      "url": "http://127.0.0.1:8020"
+    },
+    "editor-results": {
+      "result": "PASS",
+      "checks": [
+        "Both medical roles saved their 8 existing safe permissions through administrator UI",
+        "ID13 operational Agenda URL redirects to own Admission",
+        "Other doctor appointment and medical followup feed still forbidden",
+        "Guide and separate local demo available"
+      ],
+      "errors": []
+    },
+    "normal-results": {
+      "result": "PASS",
+      "checks": [
+        "ID13 normal onsite arrival then physician start",
+        "Existing procedure popup and diagnosis saved for ID13, not Julio",
+        "Normal finish without reevaluation and without followup grant",
+        "Desktop/mobile completed panel rendered and no overflow"
+      ],
+      "errors": []
+    }
+  },
+  "scope": {
+    "synthetic_account_id": 13,
+    "production_access": false,
+    "no_schema_changes": true,
+    "followup_authorized_ids_unchanged": [
+      2,
+      1,
+      7
+    ],
+    "php": "8.3.35",
+    "mariadb": "11.8.9"
+  }
+}

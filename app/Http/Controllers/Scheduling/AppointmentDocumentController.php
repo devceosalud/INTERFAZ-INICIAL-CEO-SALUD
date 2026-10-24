@@ -122,7 +122,7 @@ class AppointmentDocumentController extends Controller
             : Storage::disk('local')->download($d->private_path,basename($d->private_path),$headers);
     }
     private function admissionReadable(Request $r,AppointmentDocument $d): bool {
-        if($r->user()->hasRole('MEDICO'))return !$d->payment_id && (in_array($d->purpose,[Access::PATIENT_PURPOSE,'REEVALUATION_ORDER'],true) || in_array($d->document_kind,['PRESCRIPTION','REPORT'],true));
+        if(\App\Support\Scheduling\ClinicalCapability::isMedical($r->user()))return !$d->payment_id && (in_array($d->purpose,[Access::PATIENT_PURPOSE,'REEVALUATION_ORDER'],true) || in_array($d->document_kind,['PRESCRIPTION','REPORT'],true));
         return $this->canReadEvidence($r,$d);
     }
     public function admissionIndex(Request $r,int $appointmentId) {

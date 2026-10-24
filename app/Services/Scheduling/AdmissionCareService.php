@@ -7,10 +7,33 @@ use App\Models\User;
 use App\Support\Scheduling\SchedulingCapability as C;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Support\Scheduling\ClinicalAccess;
+use Spatie\Permission\Models\Role;
 
 /** Administrative care actions delegate existing legacy authorization/financial guards. */
 class AdmissionCareService
 {
+    /** Physical departure is an operational action, never a medical or general edit grant. */
+    private static function departureActor(User $actor): ?User
+    {
+        $fresh=User::find($actor->id);
+        return $fresh && $fresh->is_active && (int)$fresh->auth_version===(int)$actor->auth_version
+            && $fresh->hasAnyRole(['ADMISION','COMERCIAL'])
+            && !$fresh->hasAnyRole(['MEDICO','MEDICO 2'])
+            && ClinicalAccess::has($fresh,C::MVP_ACCESS) && ClinicalAccess::has($fresh,C::VIEW)
+            ? $fresh : null;
+    }
+
+    /** Shared by the displayed action and the locked transition. No appointment.update required. */
+    public static function canRegisterDeparture(Appointment $a, User $actor): bool
+    {
+        return self::departureActor($actor)
+            && ($a->attendance_mode ?? 'PRESENCIAL')==='PRESENCIAL'
+            && in_array($a->estado_agenda,['LEGADO','CONFIRMADA'],true)
+            && $a->estado_cita==='ATENDIDO' && $a->hora_atendido && !$a->hora_salida
+            && Appointment::visibleToAgendaUser($actor->id)->whereKey($a->id)->exists();
+    }
+
     /** Narrow arrival permission: never gives COMERCIAL general appointment.update. */
     public static function canRegisterArrival(Appointment $a, User $actor): bool
     {
@@ -108,13 +131,23 @@ class AdmissionCareService
         abort_unless($actor->is_active,403);
         $original = Appointment::visibleToAgendaUser($actor->id)->whereKey($id)->firstOr(fn () => abort(404));
         $clinical=in_array($data['state'],['EN_ATENCION','ATENDIDO'],true);
+        $departure=$data['state']==='SALIDA_REGISTRADA';
         $verified=AppointmentReevaluationService::physicianCanAct($actor,$original);
         if($clinical && !$verified){
             abort_unless(UnlinkedDoctorAdmissionFallback::eligible($original,$actor),403);
             abort_unless(($data['confirmed']??false) && mb_strlen(trim($data['motivo']??''))>=3,422,'Confirma la contingencia e indica un motivo.');
-        }elseif(!$clinical)abort_unless($actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE)
+        }elseif($departure)abort_unless(self::departureActor($actor),403,'Solo Admisión o Comercial sin rol médico pueden registrar la salida física.');
+        elseif(!$clinical)abort_unless($actor->can(C::MVP_ACCESS) && $actor->can(C::VIEW) && $actor->can(C::UPDATE)
             && $actor->hasAnyRole(['ADMISION','ADMINISTRADOR']),403);
-        return AppointmentReevaluationService::transaction(function () use ($id,$actor,$data,$original,$clinical,$verified) {
+        return AppointmentReevaluationService::transaction(function () use ($id,$actor,$data,$original,$clinical,$verified,$departure) {
+            if($departure){
+                // Same role -> user lock order as clinical authorization and role edits.
+                Role::whereIn('name',['ADMISION','COMERCIAL','MEDICO','MEDICO 2'])->where('guard_name','web')
+                    ->orderBy('id')->lockForUpdate()->get();
+                User::whereKey($actor->id)->lockForUpdate()->firstOr(fn()=>abort(403));
+                $actor=self::departureActor($actor);
+                abort_unless($actor,403,'El acceso para registrar salida cambió. Vuelve a ingresar.');
+            }
             $hash = hash('sha256',json_encode(['ADMISSION_CARE',$id,$data]));
             DB::table('appointment_operations')->upsert([['actor_user_id'=>$actor->id,'request_key'=>$data['request_key'],
                 'payload_hash'=>$hash,'created_at'=>now(),'updated_at'=>now()]],['actor_user_id','request_key'],['request_key']);
@@ -130,7 +163,10 @@ class AdmissionCareService
             abort_if((int)$a->doctor_id !== (int)$original->doctor_id || $a->estado_cita !== $data['expected_state'],409,'La cita cambió. Actualiza antes de continuar.');
             abort_if($data['state']==='SALIDA_REGISTRADA' && $a->hora_salida,409,'La salida ya fue registrada. Actualiza la cita.');
             if($clinical && !$verified)abort_unless(UnlinkedDoctorAdmissionFallback::eligible($a,$actor),403);
-            if($data['state']==='EN_ATENCION')abort_unless($a->hora_llegada && !$a->hora_atencion,422,'Registra la llegada antes de iniciar atención.');
+            if($clinical && $verified)\App\Support\Scheduling\ClinicalAccess::activeCare($a);
+            if($data['state']==='EN_ATENCION')abort_unless(
+                (($a->attendance_mode??'PRESENCIAL')==='TELECONSULTA' || $a->hora_llegada) && !$a->hora_atencion,
+                422,'La atención presencial requiere llegada registrada y la cita no debe haberse iniciado.');
             if($data['state']==='ATENDIDO'){
                 $a->setRelation('operationalReview',$a->operationalReview()->lockForUpdate()->first());
                 app(ManualReevaluationService::class)->load(collect([$a]));
