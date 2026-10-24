@@ -1,0 +1,41 @@
+{
+  "sqlite": {
+    "name": "",
+    "tests": "1280",
+    "assertions": "11854",
+    "errors": "0",
+    "warnings": "0",
+    "failures": "0",
+    "skipped": "0",
+    "time": "280.073880"
+  },
+  "mariadb": {
+    "name": "",
+    "tests": "1314",
+    "assertions": "12158",
+    "errors": "0",
+    "warnings": "0",
+    "failures": "0",
+    "skipped": "0",
+    "time": "376.300367"
+  },
+  "javascript": {
+    "tests": 364,
+    "pass": 364,
+    "fail": 0
+  },
+  "browser": {
+    "legacy_checks": 36,
+    "enterprise_groups": 7,
+    "followup_filter_checks": 6,
+    "previous_refinement_groups": 6,
+    "popup_viewports": 5,
+    "new_groups": 8,
+    "doctor_control_groups": 8,
+    "errors": 0
+  },
+  "colors": {
+    "checks": 208,
+    "failures": 0
+  }
+}

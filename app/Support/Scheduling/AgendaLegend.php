@@ -41,6 +41,9 @@ final class AgendaLegend
     public static function entries(): array
     {
         return [
+            'CIRUGIA'=>['clave'=>'CIRUGIA','etiqueta'=>'CIRUGÍA','glifo'=>'C','color'=>'#8f1d32','fondo'=>'#ffe1e5','descripcion'=>'Solicitud activa de cirugía. No acredita realización, cancelación, cobro ni programación.'],
+            'RESONANCIA'=>['clave'=>'RESONANCIA','etiqueta'=>'RESONANCIA MAGNÉTICA','glifo'=>'RM','color'=>'#44377e','fondo'=>'#e9e7fb','descripcion'=>'Solicitud activa de resonancia magnética. El seguimiento y la realización son independientes.'],
+            'EXONERADA'=>['clave'=>'EXONERADA','etiqueta'=>'Exonerada · sin cobro','glifo'=>'E','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Exoneración autorizada. No acredita pago ni confirma por sí sola una reserva.'],
             'CONFIRMADA_SIN_ADELANTO'=>['clave'=>'CONFIRMADA_SIN_ADELANTO','etiqueta'=>'CONFIRMADA · SIN ADELANTO','glifo'=>'!','color'=>'#624400','fondo'=>'#fff2a6','descripcion'=>'Confirmada con pago pendiente. No es pago acreditado ni exoneración.'],
             'TELECONSULTA'=>['clave'=>'TELECONSULTA','etiqueta'=>'TELECONSULTA','glifo'=>'T','color'=>'#5b21b6','fondo'=>'#ede9fe','descripcion'=>'Atención remota; no registra presencia o salida física.'],
             'ATENDIDO'=>['clave'=>'ATENDIDO','etiqueta'=>'Atendido','glifo'=>'A','color'=>'#174d4a','fondo'=>'#74dccb','descripcion'=>'Atención registrada; la salida física y el retorno al médico se indican por separado.'],

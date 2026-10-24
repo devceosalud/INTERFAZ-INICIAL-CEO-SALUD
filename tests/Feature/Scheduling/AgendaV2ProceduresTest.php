@@ -62,7 +62,8 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->change('send',['confirmed'=>true,'reason'=>'Revisión parcial ficticia'])->assertOk();
         $this->queue()->assertOk()->assertJsonPath('rows.0.review.origin','MANUAL')->assertJsonPath('rows.0.procedures.1.completed',false);
         $this->admin->givePermissionTo(Permission::findOrCreate(Procedures::SUPERVISE,'web'));
-        $this->actingAs($this->admin)->change('withdraw',['confirmed'=>true,'reason'=>'Corrección supervisada'])->assertOk();
+        $this->actingAs($this->admin)->change('withdraw',['confirmed'=>true,'reason'=>'Corrección supervisada'])->assertForbidden();
+        $this->actingAs($this->admission)->change('withdraw',['confirmed'=>true,'reason'=>'Corrección operativa autorizada'])->assertOk();
     }
     public function test_none_requested_or_none_done_never_enters_queue(): void
     {

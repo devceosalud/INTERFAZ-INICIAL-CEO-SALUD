@@ -15,6 +15,7 @@ class Appointment extends Model
         return $this->hasOne(AppointmentOperationalReview::class);
     }
     public function events() { return $this->hasMany(AppointmentEvent::class); }
+    public function activeProcedureRequests() { return $this->hasMany(AppointmentRequestedProcedure::class)->where('selected',true)->select(['id','appointment_id','procedure_key','procedure_family']); }
     public function save(array $options = [])
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($options) {

@@ -2,3 +2,7 @@
 .agenda-board .agenda-indicator,.admission-board .agenda-indicator{font-size:11px!important;font-weight:750;padding:4px 7px;border:0;border-radius:3px;letter-spacing:.1px;line-height:1.2}
 .agenda-board .agenda-indicators-more>summary,.admission-board .agenda-indicators-more>summary{font-size:11px!important;font-weight:700;border:1px solid #8ca9ae}
 .agenda-board .agenda-day-indicators .agenda-indicators,.admission-board .admission-signals-cell .agenda-indicators{gap:5px 7px}
+
+.agenda-indicator[role=button]{cursor:help}.agenda-indicator[role=button]:focus-visible{outline:2px solid #176d78;outline-offset:2px}.agenda-indicator-tooltip{position:fixed;z-index:4000;max-width:calc(100vw - 16px);padding:10px 12px;border-radius:3px;background:#203743;color:#fff;font:12px/1.5 "Segoe UI",Arial;box-shadow:0 4px 16px #0002;overflow-wrap:anywhere;pointer-events:none}
+.agenda-board .agenda-day-indicators .agenda-indicators{justify-content:flex-start;gap:5px;align-items:flex-start}.agenda-board .agenda-day-indicators .agenda-indicator{white-space:normal;overflow:visible;text-overflow:clip;font-weight:600!important;font-size:10px!important;line-height:1.35;max-width:100%}
+#admission-board .admission-patient-markers .agenda-indicators{gap:5px;margin-top:6px;justify-content:flex-start}#admission-board .admission-row-alerts .agenda-indicators{justify-content:flex-start}#admission-board .admission-patient-markers .agenda-indicator{font-size:10px!important;font-weight:600;padding:3px 6px}

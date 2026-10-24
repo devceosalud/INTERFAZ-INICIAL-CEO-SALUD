@@ -1,0 +1,489 @@
+[
+  {
+    "migration": "2014_10_12_000000_create_users_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "users"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2014_10_12_100000_create_password_resets_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "password_resets"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2019_08_19_000000_create_failed_jobs_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "failed_jobs"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2019_12_14_000001_create_personal_access_tokens_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "personal_access_tokens"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_08_164021_create_channels_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "channels"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_08_164041_create_interaction_media_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "interaction_media"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_08_202638_create_patients_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "patients"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_08_202639_create_responsibles_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "responsibles"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_11_163719_create_specialties_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "specialties"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_11_163957_create_doctors_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "doctors"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_11_164010_create_services_table",
+    "batch": 4,
+    "referenced_schema_tables_exist": [
+      "services"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_11_164055_create_additional_rates_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "additional_rates"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_11_164132_create_appointments_table",
+    "batch": 1,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_17_194215_create_permission_tables",
+    "batch": 1,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_06_30_141358_create_departments_table",
+    "batch": 2,
+    "referenced_schema_tables_exist": [
+      "departments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_30_142110_create_provinces_table",
+    "batch": 2,
+    "referenced_schema_tables_exist": [
+      "provinces"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_06_30_142147_create_districts_table",
+    "batch": 2,
+    "referenced_schema_tables_exist": [
+      "districts"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_07_16_012901_create_doctor_schedules_table",
+    "batch": 3,
+    "referenced_schema_tables_exist": [
+      "doctor_schedules"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_11_140132_create_doctor_services_table",
+    "batch": 0,
+    "referenced_schema_tables_exist": [
+      "doctor_services"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_220418_create_items_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "items"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_221024_create_cashiers_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "cashiers"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_221249_create_voucher_series_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "voucher_series"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_221318_create_cashier_shifts_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "cashier_shifts"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_221332_create_vouchers_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "vouchers"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_08_28_221349_create_voucher_items_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "voucher_items"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_09_01_042349_create_payments_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "payments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_09_01_043421_create_cash_movements_table",
+    "batch": 5,
+    "referenced_schema_tables_exist": [
+      "cash_movements"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_09_29_120000_create_sites_table",
+    "batch": 6,
+    "referenced_schema_tables_exist": [
+      "sites"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_09_29_120100_add_scheduling_foundation_to_appointments_table",
+    "batch": 7,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_09_29_120200_add_site_to_doctor_schedules_table",
+    "batch": 8,
+    "referenced_schema_tables_exist": [
+      "doctor_schedules"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_02_000000_reconcile_appointment_status_enum",
+    "batch": 9,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_05_000000_add_agenda_lifecycle_to_appointments_table",
+    "batch": 10,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_05_120000_create_agenda_click_events_table",
+    "batch": 11,
+    "referenced_schema_tables_exist": [
+      "agenda_click_events"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_06_120000_extend_appointment_booking_type_with_off_hours",
+    "batch": 12,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_06_130000_add_sanitized_geometry_to_click_events",
+    "batch": 13,
+    "referenced_schema_tables_exist": [
+      "agenda_click_events"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_06_150000_add_operational_registration_and_documents",
+    "batch": 14,
+    "referenced_schema_tables_exist": [
+      "appointment_documents",
+      "appointment_operations",
+      "appointments",
+      "patients"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_06_160000_add_appointment_withdrawal_and_history",
+    "batch": 15,
+    "referenced_schema_tables_exist": [
+      "appointment_contingencies",
+      "appointment_credit_applications",
+      "appointment_events",
+      "appointment_refund_requests"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_07_120000_create_appointment_pilot_cash_contexts",
+    "batch": 16,
+    "referenced_schema_tables_exist": [
+      "appointment_pilot_cash_contexts"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_07_140000_add_bank_identity_to_payments_table",
+    "batch": 17,
+    "referenced_schema_tables_exist": [
+      "payments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_09_120000_add_click_event_geometry",
+    "batch": 18,
+    "referenced_schema_tables_exist": [
+      "agenda_click_events"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_13_180000_add_appointment_price_snapshot",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_13_190000_create_reevaluation_indications",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "appointment_documents",
+      "appointment_reevaluation_indications",
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_13_200000_add_appointment_duration_slots",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_14_080000_link_reviewed_payment_proofs",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "appointment_documents"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_14_170000_add_worker_identity_and_access_state",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "user_account_events",
+      "users"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_14_200000_audit_schedule_mutations",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "doctor_schedule_events",
+      "doctor_schedules"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_14_210000_define_schedule_management_capability",
+    "batch": 19,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_14_220000_version_private_appointment_documents",
+    "batch": 19,
+    "referenced_schema_tables_exist": [
+      "appointment_documents",
+      "appointment_operations"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_15_170000_restore_missing_appointment_care_timestamps",
+    "batch": 20,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_15_230000_add_explicit_diabetic_wound_flag",
+    "batch": 21,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_15_231000_add_explicit_appointment_departure",
+    "batch": 22,
+    "referenced_schema_tables_exist": [
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_16_010000_create_appointment_admission_tasks",
+    "batch": 23,
+    "referenced_schema_tables_exist": [
+      "appointment_admission_task_events",
+      "appointment_admission_tasks"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_16_020000_create_appointment_operational_procedures",
+    "batch": 27,
+    "referenced_schema_tables_exist": [
+      "appointment_operational_reviews",
+      "appointment_procedure_events",
+      "appointment_requested_procedures"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_16_190000_extend_service_price_catalog",
+    "batch": 24,
+    "referenced_schema_tables_exist": [
+      "additional_rates",
+      "appointments",
+      "catalog_price_events",
+      "doctor_services",
+      "services"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_16_190100_allow_appointments_without_price_surcharge",
+    "batch": 25,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_16_190200_authorize_service_specialties",
+    "batch": 26,
+    "referenced_schema_tables_exist": [
+      "doctor_services",
+      "service_specialties"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_19_040000_add_agenda_v2_attendance_and_preferences",
+    "batch": 28,
+    "referenced_schema_tables_exist": [
+      "agenda_professional_preferences",
+      "appointment_requested_procedures",
+      "appointments"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_21_200000_define_direct_appointment_economic_permissions",
+    "batch": 29,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  },
+  {
+    "migration": "2026_10_21_210000_link_users_to_doctors",
+    "batch": 30,
+    "referenced_schema_tables_exist": [
+      "users"
+    ],
+    "ddl_independent_data_rules_not_verified_from_schema": false
+  },
+  {
+    "migration": "2026_10_21_210100_define_medical_role_and_permissions",
+    "batch": 31,
+    "referenced_schema_tables_exist": [],
+    "ddl_independent_data_rules_not_verified_from_schema": true
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "steps": [
+    "A ID1: zero active procedures, no button, API422",
+    "Radiography+curation: live button, one direct click, module navigation, no popup, button disappears; replay and competing UUID safe",
+    "Surgery/MRI still automatic; no redundant manual button",
+    "New later procedure: only laboratory sent; automatic records unchanged, no invented reason",
+    "Admisión/Comercial/admin/other doctor blocked; manipulated selection/reason rejected",
+    "Mobile layout unchanged, no phantom button"
+  ],
+  "errors": [],
+  "date": "2026-10-23",
+  "appointment_id": 14
+}

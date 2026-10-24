@@ -1,0 +1,8 @@
+{
+  "full_fifth_retries": 2,
+  "request_unique_1062": true,
+  "foreign_key_1452": true,
+  "nullable_request_and_general_supported": true,
+  "general_unique_1062": true,
+  "restrict_request_delete_1451": true
+}

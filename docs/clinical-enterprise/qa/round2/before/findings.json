@@ -1,0 +1,32 @@
+{
+  "manual_button_count": 0,
+  "operacion_results": 0,
+  "inline_add_count": 0,
+  "combo": {
+    "menu": {
+      "x": 654.765625,
+      "y": 118.65625,
+      "width": 306.890625,
+      "height": 71,
+      "top": 118.65625,
+      "right": 961.65625,
+      "bottom": 189.65625,
+      "left": 654.765625
+    },
+    "options": [
+      {
+        "text": "DR JULIO FICTICIO PR70",
+        "rect": {
+          "x": 654.765625,
+          "y": 189.65625,
+          "width": 306.890625,
+          "height": 27.59375,
+          "top": 189.65625,
+          "right": 961.65625,
+          "bottom": 217.25,
+          "left": 654.765625
+        }
+      }
+    ]
+  }
+}

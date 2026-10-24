@@ -11,6 +11,6 @@ test('selección y hover conservan el fondo operativo y distinguen la fila con c
  assert.match(selected,/outline:\s*2px solid var\(--ad-status-color,\s*var\(--ad-brand\)\)/);assert.match(selected,/box-shadow:\s*none/);assert.match(hover,/outline:\s*1px solid/);
 });
 test('el render conserva el fondo del servidor y el borde de PR67 sin confundirlos',()=>{
- assert.match(js,/setProperty\('--ad-status-background',row\.presentation\?\.fringe\?\.color\|\|row\.presentation\?\.fondo\|\|'#ffffff'\)/);
+    assert.match(js, /setProperty\('--ad-status-background',admissionBackground\(row\.presentation\)\)/); // Intentional Admisión-only turquoise normalization, behavior covered separately.
  assert.match(js,/setProperty\('--ad-status-color',tones\[row\.presentation\?\.fringe\?\.key\]\|\|row\.presentation\?\.fringe\?\.color\|\|'#dce8e9'\)/);
 });

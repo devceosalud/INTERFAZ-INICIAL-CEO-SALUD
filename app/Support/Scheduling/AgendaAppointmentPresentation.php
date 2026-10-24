@@ -22,6 +22,7 @@ final class AgendaAppointmentPresentation
             && ($position['balance_cents']??0)>0
             && ($appointment->getAttribute('confirmed_without_deposit')
                 ?? $appointment->events()->where('event_type','CONFIRMACION_SIN_ADELANTO')->exists());
+        $exempt=(bool)$appointment->es_exonerado && OperationalText::trim((string)$appointment->autorizado_por)!=='';
         $refundRequested = ($position['refund_reserved_cents'] ?? 0) > 0;
         $ready = \App\Services\Scheduling\AppointmentReevaluationService::ready($appointment);
 
@@ -34,12 +35,15 @@ final class AgendaAppointmentPresentation
         elseif ($ready && (!$uncertain || \App\Services\Scheduling\AppointmentReevaluationService::directReady($appointment))) $key = 'LISTO_REEVALUACION';
         elseif ($appointment->estado_cita === 'ATENDIDO') $key = 'ATENDIDO';
         elseif ($present) $key = 'PRESENTE';
+        elseif ($exempt) $key = 'EXONERADA';
         elseif ($paid) $key = 'PAGO_REAL';
         elseif ($withoutDeposit) $key = 'CONFIRMADA_SIN_ADELANTO';
         else $key = ! $uncertain && $appointment->estado_agenda === AppointmentAgendaLifecycle::PENDING_CONFIRMATION
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
+        if($appointment->relationLoaded('activeProcedureRequests'))foreach($appointment->activeProcedureRequests as $request){$family=$request->procedure_family??(ProcedureCatalog::entries()[$request->procedure_key]['family']??'other');if(in_array($family,['surgery','mri'],true))$badges[]=$family==='surgery'?'CIRUGIA':'RESONANCIA';}
+        if ($exempt) $badges[] = 'EXONERADA';
         if ($withoutDeposit) $badges[] = 'CONFIRMADA_SIN_ADELANTO';
         if (\App\Services\Scheduling\AppointmentReevaluationService::pending($appointment)) $badges[] = 'PENDIENTE_REEVALUACION';
         if ($ready) $badges[] = 'LISTO_REEVALUACION';
@@ -55,7 +59,7 @@ final class AgendaAppointmentPresentation
         if ($appointment->has_diabetic_wound) $badges[] = 'HERIDA';
         if ($uncertain) $badges[] = 'CONCILIAR_PAGO';
 
-        $chips = array_map(fn ($condition) => AgendaLegend::of($condition), $badges);
+        $chips = array_map(fn ($condition) => AgendaLegend::of($condition), array_values(array_unique($badges)));
         if ($appointment->relationLoaded('operationalReview') && $appointment->operationalReview?->requested_count > 0) {
             $review=$appointment->operationalReview;
             $chips[]=['clave'=>'PROCEDIMIENTOS','etiqueta'=>'Procedimientos: '.$review->completed_count.'/'.$review->requested_count.' realizados',

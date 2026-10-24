@@ -100,7 +100,7 @@ class ManualReevaluationTest extends TestCase
         $this->toggle($a)->assertConflict(); // False again, but an old browser still has version zero.
         $this->assertDatabaseCount('appointment_events',2);$this->assertDatabaseCount('appointment_operations',2);
     }
-    public function test_admin_and_admission_need_update_permission_and_other_roles_remain_blocked(): void
+    public function test_admission_needs_update_and_administrators_remain_blocked_even_with_update(): void
     {
         $a=$this->appointment();
         foreach(['RECEPCION','CAJA','FACTURACION','SIN_ROL'] as $role){
@@ -109,11 +109,12 @@ class ManualReevaluationTest extends TestCase
         }
         foreach(['ADMINISTRADOR','ADMISION'] as $role){
             $user=$this->agendaReader($role);$this->actingAs($user);$this->toggle($a)->assertForbidden();
-            $user->givePermissionTo(C::UPDATE);$target=$this->appointment();$this->toggle($target)->assertOk();
+            $user->givePermissionTo(C::UPDATE);$target=$this->appointment();
+            if($role==='ADMINISTRADOR')$this->toggle($target)->assertForbidden();else $this->toggle($target)->assertOk();
             $user->revokePermissionTo(C::VIEW);$this->toggle($target)->assertForbidden();
             $user->givePermissionTo(C::VIEW);$user->revokePermissionTo(C::MVP_ACCESS);$this->toggle($target)->assertForbidden();
         }
-        $this->assertDatabaseCount('appointment_events',2);
+        $this->assertDatabaseCount('appointment_events',1);
     }
     public function test_all_commercial_users_can_toggle_without_general_appointment_update_permission(): void
     {
@@ -154,7 +155,7 @@ class ManualReevaluationTest extends TestCase
         $other=$this->agendaReader('COMERCIAL');
         $hidden=$this->lifecycleAppointment($other,$this->catalog,['estado_cita'=>'ATENDIDO','estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$other->id]);
         $admin=$this->agendaReader('ADMINISTRADOR');$admin->givePermissionTo(Permission::findOrCreate(C::UPDATE,'web'));$this->actingAs($admin);
-        $this->toggle($hidden)->assertNotFound();$this->feed(['tab'=>'reevaluaciones'])->assertOk()->assertJsonPath('total',0);
+        $this->toggle($hidden)->assertForbidden(); // Role is denied before any private-appointment lookup.$this->feed(['tab'=>'reevaluaciones'])->assertOk()->assertJsonPath('total',0);
         $admin->forceFill(['is_active'=>false])->save();$this->toggle($this->appointment())->assertUnauthorized();
         $this->assertDatabaseCount('appointment_events',0);$this->assertDatabaseCount('appointment_operations',0);
     }

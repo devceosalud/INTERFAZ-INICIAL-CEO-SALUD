@@ -1,0 +1,10 @@
+OK Reprogramación: fecha vigente, scroll dentro del listado, foco real, borde temporal y una sola cita
+OK Focus móvil conserva lista visible; tocar la fila abre su detalle
+OK 3/3 sin confirmar: naranja, listo exclusivo, KPI coherente y confirmación conservada sin recargar
+OK Seguridad clínica: listo no falsifica confirmación ni retorno; confirmar→segunda atención→finalizar→salida
+OK Menú sin Seguimiento; rutas antiguas redirigen a Agenda operativa con permisos
+OK Comercial no creador: ficha y notas solo lectura; escritura directa403
+OK Admisión creadora puede corregir notas y ficha con auditoría
+OK Comercial creador puede editar sus notas sin permisos generales ni edición económica
+OK Economía conserva acceso administrativo y bloquea Comercial/Médico
+OK Escritorio y móvil sin desborde; paleta completa y estructura operativa conservadas

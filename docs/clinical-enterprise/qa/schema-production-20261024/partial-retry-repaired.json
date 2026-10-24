@@ -1,0 +1,14 @@
+{
+  "repaired_after_original_failure": true,
+  "partial_ddl_cases": {
+    "general_unique": true,
+    "request_fk": true,
+    "suggestion_user_fk": true,
+    "suggestion_doctor_fk": true,
+    "suggestion_unique": true
+  },
+  "repeat_calls_per_case": 2,
+  "synthetic_data_and_audit_unchanged": true,
+  "general_unique_recovered": true,
+  "reusable_fk_recovered": true
+}

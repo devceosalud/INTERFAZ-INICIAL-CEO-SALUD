@@ -1,0 +1,26 @@
+{
+    "scope": "LOCAL_FICTITIOUS_ONLY",
+    "counts": {
+        "appointments": 23,
+        "payments": 2,
+        "vouchers": 2,
+        "medical_procedure_followups": 6,
+        "medical_procedure_followup_events": 8,
+        "patient_operational_alerts": 1,
+        "patient_operational_alert_events": 1,
+        "doctor_procedure_suggestions": 1,
+        "doctors": 200
+    },
+    "payment_total": "120.00",
+    "followup_states": {
+        "CANCELLED": 1,
+        "DONE": 1,
+        "PENDING": 4
+    },
+    "followup_origins": {
+        "AUTOMATIC": 4,
+        "MANUAL": 2
+    },
+    "general_without_request": 1,
+    "pending_requests_completed": 0
+}

@@ -1,0 +1,77 @@
+[
+  {
+    "appointment_id": 1,
+    "active_requests": 3,
+    "button": 1,
+    "context": {
+      "url": "http://127.0.0.1:8000/scheduling-mvp/admission/appointments/1/medical-followups",
+      "patient_id": 1,
+      "expected_procedure_version": 1,
+      "expected_followup_versions": {
+        "rx_pelvis": 1,
+        "rx_wrist": 1,
+        "surgery": 2,
+        "general": 0
+      },
+      "items": [
+        {
+          "key": "rx_pelvis",
+          "label": "Radiografía de Pelvis",
+          "family": "radiography",
+          "existing": true
+        },
+        {
+          "key": "rx_wrist",
+          "label": "Radiografía de Muñeca",
+          "family": "radiography",
+          "existing": true
+        },
+        {
+          "key": "surgery",
+          "label": "Cirugía",
+          "family": "surgery",
+          "existing": true
+        }
+      ],
+      "can_general": false
+    }
+  },
+  {
+    "appointment_id": 14,
+    "active_requests": 0,
+    "button": 1,
+    "context": {
+      "url": "http://127.0.0.1:8000/scheduling-mvp/admission/appointments/14/medical-followups",
+      "patient_id": 14,
+      "expected_procedure_version": 0,
+      "expected_followup_versions": {
+        "general": 0
+      },
+      "items": [],
+      "can_general": true
+    }
+  },
+  {
+    "appointment_id": 15,
+    "active_requests": 1,
+    "button": 1,
+    "context": {
+      "url": "http://127.0.0.1:8000/scheduling-mvp/admission/appointments/15/medical-followups",
+      "patient_id": 15,
+      "expected_procedure_version": 1,
+      "expected_followup_versions": {
+        "mri": 1,
+        "general": 0
+      },
+      "items": [
+        {
+          "key": "mri",
+          "label": "Resonancia magnética",
+          "family": "mri",
+          "existing": true
+        }
+      ],
+      "can_general": false
+    }
+  }
+]

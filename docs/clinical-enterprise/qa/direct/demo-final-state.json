@@ -1,0 +1,50 @@
+{
+    "scope": "LOCAL_FICTITIOUS_ONLY",
+    "counts": {
+        "appointments": 23,
+        "payments": 2,
+        "vouchers": 2,
+        "medical_procedure_followups": 7,
+        "medical_procedure_followup_events": 9,
+        "patient_operational_alerts": 1,
+        "doctor_procedure_suggestions": 1,
+        "doctors": 200
+    },
+    "payment_total": "120.00",
+    "cases": {
+        "1": {
+            "active_requests": 0,
+            "button_visible": false,
+            "pending_keys": []
+        },
+        "14": {
+            "active_requests": 2,
+            "button_visible": true,
+            "pending_keys": [
+                "radiography",
+                "wound_care"
+            ]
+        },
+        "15": {
+            "active_requests": 1,
+            "button_visible": false,
+            "pending_keys": []
+        },
+        "16": {
+            "active_requests": 1,
+            "button_visible": false,
+            "pending_keys": []
+        },
+        "21": {
+            "active_requests": 2,
+            "button_visible": false,
+            "pending_keys": []
+        },
+        "22": {
+            "active_requests": 0,
+            "button_visible": false,
+            "pending_keys": []
+        }
+    },
+    "historical_general_without_request": 1
+}

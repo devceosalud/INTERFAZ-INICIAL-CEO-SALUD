@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "steps": [
+    "Panel colapsable: espacio, teclado, persistencia y detalle más ancho sin perder el fondo",
+    "Exonerada amarilla en ambas agendas, pagado0 y saldo0",
+    "Orden del PDF: lateralidad, proyección, dedo, diagnóstico y observaciones guardados/reabiertos; datos clínicos restringidos",
+    "Seguimiento C conserva datos; página, feed y detalle exclusivos de Quiroz",
+    "Búsqueda real de médicos: horarios/filtro/editor y200 opciones con tildes, teclado y un único change",
+    "1366/1440/1536/1920 y móvil390 sin desborde"
+  ],
+  "errors": []
+}

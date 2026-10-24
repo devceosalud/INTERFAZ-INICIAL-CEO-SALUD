@@ -1,0 +1,7 @@
+{
+  "2026_10_23_010000_add_procedure_request_identity.php": "86a5e10e66c64cfc95a17af928abb89271cb9e21de35d1e371f88b0857383489",
+  "2026_10_23_020000_create_patient_operational_alerts.php": "63b5c3ca3164903b0eec10c5018a582095ae19283a0e2573771d75dcbe9c5a98",
+  "2026_10_23_030000_create_medical_procedure_followups.php": "79f60ba67ee42a630e317af69e17167d65ce29e69e31a51042daac4fb86c7b60",
+  "2026_10_23_040000_preserve_clinical_order_details.php": "19368f099b13a8a11c0521753ada760b445bc68650c7101f5250a25e3c96344c",
+  "2026_10_23_050000_enable_personal_procedures_and_manual_followups.php": "4a03955f61ef1ccd525fb237981136328921b60a6f08508d6bc04070368cb824"
+}

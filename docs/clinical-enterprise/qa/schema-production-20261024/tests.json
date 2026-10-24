@@ -1,0 +1,45 @@
+{
+  "schema-retry": {
+    "tests": "3",
+    "assertions": "36",
+    "errors": "0",
+    "failures": "0",
+    "warnings": "0",
+    "skipped": "0",
+    "time": "4.690480"
+  },
+  "schema-retry-maria": {
+    "tests": "3",
+    "assertions": "36",
+    "errors": "0",
+    "failures": "0",
+    "warnings": "0",
+    "skipped": "0",
+    "time": "22.445661"
+  },
+  "schema-final-sqlite": {
+    "tests": "1286",
+    "assertions": "11898",
+    "errors": "0",
+    "failures": "0",
+    "warnings": "0",
+    "skipped": "0",
+    "time": "295.240346"
+  },
+  "schema-final-mariadb": {
+    "tests": "1320",
+    "assertions": "12205",
+    "errors": "0",
+    "failures": "0",
+    "warnings": "0",
+    "skipped": "0",
+    "time": "412.938945"
+  },
+  "javascript": {
+    "tests": 369,
+    "pass": 369,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  }
+}

@@ -1,0 +1,8 @@
+OK Autenticación real de Administrador, Admisión, Comercial y ambos médicos
+OK Popup: búsqueda sin tildes, selección específica con UUID, persistencia, doble clic y foco de teclado
+OK Selección específica conserva el flujo: indicación, confirmación operativa, 0/3 a 3/3 y naranja automático
+OK Alerta creada por Comercial; motivo autorizado por foco y clic; pestañas correctas para Admisión, Administrador y médico
+OK API: otro médico sin alerta ajena, Comercial sin documentos, Administrador y médico sin retorno manual
+OK Seguimiento real: solicitudes MRI/cirugía, realizados/cancelados, actualización auditada y médico ajeno bloqueado
+OK Admisión, popup y seguimiento: 1366, 1440, 1536, 1920 y móvil390, sin desbordamiento horizontal
+COMPLETE 7

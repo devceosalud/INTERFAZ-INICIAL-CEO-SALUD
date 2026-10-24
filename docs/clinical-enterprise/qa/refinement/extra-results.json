@@ -1,0 +1,82 @@
+[
+  {
+    "script": "clinical-enterprise-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "24df64676aa1a9ff988cbca2af91d7335a4101cd9745e80e1a48b42c8aa48d0c",
+      "vouchers_hash": "bdfcbe11ade949b2512335c7d095bc3c0132ae42b9b54bf5b2ae0dc0422c5982"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "24df64676aa1a9ff988cbca2af91d7335a4101cd9745e80e1a48b42c8aa48d0c",
+      "vouchers_hash": "bdfcbe11ade949b2512335c7d095bc3c0132ae42b9b54bf5b2ae0dc0422c5982"
+    }
+  },
+  {
+    "script": "clinical-enterprise-followup-filters",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "0f6febdb491b634da6d51d3d5c23050bea264a669e3737a3a72dd2d6e77909af",
+      "vouchers_hash": "7f82becc556e246d6ca3c729281f4be920dc496c0826e50f4459b70837ee98b0"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "0f6febdb491b634da6d51d3d5c23050bea264a669e3737a3a72dd2d6e77909af",
+      "vouchers_hash": "7f82becc556e246d6ca3c729281f4be920dc496c0826e50f4459b70837ee98b0"
+    }
+  },
+  {
+    "script": "clinical-enterprise-refinement-browser",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "910729f6af18237fbff7966977d62f00686173915066f5e0dd63fbc3a407da07",
+      "vouchers_hash": "1de5d0404a21f34a6d2c9193a16df17278fde5ea74586fcfce6ae8ec49582b4b"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "910729f6af18237fbff7966977d62f00686173915066f5e0dd63fbc3a407da07",
+      "vouchers_hash": "1de5d0404a21f34a6d2c9193a16df17278fde5ea74586fcfce6ae8ec49582b4b"
+    }
+  },
+  {
+    "script": "clinical-enterprise-popup-responsive",
+    "exit_code": 0,
+    "before": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "910729f6af18237fbff7966977d62f00686173915066f5e0dd63fbc3a407da07",
+      "vouchers_hash": "1de5d0404a21f34a6d2c9193a16df17278fde5ea74586fcfce6ae8ec49582b4b"
+    },
+    "after": {
+      "appointments": 20,
+      "payments": 2,
+      "amount": "120.00",
+      "vouchers": 2,
+      "payments_hash": "910729f6af18237fbff7966977d62f00686173915066f5e0dd63fbc3a407da07",
+      "vouchers_hash": "1de5d0404a21f34a6d2c9193a16df17278fde5ea74586fcfce6ae8ec49582b4b"
+    }
+  }
+]

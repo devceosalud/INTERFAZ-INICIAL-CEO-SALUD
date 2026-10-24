@@ -1,0 +1,23 @@
+OK: Login y acceso por rol: admin
+OK: Julio local ID2 redirige exclusivamente a Admisión
+OK: Login y acceso por rol: julio
+OK: Login y acceso por rol: admision
+OK: Login y acceso por rol: comercial
+OK: Login y acceso por rol: medico2
+OK: Login y acceso por rol: caja
+OK: Login y acceso por rol: restringido
+OK: Segundo médico no firma por Julio
+OK: Reservas privadas permanecen ocultas para otros trabajadores
+OK: Color inicial T: #99f6e4
+OK: Color inicial N: #ffc28a
+OK: Color inicial R: #fecaca
+OK: Color inicial Y: #fff2a6
+OK: A: llegada, consulta normal, finalización y salida completas
+OK: B: recorrido A–H por interfaz, 0/3 a 3/3 y bloqueo de finalización prematura
+OK: C: excepción por interfaz, pendientes conservados y salida
+OK: D: excepción por interfaz, pendientes conservados y salida
+OK: F: precio100, pago60 y saldo40 tras revisión y confirmación ADMINISTRADOR
+OK: G: excepción amarilla sin pagos ni comprobantes nuevos
+OK: E: referencia 10:20 → 14:00 y enlace a cita vigente
+OK: E: segunda reprogramación conserva cita, duración e historial
+PASS 22

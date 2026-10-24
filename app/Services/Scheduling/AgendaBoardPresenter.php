@@ -57,6 +57,7 @@ class AgendaBoardPresenter
         $availability = $this->availability->forRange($agenda);
         $appointments = $this->appointments->forPresentationRange($agenda, $actorId);
         app(ManualReevaluationService::class)->load($appointments);
+        $appointments->load('activeProcedureRequests');
         $positions = app(AppointmentEconomicPosition::class)->forAppointments($appointments, []);
         $presentations = $appointments->mapWithKeys(fn($a)=>[$a->id=>AgendaAppointmentPresentation::of($a,$positions[$a->id])]);
         $compareProfessionals = $doctors->count() > 1;

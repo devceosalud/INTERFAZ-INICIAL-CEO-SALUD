@@ -1,0 +1,13 @@
+{
+  "steps": [
+    "Autenticación real de Administrador, Admisión, Comercial y ambos médicos",
+    "Popup: búsqueda sin tildes, selección específica con UUID, persistencia, doble clic y foco de teclado",
+    "Selección específica conserva el flujo: indicación, confirmación operativa, 0/3 a 3/3 y naranja automático",
+    "Alerta creada por Comercial; motivo autorizado por foco y clic; pestañas correctas para Admisión, Administrador y médico",
+    "API: otro médico sin alerta ajena, Comercial sin documentos, Administrador y médico sin retorno manual",
+    "Seguimiento real: solicitudes MRI/cirugía, realizados/cancelados, actualización auditada y médico ajeno bloqueado",
+    "Admisión, popup y seguimiento: 1366, 1440, 1536, 1920 y móvil390, sin desbordamiento horizontal"
+  ],
+  "errors": [],
+  "date": "2026-10-23T18:41:23.106Z"
+}

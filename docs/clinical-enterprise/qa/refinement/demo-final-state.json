@@ -1,0 +1,28 @@
+{
+    "scope": "LOCAL_FICTITIOUS_ONLY",
+    "counts": {
+        "appointments": 20,
+        "payments": 2,
+        "vouchers": 2,
+        "medical_procedure_followups": 4,
+        "medical_procedure_followup_events": 6,
+        "patient_operational_alerts": 1,
+        "patient_operational_alert_events": 1
+    },
+    "payment_total": "120.00",
+    "followup_states": {
+        "CANCELLED": 1,
+        "DONE": 1,
+        "PENDING": 2
+    },
+    "audit_columns": [
+        {
+            "table_name": "medical_procedure_followup_events",
+            "data_type": "mediumtext"
+        },
+        {
+            "table_name": "patient_operational_alert_events",
+            "data_type": "mediumtext"
+        }
+    ]
+}

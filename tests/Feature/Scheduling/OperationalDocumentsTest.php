@@ -79,7 +79,9 @@ class OperationalDocumentsTest extends TestCase
     public function test_nicole_only_links_current_appointment_documents_with_explicit_view_permission():void{
         $this->grant();$old=$this->upload()->assertCreated()->json();
         $new=$this->post($this->url('replace',$old['id']),$this->replacement($old),['Accept'=>'application/json'])->assertOk()->json();
-        $detail=$this->getJson(route('scheduling.mvp.admission.detail',$this->appointment->id))->assertOk()->assertJsonCount(1,'operational_documents')->assertJsonPath('operational_documents.0.id',$new['id']);
+        $detail=$this->getJson(route('scheduling.mvp.admission.detail',$this->appointment->id))->assertOk()->assertJsonCount(0,'operational_documents')->assertJsonPath('detail_tabs.history',false);
+        $this->getJson($this->url('index'))->assertOk()->assertJsonPath('documents.0.id',$new['id']); // Existing Agenda authorization is preserved.
+        $this->getJson('/scheduling-mvp/admission/appointments/'.$this->appointment->id.'/documents')->assertForbidden();
         $detail->assertJsonMissingPath('operational_documents.0.private_path')->assertJsonMissingPath('operational_documents.0.replacement_reason');
         $other=$this->agendaReader('COMERCIAL');$other->givePermissionTo(Permission::findOrCreate(A::VIEW,'web'));
         $this->appointment->update(['estado_agenda'=>'PENDIENTE_CONFIRMACION','responsible_user_id'=>$this->actor->id]);

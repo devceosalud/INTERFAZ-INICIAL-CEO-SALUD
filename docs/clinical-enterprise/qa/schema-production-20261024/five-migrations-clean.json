@@ -1,0 +1,32 @@
+[
+  {
+    "migration": "2026_10_23_010000_add_procedure_request_identity.php",
+    "exit": 0,
+    "seconds": 0.464,
+    "logged": true
+  },
+  {
+    "migration": "2026_10_23_020000_create_patient_operational_alerts.php",
+    "exit": 0,
+    "seconds": 0.202,
+    "logged": true
+  },
+  {
+    "migration": "2026_10_23_030000_create_medical_procedure_followups.php",
+    "exit": 0,
+    "seconds": 0.138,
+    "logged": true
+  },
+  {
+    "migration": "2026_10_23_040000_preserve_clinical_order_details.php",
+    "exit": 0,
+    "seconds": 0.017,
+    "logged": true
+  },
+  {
+    "migration": "2026_10_23_050000_enable_personal_procedures_and_manual_followups.php",
+    "exit": 0,
+    "seconds": 0.517,
+    "logged": true
+  }
+]
