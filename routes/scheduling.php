@@ -16,6 +16,7 @@ Route::middleware([
     'scheduling-mvp',
     'auth',
     'permission:'.SchedulingCapability::MVP_ACCESS,
+    \App\Support\Scheduling\ClinicalAgendaBoundary::class,
 ])->group(function () {
     Route::get('/scheduling-mvp', MvpAccessController::class)
         ->name('scheduling.mvp.access');

@@ -20,7 +20,7 @@ final class OperationalProcedureService
     ];
 
     public function canSelect(User $u): bool {
-        if(!$u->hasRole('MEDICO') && $this->eligible($u) && $u->hasRole('ADMINISTRADOR'))return true;
+        if(!\App\Support\Scheduling\ClinicalCapability::isMedical($u) && $this->eligible($u) && $u->hasRole('ADMINISTRADOR'))return true;
         try{\App\Support\Scheduling\ClinicalAccess::actor($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);return true;}
         catch(\Symfony\Component\HttpKernel\Exception\HttpException $e){if($e->getStatusCode()!==403)throw $e;return false;}
     }
@@ -68,23 +68,23 @@ final class OperationalProcedureService
         $done=$items->whereNotNull('completed_at')->count();
         $status=self::status($a);
         $clinicalOrder=null;
-        $canClinicalOrder=$u->hasRole('MEDICO') && $this->canSelect($u) && (int)$u->doctor_id===(int)$a->doctor_id;
+        $canClinicalOrder=\App\Support\Scheduling\ClinicalCapability::isMedical($u) && $this->canSelect($u) && (int)$u->doctor_id===(int)$a->doctor_id;
         if ($canClinicalOrder) {
             $clinicalOrder=$review?->clinical_order_ciphertext ? json_decode(\Illuminate\Support\Facades\Crypt::decryptString($review->clinical_order_ciphertext),true) : ['diagnosis'=>'','observations'=>''];
         }
         if($this->canSelect($u))$a->loadMissing('patient');
         return [
             'personal_suggestions'=>$this->canSelect($u)?app(DoctorProcedureSuggestionService::class)->list($u):[],
-            'personal_search_url'=>$u->hasRole('MEDICO')&&$this->canSelect($u)?route('scheduling.mvp.procedures.personal-search'):null,
+            'personal_search_url'=>\App\Support\Scheduling\ClinicalCapability::isMedical($u)&&$this->canSelect($u)?route('scheduling.mvp.procedures.personal-search'):null,
             'clinical_order'=>$clinicalOrder, 'can_order_clinical'=>$canClinicalOrder, 'clinical_order_revision'=>$this->canSelect($u)?\App\Support\Scheduling\ClinicalOrderSpecification::revision():null,
-            'order_patient'=>$this->canSelect($u)?['id'=>(int)$a->patient_id,'name'=>trim(($a->patient?->apellido_paterno??'').' '.($a->patient?->apellido_materno??'').' '.($a->patient?->nombre??'')),'document'=>$a->patient?->numero_identidad,'history'=>$a->patient?->historia_clinica,'age'=>$a->patient?->fecha_nacimiento?\Carbon\Carbon::parse($a->patient->fecha_nacimiento)->age:null,'date'=>now('America/Lima')->toDateString(),'physician'=>$u->hasRole('MEDICO')?$u->name:'Selección administrativa autorizada']:null,
+            'order_patient'=>$this->canSelect($u)?['id'=>(int)$a->patient_id,'name'=>trim(($a->patient?->apellido_paterno??'').' '.($a->patient?->apellido_materno??'').' '.($a->patient?->nombre??'')),'document'=>$a->patient?->numero_identidad,'history'=>$a->patient?->historia_clinica,'age'=>$a->patient?->fecha_nacimiento?\Carbon\Carbon::parse($a->patient->fecha_nacimiento)->age:null,'date'=>now('America/Lima')->toDateString(),'physician'=>\App\Support\Scheduling\ClinicalCapability::isMedical($u)?$u->name:'Selección administrativa autorizada']:null,
             'version' => $review?->version ?? 0,
             'requested_count' => $items->count(), 'completed_count' => $done,
             'pending_count' => $items->count()-$done,
             'catalog' => $this->canSelect($u) ? \App\Support\Scheduling\ProcedureCatalog::labels() : [],
             'catalog_entries' => $this->canSelect($u) ? \App\Support\Scheduling\ProcedureCatalog::entries() : [],
             'families' => \App\Support\Scheduling\ProcedureCatalog::FAMILIES,
-            'can_select' => $this->canSelect($u) && (!$u->hasRole('MEDICO') || ((int)$u->doctor_id===(int)$a->doctor_id && $a->estado_cita==='EN_ATENCION' && !$a->hora_atendido && !$a->hora_salida)), 'can_complete' => $this->canComplete($u),
+            'can_select' => $this->canSelect($u) && (!\App\Support\Scheduling\ClinicalCapability::isMedical($u) || ((int)$u->doctor_id===(int)$a->doctor_id && $a->estado_cita==='EN_ATENCION' && !$a->hora_atendido && !$a->hora_salida)), 'can_complete' => $this->canComplete($u),
             'can_send' => $this->canSend($u) && self::active($a) && $items->whereNotNull('completed_at')->isNotEmpty()
                 && (!AppointmentReevaluationService::indicated($a) || AppointmentReevaluationService::confirmed($a)),
             'can_withdraw' => $this->canSend($u) && $status === 'READY',
@@ -110,7 +110,7 @@ final class OperationalProcedureService
         }, 403);
         if($action==='selection' && array_key_exists('clinical_order',$data)) \App\Support\Scheduling\ClinicalAccess::actor($u,\App\Support\Scheduling\ClinicalCapability::PROCEDURES);
         $original=Appointment::visibleToAgendaUser($u->id)->whereKey($id)->firstOr(fn () => abort(404));
-        $clinical=$action==='selection' && ($u->hasRole('MEDICO') || !$this->eligible($u));
+        $clinical=$action==='selection' && (\App\Support\Scheduling\ClinicalCapability::isMedical($u) || !$this->eligible($u));
         if($clinical){\App\Support\Scheduling\ClinicalAccess::appointment($u,$original);abort_unless($original->estado_cita==='EN_ATENCION' && !$original->hora_atendido && !$original->hora_salida,422);}
         AppointmentReevaluationService::transaction(function () use ($id, $u, $action, $data,$clinical) {
             $hash = hash('sha256', json_encode(['OPERATIONAL_PROCEDURES', $id, $action, $data]));

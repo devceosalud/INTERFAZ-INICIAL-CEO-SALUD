@@ -139,7 +139,7 @@ final class AppointmentReevaluationService
     {
         return \Illuminate\Support\Facades\Schema::hasColumn('users','doctor_id')
             && User::query()->where('doctor_id',$a->doctor_id)->where('is_active',true)
-                ->whereHas('roles',fn($r)=>$r->where('name','MEDICO')->where('guard_name','web'))
+                ->whereHas('roles',fn($r)=>$r->whereIn('name',\App\Support\Scheduling\ClinicalCapability::ROLES)->where('guard_name','web'))
                 ->exists();
     }
 

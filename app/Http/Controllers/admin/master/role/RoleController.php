@@ -47,9 +47,9 @@ class RoleController extends Controller
             abort_unless(hash_equals(self::revision($locked), $data['permission_revision']), 409, 'Los permisos cambiaron. Actualiza antes de guardar.');
             $before = $locked->permissions()->orderBy('id')->pluck('id')->all();
             $selected = Permission::where('guard_name', 'web')->whereIn('id', $data['permissions'] ?? [])->get();
-            if($locked->name===\App\Support\Scheduling\ClinicalCapability::ROLE){
-                abort_if($selected->whereNotIn('name',\App\Support\Scheduling\ClinicalCapability::all())->isNotEmpty(),422,
-                    'El rol MEDICO solo admite sus capacidades clínicas; no autoriza funciones administrativas o económicas.');
+            if(\App\Support\Scheduling\ClinicalCapability::isRole($locked->name)){
+                abort_if($selected->whereNotIn('name',\App\Support\Scheduling\ClinicalCapability::rolePermissions())->isNotEmpty(),422,
+                    'Los roles médicos solo admiten capacidades clínicas y lectura de Agenda; no autorizan funciones administrativas o económicas.');
             }
             // Spatie validates guard and invalidates its cache; empty checked list is an explicit revocation.
             $locked->syncPermissions($selected);
