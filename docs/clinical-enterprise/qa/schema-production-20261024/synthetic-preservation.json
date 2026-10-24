@@ -1,0 +1,7 @@
+{
+  "historical_tables_compared": 55,
+  "historical_values_unchanged": 260,
+  "encrypted_note_and_audit_preserved": true,
+  "origin_backfill": "AUTOMATIC",
+  "synthetic_only": true
+}

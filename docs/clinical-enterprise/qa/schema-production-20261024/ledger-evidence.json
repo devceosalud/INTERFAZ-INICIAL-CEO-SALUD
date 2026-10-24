@@ -1,0 +1,14 @@
+{
+  "evidence_source": "Hostinger migrate:status supplied by user on2026-10-24; exact names/batches independently match technical export",
+  "applied_count": 60,
+  "applied_matches_main": true,
+  "pending": [
+    "2026_10_23_010000_add_procedure_request_identity",
+    "2026_10_23_020000_create_patient_operational_alerts",
+    "2026_10_23_030000_create_medical_procedure_followups",
+    "2026_10_23_040000_preserve_clinical_order_details",
+    "2026_10_23_050000_enable_personal_procedures_and_manual_followups"
+  ],
+  "hostinger_status_crosscheck": "MATCH60_NAMES_AND_BATCHES_INCLUDING_BATCH0",
+  "clinical_data_imported": false
+}

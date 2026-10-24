@@ -1,0 +1,13 @@
+{
+  "selection_and_replay": true,
+  "automatic_mri_surgery": true,
+  "manual_missing_only_and_replay": true,
+  "new_procedures_only": true,
+  "personal_uuid_fk": true,
+  "encrypted_order_roundtrip": true,
+  "patient_alert_and_replay": true,
+  "appointment_and_care_unchanged": true,
+  "payments_and_vouchers_created": 0,
+  "procedures_marked_done": 0,
+  "followups": 7
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "LOCAL_ISOLATED_RESTORE_ONLY",
+  "mariadb": "11.8.9",
+  "tables": 57,
+  "columns": 614,
+  "index_parts": 247,
+  "foreign_key_parts": 116,
+  "all_foreign_keys_valid": true,
+  "rows_imported_from_source": 0,
+  "historical_migrations": 60,
+  "preserved_batch0": true,
+  "comparison_with_previous_pr72_schema": {
+    "columns": {
+      "actual_only": 2,
+      "expected_only": 2
+    },
+    "indexes": {
+      "actual_only": 0,
+      "expected_only": 0
+    },
+    "foreign_keys": {
+      "actual_only": 0,
+      "expected_only": 0
+    },
+    "checks": {
+      "actual_only": 0,
+      "expected_only": 0
+    },
+    "tables": {
+      "actual_only": 0,
+      "expected_only": 0
+    }
+  },
+  "source_sha256_unchanged": true
+}

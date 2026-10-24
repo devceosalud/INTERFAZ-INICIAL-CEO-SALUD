@@ -1,0 +1,10 @@
+{
+  "source_is_structure_only": false,
+  "inserts_excluded": 131,
+  "sensitive_tables_have_insert_statements": true,
+  "bcrypt_hash_occurrences": 13,
+  "argon_hash_occurrences": 0,
+  "private_key_header_occurrences": 0,
+  "source_values_copied_to_git_or_rehearsal": false,
+  "no_claim_that_original_is_secret_free": true
+}

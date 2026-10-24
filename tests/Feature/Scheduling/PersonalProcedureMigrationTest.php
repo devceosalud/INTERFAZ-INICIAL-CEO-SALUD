@@ -20,6 +20,34 @@ class PersonalProcedureMigrationTest extends \Tests\TestCase
         if(DB::getDriverName()==='sqlite')$this->assertSame([],DB::select('PRAGMA foreign_key_check'));
         $this->assertDatabaseCount('doctor_procedure_suggestions',0);$this->assertDatabaseCount('payments',0);
     }
+    public function test_retry_restores_indexes_and_foreign_keys_after_committed_column_ddl():void
+    {
+        $this->assertSame('testing',app()->environment());$this->artisan('migrate:fresh',['--force'=>true])->assertExitCode(0);
+        Schema::table('medical_procedure_followups',fn($t)=>$t->dropUnique('mpf_general_unique'));
+        if(DB::getDriverName()==='mysql'){
+            Schema::table('appointment_requested_procedures',fn($t)=>$t->dropForeign('appointment_requested_procedures_reusable_procedure_id_foreign'));
+            Schema::table('doctor_procedure_suggestions',fn($t)=>$t->dropForeign('doctor_procedure_suggestions_user_id_foreign'));
+            Schema::table('doctor_procedure_suggestions',fn($t)=>$t->dropUnique('dps_owner_name_unique'));
+        }else Schema::table('appointment_requested_procedures',fn($t)=>$t->dropIndex('arp_reusable_idx'));
+        $m=require database_path('migrations/2026_10_23_050000_enable_personal_procedures_and_manual_followups.php');$m->up();$m->up();
+        if(DB::getDriverName()==='mysql'){
+            $this->assertSame(3,(int)DB::selectOne("SELECT COUNT(*) n FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='medical_procedure_followups' AND INDEX_NAME='mpf_general_unique' AND NON_UNIQUE=0")->n);
+            $this->assertSame(3,(int)DB::selectOne("SELECT COUNT(*) n FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='doctor_procedure_suggestions' AND INDEX_NAME='dps_owner_name_unique' AND NON_UNIQUE=0")->n);
+            foreach([['appointment_requested_procedures','reusable_procedure_id'],['doctor_procedure_suggestions','user_id']]as [$table,$column])$this->assertSame(1,(int)DB::selectOne('SELECT COUNT(*) n FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=? AND REFERENCED_TABLE_NAME IS NOT NULL',[$table,$column])->n);
+        }else{
+            $this->assertTrue(collect(DB::select('PRAGMA index_list(medical_procedure_followups)'))->contains(fn($i)=>$i->name==='mpf_general_unique'&&(int)$i->unique===1));
+            $this->assertTrue(collect(DB::select('PRAGMA index_list(appointment_requested_procedures)'))->contains(fn($i)=>$i->name==='arp_reusable_idx'));
+            $this->assertSame([],DB::select('PRAGMA foreign_key_check'));
+        }
+        $this->assertDatabaseCount('doctor_procedure_suggestions',0);$this->assertDatabaseCount('medical_procedure_followups',0);
+    }
+    public function test_retry_refuses_a_same_named_index_with_an_incompatible_definition():void
+    {
+        $this->assertSame('testing',app()->environment());$this->artisan('migrate:fresh',['--force'=>true])->assertExitCode(0);
+        Schema::table('medical_procedure_followups',function($t){$t->dropUnique('mpf_general_unique');$t->index(['doctor_id','appointment_id','general_key'],'mpf_general_unique');});
+        $this->expectException(\RuntimeException::class);$this->expectExceptionMessage('Existing index differs');
+        (require database_path('migrations/2026_10_23_050000_enable_personal_procedures_and_manual_followups.php'))->up();
+    }
     protected function tearDown():void
     {
         if($this->app){$this->artisan('migrate:fresh',['--force'=>true]);\Illuminate\Foundation\Testing\RefreshDatabaseState::$migrated=false;}

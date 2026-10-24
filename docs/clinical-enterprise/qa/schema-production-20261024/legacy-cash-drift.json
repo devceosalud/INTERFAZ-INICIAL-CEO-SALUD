@@ -1,0 +1,6 @@
+{
+  "existing_production_ddl_reproduced": true,
+  "closing_synthetic_shift_changes_opening_timestamp": true,
+  "rolled_back_local_probe": true,
+  "introduced_by_pr72": false
+}

@@ -1,0 +1,60 @@
+{
+  "columns": {
+    "actual_only": [
+      {
+        "collation": "utf8mb4_unicode_ci",
+        "default": "NULL",
+        "extra": "",
+        "name": "observacion",
+        "nullable": "YES",
+        "table": "vouchers",
+        "type": "text"
+      },
+      {
+        "collation": null,
+        "default": "current_timestamp()",
+        "extra": "on update current_timestamp()",
+        "name": "abierto_en",
+        "nullable": "NO",
+        "table": "cashier_shifts",
+        "type": "timestamp"
+      }
+    ],
+    "expected_only": [
+      {
+        "collation": "utf8mb4_unicode_ci",
+        "default": "NULL",
+        "extra": "",
+        "name": "observaciones",
+        "nullable": "YES",
+        "table": "vouchers",
+        "type": "text"
+      },
+      {
+        "collation": null,
+        "default": null,
+        "extra": "",
+        "name": "abierto_en",
+        "nullable": "NO",
+        "table": "cashier_shifts",
+        "type": "timestamp"
+      }
+    ]
+  },
+  "indexes": {
+    "actual_only": [],
+    "expected_only": []
+  },
+  "foreign_keys": {
+    "actual_only": [],
+    "expected_only": []
+  },
+  "checks": {
+    "actual_only": [],
+    "expected_only": []
+  },
+  "tables": {
+    "actual_only": [],
+    "expected_only": []
+  }
+}
