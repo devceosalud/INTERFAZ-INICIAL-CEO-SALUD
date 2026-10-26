@@ -31,7 +31,7 @@ final class PatientOperationalAlertService
         $appointment=Policy::alertAppointment($actor,$id);
         abort_unless((int)$appointment->patient_id===(int)$data['expected_patient_id'],409,'El paciente asociado cambió. Actualiza antes de guardar.');
         $reason=trim($data['reason']);
-        Validator::make(['reason'=>$reason],['reason'=>'required|string|min:15|max:1000'])->validate();
+        Validator::make(['reason'=>$reason],['reason'=>'required|string|min:1|max:1000'])->validate();
         abort_if(preg_match('/\b(idiota|imb[eé]cil|est[uú]pido|subnormal|esquizofr[eé]nico|psic[oó]pata|retrasado mental)\b/iu',$reason),422,'Describe hechos observables, sin insultos, clasificaciones discriminatorias ni diagnósticos.');
         $data['reason']=$reason;
         AppointmentReevaluationService::transaction(function()use($id,$actor,$data,$resolve,$appointment){
