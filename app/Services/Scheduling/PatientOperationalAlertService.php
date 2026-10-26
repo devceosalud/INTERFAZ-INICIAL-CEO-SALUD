@@ -25,7 +25,7 @@ final class PatientOperationalAlertService
             'history'=>$events->map(fn($e)=>['action'=>$e->action,'at'=>\Carbon\Carbon::parse($e->occurred_at,config('app.timezone'))->toISOString(),'actor'=>User::find($e->actor_user_id)?->name])->all()];
     }
     public function mutate(int $id,User $actor,array $data): void {
-        Validator::make($data,['request_key'=>'required|uuid','expected_version'=>'required|integer|min:0','expected_patient_id'=>'required|integer|min:1','action'=>'required|in:save,resolve','confirmed'=>'required|accepted','facts_confirmed'=>'required_if:action,save|accepted','category'=>'required_if:action,save|in:'.implode(',',array_keys(self::CATEGORIES)),'incident_on'=>'required_if:action,save|date_format:Y-m-d|before_or_equal:today'])->validate();
+        Validator::make($data,['request_key'=>'required|uuid','expected_version'=>'required|integer|min:0','expected_patient_id'=>'required|integer|min:1','action'=>'required|in:save,resolve','confirmed'=>'required|accepted','facts_confirmed'=>'exclude_unless:action,save|required|accepted','category'=>'required_if:action,save|in:'.implode(',',array_keys(self::CATEGORIES)),'incident_on'=>'required_if:action,save|date_format:Y-m-d|before_or_equal:today'])->validate();
         $data['expected_version']=(int)$data['expected_version'];$resolve=$data['action']==='resolve';
         abort_unless(Policy::operational($actor)||($resolve&&Policy::administrator($actor)),403);
         $appointment=Policy::alertAppointment($actor,$id);
