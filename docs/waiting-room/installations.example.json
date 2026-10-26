@@ -1,0 +1,28 @@
+{
+  "installations": {
+    "REPLACE_WITH_INSTALLATION_ID": {
+      "active": false,
+      "secret": "GENERATE_32_OR_MORE_RANDOM_BYTES_OUTSIDE_GIT",
+      "site_id": null,
+      "screen_ref": "REPLACE_WITH_OPAQUE_INSTALLATION_REFERENCE"
+    }
+  },
+  "privacy": {
+    "mode": "disabled",
+    "display_mode": "initial_two_surnames",
+    "speech_mode": "disabled",
+    "approval_reference": null
+  },
+  "assignments": [
+    {
+      "site_id": null,
+      "day": "YYYY-MM-DD",
+      "verified": false,
+      "room_ref": "REPLACE_WITH_VERIFIED_PHYSICAL_ROOM_REFERENCE",
+      "room_label": null,
+      "doctor_id": null,
+      "professional_label": null,
+      "professional_speech_label": null
+    }
+  ]
+}
