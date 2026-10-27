@@ -73,7 +73,7 @@
             <div id="agenda-op-receipt-review"></div>
         </section>
         </details>
-        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Confirmar con pago requiere un pago real positivo. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) La opción Guardar y confirmar sin adelanto exige motivo y conserva el saldo pendiente. @endif La exoneración utiliza su autorización independiente.</p>
+        <p class="agenda-payment-help">Guardar reserva no confirma el horario. Confirmar con pago requiere un pago real positivo. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) La opción Guardar y confirmar sin adelanto exige motivo y conserva el saldo pendiente. @endif Una cita exonerada requiere autorización y confirmación directa, sin guardar reserva pendiente.</p>
         <p id="agenda-op-payment-error" class="agenda-field-error" role="alert" hidden></p>
         @unless($canSubmitPayment)<p class="agenda-payment-help">No tienes autorización para registrar adelantos. Puedes guardar una reserva sin pago si tu perfil lo permite.</p>@endunless
         <div class="agenda-payment-actions">
