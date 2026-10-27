@@ -164,7 +164,13 @@ class OperationalRegistrationTest extends TestCase
         $p = $this->payload(['mode' => 'CONFIRM', 'es_exonerado' => true, 'motivo_exoneracion'=>'Motivo ficticio autorizado', 'autorizado_por' => 'DR QUIROZ']);
         $this->create($p)->assertForbidden();
         $this->actor->givePermissionTo(Permission::findOrCreate(C::APPROVE_ZERO_COST, 'web'));
-        $this->create($p)->assertCreated()->assertJsonPath('economy.pago_real', '0.00')->assertJsonPath('economy.saldo', '0.00')->assertJsonPath('economy.asegurada', false);
+        // An exempt visit must be confirmed, never saved as a pending private reservation.
+        $pending = array_replace($p, ['mode'=>'RESERVE', 'request_key'=>(string) Str::uuid()]);
+        $this->create($pending)->assertUnprocessable()->assertJsonValidationErrors('mode');
+        $this->assertDatabaseCount('appointments', 0);
+        $this->assertDatabaseCount('appointment_operations', 0);
+        $this->create($p)->assertCreated()->assertJsonPath('appointment.estado_agenda', 'CONFIRMADA')
+            ->assertJsonPath('economy.pago_real', '0.00')->assertJsonPath('economy.saldo', '0.00')->assertJsonPath('economy.asegurada', false);
         $this->assertDatabaseCount('payments', 0);
     }
     public function test_patient_capture_and_new_patient_are_atomic_with_unique_document_and_current_hce(): void
