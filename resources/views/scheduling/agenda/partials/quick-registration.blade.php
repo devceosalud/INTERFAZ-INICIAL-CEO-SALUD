@@ -116,7 +116,7 @@
             Seleccione profesional, fecha, intervalo disponible, paciente y servicio.
         </p>
 
-        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. La exoneración requiere autorización expresa. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) También puedes Guardar y confirmar sin adelanto: exige motivo y conserva todo el saldo pendiente. @endif</p>
+        <p class="agenda-guidance" id="agenda-booking-help">Guardar reserva: guarda el seguimiento sin confirmar el horario. Registrar pago: guarda el pago real y confirma automáticamente el horario. Una cita exonerada autorizada debe confirmarse directamente; no puede guardarse como reserva pendiente. @if(\App\Services\Scheduling\ReservationPaymentService::withoutDepositActor(auth()->user())) También puedes Guardar y confirmar sin adelanto: exige motivo y conserva todo el saldo pendiente. @endif</p>
         <p class="agenda-action-notice" id="agenda-action-notice" role="status" hidden></p>
         <button type="button" class="agenda-btn" id="agenda-see-destination" hidden>Ver nueva fecha</button>
         <p id="agenda-disabled-reason" class="agenda-guidance" hidden></p>
