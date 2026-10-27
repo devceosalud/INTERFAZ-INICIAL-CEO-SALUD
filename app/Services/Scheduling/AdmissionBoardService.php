@@ -234,7 +234,7 @@ class AdmissionBoardService
         $redact=function(array $row):array{
             foreach(['economy','estado_pagado','payment_methods','pricing_rule','documento','responsable','agenda_url'] as $key)$row[$key]=null;
             $row['presentation']['badges']=array_values(array_filter($row['presentation']['badges']??[],
-                fn($b)=>in_array($b['clave'],['CIRUGIA','RESONANCIA','PIE_DIABETICO','HERIDA','POSTOPERATORIO','ADICIONAL','FUERA_HORARIO','PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA'],true)));
+                fn($b)=>in_array($b['clave'],['CIRUGIA','RESONANCIA','INTERCONSULTA','PIE_DIABETICO','HERIDA','POSTOPERATORIO','ADICIONAL','FUERA_HORARIO','PENDIENTE_REEVALUACION','LISTO_REEVALUACION','PROCEDIMIENTOS','PRESENTE','SALIDA_REGISTRADA','TELECONSULTA'],true)));
             return $row;
         };
         if(isset($payload['rows'])){
