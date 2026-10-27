@@ -27,6 +27,11 @@
         const color=presentation?.fringe?.color||presentation?.fondo||'#ffffff';return color.toLowerCase()==='#99f6e4'?'#74dccb':color;
     }
     function bookingLabel(state){return state==='CONFIRMADA'?'Horario confirmado':state==='PENDIENTE_CONFIRMACION'?'Reserva pendiente · horario sin confirmar':state==='LEGADO'?'Agenda heredada':String(state||'Sin clasificación');}
+    function exonerationConfirmationFailure(message){
+        const text=String(message||'');
+        if (!/horario seleccionado ya no se encuentra disponible|intervalo válido del horario médico/i.test(text)) return text;
+        return 'No se pudo confirmar: el horario está ocupado o dejó de estar disponible. La reserva exonerada sigue pendiente; no se registraron pagos. Abre esta cita en Agenda operativa para reprogramar a un horario libre. Si el profesional autoriza atender una cita adicional en el intervalo ocupado, un usuario con permisos puede utilizar «Resolver como ADICIONAL». Esa conversión conserva la misma cita y requiere confirmarla después.';
+    }
     function bookingIndicator(doc,state){
         if(state==='LEGADO')return null;
         const chip=doc.createElement('small');chip.className='admission-booking-indicator';chip.textContent=bookingLabel(state);return chip;
@@ -508,7 +513,7 @@
             try{answer=await window.Swal.fire({title:'Confirmar cita exonerada',text:'Se revalidará la disponibilidad y la exoneración autorizada. No se registrará ningún pago.',showCancelButton:true,confirmButtonText:'Confirmar sin cobro',cancelButtonText:'Cancelar',focusCancel:true});}finally{confirming=false;}
             if(!answer?.isConfirmed||selected!==id||detail?.exoneration_confirmation?.revision!==offer.revision)return;
             const signature=JSON.stringify([id,offer.revision]);if(exonerationRequest?.signature!==signature)exonerationRequest={signature,request_key:crypto.randomUUID()};
-            busy=true;try{await request(offer.url,{method:'POST',body:JSON.stringify({revision:offer.revision,confirmed:true,request_key:exonerationRequest.request_key})});exonerationRequest=null;busy=false;await load(id);notice('Cita confirmada sin registrar pagos.');}catch(error){notice(error.message);}finally{busy=false;}
+            busy=true;try{await request(offer.url,{method:'POST',body:JSON.stringify({revision:offer.revision,confirmed:true,request_key:exonerationRequest.request_key})});exonerationRequest=null;busy=false;await load(id);notice('Cita confirmada sin registrar pagos.');}catch(error){notice(exonerationConfirmationFailure(error.message));}finally{busy=false;}
         }
         async function transition(state){if(busy||loading||confirming||!detail)return;const id=detail.appointment.id,expected=detail.appointment.estado_cita;
             if(!window.Swal){notice('No se cargó la confirmación de acciones. Vuelve a abrir el panel.');return;}
@@ -628,5 +633,5 @@
         load(Number.isSafeInteger(initialId)&&initialId>0?initialId:null).then(()=>{if(initialId>0&&!selected)select(initialId);});
         poll.start();
     }
-    return {admissionBackground,rowActivation,latest,polling,bookingLabel,bookingIndicator,time,money,readResponse,journeySteps,start};
+    return {admissionBackground,rowActivation,latest,polling,bookingLabel,bookingIndicator,exonerationConfirmationFailure,time,money,readResponse,journeySteps,start};
 }));
