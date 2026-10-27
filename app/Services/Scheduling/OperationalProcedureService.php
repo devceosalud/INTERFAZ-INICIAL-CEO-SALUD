@@ -17,6 +17,7 @@ final class OperationalProcedureService
         'laboratory' => 'Laboratorio', 'wound_care' => 'Curación',
         'mri' => 'Resonancia magnética', 'prp' => 'PRP',
         'hyaluronic_acid' => 'Ácido hialurónico', 'surgery' => 'Cirugía',
+        'interconsulta' => 'INTERCONSULTA',
     ];
 
     public function canSelect(User $u): bool {
