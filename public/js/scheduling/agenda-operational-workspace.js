@@ -93,7 +93,8 @@
         }
         function readiness() {
             return { automaticFree: quoteReady && automaticFree, price: quoteReady ? ui.price.value : '0.00', amount: ui.amount.value, canPay: !ui.amount.disabled && lastPosition?.reservation_slot_available !== false,
-                waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()) };
+                waived: !ui.waived.disabled && ui.waived.checked && Boolean(ui.authorized.value.trim()),
+                exemptionSelected: !ui.waived.disabled && ui.waived.checked };
         }
         function hasConfirmablePayment(position) {
             return position.asegurada || (position.fuente === 'PAYMENTS' && Number(position.pago_real || 0) > 0
@@ -352,6 +353,10 @@
         }
         async function register(options) {
             if (working) { return; }
+            if (options.pending && ui.waived.checked) {
+                config.notice('Una cita exonerada debe registrarse y confirmarse directamente. No se permite Guardar reserva.', true);
+                return;
+            }
             let withoutDepositReason=null;
             if(options.withoutDeposit){
                 if(Number(ui.amount.value||0)>0||ui.proof.files?.length||ui.operation.value.trim()||ui.waived.checked){config.notice('Para confirmar sin adelanto, retira el nuevo pago, sus comprobantes y la exoneración.',true);return;}
