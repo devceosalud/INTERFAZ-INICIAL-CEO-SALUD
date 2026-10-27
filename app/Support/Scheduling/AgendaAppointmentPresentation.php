@@ -42,7 +42,18 @@ final class AgendaAppointmentPresentation
             ? 'RESERVA_SIN_PAGO' : 'SIN_PAGO_REAL';
 
         $badges = [];
-        if($appointment->relationLoaded('activeProcedureRequests'))foreach($appointment->activeProcedureRequests as $request){$family=$request->procedure_family??(ProcedureCatalog::entries()[$request->procedure_key]['family']??'other');if(in_array($family,['surgery','mri'],true))$badges[]=$family==='surgery'?'CIRUGIA':'RESONANCIA';}
+        if ($appointment->relationLoaded('activeProcedureRequests')) {
+            foreach ($appointment->activeProcedureRequests as $request) {
+                if ($request->procedure_key === 'interconsulta') {
+                    $badges[] = 'INTERCONSULTA';
+                    continue;
+                }
+                $family = $request->procedure_family ?? (ProcedureCatalog::entries()[$request->procedure_key]['family'] ?? 'other');
+                if (in_array($family, ['surgery', 'mri'], true)) {
+                    $badges[] = $family === 'surgery' ? 'CIRUGIA' : 'RESONANCIA';
+                }
+            }
+        }
         if ($exempt) $badges[] = 'EXONERADA';
         if ($withoutDeposit) $badges[] = 'CONFIRMADA_SIN_ADELANTO';
         if (\App\Services\Scheduling\AppointmentReevaluationService::pending($appointment)) $badges[] = 'PENDIENTE_REEVALUACION';
