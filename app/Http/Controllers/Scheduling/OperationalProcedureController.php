@@ -34,12 +34,19 @@ final class OperationalProcedureController extends Controller
             'selection' => $service->canSelect($r->user()), 'completion' => $service->canComplete($r->user()),
             'send', 'withdraw' => $service->canSend($r->user()), default => false,
         }, 403);
+        // Nested wildcard "distinct" compares values across different procedures in Laravel.
+        // Enforce uniqueness within each procedure's own lateralities/projections instead.
+        $distinctWithinProcedure = static function ($attribute, $value, $fail): void {
+            if (is_array($value) && count($value) !== count(array_unique($value, SORT_REGULAR))) {
+                $fail('No repitas valores dentro de las características del mismo procedimiento.');
+            }
+        };
         $rules = ['request_key' => 'required|uuid', 'expected_version' => 'required|integer|min:0'];
         $rules += match ($action) {
             'selection' => ['clinical_order_revision'=>'sometimes|string|size:64', 'expected_patient_id'=>'required_with:clinical_order,procedure_details|integer|min:1',
                 'clinical_order'=>'sometimes|array:diagnosis,observations', 'clinical_order.diagnosis'=>'nullable|string|max:500', 'clinical_order.observations'=>'nullable|string|max:600',
-                'procedure_details'=>'sometimes|array|max:130', 'procedure_details.*'=>'array:sides,with_load,projections,finger', 'procedure_details.*.sides'=>'sometimes|array|max:3', 'procedure_details.*.sides.*'=>['string','distinct',Rule::in(['D','I','B'])],
-                'procedure_details.*.with_load'=>'sometimes|boolean', 'procedure_details.*.projections'=>'sometimes|array|max:3', 'procedure_details.*.projections.*'=>['string','distinct',Rule::in(['AP','LAT','OBLIQUE'])], 'procedure_details.*.finger'=>'nullable|integer|min:1|max:5',
+                'procedure_details'=>'sometimes|array|max:130', 'procedure_details.*'=>'array:sides,with_load,projections,finger', 'procedure_details.*.sides'=>['sometimes','array','max:3',$distinctWithinProcedure], 'procedure_details.*.sides.*'=>['string',Rule::in(['D','I','B'])],
+                'procedure_details.*.with_load'=>'sometimes|boolean', 'procedure_details.*.projections'=>['sometimes','array','max:3',$distinctWithinProcedure], 'procedure_details.*.projections.*'=>['string',Rule::in(['AP','LAT','OBLIQUE'])], 'procedure_details.*.finger'=>'nullable|integer|min:1|max:5',
                 'procedures' => 'present|array|max:100', 'procedures.*' => ['required', 'string', 'distinct', Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::labels()))],
                 'custom_procedures'=>'sometimes|array|max:30', 'custom_procedures.*'=>'array:id,label,family,reusable_id', 'custom_procedures.*.reusable_id'=>'nullable|uuid',
                 'custom_procedures.*.id'=>'required|uuid|distinct', 'custom_procedures.*.label'=>'required|string|max:500', 'custom_procedures.*.family'=>['sometimes','string',Rule::in(array_keys(\App\Support\Scheduling\ProcedureCatalog::FAMILIES))]],

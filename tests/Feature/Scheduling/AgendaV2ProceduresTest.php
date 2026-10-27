@@ -135,6 +135,48 @@ class AgendaV2ProceduresTest extends \Tests\Support\AgendaV2TestCase
         $this->detail()->assertOk()->assertJsonPath('appointment.presentation.clave','DESACTIVADA');
         $second->update(['fecha_cita'=>now('America/Lima')->subDay()->toDateString()]);$this->queue()->assertOk()->assertJsonCount(0,'rows')->assertJsonCount(1,'groups.history');
     }
+    public function test_multiple_procedures_may_share_lateralities_and_projections(): void
+    {
+        $this->change('selection', [
+            'procedures' => ['rx_knee', 'us_knee', 'rx_ankle'],
+            'expected_patient_id' => $this->a->patient_id,
+            'clinical_order_revision' => \App\Support\Scheduling\ClinicalOrderSpecification::revision(),
+            'procedure_details' => [
+                'rx_knee' => ['sides' => ['D', 'I'], 'projections' => ['AP', 'LAT']],
+                'us_knee' => ['sides' => ['I']],
+                'rx_ankle' => ['sides' => ['I'], 'projections' => ['AP', 'LAT']],
+            ],
+        ])->assertOk();
+
+        $saved = DB::table('appointment_requested_procedures')
+            ->where('appointment_id', $this->a->id)->pluck('request_details', 'procedure_key');
+        $this->assertSame(['D', 'I'], json_decode($saved['rx_knee'], true)['sides']);
+        $this->assertSame(['I'], json_decode($saved['us_knee'], true)['sides']);
+        $this->assertSame(['AP', 'LAT'], json_decode($saved['rx_ankle'], true)['projections']);
+        $this->assertDatabaseCount('appointment_procedure_events', 1);
+    }
+
+    public function test_duplicate_details_within_one_procedure_are_still_rejected(): void
+    {
+        foreach ([
+            [['sides' => ['I', 'I']], 'procedure_details.rx_knee.sides'],
+            [['projections' => ['AP', 'AP']], 'procedure_details.rx_knee.projections'],
+        ] as [$invalidDetails, $field]) {
+            $this->change('selection', [
+                'procedures' => ['rx_knee', 'us_knee'],
+                'expected_patient_id' => $this->a->patient_id,
+                'clinical_order_revision' => \App\Support\Scheduling\ClinicalOrderSpecification::revision(),
+                'procedure_details' => [
+                    'rx_knee' => $invalidDetails,
+                    'us_knee' => ['sides' => ['I']],
+                ],
+            ])->assertUnprocessable()->assertJsonValidationErrors($field);
+        }
+
+        $this->assertDatabaseCount('appointment_requested_procedures', 0);
+        $this->assertDatabaseCount('appointment_procedure_events', 0);
+    }
+
     public function test_invalid_catalog_and_injected_fields_are_rejected(): void
     {
         $this->select(['unknown'])->assertUnprocessable();$this->select(['radiography','radiography'])->assertUnprocessable();
