@@ -35,6 +35,20 @@ const response=(status,body)=>({ok:status<400,status,json:async()=>body});
 const payload=call=>JSON.parse(call.options.body.entries.find(([name])=>name==='payload')[1]);
 const registration={pending:false,patientId:1,serviceId:1,ownerId:''};
 
+test('exoneración no admite reserva: el formulario la bloquea y confirma sin cobro',async()=>{
+    const details = {canCreate:true,busy:false,slot:true,patient:true,service:true,price:'100.00',amount:'0',canPay:false,waived:true,exemptionSelected:true};
+    assert.match(form.reservationReadiness(details).reason,/exonerada/);
+    assert.equal(form.reservationReadiness(details).allowed,false);
+    assert.equal(form.bookingReadiness(details).allowed,true);
+    assert.equal(form.reservationReadiness({...details,exemptionSelected:false,waived:false}).allowed,true);
+    const f=fixture(()=>response(201,{}));
+    f.get('waived').checked=true;
+    f.get('authorized').value='QA AUTORIZADOR';
+    await f.workspace.register({...registration,pending:true});
+    assert.equal(f.calls.length,0);
+    assert.match(f.notices.at(-1),/exonerada/);
+});
+
 test('doble envío mientras se guarda genera una sola petición y bloquea las acciones de dinero',async()=>{
     let release;
     const f=fixture(()=>new Promise(resolve=>{release=resolve;}));
