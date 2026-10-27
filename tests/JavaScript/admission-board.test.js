@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {latest,bookingLabel,time,readResponse}=require('../../public/js/scheduling/admission-board.js');
-const {journeySteps}=require('../../public/js/scheduling/admission-board.js');
+const {journeySteps,exonerationConfirmationFailure}=require('../../public/js/scheduling/admission-board.js');
 const {admissionBackground}=require('../../public/js/scheduling/admission-board.js');
 test('active remote care uses the approved admission turquoise without manufacturing physical presence',()=>{
     const presentation={fringe:{key:'SIN_PAGO_REAL',color:'#ffffff'},present:false,badges:[{clave:'TELECONSULTA'}]};
@@ -66,4 +66,20 @@ test('business validation and permission failures remain actionable',async()=>{
 test('a malformed JSON success cannot leak the response fragment',async()=>{
     const broken=response(200,{});broken.json=async()=>{throw new Error('PRIVATE HTML FRAGMENT');};
     await assert.rejects(readResponse(broken),error=>!error.message.includes('PRIVATE'));
+});
+
+test('exoneration slot conflict offers authorized, nonautomatic resolutions and keeps reservation pending',()=>{
+    const error='El horario seleccionado ya no se encuentra disponible. Actualiza la agenda y selecciona otro horario.';
+    const message=exonerationConfirmationFailure(error);
+    assert.match(message,/reserva exonerada sigue pendiente/);
+    assert.match(message,/reprogramar a un horario libre/);
+    assert.match(message,/Resolver como ADICIONAL/);
+    assert.match(message,/usuario con permisos/);
+    assert.match(message,/requiere confirmarla después/);
+    assert.match(message,/no se registraron pagos/);
+});
+
+test('exoneration failures unrelated to slot occupancy preserve their original message',()=>{
+    for(const message of ['La cita cambió. Revisa sus datos antes de registrar el pago.','No tienes permiso para esta operación.','Error en la validación económica.'])
+        assert.equal(exonerationConfirmationFailure(message),message);
 });
