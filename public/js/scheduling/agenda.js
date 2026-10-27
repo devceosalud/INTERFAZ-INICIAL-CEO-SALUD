@@ -1638,7 +1638,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const reserveReason = document.getElementById('agenda-reservation-reason');
         reserveReason.hidden = reservation.allowed;
         reserveReason.textContent = reservation.reason;
-        el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : 'Registrar pago y cita');
+        el.appointmentSubmit.textContent = state.offHoursMode ? 'Agendar FUERA DE HORARIO' : (state.additionalMode ? 'Agendar cita adicional' : operationalWorkspace.readiness().exemptionSelected ? 'Confirmar cita exonerada' : 'Registrar pago y cita');
         const readiness = state.selection?.appointment_id
             ? operationalWorkspace.reservationConfirmation()
             : window.AgendaOperationalForm.bookingReadiness({
