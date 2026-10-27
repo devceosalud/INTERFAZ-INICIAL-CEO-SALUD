@@ -53,6 +53,31 @@ class ClinicalEnterpriseRoundTwoTest extends \Tests\Support\AgendaV2TestCase
         $this->assertDatabaseCount('medical_procedure_followups',2);$this->select(['mri'])->assertOk();$this->assertNotContains('CIRUGIA',array_column($this->detail()->json('appointment.presentation.badges'),'clave'));
         $this->assertSame($before,$this->a->fresh()->getAttributes());$this->assertDatabaseCount('payments',0);
     }
+    public function test_interconsulta_creates_a_removable_agenda_chip_without_changing_care_money_or_automatic_followup():void {
+        $this->physician();
+        $original=$this->a->fresh()->getAttributes();
+        $this->assertSame('INTERCONSULTA',\App\Support\Scheduling\ProcedureCatalog::labels()['interconsulta']);
+        $this->assertSame('other',\App\Support\Scheduling\ProcedureCatalog::entries()['interconsulta']['family']);
+
+        $this->select(['interconsulta'])->assertOk();
+        $presentation=$this->detail()->assertOk()->json('appointment.presentation');
+        $keys=array_column($presentation['badges'],'clave');
+        $this->assertContains('INTERCONSULTA',$keys);
+        $this->assertSame(1,count(array_filter($keys,fn($key)=>$key==='INTERCONSULTA')));
+        $this->assertSame('PRESENTE',$presentation['clave']);
+        $this->assertDatabaseHas('appointment_requested_procedures',['appointment_id'=>$this->a->id,'procedure_key'=>'interconsulta','selected'=>true,'procedure_family'=>'other']);
+        $this->assertDatabaseCount('medical_procedure_followups',0);
+        $this->assertDatabaseCount('payments',0);
+        $this->assertDatabaseCount('vouchers',0);
+        $this->assertSame($original,$this->a->fresh()->getAttributes());
+
+        $this->select([])->assertOk();
+        $this->assertNotContains('INTERCONSULTA',array_column($this->detail()->assertOk()->json('appointment.presentation.badges'),'clave'));
+        $this->assertDatabaseHas('appointment_requested_procedures',['appointment_id'=>$this->a->id,'procedure_key'=>'interconsulta','selected'=>false]);
+        $this->assertDatabaseCount('medical_procedure_followups',0);
+        $this->assertSame($original,$this->a->fresh()->getAttributes());
+    }
+
     public function test_manual_referral_preserves_actual_exam_state_and_reuses_automatic_records():void {
         $this->physician();$this->select(['wound_care','mri'])->assertOk();$this->assertDatabaseCount('medical_procedure_followups',1);$key=(string)Str::uuid();
         $body=['request_key'=>$key,'expected_patient_id'=>$this->a->patient_id,'expected_procedure_version'=>1];
