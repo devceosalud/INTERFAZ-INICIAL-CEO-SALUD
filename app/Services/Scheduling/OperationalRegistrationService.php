@@ -38,6 +38,9 @@ class OperationalRegistrationService
         if(Money::cents($data['payment']['amount']??0)>0)abort_unless($actor->can(Capability::SUBMIT_PAYMENT),403,'No tienes permiso para registrar adelantos.');
         if(($data['booking_type']??null)==='ADICIONAL')abort_unless($actor->can(Capability::CREATE_ADDITIONAL),403);
         if(!empty($data['es_exonerado']))abort_unless($actor->can(Capability::APPROVE_ZERO_COST),403);
+        if(!empty($data['es_exonerado']) && $data['mode']==='RESERVE') {
+            throw ValidationException::withMessages(['mode'=>'Una cita exonerada debe registrarse y confirmarse directamente. No puede guardarse como reserva pendiente.']);
+        }
         if (is_string($data['motivo_consulta'] ?? null)) {
             $data['motivo_consulta'] = \App\Support\Scheduling\OperationalText::trim($data['motivo_consulta']);
         }
