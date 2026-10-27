@@ -42,6 +42,7 @@
         let reason = '';
         if (!input.canCreate) { reason = 'No tienes permiso para guardar reservas (appointment.create). Solicita revisión al administrador.'; }
         else if (input.busy) { reason = 'Guardando. Espera el resultado de esta operación.'; }
+        else if (input.exemptionSelected) { reason = 'Una cita exonerada debe confirmarse directamente. Usa Confirmar cita exonerada.'; }
         else if (!input.slot) { reason = 'Selecciona un intervalo regular para guardar la reserva.'; }
         else if (!input.patient) { reason = 'Busca y selecciona un paciente activo para guardar la reserva.'; }
         else if (!input.service) { reason = 'Selecciona un servicio activo para guardar la reserva.'; }
