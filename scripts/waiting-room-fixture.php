@@ -48,8 +48,9 @@ if($action==='extra'){
 ";exit(0);
 }
 if($action==='access'){
- $actor=\App\Models\User::findOrFail($fixture['actor']);$actor->update(['email'=>'admision-fixture@example.invalid','password'=>\Illuminate\Support\Facades\Hash::make('Local-ERP-Fixture-2026')]);
- foreach($fixture['rows'] as $i=>$r)\App\Models\User::findOrFail($r['physician'])->update(['email'=>'doctor-fixture-'.$i.'@example.invalid','password'=>\Illuminate\Support\Facades\Hash::make('Local-ERP-Fixture-2026')]);
+ $access=json_decode(file_get_contents(dirname($stateFile).'/access.json'),true,16,JSON_THROW_ON_ERROR);
+ $actor=\App\Models\User::findOrFail($fixture['actor']);$actor->update(['email'=>$access['erp_email'],'password'=>\Illuminate\Support\Facades\Hash::make($access['erp_password'])]);
+ foreach($fixture['rows'] as $i=>$r)\App\Models\User::findOrFail($r['physician'])->update(['email'=>$access['doctor_emails'][$i],'password'=>\Illuminate\Support\Facades\Hash::make($access['erp_password'])]);
  echo "Fictional staff access configured.
 ";exit(0);
 }

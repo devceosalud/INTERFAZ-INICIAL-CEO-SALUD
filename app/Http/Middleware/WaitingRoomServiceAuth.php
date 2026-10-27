@@ -11,6 +11,7 @@ final class WaitingRoomServiceAuth
 {
     public function handle(Request $request, Closure $next)
     {
+        $authStart=microtime(true);
         if (!config('waiting_room.enabled')) return response()->json(['error'=>'not_found'], 404);
         $local = config('waiting_room.allow_loopback_http') && app()->environment(['testing','integration'])
             && in_array($request->ip(), ['127.0.0.1','::1'], true) && in_array($request->getHost(), ['127.0.0.1','localhost','::1'], true);
@@ -30,14 +31,19 @@ final class WaitingRoomServiceAuth
             || !preg_match('/^[0-9]{10}$/D', $timestamp) || abs(time()-(int)$timestamp) > config('waiting_room.clock_skew_seconds')
             || !preg_match('/^[a-f0-9]{32,64}$/D', $nonce) || !preg_match('/^[a-f0-9]{64}$/D', $signature)) return $this->deny();
         $canonical = $request->method()."\n".$request->getRequestUri()."\n".$timestamp."\n".$nonce."\n".hash('sha256',$request->getContent());
-        if (!hash_equals(hash_hmac('sha256',$canonical,$installation['secret']),$signature)) return $this->deny();
-        if (!Cache::add('wr-nonce:'.hash('sha256',$id.':'.$nonce), true, 90)) return $this->deny();
+        if($request->headers->has('If-None-Match')){
+            $tag=$request->header('If-None-Match');if(!preg_match('/^"[a-f0-9]{64}"$/D',$tag))return $this->deny();$canonical.="\n".$tag;
+        }
+        $hmacStart=microtime(true);$expected=hash_hmac('sha256',$canonical,$installation['secret']);$request->attributes->set('wr_hmac_us',(microtime(true)-$hmacStart)*1000000);
+        if(!hash_equals($expected,$signature))return $this->deny();
+        if (!app(\App\Services\WaitingRoom\ReplayNonces::class)->claim($id,$nonce)) return $this->deny();
         $limitKey = 'wr-installation:'.hash('sha256',$id);
         if (RateLimiter::tooManyAttempts($limitKey, config('waiting_room.requests_per_minute'))) return $this->deny(429);
         RateLimiter::hit($limitKey,60);
         if ($request->query() !== []) return response()->json(['error'=>'invalid_request'],422);
         $request->attributes->set('waiting_room_installation', $installation + ['key_id'=>$id]);
         $request->attributes->set('waiting_room_configuration', $configuration);
+        $request->attributes->set('wr_auth_ms',(microtime(true)-$authStart)*1000);
         return $next($request);
     }
     private function deny(int $status=401) { return response()->json(['error'=>'unauthorized'], $status)->header('Cache-Control','no-store'); }

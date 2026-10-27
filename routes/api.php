@@ -59,5 +59,5 @@ Route::middleware(['internal-api', 'role:ADMINISTRADOR'])->group(function () {
 // Dedicated read projection; no employee session, administrative feed or writes.
 Route::get('/integration/v1/waiting-room/snapshot', \App\Http\Controllers\Integration\WaitingRoomSnapshotController::class)
     ->withoutMiddleware('throttle:api')
-    ->middleware(\App\Http\Middleware\WaitingRoomServiceAuth::class)
+    ->middleware([\App\Http\Middleware\WaitingRoomTiming::class,\App\Http\Middleware\WaitingRoomServiceAuth::class])
     ->name('integration.waiting-room.snapshot');

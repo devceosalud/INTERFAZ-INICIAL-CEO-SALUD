@@ -57,7 +57,7 @@ class WaitingRoomSnapshotTest extends TestCase
     }
     public function test_official_arrival_call_and_clinical_start_end_are_projected_without_private_data():void
     {
-        $this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms');
+        $this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms.0.patients');
         $this->arrive();$this->snapshot()->assertOk()->assertJsonPath('rooms.0.patients.0.state','waiting')->assertJsonCount(0,'calls');
         $this->callPatient();$r=$this->snapshot()->assertOk()->assertJsonPath('calls.0.display_label','M. López Torres')
             ->assertJsonPath('calls.0.speech_label','María López Torres')->assertJsonPath('calls.0.room_label','01');
@@ -70,9 +70,37 @@ class WaitingRoomSnapshotTest extends TestCase
         foreach(['EN_ATENCION','ATENDIDO'] as $state){
             $this->a=app(AdmissionCareService::class)->transition($this->a->id,$doctor,['state'=>$state,'expected_state'=>$this->a->estado_cita,'request_key'=>(string)Str::uuid()]);
             $result=$this->snapshot()->assertOk()->assertJsonCount(0,'calls');
-            if($state==='EN_ATENCION')$result->assertJsonPath('rooms.0.patients.0.state','attention');else $result->assertJsonCount(0,'rooms');
+            if($state==='EN_ATENCION')$result->assertJsonPath('rooms.0.patients.0.state','attention');else $result->assertJsonCount(0,'rooms.0.patients');
         }
         $this->assertNull($this->a->hora_salida);
+    }
+    public function test_conditional_snapshot_renews_freshness_without_new_sequence_or_event():void
+    {
+        $this->arrive();$this->callPatient();$r=$this->snapshot()->assertOk();$tag=$r->headers->get('ETag');
+        $sequence=$r->json('sequence');$event=$r->json('calls.0.event_ref');
+        DB::table('appointments')->where('id',$this->a->id)->update(['updated_at'=>now()->addSeconds(2)]);
+        $this->snapshot()->assertOk()->assertJsonPath('sequence',$sequence)->assertJsonPath('calls.0.event_ref',$event)->assertHeader('ETag',$tag);
+        $headers=$this->headers();$headers['If-None-Match']=$tag;
+        $canonical=implode(chr(10),['GET',$this->endpoint,$headers['X-WR-Timestamp'],$headers['X-WR-Nonce'],hash('sha256','[]'),$tag]);
+        $headers['X-WR-Signature']=hash_hmac('sha256',$canonical,$this->secret);
+        $this->getJson($this->endpoint,$headers)->assertStatus(304)->assertHeader('ETag',$tag)->assertHeader('X-WR-Sequence',(string)$sequence);
+        $headers=$this->headers();$headers['If-None-Match']=$tag;
+        $this->getJson($this->endpoint,$headers)->assertUnauthorized(); // Header cannot be added after signing.
+    }
+    public function test_operational_room_count_is_configuration_not_number_of_patients():void
+    {
+        $this->snapshot()->assertOk()->assertJsonPath('operating_count',1)->assertJsonCount(1,'rooms')->assertJsonCount(0,'rooms.0.patients');
+        $this->arrive();$this->snapshot()->assertOk()->assertJsonPath('operating_count',1)->assertJsonCount(1,'rooms.0.patients');
+        $this->configuration['assignments'][0]['operational']=false;$this->saveConfiguration();
+        $this->snapshot()->assertOk()->assertJsonPath('operating_count',0)->assertJsonCount(0,'rooms')->assertJsonCount(0,'calls');
+    }
+    public function test_nonce_window_prunes_expired_entries_without_allowing_replay():void
+    {
+        $key='wr-nonces:'.hash('sha256','isolated-test');
+        \Illuminate\Support\Facades\Cache::put($key,['expired'=>time()-1],180);
+        $service=app(\App\Services\WaitingRoom\ReplayNonces::class);$nonce=bin2hex(random_bytes(16));
+        $this->assertTrue($service->claim('isolated-test',$nonce));$this->assertFalse($service->claim('isolated-test',$nonce));
+        $this->assertCount(1,\Illuminate\Support\Facades\Cache::get($key));
     }
     public function test_signature_timestamp_replay_revocation_and_disabled_gate():void
     {
@@ -90,14 +118,14 @@ class WaitingRoomSnapshotTest extends TestCase
         $this->getJson($this->endpoint.'?site_id=999',$this->headers(null,null,$this->endpoint.'?site_id=999'))->assertStatus(422);
         foreach([['attendance_mode'=>'TELECONSULTA'],['site_id'=>$this->createSite(['codigo'=>'OTHER'])->id],['estado_agenda'=>'PENDIENTE_CONFIRMACION'],['fecha_cita'=>now()->subDay()->toDateString()],['estado_cita'=>'CANCELADO'],['estado_cita'=>'NO_ASISTIO']] as $change){
             $before=$this->a->fresh()->getAttributes();DB::table('appointments')->where('id',$this->a->id)->update($change);
-            $this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms');
+            $this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms.0.patients');
             DB::table('appointments')->where('id',$this->a->id)->update($before);
         }
     }
     public function test_a_timestamp_without_an_audited_arrival_is_not_waiting():void
     {
         DB::table('appointments')->where('id',$this->a->id)->update(['estado_cita'=>'EN_ESPERA','hora_llegada'=>now()]);
-        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms');
+        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms.0.patients');
     }
     public function test_reversal_keeps_audit_and_does_not_resurrect_the_old_call():void
     {
@@ -114,7 +142,7 @@ class WaitingRoomSnapshotTest extends TestCase
         $other=$this->lifecycleAppointment($this->actor,$this->catalog,['site_id'=>$this->site->id,'attendance_mode'=>'PRESENCIAL','hora_cita'=>'10:30:00'],$patient);
         $this->configuration['privacy']['fixture_patient_ids'][]=$patient->id;$this->saveConfiguration();
         app(AdmissionCareService::class)->registerArrival($other->id,$this->actor,['expected_state'=>'PROGRAMADO','request_key'=>(string)Str::uuid()]);
-        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms')->assertJsonCount(0,'calls');
+        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms.0.patients')->assertJsonCount(0,'calls');
     }
     public function test_missing_destination_or_privacy_approval_never_exposes_names():void
     {
@@ -129,7 +157,7 @@ class WaitingRoomSnapshotTest extends TestCase
         $this->snapshot()->assertOk()->assertJsonPath('rooms.0.patients.0.state','attention')->assertJsonCount(0,'calls');
         $service=app(\App\Services\Scheduling\AppointmentReevaluationService::class);
         $service->physicianDecision($this->a->id,$doctor,['action'=>'indicate','expected_state'=>'EN_ATENCION','confirmed'=>true,'request_key'=>(string)Str::uuid()]);
-        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms')->assertJsonCount(0,'calls');
+        $this->snapshot()->assertOk()->assertJsonCount(0,'rooms.0.patients')->assertJsonCount(0,'calls');
         $service->physicianDecision($this->a->id,$doctor,['action'=>'withdraw','expected_state'=>'EN_ATENCION','confirmed'=>true,'reason'=>'Corrección ficticia','request_key'=>(string)Str::uuid()]);
         $this->snapshot()->assertOk()->assertJsonPath('rooms.0.patients.0.state','attention')->assertJsonCount(0,'calls');
         $this->assertSame('EN_ATENCION',$this->a->fresh()->estado_cita);$this->assertDatabaseCount('appointments',1);
