@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php" colors="true"><testsuites><testsuite name="Isolated waiting room MariaDB"><file>tests/Database/WaitingRoomMariaDbTest.php</file></testsuite></testsuites></phpunit>
