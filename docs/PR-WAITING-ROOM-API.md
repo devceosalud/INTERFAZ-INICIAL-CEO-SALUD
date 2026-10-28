@@ -1,43 +1,23 @@
-# PR preparado — API protegida del llamador
+# API del llamador: revisión independiente del 28/10/2026
 
-Estado: **rama local revisable; sin push y sin PR publicado**. No habilita pacientes reales.
+Rama: `codex/erp-waiting-room-review-20261028`, derivada de la candidata preservada `codex/waiting-room-api-pr-20261027` (5cdf3f40). Base actual `main`: `34f82dd159e8a716f71dcadca0a8ac9d7dec0794`. El mismo HEAD fue leído en Hostinger para el ERP; AdmissionCareService publicado coincide con la base. No se modificó la instalación pública.
 
-Base remota verificada el 27/10/2026: `origin/main`, `34f82dd159e8a716f71dcadca0a8ac9d7dec0794`. Incluye el trabajo reciente de exoneraciones e interconsultas. Rama: `codex/waiting-room-api-pr-20261027`.
+Se reutiliza la API existente; no hay una segunda API. Diferencia aditiva: ruta/config/middleware/servicios propios, pruebas y documentación. No cambia servicios clínicos, modelos, estados, Agenda 2.0 ni migraciones.
 
-## Título propuesto
+El endurecimiento añade autorización explícita y caducable por instalación/sede/pantalla/jornada, procedencia synthetic/clinical en 200/304, descarte público de llamados caducados incluso en caché, validación de inicio auditado y rechazo de consultorios físicos duplicados. Conserva HMAC, anti-replay, límites, proyección mínima, homónimos omitidos, teleconsultas y reservas sin llegada excluidas.
 
-Agregar API interna de sala de espera con autenticación por instalación y proyección mínima
+Pruebas ejecutadas: 18/145 SQLite, 18/145 MariaDB 10.4.32 aislada; regresión conjunta API/Admisión/teleconsulta 41/509. Dos procesos PHP con el mismo nonce: [200,401]. Recorrido local HTTP con Laravel 13 y Dora real aprobado con datos ficticios. No se considera una prueba clínica productiva.
 
-## Descripción propuesta
+## Condiciones de publicación
 
-El llamador independiente necesita leer los cambios autorizados de Admisión sin reutilizar el feed administrativo ni acceder a la base del ERP. Se agrega `GET /api/integration/v1/waiting-room/snapshot`, cerrado por defecto, con autenticación HMAC, timestamp, nonce de un solo uso, límites de solicitudes y alcance de sede/pantalla.
+1. Revisar este PR y volver a contrastar main si cambia. No fusionar todavía: el ERP tiene auto-deploy de main habilitado.
+2. Obtener aprobación de despliegue, crear respaldo fresco verificable de código/configuración y backup clínico cifrado mediante el custodio autorizado (no descargar pacientes a la laptop), y verificar restauración en staging. No se ha realizado un nuevo respaldo de la base clínica en esta tarea.
+3. Instalar únicamente código, con WR_INTEGRATION_ENABLED=false, privacidad disabled e instalaciones inactivas. Sin migrate, seed, composer update ni cambios de paquetes.
+4. Verificar endpoint 404, operación normal de Agenda y configuración privada fuera de public_html. Runtime/cache/nonces compartidos y relojes sincronizados deben confirmarse en el alojamiento definitivo.
+5. Solo después de una aprobación clínica distinta, provisionar credenciales nuevas, política y asignaciones físicas verificadas y habilitar una instalación/TV/jornada. El llamador tiene un segundo guardián privado; quitar el modo ficticio no concede permiso.
 
-La proyección usa eventos auditados de llegada y llamado, jornada válida y destinos configurados explícitamente. Solo entrega referencias opacas, etiquetas públicas y de voz autorizadas, profesional, destino, estados operativos y vigencia/secuencia. Excluye reservas sin llegada, teleconsultas, episodios terminados, homónimos ambiguos y datos clínicos, económicos o de contacto. No usa `updated_at` como evento ni modifica citas, estados existentes o Agenda 2.0.
+## Reversión
 
-La caché corta evita repetir la proyección completa sin desactivar autenticación, alcance, vencimiento ni invalidación por eventos. Las respuestas sin cambios mantienen el contrato de frescura entre servidores.
+Revocar instalación y apagar WR_INTEGRATION_ENABLED; invalidar caché de configuración si se utiliza. Desactivar aprobación del llamador y pantallas clínicas afectadas. Restaurar artefacto y configuración respaldados si corresponde. No restaurar citas ni bases desde un snapshot antiguo, ni reenviar eventos históricos. No hay esquema nuevo que revertir. Si se requiere revertir código en Git, hacerlo mediante PR revisado sobre el main vigente, preservando cambios posteriores; nunca reset/force-push.
 
-**Validación:** 12 pruebas focalizadas de `WaitingRoomSnapshotTest` aprobadas sobre esta base, usando SQLite en memoria y datos ficticios. El recorrido HTTP real con el cliente y Dora está verificado en el laboratorio local del llamador con la rama de integración original; todavía debe repetirse en staging con este PR y el motor de base de datos definitivo. No equivale a verificación productiva.
-
-## Alcance y revisión
-
-- Dos commits aditivos de implementación/optimización; no cambian servicios clínicos.
-- No se agrega ninguna migración ni se cambian tablas existentes.
-- Archivos y contrato: [WAITING-ROOM-API.md](WAITING-ROOM-API.md).
-- Configuración inicial: `.env.waiting-room.example` y `docs/waiting-room/installations.example.json`, sin credenciales funcionales.
-- La configuración privada define claves individuales revocables, sede, pantalla, asignaciones de jornada y política de identificación. Mantener `privacy=disabled` hasta aprobación de negocio/privacidad.
-- Los scripts de fixtures rechazan entornos/bases fuera del laboratorio aislado. No forman parte del flujo productivo.
-- No instalar secretos ni activar la API mediante este PR. Habilitación separada después de revisión.
-
-## Pendiente antes de publicación
-
-1. Revisar diferencia contra `main` nuevamente si recibe otros cambios; actualizar esta rama sin tocar worktrees ajenos.
-2. Revisión técnica/privacidad de la proyección y configuración de destinos físicos.
-3. Ejecutar pruebas en staging con el motor/versiones usados por el ERP, incluida concurrencia del caché/nonce. Sin datos reales.
-4. Revisar soporte de PHP/Laravel del ERP con su responsable. Este cambio no migra su framework.
-5. Autorizar push y creación del PR. No se han realizado.
-
-## Publicación y rollback propuestos
-
-Publicar el código primero con integración desactivada; respaldar la versión y configuración anteriores. Provisionar claves nuevas solo en archivos privados de ambos servidores, verificar HTTPS, reloj y permisos. Activar únicamente la instalación ficticia de staging y comprobar aislamiento de sedes y no repetición de eventos. La habilitación clínica necesita autorización distinta.
-
-Rollback inmediato: desactivar la integración y revocar la instalación. El cliente mostrará estado seguro sin pacientes vencidos. Restaurar el artefacto/configuración previa si hace falta; no hay esquema nuevo que revertir. No restaurar una cola histórica de anuncios.
+Contrato y campos: [WAITING-ROOM-API.md](WAITING-ROOM-API.md). El despliegue y la habilitación clínica siguen pendientes de autorización.

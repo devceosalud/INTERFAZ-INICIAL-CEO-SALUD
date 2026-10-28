@@ -41,7 +41,7 @@ final class WaitingRoomServiceAuth
         if (RateLimiter::tooManyAttempts($limitKey, config('waiting_room.requests_per_minute'))) return $this->deny(429);
         RateLimiter::hit($limitKey,60);
         if ($request->query() !== []) return response()->json(['error'=>'invalid_request'],422);
-        $request->attributes->set('waiting_room_installation', $installation + ['key_id'=>$id]);
+        $request->attributes->set('waiting_room_installation', array_merge($installation,['key_id'=>$id]));
         $request->attributes->set('waiting_room_configuration', $configuration);
         $request->attributes->set('wr_auth_ms',(microtime(true)-$authStart)*1000);
         return $next($request);

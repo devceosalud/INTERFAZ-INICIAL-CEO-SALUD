@@ -11,7 +11,18 @@
     "mode": "disabled",
     "display_mode": "initial_two_surnames",
     "speech_mode": "disabled",
-    "approval_reference": null
+    "approval_reference": null,
+    "homonym_strategy": "suppress",
+    "device_authority": null,
+    "valid_from": null,
+    "valid_until": null,
+    "authorized_events": [
+      "arrival",
+      "call",
+      "attention_start",
+      "attention_end"
+    ],
+    "scopes": []
   },
   "assignments": [
     {

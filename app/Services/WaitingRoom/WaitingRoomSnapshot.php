@@ -27,7 +27,7 @@ final class WaitingRoomSnapshot
     {
         $this->key = (string)config('waiting_room.reference_key');
         abort_unless(strlen($this->key)>=32 && !empty($installation['site_id']) && InstallationConfiguration::label($installation['screen_ref']??null,100),503);
-        $policy = app(InstallationConfiguration::class)->privacy($configuration);
+        $policy = app(InstallationConfiguration::class)->privacy($configuration,$installation);
         $this->installation=$installation;
         $this->day=now('America/Lima')->toDateString();
         $now=CarbonImmutable::now('UTC');
@@ -39,7 +39,7 @@ final class WaitingRoomSnapshot
             && InstallationConfiguration::label($row['professional_label']??null,120) && InstallationConfiguration::label($row['professional_speech_label']??null,120));
         if($assignments->isEmpty())throw new IntegrationFailure('jornada_not_configured');
         // Ambiguous physical assignments fail closed instead of inventing a destination.
-        abort_if($assignments->duplicates('doctor_id')->isNotEmpty() || $assignments->duplicates('room_ref')->isNotEmpty(),503);
+        abort_if($assignments->duplicates('doctor_id')->isNotEmpty() || $assignments->duplicates('room_ref')->isNotEmpty() || $assignments->map(fn($r)=>(int)$r['room_label'])->duplicates()->isNotEmpty(),503);
         // Pin verified destinations for this screen/jornada. Editing an active day's mapping
         // must fail closed instead of silently redirecting an already audited call.
         $assignmentKey='wr-assignments:'.$this->ref('screen',$installation['screen_ref']).':'.$this->day;
@@ -88,6 +88,11 @@ final class WaitingRoomSnapshot
                 }
                 if($a->estado_cita==='EN_ATENCION' && AppointmentReevaluationService::indicated($a) && !AppointmentReevaluationService::resumed($a))continue;
                 $latest=$a->events->first(fn($e)=>in_array($e->event_type,['ADMISION_ESTADO_ACTUALIZADO','ADMISION_ESTADO_REVERTIDO'],true));
+                if($a->estado_cita==='EN_ATENCION'){
+                    $start=$a->events->first(fn($e)=>$e->event_type==='ADMISION_ESTADO_ACTUALIZADO'
+                        && ($e->metadata['to']??null)==='EN_ATENCION' && ($e->metadata['timestamp_field']??null)==='hora_atencion');
+                    if(!$a->hora_atencion||!$start||!$start->occurred_at||$start->occurred_at->copy()->setTimezone('America/Lima')->toDateString()!==$this->day)continue;
+                }
                 $call=$a->estado_cita==='LLAMANDO' && $latest && $latest->event_type==='ADMISION_ESTADO_ACTUALIZADO' && ($latest->metadata['to']??null)==='LLAMANDO' && $latest->occurred_at ? $latest : null;
                 if($a->estado_cita==='LLAMANDO' && (!$call || $call->occurred_at->greaterThan($now->addSecond()) || $call->occurred_at->copy()->setTimezone('America/Lima')->toDateString()!==$this->day))continue;
                 $given=trim($a->patient->nombre);$paternal=trim($a->patient->apellido_paterno);$maternal=trim($a->patient->apellido_materno);
@@ -132,6 +137,14 @@ final class WaitingRoomSnapshot
         });
     }
     private function stamp(array $body):array {
+        // Filter every lease, including cache hits. Never mutate the appointment.
+        $now=CarbonImmutable::now('UTC');$expired=[];
+        $body['calls']=array_values(array_filter($body['calls'],function($call)use($now,&$expired){
+            if(CarbonImmutable::parse($call['valid_until'])->lessThanOrEqualTo($now)){$expired[$call['subject_ref']]=true;return false;}
+            return true;
+        }));
+        foreach($body['rooms'] as &$room)$room['patients']=array_values(array_filter($room['patients'],fn($p)=>$p['state']!=='calling'||!isset($expired[$p['subject_ref']])));
+        unset($room);
         $body['revision']=hash('sha256',json_encode([$body['screen_ref'],$body['site'],$body['jornada'],$body['operating_count'],$body['rooms'],$body['calls']],JSON_THROW_ON_ERROR));
         $key='wr-stream:'.$body['screen_ref'];$stream=Cache::get($key,['epoch'=>(string)Str::uuid(),'sequence'=>0,'revision'=>null]);
         if(($stream['revision']??null)!==$body['revision']){$stream['sequence']++;$stream['revision']=$body['revision'];Cache::put($key,$stream,86400);}

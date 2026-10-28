@@ -172,4 +172,66 @@ class WaitingRoomSnapshotTest extends TestCase
         $this->snapshot()->assertOk()->assertJsonCount(2,'calls')->assertJsonPath('calls.0.display_label','C. Ramírez Díaz')->assertJsonPath('calls.1.display_label','M. López Torres');
     }
 
+    public function test_expired_call_disappears_without_mutating_audited_state_and_conditional_revision_changes():void
+    {
+        $this->freezeTime();$this->arrive();$this->callPatient();$this->travel(100)->seconds();$first=$this->snapshot()->assertOk();
+        $first->assertHeader('X-WR-Data-Class','synthetic')->assertHeader('X-WR-Policy-Ref',hash('sha256','fixtures-only'));
+        $before=$this->a->fresh()->getAttributes();$count=$this->a->events()->count();
+        $this->travel(21)->seconds();$after=$this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms.0.patients');
+        $this->assertTrue(request()->attributes->get('wr_projection_hit'));
+        $this->assertGreaterThan($first->json('sequence'),$after->json('sequence'));
+        $this->assertSame($before,$this->a->fresh()->getAttributes());$this->assertSame($count,$this->a->events()->count());
+    }
+    public function test_duplicate_physical_number_is_rejected_even_with_different_room_reference():void
+    {
+        $other=$this->configuration['assignments'][0];$other['doctor_id']=$this->createAppointmentCatalog()['doctor']->id;
+        $other['room_ref']='another-room';$other['room_label']='1';$this->configuration['assignments'][]=$other;$this->saveConfiguration();
+        $this->snapshot()->assertStatus(503);
+    }
+    private function approval():array
+    {
+        return ['mode'=>'approved','approval_reference'=>'TEST-APPROVAL-NOT-CLINICAL','display_mode'=>'initial_two_surnames',
+            'speech_mode'=>'full_given_names','homonym_strategy'=>'suppress','device_authority'=>'TEST-ADMIN',
+            'valid_from'=>now()->subMinute()->toIso8601String(),'valid_until'=>now()->addDay()->toIso8601String(),
+            'authorized_events'=>['arrival','call','attention_start','attention_end'],
+            'scopes'=>[['key_id'=>'fixture-a','site_id'=>$this->site->id,'screen_ref'=>'fixture-screen-a','days'=>[now('America/Lima')->toDateString()]]]];
+    }
+    public function test_clinical_projection_requires_current_approval_for_exact_installation_site_screen_and_day():void
+    {
+        $this->arrive();$this->callPatient();$policy=$this->approval();$this->configuration['privacy']=$policy;$this->saveConfiguration();
+        $this->snapshot()->assertOk()->assertHeader('X-WR-Data-Class','clinical')->assertHeader('X-WR-Policy-Ref',hash('sha256',$policy['approval_reference']));
+        foreach(['expired','future','site','screen','key','day','events','homonyms','speech'] as $case){
+            $p=$policy;
+            if($case==='expired')$p['valid_until']=now()->subSecond()->toIso8601String();
+            if($case==='future')$p['valid_from']=now()->addHour()->toIso8601String();
+            if($case==='site')$p['scopes'][0]['site_id']++;
+            if($case==='screen')$p['scopes'][0]['screen_ref']='another-screen';
+            if($case==='key')$p['scopes'][0]['key_id']='another-key';
+            if($case==='day')$p['scopes'][0]['days']=[now()->subDay()->toDateString()];
+            if($case==='events')$p['authorized_events']=[];
+            if($case==='homonyms')$p['homonym_strategy']='dni';
+            if($case==='speech')$p['speech_mode']='unapproved';
+            $this->configuration['privacy']=$p;$this->saveConfiguration();$this->snapshot()->assertStatus(503);
+        }
+    }
+    public function test_unapproved_full_speech_is_not_reconstructed():void
+    {
+        $this->arrive();$this->callPatient();$this->configuration['privacy']['speech_mode']='disabled';$this->saveConfiguration();
+        $this->snapshot()->assertOk()->assertJsonPath('calls.0.speech_authorized',false)->assertJsonPath('calls.0.speech_label',null);
+    }
+
+    public function test_attention_without_official_start_event_is_not_exposed():void
+    {
+        $this->arrive();DB::table('appointments')->where('id',$this->a->id)->update(['estado_cita'=>'EN_ATENCION','hora_atencion'=>now()]);
+        $this->snapshot()->assertOk()->assertJsonCount(0,'calls')->assertJsonCount(0,'rooms.0.patients');
+    }
+
+    public function test_private_config_cannot_override_the_authenticated_installation_key():void
+    {
+        $this->configuration['privacy']=$this->approval();
+        $this->configuration['installations']['fixture-a']['key_id']='another-key';
+        $this->configuration['privacy']['scopes'][0]['key_id']='another-key';
+        $this->saveConfiguration();$this->snapshot()->assertStatus(503);
+    }
+
 }
