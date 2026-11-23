@@ -5,6 +5,7 @@ on:
     paths:
       - 'app/Http/Controllers/Scheduling/ManagementExportController.php'
       - 'app/Support/Scheduling/ManagementCsv.php'
+      - 'app/Support/Scheduling/ManagementReportPaymentStatus.php'
       - 'app/Support/Scheduling/ManagementXlsx.php'
       - 'app/Support/Scheduling/ManagementPaymentOperationNumbers.php'
       - 'tests/Unit/Scheduling/Management*Test.php'
@@ -29,9 +30,11 @@ jobs:
       - name: PHP syntax
         run: |
           php -l app/Http/Controllers/Scheduling/ManagementExportController.php
+          php -l app/Support/Scheduling/ManagementReportPaymentStatus.php
+          php -l tests/Unit/Scheduling/ManagementReportPaymentStatusTest.php
           php -l app/Support/Scheduling/ManagementPaymentOperationNumbers.php
           php -l tests/Unit/Scheduling/ManagementPaymentOperationNumbersTest.php
       - name: Install locked dependencies in isolated CI
         run: composer install --prefer-dist --no-interaction --no-progress
       - name: Export regression tests
-        run: php vendor/bin/phpunit --filter 'Management(Csv|Xlsx|PaymentOperationNumbers|ReportFilters|ReportTemplate)Test'
+        run: php vendor/bin/phpunit --filter 'Management(Csv|Xlsx|PaymentOperationNumbers|ReportFilters|ReportTemplate|ReportPaymentStatus)Test'
