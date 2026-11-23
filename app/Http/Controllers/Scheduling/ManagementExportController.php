@@ -11,6 +11,7 @@ use App\Services\Billing\AppointmentEconomicPosition;
 use App\Services\Scheduling\DoctorAvailabilityService;
 use App\Support\Scheduling\AgendaQuery;
 use App\Support\Scheduling\ManagementCsv;
+use App\Support\Scheduling\ManagementReportPaymentStatus;
 use App\Support\Scheduling\ManagementXlsx;
 use App\Support\Scheduling\ManagementPaymentOperationNumbers;
 use App\Support\Scheduling\SchedulingCapability;
@@ -18,7 +19,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -85,7 +85,8 @@ class ManagementExportController extends Controller
                             $a->id, ManagementCsv::identifier($a->numero_cita), $a->fecha_cita, $a->hora_cita, $a->duracion_cita,
                             $a->site?->nombre, $a->doctor?->nombre, $a->doctor?->cmp,
                             $a->doctor?->specialty?->nombre, $a->service?->nombre,
-                            $a->estado_agenda, $a->tipo_agendamiento, $a->estado_cita, $a->estado_pagado,
+                            $a->estado_agenda, $a->tipo_agendamiento, $a->estado_cita,
+                            ManagementReportPaymentStatus::display($a->estado_pagado, $p),
                             $a->patient_id, ManagementCsv::identifier($patient?->historia_clinica), $patient?->tipo_identificacion,
                             ManagementCsv::identifier($patient?->numero_identidad), $name, $patient?->telefono, $patient?->email,
                             $patient?->fecha_nacimiento, $patient?->channel?->nombre, $patient?->interactionMedium?->nombre,
@@ -198,34 +199,41 @@ class ManagementExportController extends Controller
                 ->orderBy('id');
 
             $doctors->chunkById(8, function ($group) use ($handle, $filters, $sites, $from, $to, $availability) {
-                $agenda = new AgendaQuery($group->pluck('id')->all(), $from, $to, $filters['site_id']);
-                $days = $availability->forRange($agenda);
-                foreach ($group as $doctor) {
-                    foreach ($agenda->dates() as $date) {
-                        $day = $days->get($doctor->id.'|'.$date->toDateString());
-                        $slots = $day?->slots() ?? collect();
-                        $total = $slots->count();
-                        $occupied = $slots->reject->isAvailable()->count();
-                        $free = $total - $occupied;
-                        $percent = $total ? number_format($occupied * 100 / $total, 2, ',', '') : '';
-                        if (!$total) {
-                            ManagementCsv::row($handle, [
-                                $date->toDateString(), $doctor->id, $doctor->nombre,
-                                $doctor->specialty?->nombre, $filters['site_id'],
-                                $sites->get($filters['site_id']), '', '', '', 'SIN_HORARIO',
-                                '', 0, 0, 0, '', 'No existen intervalos en el horario filtrado',
-                            ]);
-                            continue;
-                        }
-                        foreach ($slots as $slot) {
-                            ManagementCsv::row($handle, [
-                                $date->toDateString(), $doctor->id, $doctor->nombre,
-                                $doctor->specialty?->nombre, $slot->siteId(),
-                                $sites->get($slot->siteId()), $slot->range()->start()->format('H:i'),
-                                $slot->range()->end()->format('H:i'), $slot->range()->minutes(),
-                                $slot->status(), $slot->appointmentState(), $total, $occupied,
-                                $free, $percent, 'Ocupación operativa; no implica pago acreditado',
-                            ]);
+                // Iterate in 31-day windows to bound availability memory, without a fixed export date limit.
+                for ($windowFrom = $from->copy(); $windowFrom->lte($to); $windowFrom->addDays(31)) {
+                    $windowTo = $windowFrom->copy()->addDays(30);
+                    if ($windowTo->gt($to)) {
+                        $windowTo = $to->copy();
+                    }
+                    $agenda = new AgendaQuery($group->pluck('id')->all(), $windowFrom, $windowTo, $filters['site_id']);
+                    $days = $availability->forRange($agenda);
+                    foreach ($group as $doctor) {
+                        foreach ($agenda->dates() as $date) {
+                            $day = $days->get($doctor->id.'|'.$date->toDateString());
+                            $slots = $day?->slots() ?? collect();
+                            $total = $slots->count();
+                            $occupied = $slots->reject->isAvailable()->count();
+                            $free = $total - $occupied;
+                            $percent = $total ? number_format($occupied * 100 / $total, 2, ',', '') : '';
+                            if (!$total) {
+                                ManagementCsv::row($handle, [
+                                    $date->toDateString(), $doctor->id, $doctor->nombre,
+                                    $doctor->specialty?->nombre, $filters['site_id'],
+                                    $sites->get($filters['site_id']), '', '', '', 'SIN_HORARIO',
+                                    '', 0, 0, 0, '', 'No existen intervalos en el horario filtrado',
+                                ]);
+                                continue;
+                            }
+                            foreach ($slots as $slot) {
+                                ManagementCsv::row($handle, [
+                                    $date->toDateString(), $doctor->id, $doctor->nombre,
+                                    $doctor->specialty?->nombre, $slot->siteId(),
+                                    $sites->get($slot->siteId()), $slot->range()->start()->format('H:i'),
+                                    $slot->range()->end()->format('H:i'), $slot->range()->minutes(),
+                                    $slot->status(), $slot->appointmentState(), $total, $occupied,
+                                    $free, $percent, 'Ocupación operativa; no implica pago acreditado',
+                                ]);
+                            }
                         }
                     }
                 }
@@ -279,9 +287,6 @@ class ManagementExportController extends Controller
             'site_id' => 'prohibited',
             'format' => 'sometimes|in:csv,xlsx',
         ]);
-        if (Carbon::parse($data['from'])->diffInDays(Carbon::parse($data['to'])) > 30) {
-            throw ValidationException::withMessages(['to' => 'El rango máximo es de 31 días, inclusive.']);
-        }
         return [
             'from' => $data['from'], 'to' => $data['to'],
             'doctor_id' => isset($data['doctor_id']) ? (int) $data['doctor_id'] : null,
