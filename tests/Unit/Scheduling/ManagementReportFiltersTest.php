@@ -13,7 +13,7 @@ class ManagementReportFiltersTest extends TestCase
 
         $this->assertStringNotContainsString('hasta 31 días consecutivos', $view);
         $this->assertStringNotContainsString('El rango máximo es de 31 días', $controller);
-        $this->assertStringContainsString("for ($windowFrom = $from->copy();", $controller);
+        $this->assertStringContainsString('for ($windowFrom = $from->copy();', $controller);
     }
 
     public function test_all_sites_is_fixed_and_native_doctor_control_is_used(): void
