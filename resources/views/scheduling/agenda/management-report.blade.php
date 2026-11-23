@@ -60,7 +60,7 @@
                                 </select>
                             </div>
                         </div>
-                        <p class="text-muted">Puedes exportar hasta 31 días consecutivos. Se incluyen todas las sedes. Si no seleccionas un profesional, se incluyen todos.</p>
+                        <p class="text-muted">Puedes seleccionar cualquier periodo. Para rangos amplios, la descarga puede tardar más y el archivo puede ser grande. Se incluyen todas las sedes. Si no seleccionas un profesional, se incluyen todos.</p>
                         @if ($errors->any())
                             <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
                         @endif
